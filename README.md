@@ -1,48 +1,49 @@
 # tp-taller-2026c2-grupo-14
-Trabajo Práctico Final grupal de Taller de Programación I - Cátedra Veiga, 2026 C2.
 
-## Ejemplo de CMAKE para el TP Final
+Trabajo Práctico Final grupal de Taller de Programación I - Cátedra Veiga.
 
-**Importante:** el primer commit de este repositorio tiene el setup
-básico para el TP Final que incluye la instalación de la lib de Google
-Tests, `SDL2` y `SDL2pp` (el wrapper de C++).
+2026 C2
 
-El resto de los commits son a modo de ejemplo de como se pueden
-agregar mas código fuente al proyecto.
+## Estructura
 
-Este ejemplo **no** incluye instalarse otras libs que son dependencias
-tanto de `SDL2` como de `SDL2pp` (pero si estan documentadas en el
-`CMakeFile` para Xubuntu 24.04).
-
-Este repo **no** incluye tampoco un instalador.
-
-**Se deben agregar las librerias necesarias y el instalador.**
-
-También el ejemplo usa una estructura de carpetas muy simple:
-
-```
-client/
-server/
-editor/
-common/
+```text
+.
+├── CMakeLists.txt              # Definición de targets, dependencias (SDL2, SDL2pp, GoogleTest) y opciones
+├── Makefile                    # Atajos para compilar y correr los tests
+├── cmake/
+│   └── CompilerWarnings.cmake  # Warnings del compilador aplicados a cada target
+├── common/                     # Biblioteca estática compartida (taller_common)
+├── client/                     # Cliente (taller_client), usa SDL2pp
+├── server/                     # Servidor (taller_server)
+├── editor/                     # Editor (taller_editor), usa SDL2pp
+└── tests/                      # Tests con GoogleTest (taller_tests)
 ```
 
-Bien se puede mejorar (cambiando el cmakefile) agregando mas
-sub-carpetas.
+Cada carpeta de código tiene su propio `CMakeLists.txt` donde se listan sus archivos fuente con `target_sources`. `client`, `server`, `editor` y `tests` se linkean contra `taller_common`.
 
-Asi tambien **deben** ser cambiados los *targets* del cmake (`taller_client`,
-`taller_server`, ...) por nombres mas acordes al TP que se este
-haciendo.
+Cada target se puede activar o desactivar con las opciones de CMake `TALLER_CLIENT`, `TALLER_SERVER`, `TALLER_EDITOR` y `TALLER_TESTS` (todas en `ON` por defecto). `TALLER_MAKE_WARNINGS_AS_ERRORS` controla si los warnings se tratan como errores.
 
-Tambien, por default solo se compila una version *debug* sin
-optimizar. Si se quiere compilar binarios optimizados
-(lo que cmake llama *release*) se puede, solo hay modificar
-cmake.
+## Compilación y ejecución
 
-Aprender del ejemplo para saber como extenderlo!
+```bash
+make compile-debug   # compila en build/ (modo Debug)
+make run-tests       # compila y corre ./build/taller_tests
+make clean           # borra build/
+```
 
-**Importante:** este repositorio **no** incluye pre-commits hooks,
-ni scripts adicionales (como correr valgrind).
+Los binarios quedan en `build/`: `taller_client`, `taller_server`, `taller_editor` y `taller_tests`.
 
-**Eso esta a cargo de los estudiantes,** tal como fue mostrado
-en los tps individuales, recaps y hands-on.
+## Referencias
+
+Di Paola, M. (2024). _tp-grupal-template_ [Código Fuente](https://github.com/Taller-de-Programacion-TPs/tp-grupal-template). GitHub.
+
+- **Archivos utilizados:**
+  - `CMakeLists.txt`
+  - `Makefile`
+  - `cmake/CompilerWarnings.cmake`
+  - `client/CMakeLists.txt`
+  - `common/CMakeLists.txt`
+  - `editor/CMakeLists.txt`
+  - `server/CMakeLists.txt`
+  - `tests/CMakeLists.txt`
+- **Licencia:** no especificada
