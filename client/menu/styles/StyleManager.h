@@ -11,6 +11,8 @@ constexpr int SCREEN_MARGIN_V = 40;
 constexpr int SCREEN_SPACING = 15;
 constexpr int BUTTON_MIN_HEIGHT = 42;
 constexpr int MENU_COLUMN_WIDTH = 320;
+// Alto reservado para mensajes de error de hasta dos lineas, asi el layout no salta.
+constexpr int ERROR_LABEL_HEIGHT = 44;
 }  // namespace Theme
 
 // Centraliza la hoja de estilos para que los widgets no definan colores por su cuenta.

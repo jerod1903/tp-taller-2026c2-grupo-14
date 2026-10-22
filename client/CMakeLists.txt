@@ -7,6 +7,7 @@ target_sources(taller_client
     menu/components/MenuButton.cpp
     menu/navigation/ScreenManager.cpp
     menu/screens/BaseScreen.cpp
+    menu/screens/JoinGameScreen.cpp
     menu/screens/MainMenuScreen.cpp
     menu/screens/PlaceholderScreen.cpp
     menu/styles/StyleManager.cpp
@@ -19,6 +20,7 @@ target_sources(taller_client
     menu/components/MenuButton.h
     menu/navigation/ScreenManager.h
     menu/screens/BaseScreen.h
+    menu/screens/JoinGameScreen.h
     menu/screens/MainMenuScreen.h
     menu/screens/PlaceholderScreen.h
     menu/styles/StyleManager.h

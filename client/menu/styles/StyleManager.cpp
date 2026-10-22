@@ -14,6 +14,10 @@ QString StyleManager::globalStyleSheet() {
             color: #F7D290;
             font-size: 16px;
         }
+        #errorLabel {
+            color: #FF9B7A;
+            font-size: 14px;
+        }
         QLineEdit {
             background-color: #1E120A;
             color: #FFF3CD;

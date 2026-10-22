@@ -10,6 +10,7 @@ enum class ScreenId {
     NewGame,
     JoinGame,
     MyGames,
+    Character,
 };
 
 // Registra las pantallas del menu y cambia cual se muestra.
