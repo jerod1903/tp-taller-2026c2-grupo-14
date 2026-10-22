@@ -6,8 +6,8 @@
 #include "client/menu/screens/PlaceholderScreen.h"
 #include "client/menu/styles/StyleManager.h"
 
-MainWindow::MainWindow(QWidget* parent):
-        QMainWindow(parent), stack(new QStackedWidget(this)), screenManager(*stack) {
+MainWindow::MainWindow(ILobbyProtocol& lobby, QWidget* parent):
+        QMainWindow(parent), lobby(lobby), stack(new QStackedWidget(this)), screenManager(*stack) {
     setWindowTitle("Stardew Valley");
     resize(Theme::WINDOW_WIDTH, Theme::WINDOW_HEIGHT);
     setStyleSheet(StyleManager::globalStyleSheet());

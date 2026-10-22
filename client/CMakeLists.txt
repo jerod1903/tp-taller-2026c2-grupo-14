@@ -3,6 +3,7 @@ target_sources(taller_client
     # .cpp files
     main.cpp
     menu/MainWindow.cpp
+    menu/backend/MockLobbyProtocol.cpp
     menu/components/MenuButton.cpp
     menu/navigation/ScreenManager.cpp
     menu/screens/BaseScreen.cpp
@@ -12,6 +13,9 @@ target_sources(taller_client
     PUBLIC
     # .h files
     menu/MainWindow.h
+    menu/backend/ILobbyProtocol.h
+    menu/backend/LobbyTypes.h
+    menu/backend/MockLobbyProtocol.h
     menu/components/MenuButton.h
     menu/navigation/ScreenManager.h
     menu/screens/BaseScreen.h
