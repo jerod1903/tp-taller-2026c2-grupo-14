@@ -2,6 +2,8 @@
 
 #include <QMainWindow>
 
+#include "client/menu/navigation/ScreenManager.h"
+
 class QStackedWidget;
 
 // Ventana del menu previo a la partida. Cada pantalla es una pagina del QStackedWidget.
@@ -12,5 +14,9 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
 
 private:
-    QStackedWidget* screens;
+    // Crea las pantallas y conecta sus senales con la navegacion.
+    void setupScreens();
+
+    QStackedWidget* stack;
+    ScreenManager screenManager;
 };
