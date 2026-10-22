@@ -4,6 +4,7 @@
 
 #include "client/menu/screens/JoinGameScreen.h"
 #include "client/menu/screens/MainMenuScreen.h"
+#include "client/menu/screens/MyGamesScreen.h"
 #include "client/menu/screens/PlaceholderScreen.h"
 #include "client/menu/styles/StyleManager.h"
 
@@ -21,16 +22,18 @@ MainWindow::MainWindow(ILobbyProtocol& lobby, QWidget* parent):
 void MainWindow::setupScreens() {
     auto* mainMenu = new MainMenuScreen();
     auto* joinGame = new JoinGameScreen(lobby);
+    auto* myGames = new MyGamesScreen(lobby);
     // Provisorias: se reemplazan por la pantalla real a medida que se implementan.
     auto* newGame = new PlaceholderScreen("Nueva partida");
-    auto* myGames = new PlaceholderScreen("Mis partidas");
     auto* character = new PlaceholderScreen("Personaje");
+    auto* inGame = new PlaceholderScreen("Partida (arranca SDL)");
 
     screenManager.add(ScreenId::MainMenu, mainMenu);
     screenManager.add(ScreenId::NewGame, newGame);
     screenManager.add(ScreenId::JoinGame, joinGame);
     screenManager.add(ScreenId::MyGames, myGames);
     screenManager.add(ScreenId::Character, character);
+    screenManager.add(ScreenId::InGame, inGame);
 
     connect(mainMenu, &MainMenuScreen::newGameRequested, this,
             [this]() { screenManager.show(ScreenId::NewGame); });
@@ -48,8 +51,14 @@ void MainWindow::setupScreens() {
     connect(character, &BaseScreen::backRequested, this,
             [this]() { screenManager.show(ScreenId::JoinGame); });
 
-    for (BaseScreen* screen: {static_cast<BaseScreen*>(joinGame), static_cast<BaseScreen*>(newGame),
-                              static_cast<BaseScreen*>(myGames)}) {
+    // Flujo retomar: partida cargada -> juego. Cuando exista QtMenu, aca se guarda la
+    // GameSession y se cierra la ventana para que arranque SDL.
+    connect(myGames, &MyGamesScreen::gameEntered, this,
+            [this]() { screenManager.show(ScreenId::InGame); });
+
+    for (BaseScreen* screen:
+         {static_cast<BaseScreen*>(joinGame), static_cast<BaseScreen*>(newGame),
+          static_cast<BaseScreen*>(myGames), static_cast<BaseScreen*>(inGame)}) {
         connect(screen, &BaseScreen::backRequested, this,
                 [this]() { screenManager.show(ScreenId::MainMenu); });
     }

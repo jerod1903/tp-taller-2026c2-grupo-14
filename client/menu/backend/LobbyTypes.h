@@ -34,6 +34,7 @@ struct WorldInfo {
 struct SavedGameInfo {
     uint32_t gameId = 0;
     std::string gameName;
+    std::string worldName;
     std::string characterName;
     CharacterAppearance appearance;
     bool isMultiplayer = false;

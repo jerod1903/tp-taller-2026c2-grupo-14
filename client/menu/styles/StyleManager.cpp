@@ -13,6 +13,50 @@ QString StyleManager::globalStyleSheet() {
         QLabel {
             color: #F7D290;
             font-size: 16px;
+            background: transparent;
+        }
+        #rowTitle {
+            color: #FFEBAD;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #badgeMultiplayer, #badgeSingle {
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+        #badgeMultiplayer {
+            color: #1E120A;
+            background-color: #7FC97F;
+        }
+        #badgeSingle {
+            color: #1E120A;
+            background-color: #E8C07A;
+        }
+        #worldPreview {
+            color: #B89B74;
+            background-color: #1E120A;
+            border: 2px dashed #7B4216;
+            border-radius: 6px;
+        }
+        QListWidget {
+            background-color: #1E120A;
+            border: 2px solid #7B4216;
+            border-radius: 6px;
+            outline: none;
+        }
+        QListWidget::item {
+            border-bottom: 1px solid #3E2109;
+        }
+        QListWidget::item:hover {
+            background-color: #3A2415;
+        }
+        QListWidget::item:selected {
+            background-color: #5A310D;
+        }
+        #savedGameRow, #characterPreview {
+            background: transparent;
         }
         #errorLabel {
             color: #FF9B7A;

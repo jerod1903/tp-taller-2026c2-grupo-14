@@ -11,6 +11,8 @@ enum class ScreenId {
     JoinGame,
     MyGames,
     Character,
+    // Provisoria: representa "aca arranca SDL" hasta que exista la transicion al juego.
+    InGame,
 };
 
 // Registra las pantallas del menu y cambia cual se muestra.
