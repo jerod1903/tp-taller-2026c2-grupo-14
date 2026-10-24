@@ -27,6 +27,10 @@ bool BaseProtocol::send_string(const std::string& value) {
     return socket.sendall(value.data(), len) != 0;
 }
 
+bool BaseProtocol::send_bytes(const uint8_t* data, std::size_t size) {
+    return socket.sendall(data, size) != 0;
+}
+
 std::optional<uint8_t> BaseProtocol::recv_u8() {
     uint8_t value;
     if (socket.recvall(&value, sizeof(value)) == 0)
@@ -51,6 +55,10 @@ std::optional<std::string> BaseProtocol::recv_string() {
     if (socket.recvall(value.data(), *len) == 0)
         return std::nullopt;
     return value;
+}
+
+bool BaseProtocol::recv_bytes(uint8_t* data, std::size_t size) {
+    return socket.recvall(data, size) != 0;
 }
 
 void BaseProtocol::shutdown() { socket.shutdown(SHUT_RDWR); }
