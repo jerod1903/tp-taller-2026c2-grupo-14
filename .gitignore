@@ -68,3 +68,6 @@ Testing/
 
 # ctags
 tags.*
+juego
+libSDL2pp/
+.DS_Store
