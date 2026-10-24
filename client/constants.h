@@ -15,7 +15,7 @@ inline const Uint32 MS_POR_FRAME = 16;  // 60 fps aprox
 
 // caverna.cpp
 inline const char* const RUTA_TILESET_CAVERNA =
-        "client/Assets/Caverns/Environment/Dungeon_Tileset.png";
+        "client/Assets/Dungeon_Tileset.png";
 inline const int TAMANO_TILE_ORIGINAL = 16;
 inline const char PARED = '#';
 inline const char PISO = '.';
@@ -50,7 +50,7 @@ inline const SDL2pp::Point TILE_PISO(6, 0);
 
 // personaje.cpp
 inline const char* const RUTA_SPRITE_PERSONAJE =
-        "client/Assets/Characters/StardewValley/StardewValley_Character_Farmer Base.png";
+        "client/Assets/StardewValley_Character_Farmer Base.png";
 
 // Primer frame (arriba a la izquierda) del sheet, de 16x32
 inline const SDL2pp::Rect FRAME(0, 0, 16, 32);

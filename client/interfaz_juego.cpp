@@ -1,6 +1,8 @@
 #include "interfaz_juego.h"
 #include "constants.h"
 #include <SDL2/SDL_image.h>
+#include <map>
+#include <utility>
 
 InterfazJuego::InterfazJuego():
         sdl(SDL_INIT_VIDEO),
@@ -46,20 +48,21 @@ void InterfazJuego::procesar_eventos() {
 }
 
 void InterfazJuego::actualizar() {
+    // direccion (x, y) -> sus dos teclas (flecha y WASD)
+    static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
+        {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
+        {{1, 0}, {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D}},
+        {{0, -1}, {SDL_SCANCODE_UP, SDL_SCANCODE_W}},
+        {{0, 1}, {SDL_SCANCODE_DOWN, SDL_SCANCODE_S}}
+    };
     const Uint8* teclas = SDL_GetKeyboardState(nullptr);
     int dir_x = 0;
     int dir_y = 0;
-    if (teclas[SDL_SCANCODE_LEFT] || teclas[SDL_SCANCODE_A]) {
-        dir_x--;
-    }
-    if (teclas[SDL_SCANCODE_RIGHT] || teclas[SDL_SCANCODE_D]) {
-        dir_x++;
-    }
-    if (teclas[SDL_SCANCODE_UP] || teclas[SDL_SCANCODE_W]) {
-        dir_y--;
-    }
-    if (teclas[SDL_SCANCODE_DOWN] || teclas[SDL_SCANCODE_S]) {
-        dir_y++;
+    for (const auto& [direccion, par_teclas] : teclas_direccion) {
+        if (teclas[par_teclas.first] || teclas[par_teclas.second]) {
+            dir_x += direccion.first;
+            dir_y += direccion.second;
+        }
     }
     if (dir_x == 0 && dir_y == 0) {
         return;
