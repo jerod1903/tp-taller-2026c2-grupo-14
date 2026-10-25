@@ -9,7 +9,8 @@
 #include "common/logger.h"
 #include "common/net/liberror.h"
 
-Acceptor::Acceptor(const char* servicename): acceptor(servicename) {
+Acceptor::Acceptor(const char* servicename, GameRegistry& registry):
+        acceptor(servicename), registry(registry) {
     Logger::info("escuchando en {}", servicename);
 }
 
@@ -23,7 +24,7 @@ void Acceptor::run() {
         while (should_keep_running()) {
             Socket peer = acceptor.accept();
             clean();
-            sessions.emplace_back(std::make_unique<LobbySession>(std::move(peer)));
+            sessions.emplace_back(std::make_unique<LobbySession>(std::move(peer), registry));
             sessions.back()->start();
             Logger::debug("conexión aceptada ({} sesiones)", sessions.size());
         }

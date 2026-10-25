@@ -7,11 +7,12 @@
 #include "common/lib/thread.h"
 #include "common/net/socket.h"
 
+#include "game_registry.h"
 #include "lobby_session.h"
 
 class Acceptor: public Thread {
 public:
-    explicit Acceptor(const char* servicename);
+    Acceptor(const char* servicename, GameRegistry& registry);
 
     void start() override;
     void run() override;
@@ -23,6 +24,7 @@ private:
     // Solo se joinea un thread que efectivamente arrancó.
     bool started = false;
     Socket acceptor;
+    GameRegistry& registry;
     std::list<std::unique_ptr<LobbySession>> sessions;
 
     void clean();

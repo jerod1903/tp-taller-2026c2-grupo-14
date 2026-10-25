@@ -12,7 +12,8 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        Server server(argv[ServerConstants::ARG_SERVICENAME], std::cin);
+        // Los mundos se van a cargar de la carpeta de mapas que produce el editor.
+        Server server(argv[ServerConstants::ARG_SERVICENAME], std::cin, {});
         server.execute();
     } catch (const std::exception& e) {
         std::cerr << ServerConstants::ERROR_PREFIX << e.what() << '\n';

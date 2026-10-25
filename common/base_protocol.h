@@ -19,11 +19,13 @@ public:
 
     bool send_u8(uint8_t value);
     bool send_u16(uint16_t value);
+    bool send_u32(uint32_t value);
     bool send_string(const std::string& value);
     bool send_bytes(const uint8_t* data, std::size_t size);
 
     std::optional<uint8_t> recv_u8();
     std::optional<uint16_t> recv_u16();
+    std::optional<uint32_t> recv_u32();
     std::optional<std::string> recv_string();
     bool recv_bytes(uint8_t* data, std::size_t size);
 
