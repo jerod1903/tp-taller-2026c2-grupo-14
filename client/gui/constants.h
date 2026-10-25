@@ -58,18 +58,4 @@ inline const SDL2pp::Rect FRAME(0, 0, 16, 32);
 // Pies del personaje, relativo al frame (en pixeles sin escalar)
 inline const SDL2pp::Rect PIES(3, 26, 10, 6);
 
-// armador_acciones.cpp
-// Primer byte de cada accion: que quiere hacer el usuario
-inline const uint8_t ACCION_MOVER = 0x01;
-
-// Segundo byte de ACCION_MOVER: hacia donde
-inline const uint8_t DIRECCION_ARRIBA = 0x01;
-inline const uint8_t DIRECCION_ABAJO = 0x02;
-inline const uint8_t DIRECCION_IZQUIERDA = 0x03;
-inline const uint8_t DIRECCION_DERECHA = 0x04;
-inline const uint8_t DIRECCION_ARRIBA_IZQUIERDA = 0x05;
-inline const uint8_t DIRECCION_ARRIBA_DERECHA = 0x06;
-inline const uint8_t DIRECCION_ABAJO_IZQUIERDA = 0x07;
-inline const uint8_t DIRECCION_ABAJO_DERECHA = 0x08;
-
 #endif

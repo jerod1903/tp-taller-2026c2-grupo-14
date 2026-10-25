@@ -3,4 +3,6 @@ target_sources(taller_common
     # .cpp files
     PUBLIC
     # .h files
+    operations.h
+    requests.h
     )

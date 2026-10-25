@@ -1,18 +1,16 @@
 target_sources(taller_client
     PRIVATE
     # .cpp files
-    prueba.cpp
-    interfaz_juego.cpp
-    caverna.cpp
-    personaje.cpp
-    calculador_camara.cpp
-    armador_acciones.cpp
+    gui/prueba.cpp
+    gui/interfaz_juego.cpp
+    gui/caverna.cpp
+    gui/personaje.cpp
+    gui/calculador_camara.cpp
     PUBLIC
     # .h files
-    interfaz_juego.h
-    caverna.h
-    personaje.h
-    calculador_camara.h
-    armador_acciones.h
-    constants.h
+    gui/interfaz_juego.h
+    gui/caverna.h
+    gui/personaje.h
+    gui/calculador_camara.h
+    gui/constants.h
     )

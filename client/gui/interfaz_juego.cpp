@@ -48,7 +48,6 @@ void InterfazJuego::procesar_eventos() {
 }
 
 void InterfazJuego::actualizar() {
-    // direccion (x, y) -> sus dos teclas (flecha y WASD)
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
         {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
         {{1, 0}, {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D}},
@@ -67,11 +66,16 @@ void InterfazJuego::actualizar() {
     if (dir_x == 0 && dir_y == 0) {
         return;
     }
-    enviar_accion(armador_acciones.mover(dir_x, dir_y));
+    Request request{};
+    request.tipo = Operation::Move;
+    request.dir_x = (dir_x > 0) ? 1 : (dir_x < 0) ? 2 : 0;
+    request.dir_y = (dir_y < 0) ? 1 : (dir_y > 0) ? 2 : 0;
+    enviar_request(request);
     personaje.mover(dir_x * VELOCIDAD_MOV, dir_y * VELOCIDAD_MOV, caverna);
 }
 
-void InterfazJuego::enviar_accion(const std::vector<uint8_t>& /*bytes*/) {}
+// TODO: pasarle la request al protocolo cuando este implementado
+void InterfazJuego::enviar_request(const Request& /*request*/) {}
 
 void InterfazJuego::dibujar() {
     renderer.SetDrawColor(0, 0, 0, 255);
