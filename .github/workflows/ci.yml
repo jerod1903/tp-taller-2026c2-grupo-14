@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+# Un push nuevo a la misma rama/PR cancela la corrida anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (clang-format, cpplint, cppcheck)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Mismas versiones que el .pre-commit-config.yaml de la cátedra.
+      - name: Install linters
+        run: |
+          pip install clang-format==14.0.6 cpplint==1.6.0
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+      - name: clang-format
+        run: make format-check
+
+      - name: cpplint
+        run: make cpplint
+
+      - name: cppcheck
+        run: make cppcheck
+
+  build-test:
+    name: Build, tests y valgrind
+    runs-on: ubuntu-24.04
+    env:
+      # Client y editor todavía no tienen fuentes (y bajarían SDL): se habilitan cuando las tengan.
+      EXTRA_GENERATE: -DTALLER_CLIENT=OFF -DTALLER_EDITOR=OFF
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake valgrind
+
+      - name: Build (warnings como errores)
+        run: make compile-debug EXTRA_COMPILE="-j$(nproc)"
+
+      - name: Tests
+        run: ./build/taller_tests
+
+      - name: Valgrind
+        run: make valgrind

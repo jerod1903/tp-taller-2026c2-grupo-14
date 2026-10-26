@@ -47,3 +47,23 @@ Di Paola, M. (2024). _tp-grupal-template_ [Código Fuente](https://github.com/Ta
   - `server/CMakeLists.txt`
   - `tests/CMakeLists.txt`
 - **Licencia:** no especificada
+
+Di Paola, M. (2025). _hands-on-sockets-in-cpp_ [Código Fuente](https://github.com/eldipa/hands-on-sockets-in-cpp). GitHub.
+
+- **Archivos utilizados:**
+  - `socket.cpp`
+  - `socket.h`
+  - `resolver.h`
+  - `resolver.cpp`
+  - `resolvererror.h`
+  - `resolvererror.cpp`
+  - `liberror.h`
+  - `liberror.cpp`
+- **Licencia:** GNU General Public License v2.0 (GPL v2)
+
+Di Paola, M. (2024). _hands-on-threads_ [Código Fuente](https://github.com/eldipa/hands-on-threads). GitHub.
+
+- **Archivos utilizados:**
+  - `thread.h`
+  - `queue.h`
+- **Licencia:** GNU General Public License v2.0 (GPL v2)
