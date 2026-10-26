@@ -1,18 +1,13 @@
 #include "personaje.h"
+
 #include "constants.h"
 
 Personaje::Personaje(SDL2pp::Renderer& renderer, int escala, const SDL2pp::Point& posicion):
-        sprite(renderer, RUTA_SPRITE_PERSONAJE),
-        posicion(posicion),
-        escala(escala) {}
+        sprite(renderer, RUTA_SPRITE_PERSONAJE), posicion(posicion), escala(escala) {}
 
 SDL2pp::Rect Personaje::hitbox(const SDL2pp::Point& pos) const {
-    return SDL2pp::Rect(
-        pos.x + (PIES.x * escala),
-        pos.y + (PIES.y * escala),
-        PIES.w * escala,
-        PIES.h * escala
-    );
+    return SDL2pp::Rect(pos.x + (PIES.x * escala), pos.y + (PIES.y * escala), PIES.w * escala,
+                        PIES.h * escala);
 }
 
 void Personaje::mover(int dx, int dy, const Caverna& caverna) {

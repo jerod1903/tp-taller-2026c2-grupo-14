@@ -1,22 +1,15 @@
 #include "caverna.h"
+
 #include "constants.h"
 
 Caverna::Caverna(SDL2pp::Renderer& renderer, int escala):
-        tileset(renderer, RUTA_TILESET_CAVERNA),
-        mapa(MAPA_CAVERNA),
-        escala(escala) {}
+        tileset(renderer, RUTA_TILESET_CAVERNA), mapa(MAPA_CAVERNA), escala(escala) {}
 
-int Caverna::tamano_tile() const { 
-    return TAMANO_TILE_ORIGINAL * escala; 
-}
+int Caverna::tamano_tile() const { return TAMANO_TILE_ORIGINAL * escala; }
 
-int Caverna::ancho_px() const { 
-    return static_cast<int>(mapa[0].size()) * tamano_tile();
-}
+int Caverna::ancho_px() const { return static_cast<int>(mapa[0].size()) * tamano_tile(); }
 
-int Caverna::alto_px() const {
-    return static_cast<int>(mapa.size()) * tamano_tile();
-}
+int Caverna::alto_px() const { return static_cast<int>(mapa.size()) * tamano_tile(); }
 
 SDL2pp::Point Caverna::posicion_inicial() const {
     for (size_t y = 0; y < mapa.size(); y++) {

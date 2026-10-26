@@ -1,5 +1,6 @@
-#include "interfaz_juego.h"
 #include <iostream>
+
+#include "interfaz_juego.h"
 
 int main() {
     try {
@@ -10,4 +11,4 @@ int main() {
         return 1;
     }
     return 0;
-};
+}

@@ -4,7 +4,7 @@ CalculadorCamara::CalculadorCamara(int ancho_vista, int alto_vista):
         ancho_vista(ancho_vista), alto_vista(alto_vista) {}
 
 int CalculadorCamara::limitar(int valor, int maximo) const {
-    maximo = SDL_max(0, maximo); // por si el mapa es mas chico q la ventana
+    maximo = SDL_max(0, maximo);  // por si el mapa es mas chico q la ventana
     return SDL_max(0, SDL_min(valor, maximo));
 }
 

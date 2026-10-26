@@ -9,7 +9,7 @@ public:
     SDL2pp::Rect calcular(const SDL2pp::Point& centro, int ancho_mapa, int alto_mapa) const;
 
 private:
-    int limitar(int valor, int maximo) const; // entre 0 y maximo
+    int limitar(int valor, int maximo) const;  // entre 0 y maximo
     int ancho_vista;
     int alto_vista;
 };

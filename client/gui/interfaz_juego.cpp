@@ -1,25 +1,18 @@
 #include "interfaz_juego.h"
-#include "constants.h"
-#include <SDL2/SDL_image.h>
+
 #include <map>
 #include <utility>
+
+#include <SDL2/SDL_image.h>
+
+#include "constants.h"
 
 InterfazJuego::InterfazJuego():
         sdl(SDL_INIT_VIDEO),
         sdl_image(IMG_INIT_PNG),
-        ventana(
-            "Jueguito", 
-            SDL_WINDOWPOS_CENTERED, 
-            SDL_WINDOWPOS_CENTERED, 
-            ANCHO_VENTANA,
-            ALTO_VENTANA, 
-            SDL_WINDOW_SHOWN
-        ),
-        renderer(
-            ventana,
-            -1, 
-            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-        ),
+        ventana("Jueguito", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, ANCHO_VENTANA,
+                ALTO_VENTANA, SDL_WINDOW_SHOWN),
+        renderer(ventana, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         caverna(renderer, ESCALA),
         personaje(renderer, ESCALA, caverna.posicion_inicial()),
         calculador_camara(ANCHO_VENTANA, ALTO_VENTANA) {}
@@ -49,15 +42,14 @@ void InterfazJuego::procesar_eventos() {
 
 void InterfazJuego::actualizar() {
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
-        {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
-        {{1, 0}, {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D}},
-        {{0, -1}, {SDL_SCANCODE_UP, SDL_SCANCODE_W}},
-        {{0, 1}, {SDL_SCANCODE_DOWN, SDL_SCANCODE_S}}
-    };
+            {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
+            {{1, 0}, {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D}},
+            {{0, -1}, {SDL_SCANCODE_UP, SDL_SCANCODE_W}},
+            {{0, 1}, {SDL_SCANCODE_DOWN, SDL_SCANCODE_S}}};
     const Uint8* teclas = SDL_GetKeyboardState(nullptr);
     int dir_x = 0;
     int dir_y = 0;
-    for (const auto& [direccion, par_teclas] : teclas_direccion) {
+    for (const auto& [direccion, par_teclas]: teclas_direccion) {
         if (teclas[par_teclas.first] || teclas[par_teclas.second]) {
             dir_x += direccion.first;
             dir_y += direccion.second;
@@ -80,8 +72,8 @@ void InterfazJuego::enviar_request(const Request& /*request*/) {}
 void InterfazJuego::dibujar() {
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
-    SDL2pp::Rect camara = calculador_camara.calcular(personaje.centro(), caverna.ancho_px(),
-                                                     caverna.alto_px());
+    SDL2pp::Rect camara =
+            calculador_camara.calcular(personaje.centro(), caverna.ancho_px(), caverna.alto_px());
     caverna.dibujar(renderer, camara);
     personaje.dibujar(renderer, camara);
     renderer.Present();
