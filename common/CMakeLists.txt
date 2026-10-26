@@ -18,4 +18,6 @@ target_sources(taller_common
     net/resolver.h
     net/resolvererror.h
     net/socket.h
+    operations.h
+    requests.h
     )

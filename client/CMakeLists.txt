@@ -14,6 +14,11 @@ target_sources(taller_client
     menu/screens/MyGamesScreen.cpp
     menu/screens/PlaceholderScreen.cpp
     menu/styles/StyleManager.cpp
+    gui/prueba.cpp
+    gui/interfaz_juego.cpp
+    gui/caverna.cpp
+    gui/personaje.cpp
+    gui/calculador_camara.cpp
     PUBLIC
     # .h files
     menu/MainWindow.h
@@ -31,4 +36,9 @@ target_sources(taller_client
     menu/screens/PlaceholderScreen.h
     menu/styles/CharacterColors.h
     menu/styles/StyleManager.h
+    gui/interfaz_juego.h
+    gui/caverna.h
+    gui/personaje.h
+    gui/calculador_camara.h
+    gui/constants.h
     )
