@@ -6,9 +6,11 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
+#include "common/map/MapDefinition.h"
+
 class Caverna {
 public:
-    Caverna(SDL2pp::Renderer& renderer, int escala);
+    Caverna(SDL2pp::Renderer& renderer, int escala, const std::string& ruta_mapa);
     void dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara);
     bool choca(const SDL2pp::Rect& area) const;
     int ancho_px() const;
@@ -19,7 +21,8 @@ public:
 private:
     bool es_piso(int x, int y) const;
     SDL2pp::Texture tileset;
-    std::vector<std::string> mapa;
+    std::vector<std::vector<stardew::maps::TileType>> tiles;
+    SDL2pp::Point inicio;  // en tiles
     int escala;
 };
 

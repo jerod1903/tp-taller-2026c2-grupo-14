@@ -1,0 +1,41 @@
+format_version = 1
+name = "Caverna"
+
+[[areas]]
+id = "caverna"
+type = "dungeon_floor"
+floor = 1
+width = 29
+height = 20
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[elements]]
+id = "spawn"
+area = "caverna"
+type = "spawn_point"
+layer = "object"
+x = 12
+y = 17
+width = 1
+height = 1

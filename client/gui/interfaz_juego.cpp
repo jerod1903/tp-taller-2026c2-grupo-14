@@ -13,7 +13,7 @@ InterfazJuego::InterfazJuego():
         ventana("Jueguito", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, ANCHO_VENTANA,
                 ALTO_VENTANA, SDL_WINDOW_SHOWN),
         renderer(ventana, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        caverna(renderer, ESCALA),
+        caverna(renderer, ESCALA, RUTA_MAPA_CAVERNA),
         personaje(renderer, ESCALA, caverna.posicion_inicial()),
         calculador_camara(ANCHO_VENTANA, ALTO_VENTANA) {}
 

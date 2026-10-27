@@ -1,32 +1,58 @@
 #include "caverna.h"
 
+#include <stdexcept>
+
+#include "common/map/persistence/TomlMapFile.h"
+
 #include "constants.h"
 
-Caverna::Caverna(SDL2pp::Renderer& renderer, int escala):
-        tileset(renderer, RUTA_TILESET_CAVERNA), mapa(MAPA_CAVERNA), escala(escala) {}
+namespace maps = stardew::maps;
+
+namespace {
+
+// Por ahora la caverna es la primera area del mapa
+const maps::MapArea& primera_area(const maps::MapDefinition& mapa) {
+    if (mapa.areas.empty() || mapa.areas.front().tiles.empty()) {
+        throw std::runtime_error("el mapa '" + mapa.name + "' no tiene areas con tiles");
+    }
+    return mapa.areas.front();
+}
+
+// El spawn_point del area marca donde arranca el personaje
+SDL2pp::Point buscar_inicio(const maps::MapDefinition& mapa, const std::string& area_id) {
+    for (const auto& elemento : mapa.elements) {
+        if (elemento.areaId == area_id && elemento.type == maps::ElementType::SpawnPoint) {
+            return SDL2pp::Point(elemento.x, elemento.y);
+        }
+    }
+    return SDL2pp::Point(1, 1);
+}
+
+}  // namespace
+
+Caverna::Caverna(SDL2pp::Renderer& renderer, int escala, const std::string& ruta_mapa):
+        tileset(renderer, RUTA_TILESET_CAVERNA), escala(escala) {
+    const maps::MapDefinition mapa = maps::loadTomlMapDefinition(ruta_mapa);
+    const maps::MapArea& area = primera_area(mapa);
+    tiles = area.tiles;
+    inicio = buscar_inicio(mapa, area.id);
+}
 
 int Caverna::tamano_tile() const { return TAMANO_TILE_ORIGINAL * escala; }
 
-int Caverna::ancho_px() const { return static_cast<int>(mapa[0].size()) * tamano_tile(); }
+int Caverna::ancho_px() const { return static_cast<int>(tiles[0].size()) * tamano_tile(); }
 
-int Caverna::alto_px() const { return static_cast<int>(mapa.size()) * tamano_tile(); }
+int Caverna::alto_px() const { return static_cast<int>(tiles.size()) * tamano_tile(); }
 
-SDL2pp::Point Caverna::posicion_inicial() const {
-    for (size_t y = 0; y < mapa.size(); y++) {
-        size_t x = mapa[y].find(INICIO);
-        if (x != std::string::npos) {
-            return SDL2pp::Point(static_cast<int>(x), static_cast<int>(y)) * tamano_tile();
-        }
-    }
-    return SDL2pp::Point(tamano_tile(), tamano_tile());
-}
+SDL2pp::Point Caverna::posicion_inicial() const { return inicio * tamano_tile(); }
 
 bool Caverna::es_piso(int x, int y) const {
-    if (y < 0 || y >= static_cast<int>(mapa.size()) || x < 0 ||
-        x >= static_cast<int>(mapa[y].size())) {
+    if (y < 0 || y >= static_cast<int>(tiles.size()) || x < 0 ||
+        x >= static_cast<int>(tiles[y].size())) {
         return false;
     }
-    return mapa[y][x] != PARED;
+    // por ahora solo cave_wall bloquea el paso
+    return tiles[y][x] != maps::TileType::CaveWall;
 }
 
 void Caverna::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara) {
@@ -37,8 +63,8 @@ void Caverna::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara) {
     const int x_fin = (camara.x + camara.w) / tile;
     const int y_fin = (camara.y + camara.h) / tile;
 
-    for (int y = y_ini; y <= y_fin && y < static_cast<int>(mapa.size()); y++) {
-        for (int x = x_ini; x <= x_fin && x < static_cast<int>(mapa[y].size()); x++) {
+    for (int y = y_ini; y <= y_fin && y < static_cast<int>(tiles.size()); y++) {
+        for (int x = x_ini; x <= x_fin && x < static_cast<int>(tiles[y].size()); x++) {
             SDL2pp::Point tile_tileset = es_piso(x, y) ? TILE_PISO : TILE_PARED;
             SDL2pp::Point origen = tile_tileset * TAMANO_TILE_ORIGINAL;
             SDL2pp::Rect fuente(origen.x, origen.y, TAMANO_TILE_ORIGINAL, TAMANO_TILE_ORIGINAL);

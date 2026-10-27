@@ -16,34 +16,9 @@ inline const Uint32 MS_POR_FRAME = 16;  // 60 fps aprox
 // caverna.cpp
 inline const char* const RUTA_TILESET_CAVERNA = "client/Assets/Dungeon_Tileset.png";
 inline const int TAMANO_TILE_ORIGINAL = 16;
-inline const char PARED = '#';
-inline const char PISO = '.';
-inline const char INICIO = 'P';
 
-// clang-format off
-inline const std::vector<std::string> MAPA_CAVERNA = {
-        "#############################",
-        "##########.........##########",
-        "##########.........##########",
-        "#......###.........###......#",
-        "#......######...######......#",
-        "#......######...######......#",
-        "###..#####.........#####..###",
-        "###..#####.........#####..###",
-        "#...........................#",
-        "#......###.........###......#",
-        "#......######..#######......#",
-        "###..########..#########..###",
-        "##........###..###.........##",
-        "##........##....##.........##",
-        "##........##....##.........##",
-        "######..#####..#####..#######",
-        "######..#####..#####..#######",
-        "###......##.P....##......####",
-        "###......##......##......####",
-        "#############################",
-};
-// clang-format on
+// TALLER_MAPS_DIR lo define CMake (carpeta maps/ del repo), asi no depende del cwd
+inline const char* const RUTA_MAPA_CAVERNA = TALLER_MAPS_DIR "/caverna.toml";
 
 // coords d los tiles en Dungeon_Tileset.png
 inline const SDL2pp::Point TILE_PARED(1, 0);
