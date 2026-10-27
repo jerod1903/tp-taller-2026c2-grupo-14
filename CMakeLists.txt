@@ -42,6 +42,21 @@ set_project_warnings(taller_common ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 # location (so our dependants will not have to explicitly request this)
 target_include_directories(taller_common PUBLIC .)
 
+# toml++ (header-only) para leer y escribir los mapas en common/map
+include(FetchContent)
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG v3.4.0
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(tomlplusplus)
+target_link_libraries(taller_common PUBLIC tomlplusplus::tomlplusplus)
+
+# Ruta absoluta a maps/ para que cliente, servidor y editor no dependan del cwd
+target_compile_definitions(taller_common PUBLIC TALLER_MAPS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/maps")
+
 # HEY!! TODO XXX: you need to install some runtime and dev libraries *before*
 # compiling the client/editor code.
 #
