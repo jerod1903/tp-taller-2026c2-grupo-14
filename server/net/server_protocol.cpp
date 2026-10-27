@@ -1,4 +1,4 @@
-#include "server_protocol.h"
+#include "server/net/server_protocol.h"
 
 #include <algorithm>
 #include <string>

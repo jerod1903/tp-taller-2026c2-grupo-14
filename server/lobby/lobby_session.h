@@ -9,9 +9,8 @@
 #include "common/lib/thread.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
-
-#include "game_registry.h"
-#include "server_protocol.h"
+#include "server/game/game_registry.h"
+#include "server/net/server_protocol.h"
 
 struct SessionIdentity {
     UserId userId;

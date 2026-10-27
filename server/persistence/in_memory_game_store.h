@@ -6,7 +6,7 @@
 #include <mutex>
 #include <vector>
 
-#include "game_store.h"
+#include "server/persistence/game_store.h"
 
 class InMemoryGameStore: public GameStore {
 public:

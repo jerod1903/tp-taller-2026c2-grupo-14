@@ -1,4 +1,4 @@
-#include "in_memory_game_store.h"
+#include "server/persistence/in_memory_game_store.h"
 
 #include <algorithm>
 #include <iterator>

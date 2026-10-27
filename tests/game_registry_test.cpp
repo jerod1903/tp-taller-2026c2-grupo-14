@@ -1,4 +1,4 @@
-#include "server/game_registry.h"
+#include "server/game/game_registry.h"
 
 #include <cstdint>
 #include <optional>
@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "common/lobby_dto.h"
-#include "server/in_memory_game_store.h"
+#include "server/persistence/in_memory_game_store.h"
 #include "tests/test_helpers.h"
 
 namespace {

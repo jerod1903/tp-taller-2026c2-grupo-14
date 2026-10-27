@@ -5,10 +5,9 @@
 #include <vector>
 
 #include "common/lobby_dto.h"
-
-#include "acceptor.h"
-#include "game_registry.h"
-#include "in_memory_game_store.h"
+#include "server/game/game_registry.h"
+#include "server/net/acceptor.h"
+#include "server/persistence/in_memory_game_store.h"
 
 class Server {
 public:

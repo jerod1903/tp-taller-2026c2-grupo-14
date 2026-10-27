@@ -1,4 +1,4 @@
-#include "server/lobby_session.h"
+#include "server/lobby/lobby_session.h"
 
 #include <chrono>
 #include <cstdint>
@@ -16,8 +16,8 @@
 #include "common/logger.h"
 #include "common/net/socket.h"
 #include "server/consts.h"
-#include "server/game_registry.h"
-#include "server/in_memory_game_store.h"
+#include "server/game/game_registry.h"
+#include "server/persistence/in_memory_game_store.h"
 #include "tests/test_helpers.h"
 
 namespace {

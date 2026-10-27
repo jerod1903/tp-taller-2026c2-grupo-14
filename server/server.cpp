@@ -1,11 +1,10 @@
-#include "server.h"
+#include "server/server.h"
 
 #include <string>
 #include <utility>
 
 #include "common/logger.h"
-
-#include "consts.h"
+#include "server/consts.h"
 
 Server::Server(const char* servicename, std::istream& input, std::vector<WorldInfo> worlds):
         input(input),

@@ -6,9 +6,8 @@
 
 #include "common/lib/thread.h"
 #include "common/net/socket.h"
-
-#include "game_registry.h"
-#include "lobby_session.h"
+#include "server/game/game_registry.h"
+#include "server/lobby/lobby_session.h"
 
 class Acceptor: public Thread {
 public:

@@ -1,4 +1,4 @@
-#include "game_registry.h"
+#include "server/game/game_registry.h"
 
 #include <algorithm>
 #include <utility>

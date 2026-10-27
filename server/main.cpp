@@ -1,8 +1,8 @@
 #include <exception>
 #include <iostream>
 
-#include "consts.h"
-#include "server.h"
+#include "server/consts.h"
+#include "server/server.h"
 
 int main(int argc, char* argv[]) {
     if (argc != ServerConstants::EXPECTED_ARGC) {

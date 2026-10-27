@@ -1,4 +1,4 @@
-#include "lobby_session.h"
+#include "server/lobby/lobby_session.h"
 
 #include <algorithm>
 #include <cctype>
@@ -8,8 +8,7 @@
 
 #include "common/logger.h"
 #include "common/net/liberror.h"
-
-#include "consts.h"
+#include "server/consts.h"
 
 namespace {
 
