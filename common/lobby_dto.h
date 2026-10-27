@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <vector>
 
 constexpr uint8_t PROTOCOL_VERSION = 1;
 
@@ -13,6 +14,8 @@ using UserId = std::array<uint8_t, USER_ID_SIZE>;
 
 enum class LobbyOp : uint8_t {
     Login,
+    ListWorlds,
+    ListMyGames,
 };
 
 enum class LobbyStatus : uint8_t {
@@ -61,6 +64,40 @@ struct LoginRequest {
     uint8_t protocolVersion;
     UserId userId;         // UUID v4 generado y guardado por el cliente
     std::string username;  // solo para mostrar
+};
+
+// Ids = índices del catálogo de apariencia.
+struct CharacterAppearance {
+    uint16_t hairStyle;
+    uint8_t hairColor;
+    uint16_t shirt;
+    uint16_t pants;
+    uint16_t hat;  // 0 = sin sombrero
+};
+
+struct WorldInfo {
+    std::string worldId;  // se valida contra la lista del servidor, nunca se usa para armar rutas
+    std::string name;
+};
+
+struct SavedGameInfo {
+    uint32_t gameId;
+    std::string gameName;
+    std::string characterName;
+    CharacterAppearance appearance;
+    bool isMultiplayer;
+    // Solo informativos: el servidor valida el cupo en JOIN_GAME y LOAD_GAME.
+    uint8_t memberCount;
+    uint8_t connectedCount;
+    uint8_t maxPlayers;
+};
+
+struct WorldListResponse {
+    std::vector<WorldInfo> worlds;
+};
+
+struct SavedGameListResponse {
+    std::vector<SavedGameInfo> games;
 };
 
 struct CheckInviteCodeResponse {

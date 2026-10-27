@@ -1,4 +1,4 @@
-#include "lobby_session.h"
+#include "server/lobby/lobby_session.h"
 
 #include <algorithm>
 #include <cctype>
@@ -8,8 +8,7 @@
 
 #include "common/logger.h"
 #include "common/net/liberror.h"
-
-#include "consts.h"
+#include "server/consts.h"
 
 namespace {
 
@@ -50,7 +49,13 @@ std::string printable(const std::string& text) {
 
 }  // namespace
 
-LobbySession::LobbySession(Socket&& peer): protocol(std::move(peer)) {}
+LobbySession::LobbySession(Socket&& peer, GameRegistry& registry):
+        protocol(std::move(peer)),
+        registry(registry),
+        handlers{
+                {LobbyOp::ListWorlds, [this]() { return handle_list_worlds(); }},
+                {LobbyOp::ListMyGames, [this]() { return handle_list_my_games(); }},
+        } {}
 
 void LobbySession::start() {
     Thread::start();
@@ -60,12 +65,19 @@ void LobbySession::start() {
 void LobbySession::run() {
     try {
         if (handle_login()) {
-            return;
+            while (should_keep_running() && handle_next_operation()) {}
         }
     } catch (const LibError& e) {
-        Logger::debug("conexión cortada durante el login: {}", e.what());
+        // El cliente cortó a mitad de un mensaje.
+        Logger::debug("conexión cortada: {}", e.what());
     }
-    protocol.shutdown();
+    // Se cierra acá y no en el destructor: el Acceptor recién lo destruye en el próximo accept.
+    // Si se está deteniendo, el shutdown ya lo hizo el destructor.
+    if (should_keep_running()) {
+        try {
+            protocol.shutdown();
+        } catch (const LibError&) {}
+    }
 }
 
 bool LobbySession::handle_login() {
@@ -96,6 +108,27 @@ bool LobbySession::handle_login() {
     Logger::info("login: user {} '{}'", format_user_id(req->userId), req->username);
     identity = SessionIdentity{req->userId, std::move(req->username)};
     return true;
+}
+
+bool LobbySession::handle_next_operation() {
+    std::optional<LobbyOp> op = protocol.recv_operation();
+    if (!op) {
+        Logger::debug("el cliente cerró la conexión");
+        return false;
+    }
+    HandlerMap::const_iterator handler = handlers.find(*op);
+    if (handler == handlers.end()) {
+        Logger::debug("operación {} inválida en el lobby", static_cast<unsigned>(*op));
+        return false;
+    }
+    return handler->second();
+}
+
+bool LobbySession::handle_list_worlds() { return protocol.send_world_list(registry.list_worlds()); }
+
+bool LobbySession::handle_list_my_games() {
+    // games_of devuelve una copia: el lock del registry ya se soltó cuando se envía.
+    return protocol.send_saved_game_list(registry.games_of(identity->userId));
 }
 
 LobbyStatus LobbySession::validate(const LoginRequest& req) const {

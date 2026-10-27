@@ -18,6 +18,11 @@ bool BaseProtocol::send_u16(uint16_t value) {
     return socket.sendall(&net, sizeof(net)) != 0;
 }
 
+bool BaseProtocol::send_u32(uint32_t value) {
+    uint32_t net = htonl(value);
+    return socket.sendall(&net, sizeof(net)) != 0;
+}
+
 bool BaseProtocol::send_string(const std::string& value) {
     uint16_t len = static_cast<uint16_t>(value.size());
     if (!send_u16(len))
@@ -43,6 +48,13 @@ std::optional<uint16_t> BaseProtocol::recv_u16() {
     if (socket.recvall(&net, sizeof(net)) == 0)
         return std::nullopt;
     return ntohs(net);
+}
+
+std::optional<uint32_t> BaseProtocol::recv_u32() {
+    uint32_t net;
+    if (socket.recvall(&net, sizeof(net)) == 0)
+        return std::nullopt;
+    return ntohl(net);
 }
 
 std::optional<std::string> BaseProtocol::recv_string() {

@@ -1,16 +1,21 @@
 target_sources(taller_server
     PRIVATE
     # .cpp files
-    acceptor.cpp
-    lobby_session.cpp
     main.cpp
     server.cpp
-    server_protocol.cpp
+    game/game_registry.cpp
+    lobby/lobby_session.cpp
+    net/acceptor.cpp
+    net/server_protocol.cpp
+    persistence/in_memory_game_store.cpp
     PUBLIC
     # .h files
-    acceptor.h
-    lobby_session.h
-    server.h
     consts.h
-    server_protocol.h
+    server.h
+    game/game_registry.h
+    lobby/lobby_session.h
+    net/acceptor.h
+    net/server_protocol.h
+    persistence/game_store.h
+    persistence/in_memory_game_store.h
     )
