@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "common/map/persistence/TomlTableReader.h"
-
 #include <toml++/toml.hpp>
+
+#include "common/map/persistence/TomlTableReader.h"
 
 namespace stardew::maps {
 namespace {
@@ -24,13 +24,13 @@ std::vector<std::vector<TileType>> readTiles(const toml::table& areaTable, const
     }
 
     // Convierte cada celda al enum para que un ID de terreno desconocido no pase inadvertido.
-    for (const auto& rowNode : *rows) {
+    for (const auto& rowNode: *rows) {
         const auto* row = rowNode.as_array();
         if (row == nullptr) {
             throw std::runtime_error("tile rows in area '" + id + "' must be arrays");
         }
         std::vector<TileType> tileRow;
-        for (const auto& tileNode : *row) {
+        for (const auto& tileNode: *row) {
             const auto name = tileNode.value<std::string>();
             if (!name.has_value()) {
                 throw std::runtime_error("tile IDs in area '" + id + "' must be strings");
@@ -47,7 +47,8 @@ std::vector<std::vector<TileType>> readTiles(const toml::table& areaTable, const
 }
 
 template <typename Enum>
-void insertOptionalEnum(toml::table& table, std::string_view key, const std::optional<Enum>& value) {
+void insertOptionalEnum(toml::table& table, std::string_view key,
+                        const std::optional<Enum>& value) {
     if (value.has_value()) {
         table.insert_or_assign(std::string(key), std::string(toString(*value)));
     }
@@ -96,12 +97,12 @@ MapTransition readTransition(const toml::node& node) {
     const auto& table = detail::requiredTable(node, "each map transition");
     const detail::TomlTableReader reader(table, "transition");
     return {
-        reader.requiredValue<std::string>("id"),
-        reader.requiredValue<std::string>("from_area"),
-        reader.requiredValue<std::string>("trigger_element"),
-        reader.requiredValue<std::string>("to_area"),
-        reader.requiredInt("target_x"),
-        reader.requiredInt("target_y"),
+            reader.requiredValue<std::string>("id"),
+            reader.requiredValue<std::string>("from_area"),
+            reader.requiredValue<std::string>("trigger_element"),
+            reader.requiredValue<std::string>("to_area"),
+            reader.requiredInt("target_x"),
+            reader.requiredInt("target_y"),
     };
 }
 
@@ -115,9 +116,9 @@ toml::table serializeArea(const MapArea& area) {
     insertOptionalInt(table, "floor", area.floorNumber);
 
     toml::array rows;
-    for (const auto& tileRow : area.tiles) {
+    for (const auto& tileRow: area.tiles) {
         toml::array row;
-        for (const auto tile : tileRow) {
+        for (const auto tile: tileRow) {
             row.push_back(std::string(toString(tile)));
         }
         rows.push_back(std::move(row));
@@ -160,8 +161,8 @@ MapDefinition loadTomlMapDefinition(const std::string& path) {
     try {
         document = toml::parse_file(path);
     } catch (const toml::parse_error& error) {
-        throw std::runtime_error(
-            "cannot parse map '" + path + "': " + std::string(error.description()));
+        throw std::runtime_error("cannot parse map '" + path +
+                                 "': " + std::string(error.description()));
     }
 
     // Los campos semanticos ausentes quedan vacios para que validateMap pueda reportarlos.
@@ -172,21 +173,21 @@ MapDefinition loadTomlMapDefinition(const std::string& path) {
 
     // Lee areas, dimensiones, piso opcional y grilla de terreno tipada.
     if (const auto* areas = reader.optionalArray("areas")) {
-        for (const auto& node : *areas) {
+        for (const auto& node: *areas) {
             map.areas.push_back(readArea(node));
         }
     }
 
     // Lee elementos y conserva tipo/capa ausentes para que el validador los explique.
     if (const auto* elements = reader.optionalArray("elements")) {
-        for (const auto& node : *elements) {
+        for (const auto& node: *elements) {
             map.elements.push_back(readElement(node));
         }
     }
 
     // Las rutas vinculan un elemento de salida con una celda del area de destino.
     if (const auto* transitions = reader.optionalArray("transitions")) {
-        for (const auto& node : *transitions) {
+        for (const auto& node: *transitions) {
             map.transitions.push_back(readTransition(node));
         }
     }
@@ -202,19 +203,19 @@ void saveTomlMapDefinition(const std::string& path, const MapDefinition& map) {
 
     // Serializa cada tipo de registro con la funcion que conoce sus campos.
     toml::array areas;
-    for (const auto& area : map.areas) {
+    for (const auto& area: map.areas) {
         areas.push_back(serializeArea(area));
     }
     document.insert_or_assign("areas", std::move(areas));
 
     toml::array elements;
-    for (const auto& element : map.elements) {
+    for (const auto& element: map.elements) {
         elements.push_back(serializeElement(element));
     }
     document.insert_or_assign("elements", std::move(elements));
 
     toml::array transitions;
-    for (const auto& transition : map.transitions) {
+    for (const auto& transition: map.transitions) {
         transitions.push_back(serializeTransition(transition));
     }
     document.insert_or_assign("transitions", std::move(transitions));

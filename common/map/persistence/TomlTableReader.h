@@ -15,8 +15,8 @@ namespace stardew::maps::detail {
 // Agrupa conversiones comunes de una tabla TOML y adjunta contexto a sus errores.
 class TomlTableReader {
 public:
-    TomlTableReader(const toml::table& table, std::string context)
-        : table_(table), context_(std::move(context)) {}
+    TomlTableReader(const toml::table& table, std::string context):
+            table_(table), context_(std::move(context)) {}
 
     template <typename Value>
     std::optional<Value> optionalValue(std::string_view key) const {
@@ -24,10 +24,12 @@ public:
         if (node == nullptr) {
             return std::nullopt;
         }
+        // cppcheck no entiende el `template` de nombre dependiente y lo toma como variable sin
+        // inicializar
+        // cppcheck-suppress legacyUninitvar
         const auto value = node->template value<Value>();
         if (!value.has_value()) {
-            throw std::runtime_error(
-                context_ + " has an invalid '" + std::string(key) + "' value");
+            throw std::runtime_error(context_ + " has an invalid '" + std::string(key) + "' value");
         }
         return *value;
     }
@@ -36,8 +38,8 @@ public:
     Value requiredValue(std::string_view key) const {
         const auto value = optionalValue<Value>(key);
         if (!value.has_value()) {
-            throw std::runtime_error(
-                context_ + " is missing required value '" + std::string(key) + "'");
+            throw std::runtime_error(context_ + " is missing required value '" + std::string(key) +
+                                     "'");
         }
         return *value;
     }
@@ -65,8 +67,8 @@ public:
         }
         const auto value = convert(*name);
         if (!value.has_value()) {
-            throw std::runtime_error(
-                context_ + " has unknown '" + std::string(key) + "': " + *name);
+            throw std::runtime_error(context_ + " has unknown '" + std::string(key) +
+                                     "': " + *name);
         }
         return value;
     }
@@ -76,8 +78,7 @@ public:
         const auto name = requiredValue<std::string>(key);
         const auto value = convert(name);
         if (!value.has_value()) {
-            throw std::runtime_error(
-                context_ + " has unknown '" + std::string(key) + "': " + name);
+            throw std::runtime_error(context_ + " has unknown '" + std::string(key) + "': " + name);
         }
         return *value;
     }
@@ -89,8 +90,8 @@ public:
         }
         const auto* array = node->as_array();
         if (array == nullptr) {
-            throw std::runtime_error(
-                context_ + " value '" + std::string(key) + "' must be an array");
+            throw std::runtime_error(context_ + " value '" + std::string(key) +
+                                     "' must be an array");
         }
         return array;
     }
@@ -98,8 +99,7 @@ public:
     const toml::array* requiredArray(std::string_view key) const {
         const auto* array = optionalArray(key);
         if (array == nullptr) {
-            throw std::runtime_error(
-                context_ + " is missing array '" + std::string(key) + "'");
+            throw std::runtime_error(context_ + " is missing array '" + std::string(key) + "'");
         }
         return array;
     }
@@ -107,8 +107,7 @@ public:
 private:
     void checkIntRange(std::int64_t value, std::string_view key) const {
         if (value < std::numeric_limits<int>::min() || value > std::numeric_limits<int>::max()) {
-            throw std::runtime_error(
-                context_ + " has an out-of-range '" + std::string(key) + "'");
+            throw std::runtime_error(context_ + " has an out-of-range '" + std::string(key) + "'");
         }
     }
 

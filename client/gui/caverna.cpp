@@ -1,5 +1,6 @@
 #include "caverna.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 #include "common/map/persistence/TomlMapFile.h"
@@ -20,12 +21,14 @@ const maps::MapArea& primera_area(const maps::MapDefinition& mapa) {
 
 // El spawn_point del area marca donde arranca el personaje
 SDL2pp::Point buscar_inicio(const maps::MapDefinition& mapa, const std::string& area_id) {
-    for (const auto& elemento : mapa.elements) {
-        if (elemento.areaId == area_id && elemento.type == maps::ElementType::SpawnPoint) {
-            return SDL2pp::Point(elemento.x, elemento.y);
-        }
+    const auto spawn = std::find_if(
+            mapa.elements.begin(), mapa.elements.end(), [&area_id](const auto& elemento) {
+                return elemento.areaId == area_id && elemento.type == maps::ElementType::SpawnPoint;
+            });
+    if (spawn == mapa.elements.end()) {
+        return SDL2pp::Point(1, 1);
     }
-    return SDL2pp::Point(1, 1);
+    return SDL2pp::Point(spawn->x, spawn->y);
 }
 
 }  // namespace

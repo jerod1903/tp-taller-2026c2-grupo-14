@@ -9,8 +9,7 @@
 
 namespace stardew::maps {
 
-std::vector<MapValidationIssue> validateMap(
-	const MapDefinition& map,
-	const MapRequirements& requirements);
+std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
+                                            const MapRequirements& requirements);
 
 }  // namespace stardew::maps

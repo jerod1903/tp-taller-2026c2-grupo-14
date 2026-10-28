@@ -16,7 +16,7 @@ public:
 };
 
 // Adaptador concreto que persiste mapas usando el formato TOML.
-class TomlMapRepository final : public MapRepository {
+class TomlMapRepository final: public MapRepository {
 public:
     MapDefinition loadMap(const std::string& path) const override;
     void saveMap(const std::string& path, const MapDefinition& map) const override;

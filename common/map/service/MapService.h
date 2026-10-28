@@ -21,9 +21,8 @@ public:
     MapService(const MapRepository& repository, MapRequirements requirements);
 
     MapLoadResult loadMap(const std::string& path) const;
-    std::vector<MapValidationIssue> saveMap(
-        const std::string& path,
-        const MapDefinition& map) const;
+    std::vector<MapValidationIssue> saveMap(const std::string& path,
+                                            const MapDefinition& map) const;
 
 private:
     const MapRepository& repository_;

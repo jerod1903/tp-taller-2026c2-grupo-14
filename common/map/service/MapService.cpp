@@ -6,10 +6,8 @@
 
 namespace stardew::maps {
 
-MapService::MapService(
-    const MapRepository& repository,
-    MapRequirements requirements)
-    : repository_(repository), requirements_(std::move(requirements)) {}
+MapService::MapService(const MapRepository& repository, MapRequirements requirements):
+        repository_(repository), requirements_(std::move(requirements)) {}
 
 MapLoadResult MapService::loadMap(const std::string& path) const {
     // Se conserva el mapa aunque tenga errores semanticos para permitir corregirlo en el editor.
@@ -18,9 +16,8 @@ MapLoadResult MapService::loadMap(const std::string& path) const {
     return {std::move(map), std::move(issues)};
 }
 
-std::vector<MapValidationIssue> MapService::saveMap(
-    const std::string& path,
-    const MapDefinition& map) const {
+std::vector<MapValidationIssue> MapService::saveMap(const std::string& path,
+                                                    const MapDefinition& map) const {
     auto issues = validateMap(map, requirements_);
     if (!issues.empty()) {
         return issues;

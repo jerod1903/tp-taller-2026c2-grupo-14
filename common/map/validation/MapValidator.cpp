@@ -9,39 +9,32 @@
 namespace stardew::maps {
 namespace {
 
-const AreaRequirement* findAreaRequirement(
-    const MapRequirements& requirements,
-    AreaType type) {
-    for (const auto& requirement : requirements.areas) {
-        if (requirement.type == type) {
-            return &requirement;
-        }
-    }
-    return nullptr;
+const AreaRequirement* findAreaRequirement(const MapRequirements& requirements, AreaType type) {
+    const auto it = std::find_if(
+            requirements.areas.begin(), requirements.areas.end(),
+            [type](const AreaRequirement& requirement) { return requirement.type == type; });
+    return it == requirements.areas.end() ? nullptr : &*it;
 }
 
 // Comprueba si dos estructuras ocupan alguna de las mismas celdas.
 bool rectanglesOverlap(const MapElement& first, const MapElement& second) {
-    return first.x < second.x + second.width &&
-           second.x < first.x + first.width &&
-           first.y < second.y + second.height &&
-           second.y < first.y + first.height;
+    return first.x < second.x + second.width && second.x < first.x + first.width &&
+           first.y < second.y + second.height && second.y < first.y + first.height;
 }
 
 }  // namespace
 
-std::vector<MapValidationIssue> validateMap(
-    const MapDefinition& map,
-    const MapRequirements& requirements) {
+std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
+                                            const MapRequirements& requirements) {
     // Se acumulan errores para poder informar varios problemas en una sola validacion.
     std::vector<MapValidationIssue> errors;
     if (!map.formatVersion.has_value()) {
         errors.push_back({.code = MapIssueCode::MissingFormatVersion});
     } else if (*map.formatVersion != requirements.formatVersion) {
         errors.push_back({
-            .code = MapIssueCode::UnsupportedFormatVersion,
-            .expected = requirements.formatVersion,
-            .actual = *map.formatVersion,
+                .code = MapIssueCode::UnsupportedFormatVersion,
+                .expected = requirements.formatVersion,
+                .actual = *map.formatVersion,
         });
     }
     if (map.name.empty()) {
@@ -56,7 +49,7 @@ std::vector<MapValidationIssue> validateMap(
     std::map<AreaType, int> areaCounts;
     std::map<AreaType, std::set<int>> floorNumbersByType;
 
-    for (const auto& area : map.areas) {
+    for (const auto& area: map.areas) {
         if (area.id.empty()) {
             errors.push_back({.code = MapIssueCode::EmptyAreaId});
         } else if (!areaIds.insert(area.id).second) {
@@ -82,11 +75,12 @@ std::vector<MapValidationIssue> validateMap(
         if (area.tiles.size() != static_cast<std::size_t>(area.height)) {
             errors.push_back({.code = MapIssueCode::TileGridHeightMismatch, .areaId = area.id});
         }
-        for (const auto& row : area.tiles) {
-            if (row.size() != static_cast<std::size_t>(area.width)) {
-                errors.push_back({.code = MapIssueCode::TileGridWidthMismatch, .areaId = area.id});
-                break;
-            }
+        const bool widthMismatch =
+                std::any_of(area.tiles.begin(), area.tiles.end(), [&area](const auto& row) {
+                    return row.size() != static_cast<std::size_t>(area.width);
+                });
+        if (widthMismatch) {
+            errors.push_back({.code = MapIssueCode::TileGridWidthMismatch, .areaId = area.id});
         }
 
         // Comprueba los numeros de piso usando las reglas configuradas para cada tipo de area.
@@ -95,52 +89,50 @@ std::vector<MapValidationIssue> validateMap(
             if (!area.floorNumber.has_value()) {
                 if (requirement != nullptr && !requirement->floorNumbers.empty()) {
                     errors.push_back({
-                        .code = MapIssueCode::MissingAreaFloorNumber,
-                        .areaId = area.id,
-                        .areaType = *area.type,
+                            .code = MapIssueCode::MissingAreaFloorNumber,
+                            .areaId = area.id,
+                            .areaType = *area.type,
                     });
                 }
             } else if (requirement == nullptr || requirement->floorNumbers.empty() ||
-                       std::find(
-                           requirement->floorNumbers.begin(),
-                           requirement->floorNumbers.end(),
-                           *area.floorNumber) == requirement->floorNumbers.end()) {
+                       std::find(requirement->floorNumbers.begin(), requirement->floorNumbers.end(),
+                                 *area.floorNumber) == requirement->floorNumbers.end()) {
                 errors.push_back({
-                    .code = MapIssueCode::UnexpectedAreaFloorNumber,
-                    .areaId = area.id,
-                    .areaType = *area.type,
-                    .floorNumber = *area.floorNumber,
+                        .code = MapIssueCode::UnexpectedAreaFloorNumber,
+                        .areaId = area.id,
+                        .areaType = *area.type,
+                        .floorNumber = *area.floorNumber,
                 });
             } else if (!floorNumbersByType[*area.type].insert(*area.floorNumber).second) {
                 errors.push_back({
-                    .code = MapIssueCode::DuplicateFloorNumber,
-                    .areaId = area.id,
-                    .areaType = *area.type,
-                    .floorNumber = *area.floorNumber,
+                        .code = MapIssueCode::DuplicateFloorNumber,
+                        .areaId = area.id,
+                        .areaType = *area.type,
+                        .floorNumber = *area.floorNumber,
                 });
             }
         }
     }
 
     // Verifica que el mundo tenga todas las areas requeridas.
-    for (const auto& requirement : requirements.areas) {
+    for (const auto& requirement: requirements.areas) {
         const auto countIt = areaCounts.find(requirement.type);
         const int actualCount = countIt == areaCounts.end() ? 0 : countIt->second;
         if (actualCount != requirement.count) {
             errors.push_back({
-                .code = MapIssueCode::AreaCountMismatch,
-                .areaType = requirement.type,
-                .expected = requirement.count,
-                .actual = actualCount,
+                    .code = MapIssueCode::AreaCountMismatch,
+                    .areaType = requirement.type,
+                    .expected = requirement.count,
+                    .actual = actualCount,
             });
         }
-        for (const int floorNumber : requirement.floorNumbers) {
+        for (const int floorNumber: requirement.floorNumbers) {
             if (floorNumbersByType[requirement.type].find(floorNumber) ==
                 floorNumbersByType[requirement.type].end()) {
                 errors.push_back({
-                    .code = MapIssueCode::MissingRequiredFloorNumber,
-                    .areaType = requirement.type,
-                    .floorNumber = floorNumber,
+                        .code = MapIssueCode::MissingRequiredFloorNumber,
+                        .areaType = requirement.type,
+                        .floorNumber = floorNumber,
                 });
             }
         }
@@ -151,7 +143,7 @@ std::vector<MapValidationIssue> validateMap(
     std::map<std::string, const MapElement*> elementsById;
     std::map<std::string, std::vector<const MapElement*>> elementsByArea;
     std::set<const MapElement*> validElements;
-    for (const auto& element : map.elements) {
+    for (const auto& element: map.elements) {
         if (element.id.empty()) {
             errors.push_back({.code = MapIssueCode::EmptyElementId});
         } else if (!elementIds.insert(element.id).second) {
@@ -169,9 +161,9 @@ std::vector<MapValidationIssue> validateMap(
         const auto areaIt = areasById.find(element.areaId);
         if (areaIt == areasById.end()) {
             errors.push_back({
-                .code = MapIssueCode::UnknownElementArea,
-                .areaId = element.areaId,
-                .elementId = element.id,
+                    .code = MapIssueCode::UnknownElementArea,
+                    .areaId = element.areaId,
+                    .elementId = element.id,
             });
             continue;
         }
@@ -179,19 +171,18 @@ std::vector<MapValidationIssue> validateMap(
         const auto& area = *areaIt->second;
         if (element.width <= 0 || element.height <= 0) {
             errors.push_back({
-                .code = MapIssueCode::InvalidElementDimensions,
-                .areaId = element.areaId,
-                .elementId = element.id,
+                    .code = MapIssueCode::InvalidElementDimensions,
+                    .areaId = element.areaId,
+                    .elementId = element.id,
             });
             continue;
         }
-        if (element.x < 0 || element.y < 0 || element.x >= area.width ||
-            element.y >= area.height || element.width > area.width - element.x ||
-            element.height > area.height - element.y) {
+        if (element.x < 0 || element.y < 0 || element.x >= area.width || element.y >= area.height ||
+            element.width > area.width - element.x || element.height > area.height - element.y) {
             errors.push_back({
-                .code = MapIssueCode::ElementOutsideAreaBounds,
-                .areaId = element.areaId,
-                .elementId = element.id,
+                    .code = MapIssueCode::ElementOutsideAreaBounds,
+                    .areaId = element.areaId,
+                    .elementId = element.id,
             });
             continue;
         }
@@ -202,15 +193,15 @@ std::vector<MapValidationIssue> validateMap(
     // Valida que cada conexion una areas existentes mediante una puerta o escalera valida.
     std::set<std::string> transitionIds;
     std::map<std::string, std::vector<const MapTransition*>> transitionsByArea;
-    for (const auto& transition : map.transitions) {
+    for (const auto& transition: map.transitions) {
         bool validTransition = true;
         if (transition.id.empty()) {
             errors.push_back({.code = MapIssueCode::EmptyTransitionId});
             validTransition = false;
         } else if (!transitionIds.insert(transition.id).second) {
             errors.push_back({
-                .code = MapIssueCode::DuplicateTransitionId,
-                .transitionId = transition.id,
+                    .code = MapIssueCode::DuplicateTransitionId,
+                    .transitionId = transition.id,
             });
             validTransition = false;
         }
@@ -219,17 +210,17 @@ std::vector<MapValidationIssue> validateMap(
         const auto targetIt = areasById.find(transition.toAreaId);
         if (sourceIt == areasById.end()) {
             errors.push_back({
-                .code = MapIssueCode::UnknownTransitionSourceArea,
-                .areaId = transition.fromAreaId,
-                .transitionId = transition.id,
+                    .code = MapIssueCode::UnknownTransitionSourceArea,
+                    .areaId = transition.fromAreaId,
+                    .transitionId = transition.id,
             });
             validTransition = false;
         }
         if (targetIt == areasById.end()) {
             errors.push_back({
-                .code = MapIssueCode::UnknownTransitionTargetArea,
-                .areaId = transition.toAreaId,
-                .transitionId = transition.id,
+                    .code = MapIssueCode::UnknownTransitionTargetArea,
+                    .areaId = transition.toAreaId,
+                    .transitionId = transition.id,
             });
             validTransition = false;
         }
@@ -237,33 +228,33 @@ std::vector<MapValidationIssue> validateMap(
         const auto triggerIt = elementsById.find(transition.triggerElementId);
         if (triggerIt == elementsById.end()) {
             errors.push_back({
-                .code = MapIssueCode::UnknownTransitionTriggerElement,
-                .elementId = transition.triggerElementId,
-                .transitionId = transition.id,
+                    .code = MapIssueCode::UnknownTransitionTriggerElement,
+                    .elementId = transition.triggerElementId,
+                    .transitionId = transition.id,
             });
             validTransition = false;
         } else {
             const auto& trigger = *triggerIt->second;
             if (trigger.areaId != transition.fromAreaId) {
                 errors.push_back({
-                    .code = MapIssueCode::TriggerNotInSourceArea,
-                    .areaId = transition.fromAreaId,
-                    .elementId = trigger.id,
-                    .transitionId = transition.id,
+                        .code = MapIssueCode::TriggerNotInSourceArea,
+                        .areaId = transition.fromAreaId,
+                        .elementId = trigger.id,
+                        .transitionId = transition.id,
                 });
                 validTransition = false;
             }
-            const bool isTravelElement =
-                trigger.type == ElementType::Door || trigger.type == ElementType::Stairs ||
-                trigger.type == ElementType::DungeonEntrance;
+            const bool isTravelElement = trigger.type == ElementType::Door ||
+                                         trigger.type == ElementType::Stairs ||
+                                         trigger.type == ElementType::DungeonEntrance;
             if (!isTravelElement || trigger.layer != ElementLayer::Structure) {
                 errors.push_back({
-                    .code = MapIssueCode::InvalidTransitionTrigger,
-                    .elementId = trigger.id,
-                    .transitionId = transition.id,
-                    .elementType = trigger.type,
-                    .expectedLayer = ElementLayer::Structure,
-                    .actualLayer = trigger.layer,
+                        .code = MapIssueCode::InvalidTransitionTrigger,
+                        .elementId = trigger.id,
+                        .transitionId = transition.id,
+                        .elementType = trigger.type,
+                        .expectedLayer = ElementLayer::Structure,
+                        .actualLayer = trigger.layer,
                 });
                 validTransition = false;
             }
@@ -277,11 +268,11 @@ std::vector<MapValidationIssue> validateMap(
             if (transition.targetX < 0 || transition.targetY < 0 ||
                 transition.targetX >= targetArea.width || transition.targetY >= targetArea.height) {
                 errors.push_back({
-                    .code = MapIssueCode::TransitionArrivalOutsideArea,
-                    .areaId = transition.toAreaId,
-                    .transitionId = transition.id,
-                    .x = transition.targetX,
-                    .y = transition.targetY,
+                        .code = MapIssueCode::TransitionArrivalOutsideArea,
+                        .areaId = transition.toAreaId,
+                        .transitionId = transition.id,
+                        .x = transition.targetX,
+                        .y = transition.targetY,
                 });
                 validTransition = false;
             }
@@ -294,18 +285,18 @@ std::vector<MapValidationIssue> validateMap(
 
     // Comprueba que todas las areas tengan una salida y cumplan sus destinos requeridos.
     if (requirements.requireOutgoingTransitionForEachArea) {
-        for (const auto& [areaId, areaType] : areaTypesById) {
+        for (const auto& [areaId, areaType]: areaTypesById) {
             const auto outgoingIt = transitionsByArea.find(areaId);
             if (outgoingIt == transitionsByArea.end() || outgoingIt->second.empty()) {
                 errors.push_back({
-                    .code = MapIssueCode::AreaWithoutOutgoingTransition,
-                    .areaId = areaId,
+                        .code = MapIssueCode::AreaWithoutOutgoingTransition,
+                        .areaId = areaId,
                 });
             }
         }
     }
-    for (const auto& requirement : requirements.transitions) {
-        for (const auto& [sourceId, sourceType] : areaTypesById) {
+    for (const auto& requirement: requirements.transitions) {
+        for (const auto& [sourceId, sourceType]: areaTypesById) {
             if (sourceType != requirement.fromAreaType ||
                 (requirement.fromFloor.has_value() &&
                  areaFloorsById[sourceId] != requirement.fromFloor)) {
@@ -315,7 +306,7 @@ std::vector<MapValidationIssue> validateMap(
             bool hasRequiredRoute = false;
             const auto outgoingIt = transitionsByArea.find(sourceId);
             if (outgoingIt != transitionsByArea.end()) {
-                for (const auto* transition : outgoingIt->second) {
+                for (const auto* transition: outgoingIt->second) {
                     const auto targetTypeIt = areaTypesById.find(transition->toAreaId);
                     if (targetTypeIt == areaTypesById.end() ||
                         targetTypeIt->second != requirement.toAreaType) {
@@ -331,10 +322,10 @@ std::vector<MapValidationIssue> validateMap(
             }
             if (!hasRequiredRoute) {
                 errors.push_back({
-                    .code = MapIssueCode::MissingRequiredTransition,
-                    .areaId = sourceId,
-                    .targetAreaType = requirement.toAreaType,
-                    .targetFloor = requirement.toFloor,
+                        .code = MapIssueCode::MissingRequiredTransition,
+                        .areaId = sourceId,
+                        .targetAreaType = requirement.toAreaType,
+                        .targetFloor = requirement.toFloor,
                 });
             }
         }
@@ -342,7 +333,7 @@ std::vector<MapValidationIssue> validateMap(
 
     // Evita que las huellas de dos estructuras se superpongan en una misma area.
     if (!requirements.allowStructureOverlap) {
-        for (const auto& [areaId, elements] : elementsByArea) {
+        for (const auto& [areaId, elements]: elementsByArea) {
             for (std::size_t firstIndex = 0; firstIndex < elements.size(); ++firstIndex) {
                 const auto& first = *elements[firstIndex];
                 if (first.layer != ElementLayer::Structure) {
@@ -354,10 +345,10 @@ std::vector<MapValidationIssue> validateMap(
                     if (second.layer == ElementLayer::Structure &&
                         rectanglesOverlap(first, second)) {
                         errors.push_back({
-                            .code = MapIssueCode::StructureOverlap,
-                            .areaId = areaId,
-                            .elementId = first.id,
-                            .relatedElementId = second.id,
+                                .code = MapIssueCode::StructureOverlap,
+                                .areaId = areaId,
+                                .elementId = first.id,
+                                .relatedElementId = second.id,
                         });
                     }
                 }
@@ -366,16 +357,16 @@ std::vector<MapValidationIssue> validateMap(
     }
 
     // Comprueba las entidades requeridas segun la configuracion, sin listas hardcodeadas aca.
-    for (const auto& requirement : requirements.elements) {
+    for (const auto& requirement: requirements.elements) {
         bool hasTargetArea = false;
         bool hasCorrectElement = false;
         const MapElement* wrongLayerElement = nullptr;
-        for (const auto& [areaId, areaType] : areaTypesById) {
+        for (const auto& [areaId, areaType]: areaTypesById) {
             if (areaType != requirement.areaType) {
                 continue;
             }
             hasTargetArea = true;
-            for (const auto& element : map.elements) {
+            for (const auto& element: map.elements) {
                 if (element.areaId != areaId || element.type != requirement.type) {
                     continue;
                 }
@@ -394,20 +385,20 @@ std::vector<MapValidationIssue> validateMap(
         }
         if (wrongLayerElement != nullptr) {
             errors.push_back({
-                .code = MapIssueCode::RequiredElementWrongLayer,
-                .areaId = wrongLayerElement->areaId,
-                .elementId = wrongLayerElement->id,
-                .areaType = requirement.areaType,
-                .elementType = requirement.type,
-                .expectedLayer = requirement.layer,
-                .actualLayer = wrongLayerElement->layer,
+                    .code = MapIssueCode::RequiredElementWrongLayer,
+                    .areaId = wrongLayerElement->areaId,
+                    .elementId = wrongLayerElement->id,
+                    .areaType = requirement.areaType,
+                    .elementType = requirement.type,
+                    .expectedLayer = requirement.layer,
+                    .actualLayer = wrongLayerElement->layer,
             });
         } else {
             errors.push_back({
-                .code = MapIssueCode::MissingRequiredElement,
-                .areaType = requirement.areaType,
-                .elementType = requirement.type,
-                .expectedLayer = requirement.layer,
+                    .code = MapIssueCode::MissingRequiredElement,
+                    .areaType = requirement.areaType,
+                    .elementType = requirement.type,
+                    .expectedLayer = requirement.layer,
             });
         }
     }
