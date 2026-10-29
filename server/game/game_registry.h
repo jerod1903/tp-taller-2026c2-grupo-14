@@ -43,6 +43,7 @@ private:
     mutable std::mutex mutex;
 
     bool world_exists(const std::string& world_id) const;
+    std::string world_name(const std::string& world_id) const;
     void add(const GameRecord& game);
 };
 

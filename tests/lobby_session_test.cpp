@@ -93,6 +93,7 @@ protected:
             SavedGameInfo game{};
             game.gameId = client->recv_u32().value_or(0);
             game.gameName = client->recv_string().value_or("");
+            game.worldName = client->recv_string().value_or("");
             game.characterName = client->recv_string().value_or("");
             game.appearance.hairStyle = client->recv_u16().value_or(0);
             game.appearance.hairColor = client->recv_u8().value_or(0);
@@ -100,9 +101,6 @@ protected:
             game.appearance.pants = client->recv_u16().value_or(0);
             game.appearance.hat = client->recv_u16().value_or(0);
             game.isMultiplayer = client->recv_u8().value_or(0) != 0;
-            game.memberCount = client->recv_u8().value_or(0);
-            game.connectedCount = client->recv_u8().value_or(0);
-            game.maxPlayers = client->recv_u8().value_or(0);
             games.push_back(game);
         }
         return games;
@@ -279,6 +277,7 @@ TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, *mine);
     EXPECT_EQ(games[0].gameName, "Mi granja");
+    EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Martu");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);
     EXPECT_EQ(games[0].appearance.hairColor, APPEARANCE.hairColor);
@@ -286,9 +285,6 @@ TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     EXPECT_EQ(games[0].appearance.pants, APPEARANCE.pants);
     EXPECT_EQ(games[0].appearance.hat, APPEARANCE.hat);
     EXPECT_TRUE(games[0].isMultiplayer);
-    EXPECT_EQ(games[0].memberCount, 1);
-    EXPECT_EQ(games[0].connectedCount, 0);
-    EXPECT_EQ(games[0].maxPlayers, MAX_PLAYERS);
 }
 
 TEST_F(LobbySessionTest, SeveralOperationsInTheSameConnection) {

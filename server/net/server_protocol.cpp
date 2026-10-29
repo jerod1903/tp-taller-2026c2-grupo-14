@@ -44,12 +44,11 @@ bool ServerProtocol::send_saved_game_list(const std::vector<SavedGameInfo>& game
     if (!send_count(games.size()))
         return false;
     for (const SavedGameInfo& game: games) {
-        bool sent =
-                baseProtocol.send_u32(game.gameId) && baseProtocol.send_string(game.gameName) &&
-                baseProtocol.send_string(game.characterName) && send_appearance(game.appearance) &&
-                baseProtocol.send_u8(game.isMultiplayer ? 1 : 0) &&
-                baseProtocol.send_u8(game.memberCount) &&
-                baseProtocol.send_u8(game.connectedCount) && baseProtocol.send_u8(game.maxPlayers);
+        bool sent = baseProtocol.send_u32(game.gameId) && baseProtocol.send_string(game.gameName) &&
+                    baseProtocol.send_string(game.worldName) &&
+                    baseProtocol.send_string(game.characterName) &&
+                    send_appearance(game.appearance) &&
+                    baseProtocol.send_u8(game.isMultiplayer ? 1 : 0);
         if (!sent)
             return false;
     }

@@ -53,12 +53,10 @@ TEST(GameRegistryTest, CreatedGameAppearsInOwnerGames) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, *id);
     EXPECT_EQ(games[0].gameName, "Mi granja");
+    EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Martu");
     EXPECT_EQ(games[0].appearance.shirt, APPEARANCE.shirt);
     EXPECT_TRUE(games[0].isMultiplayer);
-    EXPECT_EQ(games[0].memberCount, 1);
-    EXPECT_EQ(games[0].connectedCount, 0);
-    EXPECT_EQ(games[0].maxPlayers, MAX_PLAYERS);
 }
 
 TEST(GameRegistryTest, SinglePlayerGameAllowsOnlyItsOwner) {
@@ -69,7 +67,7 @@ TEST(GameRegistryTest, SinglePlayerGameAllowsOnlyItsOwner) {
     std::vector<SavedGameInfo> games = registry.games_of(owner);
     ASSERT_EQ(games.size(), 1u);
     EXPECT_FALSE(games[0].isMultiplayer);
-    EXPECT_EQ(games[0].maxPlayers, 1);
+    EXPECT_EQ(store.load_all()[0].maxPlayers, 1);
 }
 
 TEST(GameRegistryTest, CreateGameInUnknownWorldFailsAndSavesNothing) {
@@ -125,7 +123,6 @@ TEST(GameRegistryTest, IndexIsBuiltFromStoreIncludingInvitedMembers) {
     ASSERT_EQ(guest_games.size(), 1u);
     EXPECT_EQ(guest_games[0].gameId, 7u);
     EXPECT_EQ(guest_games[0].characterName, "Invitado");
-    EXPECT_EQ(guest_games[0].memberCount, 2);
     EXPECT_EQ(registry.games_of(creator)[0].characterName, "Creador");
 }
 

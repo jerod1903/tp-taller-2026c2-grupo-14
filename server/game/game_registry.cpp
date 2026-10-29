@@ -1,25 +1,15 @@
 #include "server/game/game_registry.h"
 
 #include <algorithm>
+#include <map>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace {
 
 constexpr uint8_t SINGLE_PLAYER_MAX = 1;
-
-// La información de la partida vista por uno de sus miembros.
-SavedGameInfo saved_game_info(const GameRecord& game, const GameMember& member) {
-    return SavedGameInfo{
-            game.gameId,
-            game.gameName,
-            member.characterName,
-            member.appearance,
-            game.isMultiplayer,
-            static_cast<uint8_t>(game.members.size()),
-            0,  // todavía no hay partidas corriendo: nadie está conectado a ninguna
-            game.maxPlayers,
-    };
-}
 
 }  // namespace
 
@@ -46,7 +36,9 @@ std::vector<SavedGameInfo> GameRegistry::games_of(const UserId& user_id) const {
         std::vector<GameMember>::const_iterator member =
                 std::find_if(game.members.begin(), game.members.end(),
                              [&user_id](const GameMember& m) { return m.userId == user_id; });
-        result.push_back(saved_game_info(game, *member));
+        result.push_back(SavedGameInfo{game.gameId, game.gameName, world_name(game.worldId),
+                                       member->characterName, member->appearance,
+                                       game.isMultiplayer});
     }
     return result;
 }
@@ -72,6 +64,14 @@ std::optional<uint32_t> GameRegistry::create_game(const std::string& game_name,
 bool GameRegistry::world_exists(const std::string& world_id) const {
     return std::any_of(worlds.begin(), worlds.end(),
                        [&world_id](const WorldInfo& world) { return world.worldId == world_id; });
+}
+
+std::string GameRegistry::world_name(const std::string& world_id) const {
+    std::vector<WorldInfo>::const_iterator world =
+            std::find_if(worlds.begin(), worlds.end(),
+                         [&world_id](const WorldInfo& w) { return w.worldId == world_id; });
+    // Una partida guardada de un mundo que ya no se carga: se muestra el id.
+    return world != worlds.end() ? world->name : world_id;
 }
 
 void GameRegistry::add(const GameRecord& game) {

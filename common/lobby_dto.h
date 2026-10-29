@@ -19,6 +19,7 @@ enum class LobbyOp : uint8_t {
     CheckInviteCode,
     JoinGame,
     CreateGame,
+    LoadGame,
 };
 
 enum class LobbyStatus : uint8_t {
@@ -33,6 +34,7 @@ enum class LobbyStatus : uint8_t {
     AlreadyConnected,   // ese userId ya está conectado a la partida
     GameClosed,         // la partida se está cerrando
     ProtocolMismatch,   // versión de protocolo incompatible
+    AlreadyMember,      // JOIN_GAME de alguien que ya está en la partida: tiene que usar LOAD_GAME
 };
 
 constexpr std::string_view to_string(LobbyStatus status) {
@@ -59,6 +61,8 @@ constexpr std::string_view to_string(LobbyStatus status) {
             return "GameClosed";
         case LobbyStatus::ProtocolMismatch:
             return "ProtocolMismatch";
+        case LobbyStatus::AlreadyMember:
+            return "AlreadyMember";
     }
     return "Unknown";
 }
@@ -86,6 +90,7 @@ struct WorldInfo {
 struct SavedGameInfo {
     uint32_t gameId;
     std::string gameName;
+    std::string worldName;
     std::string characterName;
     CharacterAppearance appearance;
     bool isMultiplayer;
@@ -106,18 +111,28 @@ struct CheckInviteCodeRequest {
 struct CheckInviteCodeResponse {
     LobbyStatus status;  // Ok, InvalidInviteCode, GameFull
     bool alreadyMember;  // válido solo si status == Ok
-    uint32_t gameId;     // válido solo si alreadyMember
+    uint32_t gameId;     // válido solo si alreadyMember: con él se hace LOAD_GAME
 };
 
+// Entrar por primera vez a una partida multi. Va con el código y no con el gameId: los ids son
+// secuenciales y cualquiera podría adivinarlos, el código es lo que autoriza a entrar.
 struct JoinGameRequest {
-    uint32_t gameId;
+    std::string inviteCode;
     std::string characterName;
     CharacterAppearance appearance;
+};
+
+struct JoinGameResponse {
+    // Ok, InvalidName, InvalidAppearance, InvalidInviteCode, GameFull, NameTaken, AlreadyMember,
+    // GameClosed
+    LobbyStatus status;
+    uint32_t gameId;  // válido solo si status == Ok
 };
 
 struct CreateGameRequest {
     std::string worldId;
     std::string gameName;
+    bool isMultiplayer;
     std::string characterName;
     CharacterAppearance appearance;
 };
@@ -127,10 +142,13 @@ struct CreateGameResponse {
     uint32_t gameId;     // válido solo si status == Ok
 };
 
-struct JoinGameResponse {
-    LobbyStatus status;  // Ok, InvalidName, InvalidAppearance, GameNotFound, NameTaken, AlreadyConnected, GameClosed
+// Retomar una partida de la que ya se es miembro: el personaje es el guardado.
+struct LoadGameRequest {
+    uint32_t gameId;
 };
 
-
+struct LoadGameResponse {
+    LobbyStatus status;  // Ok, GameNotFound, AlreadyConnected, GameClosed
+};
 
 #endif  // LOBBY_DTO_H
