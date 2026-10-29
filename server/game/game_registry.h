@@ -28,7 +28,8 @@ public:
 
     std::vector<SavedGameInfo> games_of(const std::string& username) const;
 
-    // Toda partida arranca single. std::nullopt si el mundo no está entre los cargados.
+    // Toda partida arranca single, con el creador ya conectado. std::nullopt si el mundo no está
+    // entre los cargados.
     std::optional<uint32_t> create_game(const std::string& game_name, const std::string& world_id,
                                         const GameMember& owner);
 

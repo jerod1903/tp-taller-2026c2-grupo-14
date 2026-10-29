@@ -18,6 +18,14 @@ bool is_valid_name(const std::string& name) {
            std::all_of(name.begin(), name.end(), is_valid_name_char);
 }
 
+// El nombre de una partida además admite espacios entre palabras.
+bool is_valid_game_name(const std::string& name) {
+    return !name.empty() && name.size() <= ServerConstants::MAX_NAME_LEN && name.front() != ' ' &&
+           name.back() != ' ' && std::all_of(name.begin(), name.end(), [](unsigned char c) {
+               return is_valid_name_char(c) || c == ' ';
+           });
+}
+
 // El nombre de un login rechazado viene sin validar: se trunca y se reemplazan los caracteres
 // no imprimibles para que no pueda inyectar líneas en el log.
 std::string printable(const std::string& text) {
@@ -41,6 +49,7 @@ LobbySession::LobbySession(Socket&& peer, GameRegistry& registry):
                 {LobbyOp::ListWorlds, [this]() { return handle_list_worlds(); }},
                 {LobbyOp::ListMyGames, [this]() { return handle_list_my_games(); }},
                 {LobbyOp::CheckInviteCode, [this]() { return handle_check_invite_code(); }},
+                {LobbyOp::CreateGame, [this]() { return handle_create_game(); }},
                 {LobbyOp::JoinGame, [this]() { return handle_join_game(); }},
                 {LobbyOp::LoadGame, [this]() { return handle_load_game(); }},
         } {}
@@ -127,6 +136,25 @@ bool LobbySession::handle_check_invite_code() {
         return false;
     }
     return protocol.send_check_invite_code(registry.check_invite_code(req->inviteCode, *username));
+}
+
+bool LobbySession::handle_create_game() {
+    std::optional<CreateGameRequest> req = protocol.recv_create_game();
+    if (!req) {
+        return false;
+    }
+    if (!is_valid_game_name(req->gameName) || !is_valid_name(req->characterName)) {
+        return protocol.send_create_game(CreateGameResponse{LobbyStatus::InvalidName, 0});
+    }
+    std::optional<uint32_t> game_id = registry.create_game(
+            req->gameName, req->worldId,
+            GameMember{*username, std::move(req->characterName), req->appearance});
+    if (!game_id) {
+        return protocol.send_create_game(CreateGameResponse{LobbyStatus::WorldNotFound, 0});
+    }
+    Logger::info("user '{}' creó la partida {} '{}'", *username, *game_id, req->gameName);
+    enter_game(*game_id);
+    return protocol.send_create_game(CreateGameResponse{LobbyStatus::Ok, *game_id});
 }
 
 bool LobbySession::handle_join_game() {

@@ -32,6 +32,23 @@ std::optional<CheckInviteCodeRequest> ServerProtocol::recv_check_invite_code() {
     return CheckInviteCodeRequest{std::move(*code)};
 }
 
+std::optional<CreateGameRequest> ServerProtocol::recv_create_game() {
+    std::optional<std::string> world_id = baseProtocol.recv_string();
+    if (!world_id)
+        return std::nullopt;
+    std::optional<std::string> game_name = baseProtocol.recv_string();
+    if (!game_name)
+        return std::nullopt;
+    std::optional<std::string> character_name = baseProtocol.recv_string();
+    if (!character_name)
+        return std::nullopt;
+    std::optional<CharacterAppearance> appearance = recv_appearance();
+    if (!appearance)
+        return std::nullopt;
+    return CreateGameRequest{std::move(*world_id), std::move(*game_name),
+                             std::move(*character_name), *appearance};
+}
+
 std::optional<JoinGameRequest> ServerProtocol::recv_join_game() {
     std::optional<std::string> code = baseProtocol.recv_string();
     if (!code)
@@ -83,6 +100,10 @@ bool ServerProtocol::send_saved_game_list(const std::vector<SavedGameInfo>& game
 bool ServerProtocol::send_check_invite_code(const CheckInviteCodeResponse& response) {
     return send_status(response.status) && baseProtocol.send_u8(response.alreadyMember ? 1 : 0) &&
            baseProtocol.send_u32(response.gameId);
+}
+
+bool ServerProtocol::send_create_game(const CreateGameResponse& response) {
+    return send_status(response.status) && baseProtocol.send_u32(response.gameId);
 }
 
 bool ServerProtocol::send_join_game(const JoinGameResponse& response) {

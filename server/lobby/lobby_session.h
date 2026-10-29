@@ -42,6 +42,7 @@ private:
     bool handle_list_worlds();
     bool handle_list_my_games();
     bool handle_check_invite_code();
+    bool handle_create_game();
     bool handle_join_game();
     bool handle_load_game();
     // Pasa a la partida que se acaba de entrar, soltando la anterior si había otra.

@@ -61,6 +61,16 @@ TEST(GameRegistryTest, CreatedGameAppearsInOwnerGames) {
     EXPECT_FALSE(games[0].isMultiplayer);
 }
 
+TEST(GameRegistryTest, CreatorIsConnectedToNewGame) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    ASSERT_TRUE(id.has_value());
+    EXPECT_EQ(registry.load_game(*id, "jero"), LobbyStatus::AlreadyConnected);
+    registry.leave_game(*id, "jero");
+    EXPECT_EQ(registry.load_game(*id, "jero"), LobbyStatus::Ok);
+}
+
 TEST(GameRegistryTest, NewGamesStartAsSinglePlayerWithoutInviteCode) {
     InMemoryGameStore store;
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);

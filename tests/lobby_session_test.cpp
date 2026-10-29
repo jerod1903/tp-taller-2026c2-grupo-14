@@ -116,6 +116,15 @@ protected:
         send_appearance(APPEARANCE);
     }
 
+    void send_create_game(const std::string& world_id, const std::string& game_name,
+                          const std::string& character_name) {
+        send_op(LobbyOp::CreateGame);
+        ASSERT_TRUE(client->send_string(world_id));
+        ASSERT_TRUE(client->send_string(game_name));
+        ASSERT_TRUE(client->send_string(character_name));
+        send_appearance(APPEARANCE);
+    }
+
     void send_load_game(uint32_t game_id) {
         send_op(LobbyOp::LoadGame);
         ASSERT_TRUE(client->send_u32(game_id));
@@ -389,6 +398,65 @@ TEST_F(LobbySessionTest, JoinGameBeforeLoginClosesConnection) {
 
 TEST_F(LobbySessionTest, LoadGameBeforeLoginClosesConnection) {
     send_op(LobbyOp::LoadGame);
+    expect_server_closed();
+}
+
+TEST_F(LobbySessionTest, CreateGameAddsSinglePlayerGameToMyGames) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_create_game("pueblo", "Granja de Martu", "Martu");
+    expect_status(LobbyStatus::Ok);
+    std::optional<uint32_t> game_id = client->recv_u32();
+    ASSERT_TRUE(game_id.has_value());
+    EXPECT_NE(*game_id, 0u);
+    send_op(LobbyOp::ListMyGames);
+    std::vector<SavedGameInfo> games = recv_saved_game_list();
+    ASSERT_EQ(games.size(), 1u);
+    EXPECT_EQ(games[0].gameId, *game_id);
+    EXPECT_EQ(games[0].gameName, "Granja de Martu");
+    EXPECT_EQ(games[0].worldName, "Pueblo");
+    EXPECT_EQ(games[0].characterName, "Martu");
+    EXPECT_FALSE(games[0].isMultiplayer);
+}
+
+TEST_F(LobbySessionTest, CreateGameLeavesCreatorConnected) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_create_game("granja", "Solo", "Martu");
+    expect_status(LobbyStatus::Ok);
+    std::optional<uint32_t> game_id = client->recv_u32();
+    ASSERT_TRUE(game_id.has_value());
+    send_load_game(*game_id);
+    expect_status(LobbyStatus::AlreadyConnected);
+}
+
+TEST_F(LobbySessionTest, CreateGameInUnknownWorldRespondsWorldNotFound) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_create_game("../../etc", "Mi granja", "Martu");
+    expect_status(LobbyStatus::WorldNotFound);
+    expect_game_id(0);
+    EXPECT_TRUE(registry.games_of("jero").empty());
+}
+
+TEST_F(LobbySessionTest, CreateGameWithInvalidNamesRespondsInvalidName) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    for (const std::string& game_name:
+         {std::string(""), std::string(" Granja"), std::string("Granja "), std::string("Gr\nanja"),
+          std::string(ServerConstants::MAX_NAME_LEN + 1, 'a')}) {
+        send_create_game("granja", game_name, "Martu");
+        expect_status(LobbyStatus::InvalidName);
+        expect_game_id(0);
+    }
+    send_create_game("granja", "Mi granja", "con espacio");
+    expect_status(LobbyStatus::InvalidName);
+    expect_game_id(0);
+    EXPECT_TRUE(registry.games_of("jero").empty());
+}
+
+TEST_F(LobbySessionTest, CreateGameBeforeLoginClosesConnection) {
+    send_op(LobbyOp::CreateGame);
     expect_server_closed();
 }
 

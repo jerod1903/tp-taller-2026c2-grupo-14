@@ -53,6 +53,7 @@ std::optional<uint32_t> GameRegistry::create_game(const std::string& game_name,
     GameRecord game{next_game_id++, game_name, world_id, false, SINGLE_PLAYER_MAX, {owner}, ""};
     store.save(game);
     add(game);
+    connected[game.gameId].insert(owner.username);
     return game.gameId;
 }
 
