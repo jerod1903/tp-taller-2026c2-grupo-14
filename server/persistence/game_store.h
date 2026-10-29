@@ -21,7 +21,8 @@ struct GameRecord {
     bool isMultiplayer;
     uint8_t maxPlayers;
     std::vector<GameMember> members;  // el primero es el creador
-    std::string inviteCode;  // vacío en las partidas single: no se puede entrar por código
+    // Vacío en las partidas single: no se puede entrar por código.
+    std::string inviteCode;
 };
 
 // Dónde se guardan las partidas. El registry solo conoce esta interfaz: hoy la implementa
