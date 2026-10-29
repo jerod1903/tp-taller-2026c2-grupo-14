@@ -16,6 +16,9 @@ enum class LobbyOp : uint8_t {
     Login,
     ListWorlds,
     ListMyGames,
+    CheckInviteCode,
+    JoinGame,
+    CreateGame,
 };
 
 enum class LobbyStatus : uint8_t {
@@ -86,10 +89,6 @@ struct SavedGameInfo {
     std::string characterName;
     CharacterAppearance appearance;
     bool isMultiplayer;
-    // Solo informativos: el servidor valida el cupo en JOIN_GAME y LOAD_GAME.
-    uint8_t memberCount;
-    uint8_t connectedCount;
-    uint8_t maxPlayers;
 };
 
 struct WorldListResponse {
@@ -100,10 +99,38 @@ struct SavedGameListResponse {
     std::vector<SavedGameInfo> games;
 };
 
+struct CheckInviteCodeRequest {
+    std::string inviteCode;
+};
+
 struct CheckInviteCodeResponse {
     LobbyStatus status;  // Ok, InvalidInviteCode, GameFull
     bool alreadyMember;  // válido solo si status == Ok
     uint32_t gameId;     // válido solo si alreadyMember
 };
+
+struct JoinGameRequest {
+    uint32_t gameId;
+    std::string characterName;
+    CharacterAppearance appearance;
+};
+
+struct CreateGameRequest {
+    std::string worldId;
+    std::string gameName;
+    std::string characterName;
+    CharacterAppearance appearance;
+};
+
+struct CreateGameResponse {
+    LobbyStatus status;  // Ok, InvalidName, InvalidAppearance, WorldNotFound
+    uint32_t gameId;     // válido solo si status == Ok
+};
+
+struct JoinGameResponse {
+    LobbyStatus status;  // Ok, InvalidName, InvalidAppearance, GameNotFound, NameTaken, AlreadyConnected, GameClosed
+};
+
+
 
 #endif  // LOBBY_DTO_H
