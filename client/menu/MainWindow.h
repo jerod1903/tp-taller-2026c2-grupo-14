@@ -2,7 +2,7 @@
 
 #include <QMainWindow>
 #include <QPixmap>
-#include <cstdint>
+#include <string>
 
 #include "client/menu/navigation/ScreenManager.h"
 #include "common/lobby_dto.h"
@@ -44,5 +44,5 @@ private:
     CharacterFlow flow = CharacterFlow::Create;
     // Datos de los pasos anteriores, que se completan con el personaje.
     CreateGameRequest pendingCreate{};
-    uint32_t pendingJoinGameId = 0;
+    std::string pendingInviteCode;
 };

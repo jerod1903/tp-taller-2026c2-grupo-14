@@ -17,9 +17,8 @@ public:
     explicit JoinGameScreen(ILobbyProtocol& lobby, QWidget* parent = nullptr);
 
 signals:
-    // El servidor acepto el codigo. Si el jugador ya es miembro se retoma la partida;
-    // si no, el flujo sigue en la pantalla del personaje.
-    void inviteCodeAccepted(const CheckInviteCodeResponse& response);
+    // El servidor acepto el codigo: el flujo sigue en la pantalla del personaje.
+    void inviteCodeAccepted(const QString& code);
 
 protected:
     // Cada vez que se entra a la pantalla arranca limpia.

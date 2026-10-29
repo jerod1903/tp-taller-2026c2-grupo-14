@@ -37,7 +37,6 @@ set(TALLER_MENU_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/screens/MyGamesScreen.h
     ${CMAKE_CURRENT_LIST_DIR}/screens/NewGameScreen.h
     ${CMAKE_CURRENT_LIST_DIR}/screens/PlaceholderScreen.h
-    ${CMAKE_CURRENT_LIST_DIR}/styles/AppearanceCatalog.h
     ${CMAKE_CURRENT_LIST_DIR}/styles/CharacterColors.h
     ${CMAKE_CURRENT_LIST_DIR}/styles/StyleManager.h
 )

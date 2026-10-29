@@ -25,6 +25,7 @@ public:
 
 private:
     QImage body;
+    QImage arms;
     QImage hair;
     QImage shirts;
     QImage pants;

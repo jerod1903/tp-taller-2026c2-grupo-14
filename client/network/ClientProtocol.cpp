@@ -1,154 +1,124 @@
 #include "client/network/ClientProtocol.h"
 
+#include <optional>
 #include <utility>
 
 // Formato de los mensajes (enteros en big endian, strings con largo u16 adelante,
 // apariencia = hairStyle u16, hairColor u8, shirt u16, pants u16, hat u16):
 //
-//   Login:           op, version u8, userId 16 bytes, username   -> status u8
+//   Login:           op, version u8, username                    -> status u8
 //   ListWorlds:      op                                          -> count u16, (worldId, name)*
 //   ListMyGames:     op                                          -> count u16, (gameId u32,
-//                    gameName, characterName, apariencia, isMultiplayer u8)*
-//   CheckInviteCode: op, inviteCode                              -> status u8,
-//                                                                   alreadyMember u8, gameId u32
+//                    gameName, worldName, characterName, apariencia, isMultiplayer u8)*
+//   CheckInviteCode: op, inviteCode                              -> status u8
 //   CreateGame:      op, worldId, gameName, characterName, apariencia -> status u8, gameId u32
-//   JoinGame:        op, gameId u32, characterName, apariencia   -> status u8
+//   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
+//   LoadGame:        op, gameId u32                              -> status u8
 //
-// Las tres ultimas son una propuesta: ServerProtocol todavia no las implementa. Las respuestas
-// mandan todos los campos aunque el status no sea Ok, asi el largo no depende del status.
+// Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
+// Ok, asi el largo no depende del status.
 
-ClientProtocol::ClientProtocol(Socket&& socket, const UserId& userId):
-        baseProtocol(std::move(socket)), userId(userId) {}
+namespace {
+// Las operaciones de BaseProtocol devuelven false o std::nullopt si se corto la conexion: aca se
+// convierte en excepcion, asi cada metodo se lee como la secuencia del mensaje.
+void ensure(bool sent) {
+    if (!sent) {
+        throw LobbyConnectionError("no se pudo enviar al servidor");
+    }
+}
+
+template <typename T>
+T ensure(std::optional<T> received) {
+    if (!received) {
+        throw LobbyConnectionError("el servidor cerro la conexion");
+    }
+    return std::move(*received);
+}
+}  // namespace
+
+ClientProtocol::ClientProtocol(Socket&& socket): baseProtocol(std::move(socket)) {}
 
 LobbyStatus ClientProtocol::login(const std::string& username) {
-    sendOperation(LobbyOp::Login);
-    if (!baseProtocol.send_u8(PROTOCOL_VERSION) ||
-        !baseProtocol.send_bytes(userId.data(), userId.size())) {
-        throw LobbyConnectionError("no se pudo enviar el login");
-    }
-    sendString(username);
+    ensure(sendOperation(LobbyOp::Login) && baseProtocol.send_u8(PROTOCOL_VERSION) &&
+           baseProtocol.send_string(username));
     return recvStatus();
 }
 
 std::vector<WorldInfo> ClientProtocol::listWorlds() {
-    sendOperation(LobbyOp::ListWorlds);
-    std::vector<WorldInfo> worlds(recvU16());
+    ensure(sendOperation(LobbyOp::ListWorlds));
+    std::vector<WorldInfo> worlds(ensure(baseProtocol.recv_u16()));
     for (WorldInfo& world: worlds) {
-        world.worldId = recvString();
-        world.name = recvString();
+        world.worldId = ensure(baseProtocol.recv_string());
+        world.name = ensure(baseProtocol.recv_string());
     }
     return worlds;
 }
 
 std::vector<SavedGameInfo> ClientProtocol::listMyGames() {
-    sendOperation(LobbyOp::ListMyGames);
-    std::vector<SavedGameInfo> games(recvU16());
+    ensure(sendOperation(LobbyOp::ListMyGames));
+    std::vector<SavedGameInfo> games(ensure(baseProtocol.recv_u16()));
     for (SavedGameInfo& game: games) {
-        game.gameId = recvU32();
-        game.gameName = recvString();
-        game.characterName = recvString();
+        game.gameId = ensure(baseProtocol.recv_u32());
+        game.gameName = ensure(baseProtocol.recv_string());
+        game.worldName = ensure(baseProtocol.recv_string());
+        game.characterName = ensure(baseProtocol.recv_string());
         game.appearance = recvAppearance();
-        game.isMultiplayer = recvU8() != 0;
+        game.isMultiplayer = ensure(baseProtocol.recv_u8()) != 0;
     }
     return games;
 }
 
-CheckInviteCodeResponse ClientProtocol::checkInviteCode(const std::string& code) {
-    sendOperation(LobbyOp::CheckInviteCode);
-    sendString(code);
-    CheckInviteCodeResponse response{};
-    response.status = recvStatus();
-    response.alreadyMember = recvU8() != 0;
-    response.gameId = recvU32();
-    return response;
+LobbyStatus ClientProtocol::checkInviteCode(const std::string& code) {
+    ensure(sendOperation(LobbyOp::CheckInviteCode) && baseProtocol.send_string(code));
+    return recvStatus();
 }
 
 CreateGameResponse ClientProtocol::createGame(const CreateGameRequest& request) {
-    sendOperation(LobbyOp::CreateGame);
-    sendString(request.worldId);
-    sendString(request.gameName);
-    sendString(request.characterName);
-    sendAppearance(request.appearance);
+    ensure(sendOperation(LobbyOp::CreateGame) && baseProtocol.send_string(request.worldId) &&
+           baseProtocol.send_string(request.gameName) &&
+           baseProtocol.send_string(request.characterName) && sendAppearance(request.appearance));
     CreateGameResponse response{};
     response.status = recvStatus();
-    response.gameId = recvU32();
+    response.gameId = ensure(baseProtocol.recv_u32());
     return response;
 }
 
 JoinGameResponse ClientProtocol::joinGame(const JoinGameRequest& request) {
-    sendOperation(LobbyOp::JoinGame);
-    if (!baseProtocol.send_u32(request.gameId)) {
-        throw LobbyConnectionError("no se pudo enviar el pedido para unirse");
-    }
-    sendString(request.characterName);
-    sendAppearance(request.appearance);
+    ensure(sendOperation(LobbyOp::JoinGame) && baseProtocol.send_string(request.inviteCode) &&
+           baseProtocol.send_string(request.characterName) && sendAppearance(request.appearance));
+    JoinGameResponse response{};
+    response.status = recvStatus();
+    response.gameId = ensure(baseProtocol.recv_u32());
+    return response;
+}
+
+LoadGameResponse ClientProtocol::loadGame(uint32_t gameId) {
+    ensure(sendOperation(LobbyOp::LoadGame) && baseProtocol.send_u32(gameId));
     return {recvStatus()};
 }
 
 void ClientProtocol::shutdown() { baseProtocol.shutdown(); }
 
-void ClientProtocol::sendOperation(LobbyOp op) {
-    if (!baseProtocol.send_u8(static_cast<uint8_t>(op))) {
-        throw LobbyConnectionError("no se pudo enviar la operacion al servidor");
-    }
+bool ClientProtocol::sendOperation(LobbyOp op) {
+    return baseProtocol.send_u8(static_cast<uint8_t>(op));
 }
 
-void ClientProtocol::sendString(const std::string& value) {
-    if (!baseProtocol.send_string(value)) {
-        throw LobbyConnectionError("no se pudo enviar un texto al servidor");
-    }
+bool ClientProtocol::sendAppearance(const CharacterAppearance& appearance) {
+    return baseProtocol.send_u16(appearance.hairStyle) &&
+           baseProtocol.send_u8(appearance.hairColor) && baseProtocol.send_u16(appearance.shirt) &&
+           baseProtocol.send_u16(appearance.pants) && baseProtocol.send_u16(appearance.hat);
 }
 
-void ClientProtocol::sendAppearance(const CharacterAppearance& appearance) {
-    bool sent = baseProtocol.send_u16(appearance.hairStyle) &&
-                baseProtocol.send_u8(appearance.hairColor) &&
-                baseProtocol.send_u16(appearance.shirt) &&
-                baseProtocol.send_u16(appearance.pants) && baseProtocol.send_u16(appearance.hat);
-    if (!sent) {
-        throw LobbyConnectionError("no se pudo enviar la apariencia al servidor");
-    }
-}
-
-LobbyStatus ClientProtocol::recvStatus() { return static_cast<LobbyStatus>(recvU8()); }
-
-uint8_t ClientProtocol::recvU8() {
-    std::optional<uint8_t> value = baseProtocol.recv_u8();
-    if (!value) {
-        throw LobbyConnectionError("el servidor cerro la conexion");
-    }
-    return *value;
-}
-
-uint16_t ClientProtocol::recvU16() {
-    std::optional<uint16_t> value = baseProtocol.recv_u16();
-    if (!value) {
-        throw LobbyConnectionError("el servidor cerro la conexion");
-    }
-    return *value;
-}
-
-uint32_t ClientProtocol::recvU32() {
-    std::optional<uint32_t> value = baseProtocol.recv_u32();
-    if (!value) {
-        throw LobbyConnectionError("el servidor cerro la conexion");
-    }
-    return *value;
-}
-
-std::string ClientProtocol::recvString() {
-    std::optional<std::string> value = baseProtocol.recv_string();
-    if (!value) {
-        throw LobbyConnectionError("el servidor cerro la conexion");
-    }
-    return std::move(*value);
+LobbyStatus ClientProtocol::recvStatus() {
+    return static_cast<LobbyStatus>(ensure(baseProtocol.recv_u8()));
 }
 
 CharacterAppearance ClientProtocol::recvAppearance() {
     CharacterAppearance appearance{};
-    appearance.hairStyle = recvU16();
-    appearance.hairColor = recvU8();
-    appearance.shirt = recvU16();
-    appearance.pants = recvU16();
-    appearance.hat = recvU16();
+    appearance.hairStyle = ensure(baseProtocol.recv_u16());
+    appearance.hairColor = ensure(baseProtocol.recv_u8());
+    appearance.shirt = ensure(baseProtocol.recv_u16());
+    appearance.pants = ensure(baseProtocol.recv_u16());
+    appearance.hat = ensure(baseProtocol.recv_u16());
     return appearance;
 }

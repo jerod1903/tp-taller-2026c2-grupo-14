@@ -10,8 +10,8 @@
 #include "client/menu/components/ColorPicker.h"
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/components/OptionStepper.h"
-#include "client/menu/styles/AppearanceCatalog.h"
 #include "client/menu/styles/StyleManager.h"
+#include "common/appearance_catalog.h"
 
 namespace {
 constexpr int PREVIEW_SIZE = 240;
@@ -23,12 +23,11 @@ CharacterScreen::CharacterScreen(QWidget* parent):
         BaseScreen(parent),
         preview(new CharacterPreview(PREVIEW_SIZE, this)),
         nameInput(new QLineEdit(this)),
-        hairStyle(
-                new OptionStepper("Peinado", AppearanceCatalog::HAIR_STYLE_COUNT, QString(), this)),
+        hairStyle(new OptionStepper("Peinado", AppearanceCatalog::HAIR_STYLES, QString(), this)),
         hairColor(new ColorPicker(this)),
-        shirt(new OptionStepper("Camisa", AppearanceCatalog::SHIRT_COUNT, QString(), this)),
-        pants(new OptionStepper("Pantalón", AppearanceCatalog::PANTS_COUNT, QString(), this)),
-        hat(new OptionStepper("Sombrero", AppearanceCatalog::HAT_COUNT, "Sin sombrero", this)),
+        shirt(new OptionStepper("Camisa", AppearanceCatalog::SHIRTS, QString(), this)),
+        pants(new OptionStepper("Pantalón", AppearanceCatalog::PANTS, QString(), this)),
+        hat(new OptionStepper("Sombrero", AppearanceCatalog::HATS, "Sin sombrero", this)),
         errorLabel(new QLabel(this)),
         confirmButton(new MenuButton("Confirmar", this)) {
     auto* content = new QHBoxLayout();

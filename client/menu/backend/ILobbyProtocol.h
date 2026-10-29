@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -20,12 +21,16 @@ class ILobbyProtocol {
 public:
     virtual ~ILobbyProtocol() = default;
 
-    // La version del protocolo y el userId los agrega la implementacion.
+    // La version del protocolo la agrega la implementacion.
     virtual LobbyStatus login(const std::string& username) = 0;
     virtual std::vector<WorldInfo> listWorlds() = 0;
     virtual std::vector<SavedGameInfo> listMyGames() = 0;
-    virtual CheckInviteCodeResponse checkInviteCode(const std::string& code) = 0;
+    // Ok, InvalidInviteCode, GameFull o AlreadyMember (ya esta en esa partida: se entra con
+    // loadGame desde sus partidas).
+    virtual LobbyStatus checkInviteCode(const std::string& code) = 0;
     virtual CreateGameResponse createGame(const CreateGameRequest& request) = 0;
-    // Sirve para unirse a una partida nueva y para retomar una propia (por gameId).
+    // Entrar por primera vez a una partida multi, con el codigo de invitacion.
     virtual JoinGameResponse joinGame(const JoinGameRequest& request) = 0;
+    // Retomar una partida de la que ya es miembro, con el personaje guardado.
+    virtual LoadGameResponse loadGame(uint32_t gameId) = 0;
 };

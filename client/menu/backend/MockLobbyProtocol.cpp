@@ -12,8 +12,6 @@ const char* const OWN_GAME_INVITE_CODE = "MIA123";
 const char* const CONNECTED_USERNAME = "ocupado";
 // Partida a la que lleva VALID_INVITE_CODE.
 constexpr uint32_t INVITE_GAME_ID = 50;
-// Partida de savedGames a la que lleva OWN_GAME_INVITE_CODE.
-constexpr uint32_t OWN_GAME_ID = 2;
 constexpr uint32_t FIRST_CREATED_GAME_ID = 100;
 
 bool isValidName(const std::string& name) {
@@ -28,9 +26,9 @@ MockLobbyProtocol::MockLobbyProtocol():
                 {"bosque_cerrado", "Bosque Cerrado"},
         },
         savedGames{
-                {1, "Granja de Martu", "Martu", {3, 2, 10, 1, 0}, false},
-                {OWN_GAME_ID, "Partida con los chicos", "Pandamos", {7, 5, 22, 3, 4}, true},
-                {3, "Prueba de mazmorra", "dipa", {1, 9, 5, 2, 0}, true},
+                {1, "Granja de Martu", "Valle Clásico", "Martu", {3, 2, 6, 1, 0}, false},
+                {2, "Partida con los chicos", "Costa Brumosa", "Pandamos", {7, 5, 2, 3, 4}, true},
+                {3, "Prueba de mazmorra", "Bosque Cerrado", "dipa", {1, 9, 5, 2, 0}, true},
         },
         nextGameId(FIRST_CREATED_GAME_ID) {}
 
@@ -45,19 +43,15 @@ std::vector<WorldInfo> MockLobbyProtocol::listWorlds() { return worlds; }
 
 std::vector<SavedGameInfo> MockLobbyProtocol::listMyGames() { return savedGames; }
 
-CheckInviteCodeResponse MockLobbyProtocol::checkInviteCode(const std::string& code) {
-    if (code == OWN_GAME_INVITE_CODE) {
-        return {LobbyStatus::Ok, true, OWN_GAME_ID};
-    }
+LobbyStatus MockLobbyProtocol::checkInviteCode(const std::string& code) {
     if (code == VALID_INVITE_CODE) {
-        // El DTO solo garantiza gameId si alreadyMember; el mock lo manda igual para que
-        // el flujo de unirse tenga a que partida apuntar hasta que se defina con el server.
-        return {LobbyStatus::Ok, false, INVITE_GAME_ID};
+        return LobbyStatus::Ok;
     }
     if (code == FULL_GAME_INVITE_CODE) {
-        return {LobbyStatus::GameFull, false, 0};
+        return LobbyStatus::GameFull;
     }
-    return {LobbyStatus::InvalidInviteCode, false, 0};
+    return code == OWN_GAME_INVITE_CODE ? LobbyStatus::AlreadyMember :
+                                          LobbyStatus::InvalidInviteCode;
 }
 
 CreateGameResponse MockLobbyProtocol::createGame(const CreateGameRequest& request) {
@@ -75,14 +69,16 @@ CreateGameResponse MockLobbyProtocol::createGame(const CreateGameRequest& reques
 
 JoinGameResponse MockLobbyProtocol::joinGame(const JoinGameRequest& request) {
     if (!isValidName(request.characterName)) {
-        return {LobbyStatus::InvalidName};
+        return {LobbyStatus::InvalidName, 0};
     }
-    bool isSaved =
-            std::any_of(savedGames.begin(), savedGames.end(),
-                        [&](const SavedGameInfo& game) { return game.gameId == request.gameId; });
-    bool isCreated = request.gameId >= FIRST_CREATED_GAME_ID && request.gameId < nextGameId;
-    if (!isSaved && !isCreated && request.gameId != INVITE_GAME_ID) {
-        return {LobbyStatus::GameNotFound};
+    if (request.inviteCode != VALID_INVITE_CODE) {
+        return {LobbyStatus::InvalidInviteCode, 0};
     }
-    return {LobbyStatus::Ok};
+    return {LobbyStatus::Ok, INVITE_GAME_ID};
+}
+
+LoadGameResponse MockLobbyProtocol::loadGame(uint32_t gameId) {
+    bool isMember = std::any_of(savedGames.begin(), savedGames.end(),
+                                [&](const SavedGameInfo& game) { return game.gameId == gameId; });
+    return {isMember ? LobbyStatus::Ok : LobbyStatus::GameNotFound};
 }

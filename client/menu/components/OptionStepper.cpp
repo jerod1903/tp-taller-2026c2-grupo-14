@@ -67,7 +67,10 @@ void OptionStepper::refreshText() {
     if (current == 0 && !noneText.isEmpty()) {
         valueLabel->setText(noneText);
     } else {
-        // Se muestra desde 1 para que se lea natural ("1 / 10" y no "0 / 10").
-        valueLabel->setText(QString("%1  %2 / %3").arg(title).arg(current + 1).arg(count));
+        // Se muestra desde 1 para que se lea natural ("1 / 10" y no "0 / 10"). Si el 0 es
+        // "ninguno" no cuenta como opcion: el primer sombrero es "1 / 4" y no "2 / 5".
+        const int offset = noneText.isEmpty() ? 1 : 0;
+        valueLabel->setText(
+                QString("%1  %2 / %3").arg(title).arg(current + offset).arg(count - 1 + offset));
     }
 }

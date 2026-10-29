@@ -137,11 +137,11 @@ void MyGamesScreen::showDetail(int row) {
 
     const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
     const QString characterName = QString::fromStdString(game.characterName);
-    // SavedGameInfo no trae el mundo; si el server lo agrega, va aca.
     worldPreview->setText("(vista previa pendiente)");
     detailCharacter->setCharacter(game.appearance, characterName);
     detailGameName->setText(QString::fromStdString(game.gameName));
-    detailInfo->setText("Personaje: " + characterName + "\n" +
+    detailInfo->setText("Mundo: " + QString::fromStdString(game.worldName) + "\n" +
+                        "Personaje: " + characterName + "\n" +
                         (game.isMultiplayer ? "Multijugador" : "Individual"));
     detailOrHint->setCurrentIndex(1);
 }
@@ -152,11 +152,12 @@ void MyGamesScreen::playSelected() {
         return;
     }
 
-    // Retomar es unirse por gameId con el personaje que ya se tiene en esa partida.
     const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
-    JoinGameResponse response = lobby.joinGame({game.gameId, game.characterName, game.appearance});
-    if (response.status == LobbyStatus::Ok) {
+    LobbyStatus status = lobby.loadGame(game.gameId).status;
+    if (status == LobbyStatus::Ok) {
         emit gameEntered(game.gameId);
+    } else if (status == LobbyStatus::AlreadyConnected) {
+        errorLabel->setText("Ya estás conectado a esa partida.");
     } else {
         errorLabel->setText("No se pudo cargar la partida. Probá de nuevo.");
     }

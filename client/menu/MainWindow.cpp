@@ -49,11 +49,11 @@ void MainWindow::updateBackground() {
     }
     // Cubre toda la ventana y recorta el centro. FastTransformation mantiene el pixel art nitido.
     QSize target = stack->size();
-    QPixmap scaled = background.scaled(target, Qt::KeepAspectRatioByExpanding,
-                                       Qt::FastTransformation);
-    QPixmap cropped = scaled.copy((scaled.width() - target.width()) / 2,
-                                  (scaled.height() - target.height()) / 2, target.width(),
-                                  target.height());
+    QPixmap scaled =
+            background.scaled(target, Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
+    QPixmap cropped =
+            scaled.copy((scaled.width() - target.width()) / 2,
+                        (scaled.height() - target.height()) / 2, target.width(), target.height());
     QPalette palette = stack->palette();
     palette.setBrush(QPalette::Window, cropped);
     stack->setPalette(palette);
@@ -98,18 +98,12 @@ void MainWindow::setupScreens() {
                 screenManager.show(ScreenId::Character);
             });
 
-    // Flujo unirse: codigo valido -> personaje -> joinGame. Si ya es miembro no hace falta
-    // personaje. Cuando exista loadGame en los DTOs, aca se llama antes de entrar.
-    connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this,
-            [this](const CheckInviteCodeResponse& response) {
-                if (response.alreadyMember) {
-                    screenManager.show(ScreenId::InGame);
-                    return;
-                }
-                flow = CharacterFlow::Join;
-                pendingJoinGameId = response.gameId;
-                screenManager.show(ScreenId::Character);
-            });
+    // Flujo unirse: codigo valido -> personaje -> joinGame.
+    connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this, [this](const QString& code) {
+        flow = CharacterFlow::Join;
+        pendingInviteCode = code.toStdString();
+        screenManager.show(ScreenId::Character);
+    });
 
     connect(character, &CharacterScreen::characterChosen, this, &MainWindow::submitCharacter);
     // "Volver" desde personaje regresa al paso anterior del flujo en curso.
@@ -137,7 +131,7 @@ void MainWindow::submitCharacter(const QString& name, const CharacterAppearance&
         pendingCreate.appearance = appearance;
         status = lobby.createGame(pendingCreate).status;
     } else {
-        status = lobby.joinGame({pendingJoinGameId, name.toStdString(), appearance}).status;
+        status = lobby.joinGame({pendingInviteCode, name.toStdString(), appearance}).status;
     }
 
     if (status == LobbyStatus::Ok) {

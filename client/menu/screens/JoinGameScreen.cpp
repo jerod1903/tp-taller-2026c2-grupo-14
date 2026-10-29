@@ -64,11 +64,11 @@ void JoinGameScreen::submitCode() {
         return;
     }
 
-    CheckInviteCodeResponse response = lobby.checkInviteCode(code.toStdString());
-    if (response.status == LobbyStatus::Ok) {
-        emit inviteCodeAccepted(response);
+    LobbyStatus status = lobby.checkInviteCode(code.toStdString());
+    if (status == LobbyStatus::Ok) {
+        emit inviteCodeAccepted(code);
     } else {
-        showError(response.status);
+        showError(status);
     }
 }
 
@@ -80,6 +80,10 @@ void JoinGameScreen::showError(LobbyStatus status) {
             break;
         case LobbyStatus::GameFull:
             errorLabel->setText("La partida ya tiene el máximo de jugadores.");
+            break;
+        // El servidor no dice cual es la partida: se entra desde la lista propia.
+        case LobbyStatus::AlreadyMember:
+            errorLabel->setText("Ya estás en esa partida. Entrá desde \"Mis partidas\".");
             break;
         default:
             errorLabel->setText("No se pudo verificar el código. Intentá de nuevo.");

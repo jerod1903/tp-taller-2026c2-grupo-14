@@ -1,108 +1,75 @@
 #include <cstdint>
 #include <memory>
-#include <optional>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "client/network/ClientProtocol.h"
-#include "common/base_protocol.h"
 #include "common/lobby_dto.h"
 #include "common/logger.h"
 #include "common/net/socket.h"
 #include "server/game/game_registry.h"
 #include "server/lobby/lobby_session.h"
 #include "server/persistence/in_memory_game_store.h"
-#include "tests/test_helpers.h"
 
 namespace {
 
 constexpr const char* HOST = "localhost";
-constexpr const char* SESSION_PORT = "18643";
-constexpr const char* RAW_PORT = "18644";
+constexpr const char* PORT = "18643";
 
 constexpr uint8_t MAX_PLAYERS = 4;
 const std::vector<WorldInfo> WORLDS = {{"granja", "Granja"}, {"pueblo", "Pueblo"}};
-const CharacterAppearance APPEARANCE{3, 2, 10, 1, 4};
+const CharacterAppearance APPEARANCE{3, 2, 5, 1, 4};
 
-void expect_same_appearance(const CharacterAppearance& actual,
-                            const CharacterAppearance& expected) {
-    EXPECT_EQ(actual.hairStyle, expected.hairStyle);
-    EXPECT_EQ(actual.hairColor, expected.hairColor);
-    EXPECT_EQ(actual.shirt, expected.shirt);
-    EXPECT_EQ(actual.pants, expected.pants);
-    EXPECT_EQ(actual.hat, expected.hat);
-}
+// Partida multi precargada, de otro usuario que el del login.
+constexpr uint32_t MULTI_ID = 7;
+constexpr const char* CODE = "ABC234";
+constexpr const char* OWNER = "duenio";
+const GameRecord MULTI_GAME{
+        MULTI_ID, "Multi", "granja", true, MAX_PLAYERS, {{OWNER, "Duenio", APPEARANCE}}, CODE};
 
-// ClientProtocol contra una LobbySession real: las operaciones que el servidor ya implementa.
-class ClientProtocolSessionTest: public ::testing::Test {
+// ClientProtocol contra una LobbySession real: si los dos lados no coinciden byte a byte, la
+// respuesta se lee mal o la sesion corta la conexion. Las reglas de cada operacion (que nombres
+// valen, quien puede entrar) se prueban en lobby_session_test.
+class ClientProtocolTest: public ::testing::Test {
 protected:
     void SetUp() override {
         Logger::set_level(LogLevel::Off);
-        Socket listener(SESSION_PORT);
-        Socket client_socket(HOST, SESSION_PORT);
+        Socket listener(PORT);
+        Socket client_socket(HOST, PORT);
         session = std::make_unique<LobbySession>(listener.accept(), registry);
         session->start();
-        client = std::make_unique<ClientProtocol>(std::move(client_socket), user_id);
+        client = std::make_unique<ClientProtocol>(std::move(client_socket));
     }
 
+    // La sesion se destruye antes de restaurar el nivel: su thread todavia puede loguear.
     void TearDown() override {
         session.reset();
         Logger::set_level(LogLevel::Info);
     }
 
-    const UserId user_id = make_user_id();
-    InMemoryGameStore store;
+    // Declarados antes que la sesion: la sesion usa al registry y se destruye primero.
+    InMemoryGameStore store{{MULTI_GAME}};
     GameRegistry registry{WORLDS, store, MAX_PLAYERS};
     std::unique_ptr<ClientProtocol> client;
     std::unique_ptr<LobbySession> session;
 };
 
-// ClientProtocol contra un servidor a mano: fija el formato de las operaciones que
-// ServerProtocol todavia no implementa.
-class ClientProtocolWireTest: public ::testing::Test {
-protected:
-    void SetUp() override {
-        Socket listener(RAW_PORT);
-        Socket client_socket(HOST, RAW_PORT);
-        server = std::make_unique<BaseProtocol>(listener.accept());
-        client = std::make_unique<ClientProtocol>(std::move(client_socket), make_user_id());
-    }
-
-    void expect_op(LobbyOp expected) {
-        std::optional<uint8_t> op = server->recv_u8();
-        ASSERT_TRUE(op.has_value());
-        EXPECT_EQ(static_cast<LobbyOp>(*op), expected);
-    }
-
-    void expect_appearance(const CharacterAppearance& expected) {
-        CharacterAppearance received{};
-        received.hairStyle = server->recv_u16().value_or(0);
-        received.hairColor = server->recv_u8().value_or(0);
-        received.shirt = server->recv_u16().value_or(0);
-        received.pants = server->recv_u16().value_or(0);
-        received.hat = server->recv_u16().value_or(0);
-        expect_same_appearance(received, expected);
-    }
-
-    std::unique_ptr<BaseProtocol> server;
-    std::unique_ptr<ClientProtocol> client;
-};
-
 }  // namespace
 
-TEST_F(ClientProtocolSessionTest, LoginWithValidNameIsAccepted) {
+TEST_F(ClientProtocolTest, LoginWithValidNameIsAccepted) {
     EXPECT_EQ(client->login("martu"), LobbyStatus::Ok);
 }
 
-TEST_F(ClientProtocolSessionTest, LoginWithInvalidNameIsRejected) {
-    EXPECT_EQ(client->login("no vale"), LobbyStatus::InvalidName);
+TEST_F(ClientProtocolTest, ServerClosingThrowsConnectionError) {
+    // Un login rechazado hace que el servidor cierre la conexion.
+    ASSERT_EQ(client->login("no vale"), LobbyStatus::InvalidName);
+    EXPECT_THROW(client->listWorlds(), LobbyConnectionError);
 }
 
-TEST_F(ClientProtocolSessionTest, ListWorldsReturnsServerWorlds) {
+TEST_F(ClientProtocolTest, ListWorldsReturnsServerWorlds) {
     ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
     std::vector<WorldInfo> worlds = client->listWorlds();
     ASSERT_EQ(worlds.size(), WORLDS.size());
@@ -112,70 +79,49 @@ TEST_F(ClientProtocolSessionTest, ListWorldsReturnsServerWorlds) {
     }
 }
 
-TEST_F(ClientProtocolSessionTest, ListMyGamesReturnsOwnGames) {
-    std::optional<uint32_t> game_id =
-            registry.create_game("Mi granja", "granja", true, {user_id, "Martu", APPEARANCE});
-    ASSERT_TRUE(game_id.has_value());
-
-    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+TEST_F(ClientProtocolTest, ListMyGamesReturnsAllFields) {
+    ASSERT_EQ(client->login(OWNER), LobbyStatus::Ok);
     std::vector<SavedGameInfo> games = client->listMyGames();
     ASSERT_EQ(games.size(), 1u);
-    EXPECT_EQ(games[0].gameId, *game_id);
-    EXPECT_EQ(games[0].gameName, "Mi granja");
-    EXPECT_EQ(games[0].characterName, "Martu");
-    expect_same_appearance(games[0].appearance, APPEARANCE);
+    EXPECT_EQ(games[0].gameId, MULTI_ID);
+    EXPECT_EQ(games[0].gameName, "Multi");
+    EXPECT_EQ(games[0].worldName, "Granja");
+    EXPECT_EQ(games[0].characterName, "Duenio");
+    EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);
+    EXPECT_EQ(games[0].appearance.hairColor, APPEARANCE.hairColor);
+    EXPECT_EQ(games[0].appearance.shirt, APPEARANCE.shirt);
+    EXPECT_EQ(games[0].appearance.pants, APPEARANCE.pants);
+    EXPECT_EQ(games[0].appearance.hat, APPEARANCE.hat);
     EXPECT_TRUE(games[0].isMultiplayer);
 }
 
-TEST_F(ClientProtocolSessionTest, ServerClosingThrowsConnectionError) {
-    // Un login rechazado hace que el servidor cierre la conexion.
-    ASSERT_EQ(client->login("no vale"), LobbyStatus::InvalidName);
-    EXPECT_THROW(client->listWorlds(), LobbyConnectionError);
+TEST_F(ClientProtocolTest, CheckInviteCodeReadsOnlyTheStatus) {
+    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+    EXPECT_EQ(client->checkInviteCode(CODE), LobbyStatus::Ok);
+    // La respuesta es un solo byte: si se leyera de mas, la siguiente operacion se desfasaria.
+    EXPECT_EQ(client->listWorlds().size(), WORLDS.size());
 }
 
-TEST_F(ClientProtocolWireTest, CheckInviteCodeSendsCodeAndReadsResponse) {
-    std::thread fake_server([this]() {
-        expect_op(LobbyOp::CheckInviteCode);
-        EXPECT_EQ(server->recv_string().value_or(""), "ABC123");
-        server->send_u8(static_cast<uint8_t>(LobbyStatus::Ok));
-        server->send_u8(1);
-        server->send_u32(7);
-    });
-    CheckInviteCodeResponse response = client->checkInviteCode("ABC123");
-    fake_server.join();
+TEST_F(ClientProtocolTest, CreateGameAddsItToMyGames) {
+    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+    CreateGameResponse response = client->createGame({"pueblo", "Mi granja", "Martu", APPEARANCE});
+    ASSERT_EQ(response.status, LobbyStatus::Ok);
 
+    std::vector<SavedGameInfo> games = client->listMyGames();
+    ASSERT_EQ(games.size(), 1u);
+    EXPECT_EQ(games[0].gameId, response.gameId);
+    EXPECT_EQ(games[0].worldName, "Pueblo");
+    EXPECT_FALSE(games[0].isMultiplayer);
+}
+
+TEST_F(ClientProtocolTest, JoinGameByCodeReturnsItsGameId) {
+    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+    JoinGameResponse response = client->joinGame({CODE, "Invitada", APPEARANCE});
     EXPECT_EQ(response.status, LobbyStatus::Ok);
-    EXPECT_TRUE(response.alreadyMember);
-    EXPECT_EQ(response.gameId, 7u);
+    EXPECT_EQ(response.gameId, MULTI_ID);
 }
 
-TEST_F(ClientProtocolWireTest, CreateGameSendsRequestAndReadsGameId) {
-    std::thread fake_server([this]() {
-        expect_op(LobbyOp::CreateGame);
-        EXPECT_EQ(server->recv_string().value_or(""), "granja");
-        EXPECT_EQ(server->recv_string().value_or(""), "Mi granja");
-        EXPECT_EQ(server->recv_string().value_or(""), "Martu");
-        expect_appearance(APPEARANCE);
-        server->send_u8(static_cast<uint8_t>(LobbyStatus::Ok));
-        server->send_u32(12);
-    });
-    CreateGameResponse response = client->createGame({"granja", "Mi granja", "Martu", APPEARANCE});
-    fake_server.join();
-
-    EXPECT_EQ(response.status, LobbyStatus::Ok);
-    EXPECT_EQ(response.gameId, 12u);
-}
-
-TEST_F(ClientProtocolWireTest, JoinGameSendsRequestAndReadsStatus) {
-    std::thread fake_server([this]() {
-        expect_op(LobbyOp::JoinGame);
-        EXPECT_EQ(server->recv_u32().value_or(0), 12u);
-        EXPECT_EQ(server->recv_string().value_or(""), "Martu");
-        expect_appearance(APPEARANCE);
-        server->send_u8(static_cast<uint8_t>(LobbyStatus::NameTaken));
-    });
-    JoinGameResponse response = client->joinGame({12, "Martu", APPEARANCE});
-    fake_server.join();
-
-    EXPECT_EQ(response.status, LobbyStatus::NameTaken);
+TEST_F(ClientProtocolTest, LoadOwnGameIsOk) {
+    ASSERT_EQ(client->login(OWNER), LobbyStatus::Ok);
+    EXPECT_EQ(client->loadGame(MULTI_ID).status, LobbyStatus::Ok);
 }
