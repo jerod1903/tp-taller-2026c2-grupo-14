@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
+#include <vector>
 
 InMemoryGameStore::InMemoryGameStore(const std::vector<GameRecord>& games) {
     for (const GameRecord& game: games) {

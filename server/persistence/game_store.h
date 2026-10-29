@@ -8,7 +8,7 @@
 #include "common/lobby_dto.h"
 
 struct GameMember {
-    UserId userId;
+    std::string username;
     std::string characterName;
     CharacterAppearance appearance;
 };
@@ -20,7 +20,9 @@ struct GameRecord {
     std::string worldId;
     bool isMultiplayer;
     uint8_t maxPlayers;
-    std::vector<GameMember> members;
+    std::vector<GameMember> members;  // el primero es el creador
+    // Vacío en las partidas single: no se puede entrar por código.
+    std::string inviteCode;
 };
 
 // Dónde se guardan las partidas. El registry solo conoce esta interfaz: hoy la implementa
