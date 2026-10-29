@@ -14,6 +14,7 @@ target_sources(taller_client
     menu/screens/MyGamesScreen.cpp
     menu/screens/PlaceholderScreen.cpp
     menu/styles/StyleManager.cpp
+    network/ClientProtocol.cpp
     gui/prueba.cpp
     gui/interfaz_juego.cpp
     gui/caverna.cpp
@@ -35,6 +36,7 @@ target_sources(taller_client
     menu/screens/PlaceholderScreen.h
     menu/styles/CharacterColors.h
     menu/styles/StyleManager.h
+    network/ClientProtocol.h
     gui/interfaz_juego.h
     gui/caverna.h
     gui/personaje.h

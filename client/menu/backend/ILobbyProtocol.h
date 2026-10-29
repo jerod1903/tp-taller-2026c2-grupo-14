@@ -1,13 +1,21 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "common/lobby_dto.h"
 
+// Se corto la conexion con el servidor a mitad de una operacion.
+class LobbyConnectionError: public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
 // Lo que el menu necesita del servidor, un metodo por mensaje del lobby.
 // Las pantallas solo conocen esta interfaz: hoy la implementa MockLobbyProtocol,
 // despues la implementara ClientProtocol sin que las pantallas cambien.
+// Cualquier metodo puede tirar LobbyConnectionError.
 class ILobbyProtocol {
 public:
     virtual ~ILobbyProtocol() = default;
