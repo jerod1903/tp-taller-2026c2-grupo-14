@@ -104,16 +104,9 @@ bool ServerProtocol::send_saved_game_list(const std::vector<SavedGameInfo>& game
 }
 
 // Los campos van siempre, aunque el status no sea Ok: el cliente lee una cantidad fija de bytes.
-bool ServerProtocol::send_create_game(const CreateGameResponse& response) {
-    return send_status(response.status) && baseProtocol.send_u32(response.gameId);
-}
-
-bool ServerProtocol::send_join_game(const JoinGameResponse& response) {
-    return send_status(response.status) && baseProtocol.send_u32(response.gameId);
-}
-
-bool ServerProtocol::send_load_game(const LoadGameResponse& response) {
-    return send_status(response.status);
+bool ServerProtocol::send_game_entered(const GameEnteredResponse& response) {
+    return send_status(response.status) && baseProtocol.send_u32(response.gameId) &&
+           baseProtocol.send_u32(response.playerId);
 }
 
 bool ServerProtocol::send_enable_multiplayer(const EnableMultiplayerResponse& response) {

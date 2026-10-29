@@ -29,9 +29,7 @@ public:
     bool send_status(LobbyStatus status);
     bool send_world_list(const std::vector<WorldInfo>& worlds);
     bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
-    bool send_create_game(const CreateGameResponse& response);
-    bool send_join_game(const JoinGameResponse& response);
-    bool send_load_game(const LoadGameResponse& response);
+    bool send_game_entered(const GameEnteredResponse& response);
     bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
 
     void shutdown();

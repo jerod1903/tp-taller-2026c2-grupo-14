@@ -116,13 +116,6 @@ struct JoinGameRequest {
     CharacterAppearance appearance;
 };
 
-struct JoinGameResponse {
-    // Ok, InvalidName, InvalidAppearance, InvalidInviteCode, GameFull, NameTaken, AlreadyMember,
-    // GameClosed
-    LobbyStatus status;
-    uint32_t gameId;  // válido solo si status == Ok
-};
-
 // Toda partida arranca single: no se pide si es multi.
 struct CreateGameRequest {
     std::string worldId;
@@ -131,18 +124,20 @@ struct CreateGameRequest {
     CharacterAppearance appearance;
 };
 
-struct CreateGameResponse {
-    LobbyStatus status;  // Ok, InvalidName, InvalidAppearance, WorldNotFound
-    uint32_t gameId;     // válido solo si status == Ok
-};
-
 // Retomar una partida de la que ya se es miembro: el personaje es el guardado.
 struct LoadGameRequest {
     uint32_t gameId;
 };
 
-struct LoadGameResponse {
-    LobbyStatus status;  // Ok, GameNotFound, AlreadyConnected, GameClosed
+// Respuesta común a CREATE_GAME, JOIN_GAME y LOAD_GAME. Status posibles:
+// - CREATE_GAME: Ok, InvalidName, InvalidAppearance, WorldNotFound
+// - JOIN_GAME: Ok, InvalidName, InvalidAppearance, InvalidInviteCode, GameFull, NameTaken,
+//   AlreadyMember
+// - LOAD_GAME: Ok, GameNotFound, AlreadyConnected
+struct GameEnteredResponse {
+    LobbyStatus status;
+    uint32_t gameId;    // válido solo si status == Ok
+    uint32_t playerId;  // válido solo si status == Ok; identifica al jugador en los snapshots
 };
 
 // El creador pasa a multi su partida y recibe el código de invitación. Si ya era multi devuelve el

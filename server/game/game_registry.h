@@ -29,6 +29,10 @@ public:
 
     std::vector<SavedGameInfo> games_of(const std::string& username) const;
 
+    // El playerId de cada jugador es su posición en GameRecord::members, que solo crece: el
+    // creador es siempre el primero.
+    static constexpr uint32_t OWNER_PLAYER_ID = 0;
+
     // Toda partida arranca single, con el creador ya conectado. std::nullopt si el mundo no está
     // entre los cargados.
     std::optional<uint32_t> create_game(const std::string& game_name, const std::string& world_id,
@@ -38,10 +42,10 @@ public:
     LobbyStatus check_invite_code(const std::string& code, const std::string& username) const;
 
     // Suma un miembro nuevo a la partida del código y lo deja conectado a ella.
-    JoinGameResponse join_game(const std::string& code, const GameMember& member);
+    GameEnteredResponse join_game(const std::string& code, const GameMember& member);
 
     // Conecta a un miembro existente. GameNotFound también si el usuario no participa.
-    LobbyStatus load_game(uint32_t game_id, const std::string& username);
+    GameEnteredResponse load_game(uint32_t game_id, const std::string& username);
 
     // Pasa la partida a multi (si no lo era) y devuelve su código de invitación. Solo el creador:
     // un miembro invitado recibe NotOwner, y alguien que no participa GameNotFound.
@@ -70,6 +74,8 @@ private:
     // Las que siguen requieren tener el lock tomado.
     std::string new_invite_code();
     static bool is_member(const GameRecord& game, const std::string& username);
+    static std::optional<uint32_t> player_id_of(const GameRecord& game,
+                                                const std::string& username);
     static bool name_taken(const GameRecord& game, const std::string& character_name);
 };
 
