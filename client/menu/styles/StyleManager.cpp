@@ -55,6 +55,16 @@ QString StyleManager::globalStyleSheet() {
         QListWidget::item:selected {
             background-color: #5A310D;
         }
+        #worldList {
+            color: #F7D290;
+            font-size: 16px;
+        }
+        #worldList::item {
+            padding: 10px;
+        }
+        #worldList::item:selected {
+            color: #FFEBAD;
+        }
         #savedGameRow, #characterPreview, #optionStepper, #colorPicker {
             background: transparent;
         }

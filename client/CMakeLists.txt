@@ -15,6 +15,7 @@ target_sources(taller_client
     menu/screens/JoinGameScreen.cpp
     menu/screens/MainMenuScreen.cpp
     menu/screens/MyGamesScreen.cpp
+    menu/screens/NewGameScreen.cpp
     menu/screens/PlaceholderScreen.cpp
     menu/styles/StyleManager.cpp
     network/ClientProtocol.cpp
@@ -39,6 +40,7 @@ target_sources(taller_client
     menu/screens/JoinGameScreen.h
     menu/screens/MainMenuScreen.h
     menu/screens/MyGamesScreen.h
+    menu/screens/NewGameScreen.h
     menu/screens/PlaceholderScreen.h
     menu/styles/AppearanceCatalog.h
     menu/styles/CharacterColors.h

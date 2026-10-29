@@ -2,10 +2,12 @@
 
 #include <QStackedWidget>
 
+#include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/screens/CharacterScreen.h"
 #include "client/menu/screens/JoinGameScreen.h"
 #include "client/menu/screens/MainMenuScreen.h"
 #include "client/menu/screens/MyGamesScreen.h"
+#include "client/menu/screens/NewGameScreen.h"
 #include "client/menu/screens/PlaceholderScreen.h"
 #include "client/menu/styles/StyleManager.h"
 
@@ -22,11 +24,11 @@ MainWindow::MainWindow(ILobbyProtocol& lobby, QWidget* parent):
 
 void MainWindow::setupScreens() {
     auto* mainMenu = new MainMenuScreen();
+    auto* newGame = new NewGameScreen(lobby);
     auto* joinGame = new JoinGameScreen(lobby);
     auto* myGames = new MyGamesScreen(lobby);
-    auto* character = new CharacterScreen();
-    // Provisorias: se reemplazan por la pantalla real a medida que se implementan.
-    auto* newGame = new PlaceholderScreen("Nueva partida");
+    character = new CharacterScreen();
+    // Provisoria: representa "aca arranca SDL" hasta que exista ClientApp.
     auto* inGame = new PlaceholderScreen("Partida (arranca SDL)");
 
     screenManager.add(ScreenId::MainMenu, mainMenu);
@@ -45,15 +47,36 @@ void MainWindow::setupScreens() {
     // Cerrar la ultima ventana termina app.exec(); es la misma salida que usara IMenu::run().
     connect(mainMenu, &MainMenuScreen::exitRequested, this, &QMainWindow::close);
 
-    // Flujo unirse: codigo valido -> personaje. El gameId de la respuesta lo va a necesitar
-    // la pantalla de personaje para armar el JoinGameRequest; por ahora solo se navega.
-    connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this,
-            [this]() { screenManager.show(ScreenId::Character); });
-    connect(character, &BaseScreen::backRequested, this,
-            [this]() { screenManager.show(ScreenId::JoinGame); });
+    // Flujo crear: nombre y mundo -> personaje -> createGame.
+    connect(newGame, &NewGameScreen::gameConfigured, this,
+            [this](const QString& gameName, const QString& worldId) {
+                flow = CharacterFlow::Create;
+                pendingCreate.gameName = gameName.toStdString();
+                pendingCreate.worldId = worldId.toStdString();
+                screenManager.show(ScreenId::Character);
+            });
 
-    // Flujo retomar: partida cargada -> juego. Cuando exista QtMenu, aca se guarda la
-    // GameSession y se cierra la ventana para que arranque SDL.
+    // Flujo unirse: codigo valido -> personaje -> joinGame. Si ya es miembro no hace falta
+    // personaje. Cuando exista loadGame en los DTOs, aca se llama antes de entrar.
+    connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this,
+            [this](const CheckInviteCodeResponse& response) {
+                if (response.alreadyMember) {
+                    screenManager.show(ScreenId::InGame);
+                    return;
+                }
+                flow = CharacterFlow::Join;
+                pendingJoinGameId = response.gameId;
+                screenManager.show(ScreenId::Character);
+            });
+
+    connect(character, &CharacterScreen::characterChosen, this, &MainWindow::submitCharacter);
+    // "Volver" desde personaje regresa al paso anterior del flujo en curso.
+    connect(character, &BaseScreen::backRequested, this, [this]() {
+        screenManager.show(flow == CharacterFlow::Create ? ScreenId::NewGame : ScreenId::JoinGame);
+    });
+
+    // Flujo retomar: partida cargada -> juego. Cuando exista ClientApp, aca se guarda la
+    // partida elegida y se cierra la ventana para que arranque SDL.
     connect(myGames, &MyGamesScreen::gameEntered, this,
             [this]() { screenManager.show(ScreenId::InGame); });
 
@@ -62,5 +85,22 @@ void MainWindow::setupScreens() {
           static_cast<BaseScreen*>(myGames), static_cast<BaseScreen*>(inGame)}) {
         connect(screen, &BaseScreen::backRequested, this,
                 [this]() { screenManager.show(ScreenId::MainMenu); });
+    }
+}
+
+void MainWindow::submitCharacter(const QString& name, const CharacterAppearance& appearance) {
+    LobbyStatus status = LobbyStatus::Ok;
+    if (flow == CharacterFlow::Create) {
+        pendingCreate.characterName = name.toStdString();
+        pendingCreate.appearance = appearance;
+        status = lobby.createGame(pendingCreate).status;
+    } else {
+        status = lobby.joinGame({pendingJoinGameId, name.toStdString(), appearance}).status;
+    }
+
+    if (status == LobbyStatus::Ok) {
+        screenManager.show(ScreenId::InGame);
+    } else {
+        character->showError(status);
     }
 }
