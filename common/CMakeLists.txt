@@ -14,6 +14,7 @@ target_sources(taller_common
     map/validation/MapValidator.cpp
     PUBLIC
     # .h files
+    appearance_catalog.h
     base_protocol.h
     lobby_dto.h
     logger.h

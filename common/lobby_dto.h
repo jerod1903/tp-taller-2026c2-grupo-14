@@ -16,6 +16,7 @@ enum class LobbyOp : uint8_t {
     JoinGame,
     CreateGame,
     LoadGame,
+    EnableMultiplayer,
 };
 
 enum class LobbyStatus : uint8_t {
@@ -30,7 +31,8 @@ enum class LobbyStatus : uint8_t {
     AlreadyConnected,   // ese usuario ya está conectado a la partida
     GameClosed,         // la partida se está cerrando
     ProtocolMismatch,   // versión de protocolo incompatible
-    AlreadyMember,      // JOIN_GAME de alguien que ya está en la partida: tiene que usar LOAD_GAME
+    AlreadyMember,      // ya está en la partida del código: tiene que entrar con LOAD_GAME
+    NotOwner,           // la operación es solo para el creador de la partida
 };
 
 constexpr std::string_view to_string(LobbyStatus status) {
@@ -59,6 +61,8 @@ constexpr std::string_view to_string(LobbyStatus status) {
             return "ProtocolMismatch";
         case LobbyStatus::AlreadyMember:
             return "AlreadyMember";
+        case LobbyStatus::NotOwner:
+            return "NotOwner";
     }
     return "Unknown";
 }
@@ -99,14 +103,9 @@ struct SavedGameListResponse {
     std::vector<SavedGameInfo> games;
 };
 
+// Responde solo un status: Ok, InvalidInviteCode, GameFull, AlreadyMember.
 struct CheckInviteCodeRequest {
     std::string inviteCode;
-};
-
-struct CheckInviteCodeResponse {
-    LobbyStatus status;  // Ok, InvalidInviteCode, GameFull
-    bool alreadyMember;  // válido solo si status == Ok
-    uint32_t gameId;     // válido solo si alreadyMember: con él se hace LOAD_GAME
 };
 
 // Entrar por primera vez a una partida multi. Va con el código y no con el gameId: los ids son
@@ -144,6 +143,17 @@ struct LoadGameRequest {
 
 struct LoadGameResponse {
     LobbyStatus status;  // Ok, GameNotFound, AlreadyConnected, GameClosed
+};
+
+// El creador pasa a multi su partida y recibe el código de invitación. Si ya era multi devuelve el
+// mismo código: sirve también para volver a consultarlo.
+struct EnableMultiplayerRequest {
+    uint32_t gameId;
+};
+
+struct EnableMultiplayerResponse {
+    LobbyStatus status;      // Ok, GameNotFound, NotOwner
+    std::string inviteCode;  // vacío si status != Ok
 };
 
 #endif  // LOBBY_DTO_H

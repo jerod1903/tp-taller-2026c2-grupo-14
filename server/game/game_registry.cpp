@@ -4,12 +4,17 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace {
 
 constexpr uint8_t SINGLE_PLAYER_MAX = 1;
+
+constexpr std::size_t INVITE_CODE_LEN = 6;
+// Sin 0/O ni 1/I: el código se dicta y se tipea a mano.
+constexpr std::string_view INVITE_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 }  // namespace
 
@@ -57,21 +62,21 @@ std::optional<uint32_t> GameRegistry::create_game(const std::string& game_name,
     return game.gameId;
 }
 
-CheckInviteCodeResponse GameRegistry::check_invite_code(const std::string& code,
-                                                        const std::string& username) const {
+LobbyStatus GameRegistry::check_invite_code(const std::string& code,
+                                            const std::string& username) const {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<std::string, uint32_t>::const_iterator id = games_by_code.find(code);
     if (id == games_by_code.end()) {
-        return CheckInviteCodeResponse{LobbyStatus::InvalidInviteCode, false, 0};
+        return LobbyStatus::InvalidInviteCode;
     }
     const GameRecord& game = games.at(id->second);
     if (is_member(game, username)) {
-        return CheckInviteCodeResponse{LobbyStatus::Ok, true, game.gameId};
+        return LobbyStatus::AlreadyMember;
     }
     if (game.members.size() >= game.maxPlayers) {
-        return CheckInviteCodeResponse{LobbyStatus::GameFull, false, 0};
+        return LobbyStatus::GameFull;
     }
-    return CheckInviteCodeResponse{LobbyStatus::Ok, false, 0};
+    return LobbyStatus::Ok;
 }
 
 JoinGameResponse GameRegistry::join_game(const std::string& code, const GameMember& member) {
@@ -109,6 +114,27 @@ LobbyStatus GameRegistry::load_game(uint32_t game_id, const std::string& usernam
     return LobbyStatus::Ok;
 }
 
+EnableMultiplayerResponse GameRegistry::enable_multiplayer(uint32_t game_id,
+                                                           const std::string& username) {
+    std::lock_guard<std::mutex> lock(mutex);
+    std::map<uint32_t, GameRecord>::iterator found = games.find(game_id);
+    if (found == games.end() || !is_member(found->second, username)) {
+        return EnableMultiplayerResponse{LobbyStatus::GameNotFound, ""};
+    }
+    GameRecord& game = found->second;
+    if (game.members.front().username != username) {
+        return EnableMultiplayerResponse{LobbyStatus::NotOwner, ""};
+    }
+    if (!game.isMultiplayer) {
+        game.isMultiplayer = true;
+        game.maxPlayers = max_players;
+        game.inviteCode = new_invite_code();
+        games_by_code.insert_or_assign(game.inviteCode, game_id);
+        store.save(game);
+    }
+    return EnableMultiplayerResponse{LobbyStatus::Ok, game.inviteCode};
+}
+
 void GameRegistry::leave_game(uint32_t game_id, const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<uint32_t, std::set<std::string>>::iterator users = connected.find(game_id);
@@ -142,6 +168,18 @@ void GameRegistry::add(const GameRecord& game) {
         games_by_code.insert_or_assign(game.inviteCode, game.gameId);
     }
     games.insert_or_assign(game.gameId, game);
+}
+
+std::string GameRegistry::new_invite_code() {
+    std::uniform_int_distribution<std::size_t> pick(0, INVITE_CODE_CHARS.size() - 1);
+    std::string code;
+    do {
+        code.clear();
+        for (std::size_t i = 0; i < INVITE_CODE_LEN; ++i) {
+            code += INVITE_CODE_CHARS[pick(rng)];
+        }
+    } while (games_by_code.count(code) > 0);
+    return code;
 }
 
 bool GameRegistry::is_member(const GameRecord& game, const std::string& username) {

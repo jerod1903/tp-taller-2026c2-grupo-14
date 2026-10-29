@@ -22,7 +22,7 @@ constexpr uint32_t MULTI_ID = 7;
 constexpr const char* CODE = "ABC234";
 
 const std::vector<WorldInfo> WORLDS = {{"granja", "Granja"}, {"pueblo", "Pueblo"}};
-const CharacterAppearance APPEARANCE{3, 2, 10, 1, 0};
+const CharacterAppearance APPEARANCE{3, 2, 5, 1, 0};
 
 GameMember member(const std::string& username, const std::string& character) {
     return GameMember{username, character, APPEARANCE};
@@ -157,33 +157,32 @@ GameRecord multi_game(const std::string& owner, uint8_t max_players = MAX_PLAYER
 TEST(GameRegistryTest, CheckUnknownInviteCodeIsInvalid) {
     InMemoryGameStore store({multi_game("user_10")});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
-    EXPECT_EQ(registry.check_invite_code("NOEXIS", "user_20").status,
-              LobbyStatus::InvalidInviteCode);
+    EXPECT_EQ(registry.check_invite_code("NOEXIS", "user_20"), LobbyStatus::InvalidInviteCode);
 }
 
-TEST(GameRegistryTest, CheckInviteCodeOfNonMemberDoesNotRevealGameId) {
+TEST(GameRegistryTest, CheckInviteCodeOfNonMemberIsOk) {
     InMemoryGameStore store({multi_game("user_10")});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
-    CheckInviteCodeResponse response = registry.check_invite_code(CODE, "user_20");
-    EXPECT_EQ(response.status, LobbyStatus::Ok);
-    EXPECT_FALSE(response.alreadyMember);
-    EXPECT_EQ(response.gameId, 0u);
+    EXPECT_EQ(registry.check_invite_code(CODE, "user_20"), LobbyStatus::Ok);
 }
 
-TEST(GameRegistryTest, CheckInviteCodeOfMemberReturnsGameId) {
-    std::string owner = "user_10";
-    InMemoryGameStore store({multi_game(owner)});
+TEST(GameRegistryTest, CheckInviteCodeOfMemberIsAlreadyMember) {
+    InMemoryGameStore store({multi_game("user_10")});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
-    CheckInviteCodeResponse response = registry.check_invite_code(CODE, owner);
-    EXPECT_EQ(response.status, LobbyStatus::Ok);
-    EXPECT_TRUE(response.alreadyMember);
-    EXPECT_EQ(response.gameId, MULTI_ID);
+    EXPECT_EQ(registry.check_invite_code(CODE, "user_10"), LobbyStatus::AlreadyMember);
+}
+
+// Un miembro de una partida llena tiene que saber que ya está adentro, no que está llena.
+TEST(GameRegistryTest, CheckInviteCodeOfMemberOfFullGameIsAlreadyMember) {
+    InMemoryGameStore store({multi_game("user_10", 1)});
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    EXPECT_EQ(registry.check_invite_code(CODE, "user_10"), LobbyStatus::AlreadyMember);
 }
 
 TEST(GameRegistryTest, CheckInviteCodeOfFullGameIsGameFull) {
     InMemoryGameStore store({multi_game("user_10", 1)});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
-    EXPECT_EQ(registry.check_invite_code(CODE, "user_20").status, LobbyStatus::GameFull);
+    EXPECT_EQ(registry.check_invite_code(CODE, "user_20"), LobbyStatus::GameFull);
 }
 
 TEST(GameRegistryTest, JoinAddsMemberAndSavesIt) {
@@ -250,6 +249,76 @@ TEST(GameRegistryTest, LoadUnknownOrForeignGameIsGameNotFound) {
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
     EXPECT_EQ(registry.load_game(MULTI_ID + 1, "user_10"), LobbyStatus::GameNotFound);
     EXPECT_EQ(registry.load_game(MULTI_ID, "user_20"), LobbyStatus::GameNotFound);
+}
+
+TEST(GameRegistryTest, EnableMultiplayerTurnsGameIntoMultiWithInviteCode) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    ASSERT_TRUE(id.has_value());
+    EnableMultiplayerResponse response = registry.enable_multiplayer(*id, "jero");
+    ASSERT_EQ(response.status, LobbyStatus::Ok);
+    EXPECT_EQ(response.inviteCode.size(), 6u);
+
+    std::vector<GameRecord> saved = store.load_all();
+    ASSERT_EQ(saved.size(), 1u);
+    EXPECT_TRUE(saved[0].isMultiplayer);
+    EXPECT_EQ(saved[0].maxPlayers, MAX_PLAYERS);
+    EXPECT_EQ(saved[0].inviteCode, response.inviteCode);
+    EXPECT_TRUE(registry.games_of("jero")[0].isMultiplayer);
+
+    JoinGameResponse joined =
+            registry.join_game(response.inviteCode, member("invitado", "Invitado"));
+    EXPECT_EQ(joined.status, LobbyStatus::Ok);
+    EXPECT_EQ(joined.gameId, *id);
+}
+
+TEST(GameRegistryTest, EnableMultiplayerTwiceReturnsSameCode) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    ASSERT_TRUE(id.has_value());
+    std::string first = registry.enable_multiplayer(*id, "jero").inviteCode;
+    EXPECT_EQ(registry.enable_multiplayer(*id, "jero").inviteCode, first);
+}
+
+TEST(GameRegistryTest, EnableMultiplayerOfUnknownOrForeignGameIsGameNotFound) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    ASSERT_TRUE(id.has_value());
+    EXPECT_EQ(registry.enable_multiplayer(*id + 1, "jero").status, LobbyStatus::GameNotFound);
+    EnableMultiplayerResponse foreign = registry.enable_multiplayer(*id, "otro");
+    EXPECT_EQ(foreign.status, LobbyStatus::GameNotFound);
+    EXPECT_TRUE(foreign.inviteCode.empty());
+    EXPECT_FALSE(store.load_all()[0].isMultiplayer);
+}
+
+// El primero de members es el creador: un invitado no puede consultar ni generar el código.
+TEST(GameRegistryTest, EnableMultiplayerByInvitedMemberIsNotOwner) {
+    GameRecord game = multi_game("user_10");
+    game.members.push_back(member("user_20", "Invitado"));
+    InMemoryGameStore store({game});
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    EnableMultiplayerResponse response = registry.enable_multiplayer(MULTI_ID, "user_20");
+    EXPECT_EQ(response.status, LobbyStatus::NotOwner);
+    EXPECT_TRUE(response.inviteCode.empty());
+    EXPECT_EQ(registry.enable_multiplayer(MULTI_ID, "user_10").inviteCode, CODE);
+}
+
+TEST(GameRegistryTest, InviteCodesAreUniqueAndEasyToType) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::set<std::string> codes;
+    for (int i = 0; i < GAMES_PER_THREAD * THREADS; ++i) {
+        std::optional<uint32_t> id =
+                registry.create_game("Partida", "granja", member("jero", "Martu"));
+        ASSERT_TRUE(id.has_value());
+        std::string code = registry.enable_multiplayer(*id, "jero").inviteCode;
+        EXPECT_EQ(code.find_first_of("01IO"), std::string::npos);
+        codes.insert(code);
+    }
+    EXPECT_EQ(codes.size(), static_cast<std::size_t>(GAMES_PER_THREAD * THREADS));
 }
 
 TEST(GameRegistryTest, ConcurrentJoinsNeverExceedMaxPlayers) {

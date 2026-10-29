@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "common/appearance_catalog.h"
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "server/consts.h"
@@ -52,6 +53,7 @@ LobbySession::LobbySession(Socket&& peer, GameRegistry& registry):
                 {LobbyOp::CreateGame, [this]() { return handle_create_game(); }},
                 {LobbyOp::JoinGame, [this]() { return handle_join_game(); }},
                 {LobbyOp::LoadGame, [this]() { return handle_load_game(); }},
+                {LobbyOp::EnableMultiplayer, [this]() { return handle_enable_multiplayer(); }},
         } {}
 
 void LobbySession::start() {
@@ -135,7 +137,7 @@ bool LobbySession::handle_check_invite_code() {
     if (!req) {
         return false;
     }
-    return protocol.send_check_invite_code(registry.check_invite_code(req->inviteCode, *username));
+    return protocol.send_status(registry.check_invite_code(req->inviteCode, *username));
 }
 
 bool LobbySession::handle_create_game() {
@@ -145,6 +147,9 @@ bool LobbySession::handle_create_game() {
     }
     if (!is_valid_game_name(req->gameName) || !is_valid_name(req->characterName)) {
         return protocol.send_create_game(CreateGameResponse{LobbyStatus::InvalidName, 0});
+    }
+    if (!AppearanceCatalog::is_valid(req->appearance)) {
+        return protocol.send_create_game(CreateGameResponse{LobbyStatus::InvalidAppearance, 0});
     }
     std::optional<uint32_t> game_id = registry.create_game(
             req->gameName, req->worldId,
@@ -164,6 +169,9 @@ bool LobbySession::handle_join_game() {
     }
     if (!is_valid_name(req->characterName)) {
         return protocol.send_join_game(JoinGameResponse{LobbyStatus::InvalidName, 0});
+    }
+    if (!AppearanceCatalog::is_valid(req->appearance)) {
+        return protocol.send_join_game(JoinGameResponse{LobbyStatus::InvalidAppearance, 0});
     }
     JoinGameResponse response = registry.join_game(
             req->inviteCode, GameMember{*username, std::move(req->characterName), req->appearance});
@@ -186,6 +194,18 @@ bool LobbySession::handle_load_game() {
         enter_game(req->gameId);
     }
     return protocol.send_load_game(LoadGameResponse{status});
+}
+
+bool LobbySession::handle_enable_multiplayer() {
+    std::optional<EnableMultiplayerRequest> req = protocol.recv_enable_multiplayer();
+    if (!req) {
+        return false;
+    }
+    EnableMultiplayerResponse response = registry.enable_multiplayer(req->gameId, *username);
+    if (response.status == LobbyStatus::Ok) {
+        Logger::info("user '{}' abrió la partida {} al multijugador", *username, req->gameId);
+    }
+    return protocol.send_enable_multiplayer(response);
 }
 
 void LobbySession::enter_game(uint32_t game_id) {

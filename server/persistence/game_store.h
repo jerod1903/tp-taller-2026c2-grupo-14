@@ -20,7 +20,7 @@ struct GameRecord {
     std::string worldId;
     bool isMultiplayer;
     uint8_t maxPlayers;
-    std::vector<GameMember> members;
+    std::vector<GameMember> members;  // el primero es el creador
     std::string inviteCode;  // vacío en las partidas single: no se puede entrar por código
 };
 

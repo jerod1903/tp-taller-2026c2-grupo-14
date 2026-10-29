@@ -24,14 +24,15 @@ public:
     std::optional<CreateGameRequest> recv_create_game();
     std::optional<JoinGameRequest> recv_join_game();
     std::optional<LoadGameRequest> recv_load_game();
+    std::optional<EnableMultiplayerRequest> recv_enable_multiplayer();
 
     bool send_status(LobbyStatus status);
     bool send_world_list(const std::vector<WorldInfo>& worlds);
     bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
-    bool send_check_invite_code(const CheckInviteCodeResponse& response);
     bool send_create_game(const CreateGameResponse& response);
     bool send_join_game(const JoinGameResponse& response);
     bool send_load_game(const LoadGameResponse& response);
+    bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
 
     void shutdown();
 

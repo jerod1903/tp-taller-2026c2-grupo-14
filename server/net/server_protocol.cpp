@@ -69,6 +69,13 @@ std::optional<LoadGameRequest> ServerProtocol::recv_load_game() {
     return LoadGameRequest{*game_id};
 }
 
+std::optional<EnableMultiplayerRequest> ServerProtocol::recv_enable_multiplayer() {
+    std::optional<uint32_t> game_id = baseProtocol.recv_u32();
+    if (!game_id)
+        return std::nullopt;
+    return EnableMultiplayerRequest{*game_id};
+}
+
 bool ServerProtocol::send_status(LobbyStatus status) {
     return baseProtocol.send_u8(static_cast<uint8_t>(status));
 }
@@ -97,11 +104,6 @@ bool ServerProtocol::send_saved_game_list(const std::vector<SavedGameInfo>& game
 }
 
 // Los campos van siempre, aunque el status no sea Ok: el cliente lee una cantidad fija de bytes.
-bool ServerProtocol::send_check_invite_code(const CheckInviteCodeResponse& response) {
-    return send_status(response.status) && baseProtocol.send_u8(response.alreadyMember ? 1 : 0) &&
-           baseProtocol.send_u32(response.gameId);
-}
-
 bool ServerProtocol::send_create_game(const CreateGameResponse& response) {
     return send_status(response.status) && baseProtocol.send_u32(response.gameId);
 }
@@ -112,6 +114,10 @@ bool ServerProtocol::send_join_game(const JoinGameResponse& response) {
 
 bool ServerProtocol::send_load_game(const LoadGameResponse& response) {
     return send_status(response.status);
+}
+
+bool ServerProtocol::send_enable_multiplayer(const EnableMultiplayerResponse& response) {
+    return send_status(response.status) && baseProtocol.send_string(response.inviteCode);
 }
 
 bool ServerProtocol::send_count(std::size_t count) {

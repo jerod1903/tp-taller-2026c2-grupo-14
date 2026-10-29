@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include "common/appearance_catalog.h"
 #include "common/base_protocol.h"
 #include "common/lobby_dto.h"
 #include "common/logger.h"
@@ -30,7 +31,7 @@ constexpr int MAX_POLLS = 200;
 
 constexpr uint8_t MAX_PLAYERS = 4;
 const std::vector<WorldInfo> WORLDS = {{"granja", "Granja"}, {"pueblo", "Pueblo"}};
-const CharacterAppearance APPEARANCE{3, 2, 10, 1, 4};
+const CharacterAppearance APPEARANCE{3, 2, 5, 1, 4};
 
 // Partida multi precargada en el store de cada test, de otro usuario que el del login por defecto.
 constexpr uint32_t MULTI_ID = 7;
@@ -109,20 +110,34 @@ protected:
         return games;
     }
 
-    void send_join_game(const std::string& code, const std::string& character_name) {
+    void send_join_game(const std::string& code, const std::string& character_name,
+                        const CharacterAppearance& appearance = APPEARANCE) {
         send_op(LobbyOp::JoinGame);
         ASSERT_TRUE(client->send_string(code));
         ASSERT_TRUE(client->send_string(character_name));
-        send_appearance(APPEARANCE);
+        send_appearance(appearance);
     }
 
     void send_create_game(const std::string& world_id, const std::string& game_name,
-                          const std::string& character_name) {
+                          const std::string& character_name,
+                          const CharacterAppearance& appearance = APPEARANCE) {
         send_op(LobbyOp::CreateGame);
         ASSERT_TRUE(client->send_string(world_id));
         ASSERT_TRUE(client->send_string(game_name));
         ASSERT_TRUE(client->send_string(character_name));
-        send_appearance(APPEARANCE);
+        send_appearance(appearance);
+    }
+
+    // Crea una partida y devuelve su id.
+    uint32_t create_game() {
+        send_create_game("granja", "Mi granja", "Martu");
+        expect_status(LobbyStatus::Ok);
+        return client->recv_u32().value_or(0);
+    }
+
+    void send_enable_multiplayer(uint32_t game_id) {
+        send_op(LobbyOp::EnableMultiplayer);
+        ASSERT_TRUE(client->send_u32(game_id));
     }
 
     void send_load_game(uint32_t game_id) {
@@ -315,24 +330,31 @@ TEST_F(LobbySessionTest, SeveralOperationsInTheSameConnection) {
     EXPECT_EQ(recv_world_list().size(), WORLDS.size());
 }
 
-TEST_F(LobbySessionTest, CheckInviteCodeOfNonMemberRespondsOkWithoutGameId) {
+TEST_F(LobbySessionTest, CheckInviteCodeOfNonMemberRespondsOnlyOk) {
     send_login("jero");
     expect_status(LobbyStatus::Ok);
     send_op(LobbyOp::CheckInviteCode);
     ASSERT_TRUE(client->send_string(CODE));
     expect_status(LobbyStatus::Ok);
-    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
-    expect_game_id(0);
+    // La respuesta es un solo byte: lo siguiente que llega ya es la próxima operación.
+    send_op(LobbyOp::ListWorlds);
+    EXPECT_EQ(recv_world_list().size(), WORLDS.size());
 }
 
-TEST_F(LobbySessionTest, CheckInviteCodeOfMemberRespondsGameId) {
+TEST_F(LobbySessionTest, CheckInviteCodeOfMemberRespondsAlreadyMember) {
     send_login(OWNER);
     expect_status(LobbyStatus::Ok);
     send_op(LobbyOp::CheckInviteCode);
     ASSERT_TRUE(client->send_string(CODE));
+    expect_status(LobbyStatus::AlreadyMember);
+}
+
+TEST_F(LobbySessionTest, CheckUnknownInviteCodeRespondsInvalidInviteCode) {
+    send_login("jero");
     expect_status(LobbyStatus::Ok);
-    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
-    expect_game_id(MULTI_ID);
+    send_op(LobbyOp::CheckInviteCode);
+    ASSERT_TRUE(client->send_string("NOEXIS"));
+    expect_status(LobbyStatus::InvalidInviteCode);
 }
 
 TEST_F(LobbySessionTest, JoinGameByCodeAddsItToMyGames) {
@@ -457,6 +479,89 @@ TEST_F(LobbySessionTest, CreateGameWithInvalidNamesRespondsInvalidName) {
 
 TEST_F(LobbySessionTest, CreateGameBeforeLoginClosesConnection) {
     send_op(LobbyOp::CreateGame);
+    expect_server_closed();
+}
+
+// Una apariencia con una sola parte fuera del catálogo.
+std::vector<CharacterAppearance> invalid_appearances() {
+    std::vector<CharacterAppearance> result(5, APPEARANCE);
+    result[0].hairStyle = AppearanceCatalog::HAIR_STYLES;
+    result[1].hairColor = AppearanceCatalog::HAIR_COLORS;
+    result[2].shirt = AppearanceCatalog::SHIRTS;
+    result[3].pants = AppearanceCatalog::PANTS;
+    result[4].hat = AppearanceCatalog::HATS;
+    return result;
+}
+
+TEST_F(LobbySessionTest, CreateGameWithAppearanceOutOfCatalogRespondsInvalidAppearance) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    for (const CharacterAppearance& appearance: invalid_appearances()) {
+        send_create_game("granja", "Mi granja", "Martu", appearance);
+        expect_status(LobbyStatus::InvalidAppearance);
+        expect_game_id(0);
+    }
+    EXPECT_TRUE(registry.games_of("jero").empty());
+}
+
+TEST_F(LobbySessionTest, CreateGameAcceptsLastIdOfEachPart) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_create_game(
+            "granja", "Mi granja", "Martu",
+            CharacterAppearance{AppearanceCatalog::HAIR_STYLES - 1,
+                                AppearanceCatalog::HAIR_COLORS - 1, AppearanceCatalog::SHIRTS - 1,
+                                AppearanceCatalog::PANTS - 1, AppearanceCatalog::HATS - 1});
+    expect_status(LobbyStatus::Ok);
+}
+
+TEST_F(LobbySessionTest, JoinGameWithAppearanceOutOfCatalogRespondsInvalidAppearance) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    for (const CharacterAppearance& appearance: invalid_appearances()) {
+        send_join_game(CODE, "Invitado", appearance);
+        expect_status(LobbyStatus::InvalidAppearance);
+        expect_game_id(0);
+    }
+    EXPECT_TRUE(registry.games_of("jero").empty());
+}
+
+TEST_F(LobbySessionTest, EnableMultiplayerRespondsInviteCodeThatOthersCanUse) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    uint32_t game_id = create_game();
+    send_enable_multiplayer(game_id);
+    expect_status(LobbyStatus::Ok);
+    std::optional<std::string> code = client->recv_string();
+    ASSERT_TRUE(code.has_value());
+    EXPECT_EQ(code->size(), 6u);
+
+    JoinGameResponse joined = registry.join_game(*code, GameMember{"otro", "Otro", APPEARANCE});
+    EXPECT_EQ(joined.status, LobbyStatus::Ok);
+    EXPECT_EQ(joined.gameId, game_id);
+}
+
+TEST_F(LobbySessionTest, EnableMultiplayerOfForeignGameRespondsGameNotFound) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_enable_multiplayer(MULTI_ID);
+    expect_status(LobbyStatus::GameNotFound);
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>(""));
+}
+
+TEST_F(LobbySessionTest, EnableMultiplayerByInvitedMemberRespondsNotOwner) {
+    ASSERT_EQ(registry.join_game(CODE, GameMember{"jero", "Invitado", APPEARANCE}).status,
+              LobbyStatus::Ok);
+    registry.leave_game(MULTI_ID, "jero");
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_enable_multiplayer(MULTI_ID);
+    expect_status(LobbyStatus::NotOwner);
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>(""));
+}
+
+TEST_F(LobbySessionTest, EnableMultiplayerBeforeLoginClosesConnection) {
+    send_op(LobbyOp::EnableMultiplayer);
     expect_server_closed();
 }
 
