@@ -12,7 +12,7 @@
 #include "common/lobby_dto.h"
 #include "server/persistence/game_store.h"
 
-// Monitor con las partidas conocidas por el servidor y el índice userId -> partidas.
+// Monitor con las partidas conocidas por el servidor y el índice username -> partidas.
 // El índice se arma desde el GameStore, no desde lo que está corriendo: un usuario ve sus
 // partidas aunque nadie más esté conectado.
 class GameRegistry {
@@ -26,22 +26,23 @@ public:
 
     const std::vector<WorldInfo>& list_worlds() const;
 
-    std::vector<SavedGameInfo> games_of(const UserId& user_id) const;
+    std::vector<SavedGameInfo> games_of(const std::string& username) const;
 
     // Toda partida arranca single. std::nullopt si el mundo no está entre los cargados.
     std::optional<uint32_t> create_game(const std::string& game_name, const std::string& world_id,
                                         const GameMember& owner);
 
-    CheckInviteCodeResponse check_invite_code(const std::string& code, const UserId& user_id) const;
+    CheckInviteCodeResponse check_invite_code(const std::string& code,
+                                              const std::string& username) const;
 
     // Suma un miembro nuevo a la partida del código y lo deja conectado a ella.
     JoinGameResponse join_game(const std::string& code, const GameMember& member);
 
     // Conecta a un miembro existente. GameNotFound también si el usuario no participa.
-    LobbyStatus load_game(uint32_t game_id, const UserId& user_id);
+    LobbyStatus load_game(uint32_t game_id, const std::string& username);
 
     // El usuario se desconectó de la partida: puede volver a entrar con load_game.
-    void leave_game(uint32_t game_id, const UserId& user_id);
+    void leave_game(uint32_t game_id, const std::string& username);
 
 private:
     const std::vector<WorldInfo> worlds;
@@ -50,9 +51,9 @@ private:
     GameStore& store;
 
     std::map<uint32_t, GameRecord> games;
-    std::map<UserId, std::set<uint32_t>> games_by_user;
+    std::map<std::string, std::set<uint32_t>> games_by_user;
     std::map<std::string, uint32_t> games_by_code;
-    std::map<uint32_t, std::set<UserId>> connected;
+    std::map<uint32_t, std::set<std::string>> connected;
     uint32_t next_game_id = 1;
     mutable std::mutex mutex;
 
@@ -60,7 +61,7 @@ private:
     std::string world_name(const std::string& world_id) const;
     void add(const GameRecord& game);
     // Las que siguen requieren tener el lock tomado.
-    static bool is_member(const GameRecord& game, const UserId& user_id);
+    static bool is_member(const GameRecord& game, const std::string& username);
     static bool name_taken(const GameRecord& game, const std::string& character_name);
 };
 

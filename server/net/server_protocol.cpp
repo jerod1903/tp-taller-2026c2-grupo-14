@@ -19,13 +19,10 @@ std::optional<LoginRequest> ServerProtocol::recv_login() {
     std::optional<uint8_t> version = baseProtocol.recv_u8();
     if (!version)
         return std::nullopt;
-    UserId user_id;
-    if (!baseProtocol.recv_bytes(user_id.data(), user_id.size()))
-        return std::nullopt;
     std::optional<std::string> username = baseProtocol.recv_string();
     if (!username)
         return std::nullopt;
-    return LoginRequest{*version, user_id, std::move(*username)};
+    return LoginRequest{*version, std::move(*username)};
 }
 
 std::optional<CheckInviteCodeRequest> ServerProtocol::recv_check_invite_code() {

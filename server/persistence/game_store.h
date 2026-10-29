@@ -8,7 +8,7 @@
 #include "common/lobby_dto.h"
 
 struct GameMember {
-    UserId userId;
+    std::string username;
     std::string characterName;
     CharacterAppearance appearance;
 };

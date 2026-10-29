@@ -23,10 +23,10 @@ GameRegistry::GameRegistry(std::vector<WorldInfo> worlds, GameStore& store, uint
 
 const std::vector<WorldInfo>& GameRegistry::list_worlds() const { return worlds; }
 
-std::vector<SavedGameInfo> GameRegistry::games_of(const UserId& user_id) const {
+std::vector<SavedGameInfo> GameRegistry::games_of(const std::string& username) const {
     std::lock_guard<std::mutex> lock(mutex);
     std::vector<SavedGameInfo> result;
-    std::map<UserId, std::set<uint32_t>>::const_iterator ids = games_by_user.find(user_id);
+    std::map<std::string, std::set<uint32_t>>::const_iterator ids = games_by_user.find(username);
     if (ids == games_by_user.end()) {
         return result;
     }
@@ -35,7 +35,7 @@ std::vector<SavedGameInfo> GameRegistry::games_of(const UserId& user_id) const {
         const GameRecord& game = games.at(game_id);
         std::vector<GameMember>::const_iterator member =
                 std::find_if(game.members.begin(), game.members.end(),
-                             [&user_id](const GameMember& m) { return m.userId == user_id; });
+                             [&username](const GameMember& m) { return m.username == username; });
         result.push_back(SavedGameInfo{game.gameId, game.gameName, world_name(game.worldId),
                                        member->characterName, member->appearance,
                                        game.isMultiplayer});
@@ -57,14 +57,14 @@ std::optional<uint32_t> GameRegistry::create_game(const std::string& game_name,
 }
 
 CheckInviteCodeResponse GameRegistry::check_invite_code(const std::string& code,
-                                                        const UserId& user_id) const {
+                                                        const std::string& username) const {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<std::string, uint32_t>::const_iterator id = games_by_code.find(code);
     if (id == games_by_code.end()) {
         return CheckInviteCodeResponse{LobbyStatus::InvalidInviteCode, false, 0};
     }
     const GameRecord& game = games.at(id->second);
-    if (is_member(game, user_id)) {
+    if (is_member(game, username)) {
         return CheckInviteCodeResponse{LobbyStatus::Ok, true, game.gameId};
     }
     if (game.members.size() >= game.maxPlayers) {
@@ -80,7 +80,7 @@ JoinGameResponse GameRegistry::join_game(const std::string& code, const GameMemb
         return JoinGameResponse{LobbyStatus::InvalidInviteCode, 0};
     }
     GameRecord& game = games.at(id->second);
-    if (is_member(game, member.userId)) {
+    if (is_member(game, member.username)) {
         return JoinGameResponse{LobbyStatus::AlreadyMember, 0};
     }
     if (game.members.size() >= game.maxPlayers) {
@@ -91,30 +91,30 @@ JoinGameResponse GameRegistry::join_game(const std::string& code, const GameMemb
     }
     game.members.push_back(member);
     store.save(game);
-    games_by_user[member.userId].insert(game.gameId);
-    connected[game.gameId].insert(member.userId);
+    games_by_user[member.username].insert(game.gameId);
+    connected[game.gameId].insert(member.username);
     return JoinGameResponse{LobbyStatus::Ok, game.gameId};
 }
 
-LobbyStatus GameRegistry::load_game(uint32_t game_id, const UserId& user_id) {
+LobbyStatus GameRegistry::load_game(uint32_t game_id, const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<uint32_t, GameRecord>::const_iterator game = games.find(game_id);
-    if (game == games.end() || !is_member(game->second, user_id)) {
+    if (game == games.end() || !is_member(game->second, username)) {
         return LobbyStatus::GameNotFound;
     }
-    if (!connected[game_id].insert(user_id).second) {
+    if (!connected[game_id].insert(username).second) {
         return LobbyStatus::AlreadyConnected;
     }
     return LobbyStatus::Ok;
 }
 
-void GameRegistry::leave_game(uint32_t game_id, const UserId& user_id) {
+void GameRegistry::leave_game(uint32_t game_id, const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);
-    std::map<uint32_t, std::set<UserId>>::iterator users = connected.find(game_id);
+    std::map<uint32_t, std::set<std::string>>::iterator users = connected.find(game_id);
     if (users == connected.end()) {
         return;
     }
-    users->second.erase(user_id);
+    users->second.erase(username);
     if (users->second.empty()) {
         connected.erase(users);
     }
@@ -135,7 +135,7 @@ std::string GameRegistry::world_name(const std::string& world_id) const {
 
 void GameRegistry::add(const GameRecord& game) {
     for (const GameMember& member: game.members) {
-        games_by_user[member.userId].insert(game.gameId);
+        games_by_user[member.username].insert(game.gameId);
     }
     if (!game.inviteCode.empty()) {
         games_by_code.insert_or_assign(game.inviteCode, game.gameId);
@@ -143,9 +143,9 @@ void GameRegistry::add(const GameRecord& game) {
     games.insert_or_assign(game.gameId, game);
 }
 
-bool GameRegistry::is_member(const GameRecord& game, const UserId& user_id) {
+bool GameRegistry::is_member(const GameRecord& game, const std::string& username) {
     return std::any_of(game.members.begin(), game.members.end(),
-                       [&user_id](const GameMember& m) { return m.userId == user_id; });
+                       [&username](const GameMember& m) { return m.username == username; });
 }
 
 bool GameRegistry::name_taken(const GameRecord& game, const std::string& character_name) {

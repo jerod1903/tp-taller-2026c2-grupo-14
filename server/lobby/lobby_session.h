@@ -12,11 +12,6 @@
 #include "server/game/game_registry.h"
 #include "server/net/server_protocol.h"
 
-struct SessionIdentity {
-    UserId userId;
-    std::string username;
-};
-
 class LobbySession: public Thread {
 public:
     LobbySession(Socket&& peer, GameRegistry& registry);
@@ -32,8 +27,8 @@ private:
     bool started = false;
     ServerProtocol protocol;
     GameRegistry& registry;
-    // Vacía hasta que el login sea válido. Solo la toca el thread de la sesión.
-    std::optional<SessionIdentity> identity;
+    // Vacío hasta que el login sea válido. Solo lo toca el thread de la sesión.
+    std::optional<std::string> username;
     // La partida a la que entró con JOIN_GAME o LOAD_GAME. Se suelta al cerrar la sesión.
     std::optional<uint32_t> current_game;
 

@@ -18,7 +18,6 @@
 #include "server/consts.h"
 #include "server/game/game_registry.h"
 #include "server/persistence/in_memory_game_store.h"
-#include "tests/test_helpers.h"
 
 namespace {
 
@@ -36,7 +35,7 @@ const CharacterAppearance APPEARANCE{3, 2, 10, 1, 4};
 // Partida multi precargada en el store de cada test, de otro usuario que el del login por defecto.
 constexpr uint32_t MULTI_ID = 7;
 constexpr const char* CODE = "ABC234";
-const UserId OWNER = make_user_id(0x10);
+constexpr const char* OWNER = "duenio";
 const GameRecord MULTI_GAME{
         MULTI_ID, "Multi", "granja", true, MAX_PLAYERS, {{OWNER, "Duenio", APPEARANCE}}, CODE};
 
@@ -58,16 +57,13 @@ protected:
         Logger::set_level(LogLevel::Info);
     }
 
-    void send_login(uint8_t version, const UserId& user_id, const std::string& username) {
+    void send_login(uint8_t version, const std::string& username) {
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(LobbyOp::Login)));
         ASSERT_TRUE(client->send_u8(version));
-        ASSERT_TRUE(client->send_bytes(user_id.data(), user_id.size()));
         ASSERT_TRUE(client->send_string(username));
     }
 
-    void send_login(const std::string& username) {
-        send_login(PROTOCOL_VERSION, make_user_id(), username);
-    }
+    void send_login(const std::string& username) { send_login(PROTOCOL_VERSION, username); }
 
     void expect_status(LobbyStatus expected) {
         std::optional<uint8_t> status = client->recv_u8();
@@ -175,13 +171,13 @@ TEST_F(LobbySessionTest, AcceptsUsernameWithMaxLength) {
 }
 
 TEST_F(LobbySessionTest, IncompatibleVersionRespondsProtocolMismatchAndCloses) {
-    send_login(PROTOCOL_VERSION + 1, make_user_id(), "jero");
+    send_login(PROTOCOL_VERSION + 1, "jero");
     expect_status(LobbyStatus::ProtocolMismatch);
     expect_server_closed();
 }
 
 TEST_F(LobbySessionTest, VersionIsCheckedBeforeIdentity) {
-    send_login(PROTOCOL_VERSION + 1, UserId{}, "");
+    send_login(PROTOCOL_VERSION + 1, "");
     expect_status(LobbyStatus::ProtocolMismatch);
     expect_server_closed();
 }
@@ -210,38 +206,18 @@ TEST_F(LobbySessionTest, UsernameWithNonAsciiRespondsInvalidNameAndCloses) {
     expect_server_closed();
 }
 
-TEST_F(LobbySessionTest, NilUserIdRespondsInvalidNameAndCloses) {
-    send_login(PROTOCOL_VERSION, UserId{}, "jero");
-    expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
-}
-
-TEST_F(LobbySessionTest, UserIdWithWrongVersionNibbleRespondsInvalidName) {
-    UserId user_id = make_user_id();
-    user_id[6] = static_cast<uint8_t>(0x10 | (user_id[6] & 0x0F));
-    send_login(PROTOCOL_VERSION, user_id, "jero");
-    expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
-}
-
-TEST_F(LobbySessionTest, UserIdWithWrongVariantRespondsInvalidName) {
-    UserId user_id = make_user_id();
-    user_id[8] = static_cast<uint8_t>(0xC0 | (user_id[8] & 0x3F));
-    send_login(PROTOCOL_VERSION, user_id, "jero");
-    expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
-}
-
 TEST_F(LobbySessionTest, UnknownOperationClosesWithoutResponse) {
     ASSERT_TRUE(client->send_u8(UNKNOWN_OP));
     expect_server_closed();
 }
 
 TEST_F(LobbySessionTest, ClientDisconnectingMidLoginEndsSession) {
-    UserId user_id = make_user_id();
+    const std::string username = "jero";
     ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(LobbyOp::Login)));
     ASSERT_TRUE(client->send_u8(PROTOCOL_VERSION));
-    ASSERT_TRUE(client->send_bytes(user_id.data(), user_id.size() / 2));
+    ASSERT_TRUE(client->send_u16(static_cast<uint16_t>(username.size())));
+    ASSERT_TRUE(client->send_bytes(reinterpret_cast<const uint8_t*>(username.data()),
+                                   username.size() / 2));
     client->shutdown();
     EXPECT_TRUE(wait_session_end());
 }
@@ -297,12 +273,12 @@ TEST_F(LobbySessionTest, ListMyGamesWithoutGamesReturnsEmptyList) {
 }
 
 TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
-    UserId me = make_user_id();
+    const std::string me = "jero";
     std::optional<uint32_t> mine =
             registry.create_game("Mi granja", "granja", GameMember{me, "Martu", APPEARANCE});
-    registry.create_game("Ajena", "pueblo", GameMember{make_user_id(0x10), "Otro", APPEARANCE});
+    registry.create_game("Ajena", "pueblo", GameMember{"otro", "Otro", APPEARANCE});
 
-    send_login(PROTOCOL_VERSION, me, "jero");
+    send_login(me);
     expect_status(LobbyStatus::Ok);
     send_op(LobbyOp::ListMyGames);
     std::vector<SavedGameInfo> games = recv_saved_game_list();
@@ -341,7 +317,7 @@ TEST_F(LobbySessionTest, CheckInviteCodeOfNonMemberRespondsOkWithoutGameId) {
 }
 
 TEST_F(LobbySessionTest, CheckInviteCodeOfMemberRespondsGameId) {
-    send_login(PROTOCOL_VERSION, OWNER, "duenio");
+    send_login(OWNER);
     expect_status(LobbyStatus::Ok);
     send_op(LobbyOp::CheckInviteCode);
     ASSERT_TRUE(client->send_string(CODE));
@@ -370,7 +346,7 @@ TEST_F(LobbySessionTest, JoinGameWithInvalidCharacterNameRespondsInvalidName) {
     send_join_game(CODE, "con espacio");
     expect_status(LobbyStatus::InvalidName);
     expect_game_id(0);
-    EXPECT_TRUE(registry.games_of(make_user_id()).empty());
+    EXPECT_TRUE(registry.games_of("jero").empty());
 }
 
 TEST_F(LobbySessionTest, JoinGameWithUnknownCodeRespondsInvalidInviteCode) {
@@ -382,7 +358,7 @@ TEST_F(LobbySessionTest, JoinGameWithUnknownCodeRespondsInvalidInviteCode) {
 }
 
 TEST_F(LobbySessionTest, LoadOwnGameTwiceRespondsAlreadyConnected) {
-    send_login(PROTOCOL_VERSION, OWNER, "duenio");
+    send_login(OWNER);
     expect_status(LobbyStatus::Ok);
     send_load_game(MULTI_ID);
     expect_status(LobbyStatus::Ok);
@@ -398,7 +374,7 @@ TEST_F(LobbySessionTest, LoadForeignGameRespondsGameNotFound) {
 }
 
 TEST_F(LobbySessionTest, ClosingSessionDisconnectsFromItsGame) {
-    send_login(PROTOCOL_VERSION, OWNER, "duenio");
+    send_login(OWNER);
     expect_status(LobbyStatus::Ok);
     send_load_game(MULTI_ID);
     expect_status(LobbyStatus::Ok);

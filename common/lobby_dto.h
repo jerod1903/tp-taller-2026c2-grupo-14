@@ -1,16 +1,12 @@
 #ifndef LOBBY_DTO_H
 #define LOBBY_DTO_H
 
-#include <array>
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
 
 constexpr uint8_t PROTOCOL_VERSION = 1;
-
-constexpr std::size_t USER_ID_SIZE = 16;
-using UserId = std::array<uint8_t, USER_ID_SIZE>;
 
 enum class LobbyOp : uint8_t {
     Login,
@@ -31,7 +27,7 @@ enum class LobbyStatus : uint8_t {
     InvalidInviteCode,  // código inexistente o partida single (misma respuesta en ambos casos)
     GameFull,           // se alcanzó el máximo de jugadores (config TOML)
     NameTaken,          // el nombre de personaje ya existe en esa partida
-    AlreadyConnected,   // ese userId ya está conectado a la partida
+    AlreadyConnected,   // ese usuario ya está conectado a la partida
     GameClosed,         // la partida se está cerrando
     ProtocolMismatch,   // versión de protocolo incompatible
     AlreadyMember,      // JOIN_GAME de alguien que ya está en la partida: tiene que usar LOAD_GAME
@@ -69,8 +65,7 @@ constexpr std::string_view to_string(LobbyStatus status) {
 
 struct LoginRequest {
     uint8_t protocolVersion;
-    UserId userId;         // UUID v4 generado y guardado por el cliente
-    std::string username;  // solo para mostrar
+    std::string username;  // identifica al jugador: con él se recuperan sus partidas
 };
 
 // Ids = índices del catálogo de apariencia.

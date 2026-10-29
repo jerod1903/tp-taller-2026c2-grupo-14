@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <format>
 #include <string>
 #include <utility>
 
@@ -12,25 +11,11 @@
 
 namespace {
 
-bool is_valid_uuid_v4(const UserId& id) { return (id[6] >> 4) == 0x4 && (id[8] & 0xC0) == 0x80; }
-
 bool is_valid_name_char(unsigned char c) { return std::isalnum(c) || c == '_' || c == '-'; }
 
 bool is_valid_name(const std::string& name) {
     return !name.empty() && name.size() <= ServerConstants::MAX_NAME_LEN &&
            std::all_of(name.begin(), name.end(), is_valid_name_char);
-}
-
-// Formato canónico 8-4-4-4-12, el mismo que muestra el cliente.
-std::string format_user_id(const UserId& id) {
-    std::string out;
-    for (std::size_t i = 0; i < id.size(); ++i) {
-        if (i == 4 || i == 6 || i == 8 || i == 10) {
-            out += '-';
-        }
-        out += std::format("{:02x}", id[i]);
-    }
-    return out;
 }
 
 // El nombre de un login rechazado viene sin validar: se trunca y se reemplazan los caracteres
@@ -75,7 +60,7 @@ void LobbySession::run() {
         Logger::debug("conexión cortada: {}", e.what());
     }
     if (current_game) {
-        registry.leave_game(*current_game, identity->userId);
+        registry.leave_game(*current_game, *username);
     }
     // Se cierra acá y no en el destructor: el Acceptor recién lo destruye en el próximo accept.
     // Si se está deteniendo, el shutdown ya lo hizo el destructor.
@@ -106,13 +91,12 @@ bool LobbySession::handle_login() {
         return false;
     }
     if (status != LobbyStatus::Ok) {
-        Logger::warn("login rechazado ({}): user {} '{}' versión {}", to_string(status),
-                     format_user_id(req->userId), printable(req->username),
-                     static_cast<unsigned>(req->protocolVersion));
+        Logger::warn("login rechazado ({}): user '{}' versión {}", to_string(status),
+                     printable(req->username), static_cast<unsigned>(req->protocolVersion));
         return false;
     }
-    Logger::info("login: user {} '{}'", format_user_id(req->userId), req->username);
-    identity = SessionIdentity{req->userId, std::move(req->username)};
+    Logger::info("login: user '{}'", req->username);
+    username = std::move(req->username);
     return true;
 }
 
@@ -134,7 +118,7 @@ bool LobbySession::handle_list_worlds() { return protocol.send_world_list(regist
 
 bool LobbySession::handle_list_my_games() {
     // games_of devuelve una copia: el lock del registry ya se soltó cuando se envía.
-    return protocol.send_saved_game_list(registry.games_of(identity->userId));
+    return protocol.send_saved_game_list(registry.games_of(*username));
 }
 
 bool LobbySession::handle_check_invite_code() {
@@ -142,8 +126,7 @@ bool LobbySession::handle_check_invite_code() {
     if (!req) {
         return false;
     }
-    return protocol.send_check_invite_code(
-            registry.check_invite_code(req->inviteCode, identity->userId));
+    return protocol.send_check_invite_code(registry.check_invite_code(req->inviteCode, *username));
 }
 
 bool LobbySession::handle_join_game() {
@@ -155,11 +138,9 @@ bool LobbySession::handle_join_game() {
         return protocol.send_join_game(JoinGameResponse{LobbyStatus::InvalidName, 0});
     }
     JoinGameResponse response = registry.join_game(
-            req->inviteCode,
-            GameMember{identity->userId, std::move(req->characterName), req->appearance});
+            req->inviteCode, GameMember{*username, std::move(req->characterName), req->appearance});
     if (response.status == LobbyStatus::Ok) {
-        Logger::info("user {} se unió a la partida {}", format_user_id(identity->userId),
-                     response.gameId);
+        Logger::info("user '{}' se unió a la partida {}", *username, response.gameId);
         enter_game(response.gameId);
     }
     return protocol.send_join_game(response);
@@ -171,9 +152,9 @@ bool LobbySession::handle_load_game() {
         return false;
     }
     // Volver a pedir la partida en la que ya está no la suelta: responde AlreadyConnected.
-    LobbyStatus status = registry.load_game(req->gameId, identity->userId);
+    LobbyStatus status = registry.load_game(req->gameId, *username);
     if (status == LobbyStatus::Ok) {
-        Logger::info("user {} retomó la partida {}", format_user_id(identity->userId), req->gameId);
+        Logger::info("user '{}' retomó la partida {}", *username, req->gameId);
         enter_game(req->gameId);
     }
     return protocol.send_load_game(LoadGameResponse{status});
@@ -181,7 +162,7 @@ bool LobbySession::handle_load_game() {
 
 void LobbySession::enter_game(uint32_t game_id) {
     if (current_game) {
-        registry.leave_game(*current_game, identity->userId);
+        registry.leave_game(*current_game, *username);
     }
     current_game = game_id;
 }
@@ -190,7 +171,7 @@ LobbyStatus LobbySession::validate(const LoginRequest& req) const {
     if (req.protocolVersion != PROTOCOL_VERSION) {
         return LobbyStatus::ProtocolMismatch;
     }
-    if (!is_valid_uuid_v4(req.userId) || !is_valid_name(req.username)) {
+    if (!is_valid_name(req.username)) {
         return LobbyStatus::InvalidName;
     }
     return LobbyStatus::Ok;
