@@ -5,10 +5,13 @@ target_sources(taller_client
     menu/MainWindow.cpp
     menu/backend/MockLobbyProtocol.cpp
     menu/components/CharacterPreview.cpp
+    menu/components/ColorPicker.cpp
     menu/components/MenuButton.cpp
+    menu/components/OptionStepper.cpp
     menu/components/SavedGameRow.cpp
     menu/navigation/ScreenManager.cpp
     menu/screens/BaseScreen.cpp
+    menu/screens/CharacterScreen.cpp
     menu/screens/JoinGameScreen.cpp
     menu/screens/MainMenuScreen.cpp
     menu/screens/MyGamesScreen.cpp
@@ -26,14 +29,18 @@ target_sources(taller_client
     menu/backend/ILobbyProtocol.h
     menu/backend/MockLobbyProtocol.h
     menu/components/CharacterPreview.h
+    menu/components/ColorPicker.h
     menu/components/MenuButton.h
+    menu/components/OptionStepper.h
     menu/components/SavedGameRow.h
     menu/navigation/ScreenManager.h
     menu/screens/BaseScreen.h
+    menu/screens/CharacterScreen.h
     menu/screens/JoinGameScreen.h
     menu/screens/MainMenuScreen.h
     menu/screens/MyGamesScreen.h
     menu/screens/PlaceholderScreen.h
+    menu/styles/AppearanceCatalog.h
     menu/styles/CharacterColors.h
     menu/styles/StyleManager.h
     network/ClientProtocol.h

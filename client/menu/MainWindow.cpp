@@ -2,6 +2,7 @@
 
 #include <QStackedWidget>
 
+#include "client/menu/screens/CharacterScreen.h"
 #include "client/menu/screens/JoinGameScreen.h"
 #include "client/menu/screens/MainMenuScreen.h"
 #include "client/menu/screens/MyGamesScreen.h"
@@ -23,9 +24,9 @@ void MainWindow::setupScreens() {
     auto* mainMenu = new MainMenuScreen();
     auto* joinGame = new JoinGameScreen(lobby);
     auto* myGames = new MyGamesScreen(lobby);
+    auto* character = new CharacterScreen();
     // Provisorias: se reemplazan por la pantalla real a medida que se implementan.
     auto* newGame = new PlaceholderScreen("Nueva partida");
-    auto* character = new PlaceholderScreen("Personaje");
     auto* inGame = new PlaceholderScreen("Partida (arranca SDL)");
 
     screenManager.add(ScreenId::MainMenu, mainMenu);

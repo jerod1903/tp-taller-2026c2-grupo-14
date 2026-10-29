@@ -55,8 +55,19 @@ QString StyleManager::globalStyleSheet() {
         QListWidget::item:selected {
             background-color: #5A310D;
         }
-        #savedGameRow, #characterPreview {
+        #savedGameRow, #characterPreview, #optionStepper, #colorPicker {
             background: transparent;
+        }
+        #colorSwatch {
+            border: 2px solid #3E2109;
+            border-radius: 4px;
+            padding: 0;
+        }
+        #colorSwatch:hover {
+            border-color: #F7D290;
+        }
+        #colorSwatch:checked {
+            border: 3px solid #FFEBAD;
         }
         #errorLabel {
             color: #FF9B7A;
