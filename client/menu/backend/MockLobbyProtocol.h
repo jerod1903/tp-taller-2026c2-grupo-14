@@ -10,6 +10,7 @@
 //   - codigo "ABC123" es valido, "LLENA1" es de una partida llena, "MIA123" es de una
 //     partida donde el jugador ya esta (la 2), cualquier otro es invalido.
 //   - los nombres vacios o de mas de 20 caracteres se rechazan con InvalidName.
+//   - el usuario "ocupado" ya esta conectado (AlreadyConnected).
 class MockLobbyProtocol: public ILobbyProtocol {
 public:
     MockLobbyProtocol();

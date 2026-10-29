@@ -13,6 +13,7 @@ target_sources(taller_client
     menu/screens/BaseScreen.cpp
     menu/screens/CharacterScreen.cpp
     menu/screens/JoinGameScreen.cpp
+    menu/screens/LoginScreen.cpp
     menu/screens/MainMenuScreen.cpp
     menu/screens/MyGamesScreen.cpp
     menu/screens/NewGameScreen.cpp
@@ -38,6 +39,7 @@ target_sources(taller_client
     menu/screens/BaseScreen.h
     menu/screens/CharacterScreen.h
     menu/screens/JoinGameScreen.h
+    menu/screens/LoginScreen.h
     menu/screens/MainMenuScreen.h
     menu/screens/MyGamesScreen.h
     menu/screens/NewGameScreen.h

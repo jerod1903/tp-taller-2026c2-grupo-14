@@ -9,6 +9,7 @@ constexpr std::size_t MAX_NAME_LENGTH = 20;
 const char* const VALID_INVITE_CODE = "ABC123";
 const char* const FULL_GAME_INVITE_CODE = "LLENA1";
 const char* const OWN_GAME_INVITE_CODE = "MIA123";
+const char* const CONNECTED_USERNAME = "ocupado";
 // Partida a la que lleva VALID_INVITE_CODE.
 constexpr uint32_t INVITE_GAME_ID = 50;
 // Partida de savedGames a la que lleva OWN_GAME_INVITE_CODE.
@@ -34,7 +35,10 @@ MockLobbyProtocol::MockLobbyProtocol():
         nextGameId(FIRST_CREATED_GAME_ID) {}
 
 LobbyStatus MockLobbyProtocol::login(const std::string& username) {
-    return isValidName(username) ? LobbyStatus::Ok : LobbyStatus::InvalidName;
+    if (!isValidName(username)) {
+        return LobbyStatus::InvalidName;
+    }
+    return username == CONNECTED_USERNAME ? LobbyStatus::AlreadyConnected : LobbyStatus::Ok;
 }
 
 std::vector<WorldInfo> MockLobbyProtocol::listWorlds() { return worlds; }

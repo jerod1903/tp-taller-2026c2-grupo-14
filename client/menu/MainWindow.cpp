@@ -5,6 +5,7 @@
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/screens/CharacterScreen.h"
 #include "client/menu/screens/JoinGameScreen.h"
+#include "client/menu/screens/LoginScreen.h"
 #include "client/menu/screens/MainMenuScreen.h"
 #include "client/menu/screens/MyGamesScreen.h"
 #include "client/menu/screens/NewGameScreen.h"
@@ -19,10 +20,11 @@ MainWindow::MainWindow(ILobbyProtocol& lobby, QWidget* parent):
     setCentralWidget(stack);
 
     setupScreens();
-    screenManager.show(ScreenId::MainMenu);
+    screenManager.show(ScreenId::Login);
 }
 
 void MainWindow::setupScreens() {
+    auto* login = new LoginScreen(lobby);
     auto* mainMenu = new MainMenuScreen();
     auto* newGame = new NewGameScreen(lobby);
     auto* joinGame = new JoinGameScreen(lobby);
@@ -31,12 +33,16 @@ void MainWindow::setupScreens() {
     // Provisoria: representa "aca arranca SDL" hasta que exista ClientApp.
     auto* inGame = new PlaceholderScreen("Partida (arranca SDL)");
 
+    screenManager.add(ScreenId::Login, login);
     screenManager.add(ScreenId::MainMenu, mainMenu);
     screenManager.add(ScreenId::NewGame, newGame);
     screenManager.add(ScreenId::JoinGame, joinGame);
     screenManager.add(ScreenId::MyGames, myGames);
     screenManager.add(ScreenId::Character, character);
     screenManager.add(ScreenId::InGame, inGame);
+
+    connect(login, &LoginScreen::loggedIn, this,
+            [this]() { screenManager.show(ScreenId::MainMenu); });
 
     connect(mainMenu, &MainMenuScreen::newGameRequested, this,
             [this]() { screenManager.show(ScreenId::NewGame); });
