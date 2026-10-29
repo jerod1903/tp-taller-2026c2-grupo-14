@@ -55,6 +55,9 @@ LobbySession::LobbySession(Socket&& peer, GameRegistry& registry):
         handlers{
                 {LobbyOp::ListWorlds, [this]() { return handle_list_worlds(); }},
                 {LobbyOp::ListMyGames, [this]() { return handle_list_my_games(); }},
+                {LobbyOp::CheckInviteCode, [this]() { return handle_check_invite_code(); }},
+                {LobbyOp::JoinGame, [this]() { return handle_join_game(); }},
+                {LobbyOp::LoadGame, [this]() { return handle_load_game(); }},
         } {}
 
 void LobbySession::start() {
@@ -70,6 +73,9 @@ void LobbySession::run() {
     } catch (const LibError& e) {
         // El cliente cortó a mitad de un mensaje.
         Logger::debug("conexión cortada: {}", e.what());
+    }
+    if (current_game) {
+        registry.leave_game(*current_game, identity->userId);
     }
     // Se cierra acá y no en el destructor: el Acceptor recién lo destruye en el próximo accept.
     // Si se está deteniendo, el shutdown ya lo hizo el destructor.
@@ -129,6 +135,55 @@ bool LobbySession::handle_list_worlds() { return protocol.send_world_list(regist
 bool LobbySession::handle_list_my_games() {
     // games_of devuelve una copia: el lock del registry ya se soltó cuando se envía.
     return protocol.send_saved_game_list(registry.games_of(identity->userId));
+}
+
+bool LobbySession::handle_check_invite_code() {
+    std::optional<CheckInviteCodeRequest> req = protocol.recv_check_invite_code();
+    if (!req) {
+        return false;
+    }
+    return protocol.send_check_invite_code(
+            registry.check_invite_code(req->inviteCode, identity->userId));
+}
+
+bool LobbySession::handle_join_game() {
+    std::optional<JoinGameRequest> req = protocol.recv_join_game();
+    if (!req) {
+        return false;
+    }
+    if (!is_valid_name(req->characterName)) {
+        return protocol.send_join_game(JoinGameResponse{LobbyStatus::InvalidName, 0});
+    }
+    JoinGameResponse response = registry.join_game(
+            req->inviteCode,
+            GameMember{identity->userId, std::move(req->characterName), req->appearance});
+    if (response.status == LobbyStatus::Ok) {
+        Logger::info("user {} se unió a la partida {}", format_user_id(identity->userId),
+                     response.gameId);
+        enter_game(response.gameId);
+    }
+    return protocol.send_join_game(response);
+}
+
+bool LobbySession::handle_load_game() {
+    std::optional<LoadGameRequest> req = protocol.recv_load_game();
+    if (!req) {
+        return false;
+    }
+    // Volver a pedir la partida en la que ya está no la suelta: responde AlreadyConnected.
+    LobbyStatus status = registry.load_game(req->gameId, identity->userId);
+    if (status == LobbyStatus::Ok) {
+        Logger::info("user {} retomó la partida {}", format_user_id(identity->userId), req->gameId);
+        enter_game(req->gameId);
+    }
+    return protocol.send_load_game(LoadGameResponse{status});
+}
+
+void LobbySession::enter_game(uint32_t game_id) {
+    if (current_game) {
+        registry.leave_game(*current_game, identity->userId);
+    }
+    current_game = game_id;
 }
 
 LobbyStatus LobbySession::validate(const LoginRequest& req) const {

@@ -44,21 +44,80 @@ std::vector<SavedGameInfo> GameRegistry::games_of(const UserId& user_id) const {
 }
 
 std::optional<uint32_t> GameRegistry::create_game(const std::string& game_name,
-                                                  const std::string& world_id, bool is_multiplayer,
+                                                  const std::string& world_id,
                                                   const GameMember& owner) {
     if (!world_exists(world_id)) {
         return std::nullopt;
     }
     std::lock_guard<std::mutex> lock(mutex);
-    GameRecord game{next_game_id++,
-                    game_name,
-                    world_id,
-                    is_multiplayer,
-                    is_multiplayer ? max_players : SINGLE_PLAYER_MAX,
-                    {owner}};
+    GameRecord game{next_game_id++, game_name, world_id, false, SINGLE_PLAYER_MAX, {owner}, ""};
     store.save(game);
     add(game);
     return game.gameId;
+}
+
+CheckInviteCodeResponse GameRegistry::check_invite_code(const std::string& code,
+                                                        const UserId& user_id) const {
+    std::lock_guard<std::mutex> lock(mutex);
+    std::map<std::string, uint32_t>::const_iterator id = games_by_code.find(code);
+    if (id == games_by_code.end()) {
+        return CheckInviteCodeResponse{LobbyStatus::InvalidInviteCode, false, 0};
+    }
+    const GameRecord& game = games.at(id->second);
+    if (is_member(game, user_id)) {
+        return CheckInviteCodeResponse{LobbyStatus::Ok, true, game.gameId};
+    }
+    if (game.members.size() >= game.maxPlayers) {
+        return CheckInviteCodeResponse{LobbyStatus::GameFull, false, 0};
+    }
+    return CheckInviteCodeResponse{LobbyStatus::Ok, false, 0};
+}
+
+JoinGameResponse GameRegistry::join_game(const std::string& code, const GameMember& member) {
+    std::lock_guard<std::mutex> lock(mutex);
+    std::map<std::string, uint32_t>::const_iterator id = games_by_code.find(code);
+    if (id == games_by_code.end()) {
+        return JoinGameResponse{LobbyStatus::InvalidInviteCode, 0};
+    }
+    GameRecord& game = games.at(id->second);
+    if (is_member(game, member.userId)) {
+        return JoinGameResponse{LobbyStatus::AlreadyMember, 0};
+    }
+    if (game.members.size() >= game.maxPlayers) {
+        return JoinGameResponse{LobbyStatus::GameFull, 0};
+    }
+    if (name_taken(game, member.characterName)) {
+        return JoinGameResponse{LobbyStatus::NameTaken, 0};
+    }
+    game.members.push_back(member);
+    store.save(game);
+    games_by_user[member.userId].insert(game.gameId);
+    connected[game.gameId].insert(member.userId);
+    return JoinGameResponse{LobbyStatus::Ok, game.gameId};
+}
+
+LobbyStatus GameRegistry::load_game(uint32_t game_id, const UserId& user_id) {
+    std::lock_guard<std::mutex> lock(mutex);
+    std::map<uint32_t, GameRecord>::const_iterator game = games.find(game_id);
+    if (game == games.end() || !is_member(game->second, user_id)) {
+        return LobbyStatus::GameNotFound;
+    }
+    if (!connected[game_id].insert(user_id).second) {
+        return LobbyStatus::AlreadyConnected;
+    }
+    return LobbyStatus::Ok;
+}
+
+void GameRegistry::leave_game(uint32_t game_id, const UserId& user_id) {
+    std::lock_guard<std::mutex> lock(mutex);
+    std::map<uint32_t, std::set<UserId>>::iterator users = connected.find(game_id);
+    if (users == connected.end()) {
+        return;
+    }
+    users->second.erase(user_id);
+    if (users->second.empty()) {
+        connected.erase(users);
+    }
 }
 
 bool GameRegistry::world_exists(const std::string& world_id) const {
@@ -78,5 +137,19 @@ void GameRegistry::add(const GameRecord& game) {
     for (const GameMember& member: game.members) {
         games_by_user[member.userId].insert(game.gameId);
     }
+    if (!game.inviteCode.empty()) {
+        games_by_code.insert_or_assign(game.inviteCode, game.gameId);
+    }
     games.insert_or_assign(game.gameId, game);
+}
+
+bool GameRegistry::is_member(const GameRecord& game, const UserId& user_id) {
+    return std::any_of(game.members.begin(), game.members.end(),
+                       [&user_id](const GameMember& m) { return m.userId == user_id; });
+}
+
+bool GameRegistry::name_taken(const GameRecord& game, const std::string& character_name) {
+    return std::any_of(
+            game.members.begin(), game.members.end(),
+            [&character_name](const GameMember& m) { return m.characterName == character_name; });
 }

@@ -20,10 +20,16 @@ public:
     // std::nullopt si el peer cerró.
     std::optional<LobbyOp> recv_operation();
     std::optional<LoginRequest> recv_login();
+    std::optional<CheckInviteCodeRequest> recv_check_invite_code();
+    std::optional<JoinGameRequest> recv_join_game();
+    std::optional<LoadGameRequest> recv_load_game();
 
     bool send_status(LobbyStatus status);
     bool send_world_list(const std::vector<WorldInfo>& worlds);
     bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
+    bool send_check_invite_code(const CheckInviteCodeResponse& response);
+    bool send_join_game(const JoinGameResponse& response);
+    bool send_load_game(const LoadGameResponse& response);
 
     void shutdown();
 
@@ -32,6 +38,7 @@ private:
 
     bool send_count(std::size_t count);
     bool send_appearance(const CharacterAppearance& appearance);
+    std::optional<CharacterAppearance> recv_appearance();
 };
 
 #endif  // SERVER_PROTOCOL_H

@@ -129,10 +129,10 @@ struct JoinGameResponse {
     uint32_t gameId;  // válido solo si status == Ok
 };
 
+// Toda partida arranca single: no se pide si es multi.
 struct CreateGameRequest {
     std::string worldId;
     std::string gameName;
-    bool isMultiplayer;
     std::string characterName;
     CharacterAppearance appearance;
 };

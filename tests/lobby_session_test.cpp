@@ -33,6 +33,13 @@ constexpr uint8_t MAX_PLAYERS = 4;
 const std::vector<WorldInfo> WORLDS = {{"granja", "Granja"}, {"pueblo", "Pueblo"}};
 const CharacterAppearance APPEARANCE{3, 2, 10, 1, 4};
 
+// Partida multi precargada en el store de cada test, de otro usuario que el del login por defecto.
+constexpr uint32_t MULTI_ID = 7;
+constexpr const char* CODE = "ABC234";
+const UserId OWNER = make_user_id(0x10);
+const GameRecord MULTI_GAME{
+        MULTI_ID, "Multi", "granja", true, MAX_PLAYERS, {{OWNER, "Duenio", APPEARANCE}}, CODE};
+
 class LobbySessionTest: public ::testing::Test {
 protected:
     // El test hace de cliente; la LobbySession corre en su propio thread del otro lado del socket.
@@ -106,6 +113,32 @@ protected:
         return games;
     }
 
+    void send_join_game(const std::string& code, const std::string& character_name) {
+        send_op(LobbyOp::JoinGame);
+        ASSERT_TRUE(client->send_string(code));
+        ASSERT_TRUE(client->send_string(character_name));
+        send_appearance(APPEARANCE);
+    }
+
+    void send_load_game(uint32_t game_id) {
+        send_op(LobbyOp::LoadGame);
+        ASSERT_TRUE(client->send_u32(game_id));
+    }
+
+    void send_appearance(const CharacterAppearance& appearance) {
+        ASSERT_TRUE(client->send_u16(appearance.hairStyle));
+        ASSERT_TRUE(client->send_u8(appearance.hairColor));
+        ASSERT_TRUE(client->send_u16(appearance.shirt));
+        ASSERT_TRUE(client->send_u16(appearance.pants));
+        ASSERT_TRUE(client->send_u16(appearance.hat));
+    }
+
+    void expect_game_id(uint32_t expected) {
+        std::optional<uint32_t> game_id = client->recv_u32();
+        ASSERT_TRUE(game_id.has_value());
+        EXPECT_EQ(*game_id, expected);
+    }
+
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
 
     bool wait_session_end() {
@@ -116,7 +149,7 @@ protected:
     }
 
     // Declarados antes que la sesión: la sesión usa al registry y se destruye primero.
-    InMemoryGameStore store;
+    InMemoryGameStore store{{MULTI_GAME}};
     GameRegistry registry{WORLDS, store, MAX_PLAYERS};
     std::unique_ptr<BaseProtocol> client;
     std::unique_ptr<LobbySession> session;
@@ -266,9 +299,8 @@ TEST_F(LobbySessionTest, ListMyGamesWithoutGamesReturnsEmptyList) {
 TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     UserId me = make_user_id();
     std::optional<uint32_t> mine =
-            registry.create_game("Mi granja", "granja", true, GameMember{me, "Martu", APPEARANCE});
-    registry.create_game("Ajena", "pueblo", true,
-                         GameMember{make_user_id(0x10), "Otro", APPEARANCE});
+            registry.create_game("Mi granja", "granja", GameMember{me, "Martu", APPEARANCE});
+    registry.create_game("Ajena", "pueblo", GameMember{make_user_id(0x10), "Otro", APPEARANCE});
 
     send_login(PROTOCOL_VERSION, me, "jero");
     expect_status(LobbyStatus::Ok);
@@ -284,7 +316,7 @@ TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     EXPECT_EQ(games[0].appearance.shirt, APPEARANCE.shirt);
     EXPECT_EQ(games[0].appearance.pants, APPEARANCE.pants);
     EXPECT_EQ(games[0].appearance.hat, APPEARANCE.hat);
-    EXPECT_TRUE(games[0].isMultiplayer);
+    EXPECT_FALSE(games[0].isMultiplayer);
 }
 
 TEST_F(LobbySessionTest, SeveralOperationsInTheSameConnection) {
@@ -296,6 +328,92 @@ TEST_F(LobbySessionTest, SeveralOperationsInTheSameConnection) {
     EXPECT_TRUE(recv_saved_game_list().empty());
     send_op(LobbyOp::ListWorlds);
     EXPECT_EQ(recv_world_list().size(), WORLDS.size());
+}
+
+TEST_F(LobbySessionTest, CheckInviteCodeOfNonMemberRespondsOkWithoutGameId) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_op(LobbyOp::CheckInviteCode);
+    ASSERT_TRUE(client->send_string(CODE));
+    expect_status(LobbyStatus::Ok);
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
+    expect_game_id(0);
+}
+
+TEST_F(LobbySessionTest, CheckInviteCodeOfMemberRespondsGameId) {
+    send_login(PROTOCOL_VERSION, OWNER, "duenio");
+    expect_status(LobbyStatus::Ok);
+    send_op(LobbyOp::CheckInviteCode);
+    ASSERT_TRUE(client->send_string(CODE));
+    expect_status(LobbyStatus::Ok);
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    expect_game_id(MULTI_ID);
+}
+
+TEST_F(LobbySessionTest, JoinGameByCodeAddsItToMyGames) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_join_game(CODE, "Invitado");
+    expect_status(LobbyStatus::Ok);
+    expect_game_id(MULTI_ID);
+    send_op(LobbyOp::ListMyGames);
+    std::vector<SavedGameInfo> games = recv_saved_game_list();
+    ASSERT_EQ(games.size(), 1u);
+    EXPECT_EQ(games[0].gameId, MULTI_ID);
+    EXPECT_EQ(games[0].characterName, "Invitado");
+    EXPECT_TRUE(games[0].isMultiplayer);
+}
+
+TEST_F(LobbySessionTest, JoinGameWithInvalidCharacterNameRespondsInvalidName) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_join_game(CODE, "con espacio");
+    expect_status(LobbyStatus::InvalidName);
+    expect_game_id(0);
+    EXPECT_TRUE(registry.games_of(make_user_id()).empty());
+}
+
+TEST_F(LobbySessionTest, JoinGameWithUnknownCodeRespondsInvalidInviteCode) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_join_game("NOEXIS", "Invitado");
+    expect_status(LobbyStatus::InvalidInviteCode);
+    expect_game_id(0);
+}
+
+TEST_F(LobbySessionTest, LoadOwnGameTwiceRespondsAlreadyConnected) {
+    send_login(PROTOCOL_VERSION, OWNER, "duenio");
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::AlreadyConnected);
+}
+
+TEST_F(LobbySessionTest, LoadForeignGameRespondsGameNotFound) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::GameNotFound);
+}
+
+TEST_F(LobbySessionTest, ClosingSessionDisconnectsFromItsGame) {
+    send_login(PROTOCOL_VERSION, OWNER, "duenio");
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    session.reset();
+    EXPECT_EQ(registry.load_game(MULTI_ID, OWNER), LobbyStatus::Ok);
+}
+
+TEST_F(LobbySessionTest, JoinGameBeforeLoginClosesConnection) {
+    send_op(LobbyOp::JoinGame);
+    expect_server_closed();
+}
+
+TEST_F(LobbySessionTest, LoadGameBeforeLoginClosesConnection) {
+    send_op(LobbyOp::LoadGame);
+    expect_server_closed();
 }
 
 }  // namespace
