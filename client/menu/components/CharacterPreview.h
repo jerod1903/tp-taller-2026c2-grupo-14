@@ -3,7 +3,7 @@
 #include <QString>
 #include <QWidget>
 
-#include "client/menu/backend/LobbyTypes.h"
+#include "common/lobby_dto.h"
 
 class QPaintEvent;
 
@@ -18,6 +18,6 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    CharacterAppearance appearance;
+    CharacterAppearance appearance{};
     QString name;
 };

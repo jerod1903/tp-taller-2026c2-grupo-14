@@ -64,18 +64,19 @@ void JoinGameScreen::submitCode() {
         return;
     }
 
-    LobbyStatus status = lobby.checkInviteCode(code.toStdString());
-    if (status == LobbyStatus::Ok) {
-        emit inviteCodeAccepted(code);
+    CheckInviteCodeResponse response = lobby.checkInviteCode(code.toStdString());
+    if (response.status == LobbyStatus::Ok) {
+        emit inviteCodeAccepted(response);
     } else {
-        showError(status);
+        showError(response.status);
     }
 }
 
 void JoinGameScreen::showError(LobbyStatus status) {
     switch (status) {
         case LobbyStatus::InvalidInviteCode:
-            errorLabel->setText("No hay ninguna partida con ese código. Revisalo e intentá de nuevo.");
+            errorLabel->setText(
+                    "No hay ninguna partida con ese código. Revisalo e intentá de nuevo.");
             break;
         case LobbyStatus::GameFull:
             errorLabel->setText("La partida ya tiene el máximo de jugadores.");

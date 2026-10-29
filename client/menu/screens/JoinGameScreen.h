@@ -1,7 +1,7 @@
 #pragma once
 
-#include "client/menu/backend/LobbyTypes.h"
 #include "client/menu/screens/BaseScreen.h"
+#include "common/lobby_dto.h"
 
 class ILobbyProtocol;
 class QLabel;
@@ -17,8 +17,9 @@ public:
     explicit JoinGameScreen(ILobbyProtocol& lobby, QWidget* parent = nullptr);
 
 signals:
-    // El servidor acepto el codigo: el flujo sigue en la pantalla del personaje.
-    void inviteCodeAccepted(const QString& code);
+    // El servidor acepto el codigo. Si el jugador ya es miembro se retoma la partida;
+    // si no, el flujo sigue en la pantalla del personaje.
+    void inviteCodeAccepted(const CheckInviteCodeResponse& response);
 
 protected:
     // Cada vez que se entra a la pantalla arranca limpia.

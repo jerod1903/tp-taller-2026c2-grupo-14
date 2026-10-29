@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
 #include <vector>
 
-#include "client/menu/backend/LobbyTypes.h"
+#include "common/lobby_dto.h"
 
 // Lo que el menu necesita del servidor, un metodo por mensaje del lobby.
 // Las pantallas solo conocen esta interfaz: hoy la implementa MockLobbyProtocol,
@@ -13,11 +12,12 @@ class ILobbyProtocol {
 public:
     virtual ~ILobbyProtocol() = default;
 
+    // La version del protocolo y el userId los agrega la implementacion.
     virtual LobbyStatus login(const std::string& username) = 0;
     virtual std::vector<WorldInfo> listWorlds() = 0;
     virtual std::vector<SavedGameInfo> listMyGames() = 0;
-    virtual LobbyStatus checkInviteCode(const std::string& code) = 0;
-    virtual GameEnteredResponse createGame(const CreateGameRequest& request) = 0;
-    virtual GameEnteredResponse joinGame(const JoinGameRequest& request) = 0;
-    virtual GameEnteredResponse loadGame(uint32_t gameId) = 0;
+    virtual CheckInviteCodeResponse checkInviteCode(const std::string& code) = 0;
+    virtual CreateGameResponse createGame(const CreateGameRequest& request) = 0;
+    // Sirve para unirse a una partida nueva y para retomar una propia (por gameId).
+    virtual JoinGameResponse joinGame(const JoinGameRequest& request) = 0;
 };

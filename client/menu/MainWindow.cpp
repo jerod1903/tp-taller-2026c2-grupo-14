@@ -44,8 +44,8 @@ void MainWindow::setupScreens() {
     // Cerrar la ultima ventana termina app.exec(); es la misma salida que usara IMenu::run().
     connect(mainMenu, &MainMenuScreen::exitRequested, this, &QMainWindow::close);
 
-    // Flujo unirse: codigo valido -> personaje. El codigo lo va a necesitar la pantalla
-    // de personaje para armar el JoinGameRequest; por ahora solo se navega.
+    // Flujo unirse: codigo valido -> personaje. El gameId de la respuesta lo va a necesitar
+    // la pantalla de personaje para armar el JoinGameRequest; por ahora solo se navega.
     connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this,
             [this]() { screenManager.show(ScreenId::Character); });
     connect(character, &BaseScreen::backRequested, this,

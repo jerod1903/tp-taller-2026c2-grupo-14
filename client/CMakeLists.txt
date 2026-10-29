@@ -23,7 +23,6 @@ target_sources(taller_client
     # .h files
     menu/MainWindow.h
     menu/backend/ILobbyProtocol.h
-    menu/backend/LobbyTypes.h
     menu/backend/MockLobbyProtocol.h
     menu/components/CharacterPreview.h
     menu/components/MenuButton.h
