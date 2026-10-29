@@ -25,7 +25,8 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
         gameList(new QListWidget(this)),
         detailOrHint(new QStackedWidget(this)),
         worldPreview(new QLabel(this)),
-        detailCharacter(new CharacterPreview(DETAIL_PREVIEW_SIZE, this)),
+        detailCharacter(
+                new CharacterPreview(QSize(DETAIL_PREVIEW_SIZE, DETAIL_PREVIEW_SIZE), this)),
         detailGameName(new QLabel(this)),
         detailInfo(new QLabel(this)),
         errorLabel(new QLabel(this)),

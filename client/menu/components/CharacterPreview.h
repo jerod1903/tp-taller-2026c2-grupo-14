@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QSize>
 #include <QString>
 #include <QWidget>
 
@@ -13,7 +14,7 @@ class QPaintEvent;
 // un recuadro con la inicial del nombre.
 class CharacterPreview: public QWidget {
 public:
-    explicit CharacterPreview(int size, QWidget* parent = nullptr);
+    explicit CharacterPreview(const QSize& size, QWidget* parent = nullptr);
 
     void setCharacter(const CharacterAppearance& appearance, const QString& name);
 

@@ -6,11 +6,11 @@
 
 #include "client/menu/styles/CharacterColors.h"
 
-CharacterPreview::CharacterPreview(int size, QWidget* parent):
+CharacterPreview::CharacterPreview(const QSize& size, QWidget* parent):
         QWidget(parent), sprites(TALLER_ASSETS_DIR) {
     // Sin esto hereda el fondo global de QWidget y se ve un recuadro alrededor.
     setObjectName("characterPreview");
-    setFixedSize(size, size);
+    setFixedSize(size);
 }
 
 void CharacterPreview::setCharacter(const CharacterAppearance& newAppearance,

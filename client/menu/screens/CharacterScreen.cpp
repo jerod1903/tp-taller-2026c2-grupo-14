@@ -14,7 +14,8 @@
 #include "common/appearance_catalog.h"
 
 namespace {
-constexpr int PREVIEW_SIZE = 240;
+// Tan alto como el formulario de al lado: el personaje (24x35) entra 12 veces, 288x420.
+const QSize PREVIEW_SIZE(288, 442);
 // El mismo limite que aplica el servidor a los nombres.
 constexpr int MAX_NAME_LENGTH = 20;
 }  // namespace
@@ -33,7 +34,7 @@ CharacterScreen::CharacterScreen(QWidget* parent):
     auto* content = new QHBoxLayout();
     content->setSpacing(Theme::SCREEN_SPACING * 3);
     content->addStretch();
-    content->addWidget(preview, 0, Qt::AlignVCenter);
+    content->addWidget(preview, 0, Qt::AlignTop);
     // Arriba del todo: el formulario no se centra verticalmente.
     content->addWidget(createForm(), 0, Qt::AlignTop);
     content->addStretch();
