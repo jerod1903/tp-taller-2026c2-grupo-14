@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "common/base_protocol.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
+#include "common/requests.h"
 
 class ServerProtocol {
 public:
@@ -30,6 +32,11 @@ public:
     bool send_world_list(const std::vector<WorldInfo>& worlds);
     bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
     bool send_game_entered(const GameEnteredResponse& response);
+
+    // Durante la partida.
+    std::optional<Request> recv_request();
+    bool send_location_data(const LocationData& location);
+    bool send_snapshot(const Snapshot& snapshot);
     bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
 
     void shutdown();
@@ -37,6 +44,7 @@ public:
 private:
     BaseProtocol baseProtocol;
 
+    bool send_game_msg(GameMsg msg);
     bool send_count(std::size_t count);
     bool send_appearance(const CharacterAppearance& appearance);
     std::optional<CharacterAppearance> recv_appearance();

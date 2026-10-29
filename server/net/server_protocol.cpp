@@ -113,6 +113,31 @@ bool ServerProtocol::send_enable_multiplayer(const EnableMultiplayerResponse& re
     return send_status(response.status) && baseProtocol.send_string(response.inviteCode);
 }
 
+// La operación no se valida acá: el protocolo no conoce las reglas del juego.
+std::optional<Request> ServerProtocol::recv_request() {
+    std::optional<uint8_t> operation = baseProtocol.recv_u8();
+    std::optional<uint8_t> dir_x = operation ? baseProtocol.recv_u8() : std::nullopt;
+    std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
+    if (!dir_y)
+        return std::nullopt;
+    return Request{static_cast<Operation>(*operation), *dir_x, *dir_y};
+}
+
+bool ServerProtocol::send_location_data(const LocationData& location) {
+    return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId);
+}
+
+bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
+    return send_game_msg(GameMsg::Snapshot) && baseProtocol.send_u32(snapshot.tick) &&
+           send_count(snapshot.players.size()) &&
+           std::all_of(snapshot.players.begin(), snapshot.players.end(),
+                       [this](uint32_t player_id) { return baseProtocol.send_u32(player_id); });
+}
+
+bool ServerProtocol::send_game_msg(GameMsg msg) {
+    return baseProtocol.send_u8(static_cast<uint8_t>(msg));
+}
+
 bool ServerProtocol::send_count(std::size_t count) {
     return baseProtocol.send_u16(static_cast<uint16_t>(count));
 }
