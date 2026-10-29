@@ -20,7 +20,7 @@ LoginScreen::LoginScreen(ILobbyProtocol& lobby, QWidget* parent):
         nameInput(new QLineEdit(this)),
         errorLabel(new QLabel(this)),
         enterButton(new MenuButton("Entrar", this)) {
-    nameInput->setPlaceholderText("Ej: martu");
+    nameInput->setPlaceholderText("Nombre de usuario");
     nameInput->setMaxLength(MAX_NAME_LENGTH);
 
     errorLabel->setObjectName("errorLabel");
@@ -37,7 +37,6 @@ LoginScreen::LoginScreen(ILobbyProtocol& lobby, QWidget* parent):
     auto* formLayout = new QVBoxLayout(formColumn);
     formLayout->setContentsMargins(0, 0, 0, 0);
     formLayout->setSpacing(Theme::SCREEN_SPACING);
-    formLayout->addWidget(new QLabel("Nombre de usuario", formColumn));
     formLayout->addWidget(nameInput);
     formLayout->addWidget(errorLabel);
     formLayout->addWidget(enterButton);

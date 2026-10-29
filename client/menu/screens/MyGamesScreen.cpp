@@ -16,7 +16,6 @@
 namespace {
 constexpr int DETAIL_PREVIEW_SIZE = 96;
 constexpr int WORLD_PREVIEW_HEIGHT = 200;
-constexpr int PLAY_BUTTON_WIDTH = 200;
 }  // namespace
 
 MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
@@ -46,7 +45,7 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
     content->addWidget(listOrEmpty, 1);
 
     errorLabel->setObjectName("errorLabel");
-    playButton->setFixedWidth(PLAY_BUTTON_WIDTH);
+    playButton->setSmall();
     playButton->setEnabled(false);
 
     auto* bottomRow = new QHBoxLayout();
@@ -54,7 +53,7 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
     bottomRow->addWidget(playButton);
 
     addBackButton();
-    mainLayout->addWidget(createTitle("Mis partidas"));
+    setTitle("Mis partidas");
     mainLayout->addSpacing(10);
     mainLayout->addLayout(content, 1);
     mainLayout->addLayout(bottomRow);

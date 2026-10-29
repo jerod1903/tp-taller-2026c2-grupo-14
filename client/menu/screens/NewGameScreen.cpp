@@ -52,7 +52,7 @@ NewGameScreen::NewGameScreen(ILobbyProtocol& lobby, QWidget* parent):
 
     addBackButton();
     mainLayout->addStretch();
-    mainLayout->addWidget(createTitle("Nueva partida"));
+    setTitle("Nueva partida");
     mainLayout->addSpacing(30);
     mainLayout->addWidget(formColumn, 0, Qt::AlignHCenter);
     mainLayout->addStretch();

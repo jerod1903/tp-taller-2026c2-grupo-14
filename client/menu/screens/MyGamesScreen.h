@@ -10,7 +10,7 @@ class CharacterPreview;
 class ILobbyProtocol;
 class QLabel;
 class QListWidget;
-class QPushButton;
+class MenuButton;
 class QShowEvent;
 class QStackedWidget;
 
@@ -47,5 +47,5 @@ private:
     QLabel* detailGameName;
     QLabel* detailInfo;
     QLabel* errorLabel;
-    QPushButton* playButton;
+    MenuButton* playButton;
 };

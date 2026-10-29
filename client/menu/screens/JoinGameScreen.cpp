@@ -39,7 +39,7 @@ JoinGameScreen::JoinGameScreen(ILobbyProtocol& lobby, QWidget* parent):
 
     addBackButton();
     mainLayout->addStretch();
-    mainLayout->addWidget(createTitle("Unirse a partida"));
+    setTitle("Unirse a partida");
     mainLayout->addSpacing(30);
     mainLayout->addWidget(formColumn, 0, Qt::AlignHCenter);
     mainLayout->addStretch();

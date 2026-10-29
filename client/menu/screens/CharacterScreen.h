@@ -8,7 +8,7 @@ class ColorPicker;
 class OptionStepper;
 class QLabel;
 class QLineEdit;
-class QPushButton;
+class MenuButton;
 class QShowEvent;
 
 // Nombre y apariencia del personaje. La usan los dos flujos (crear partida y unirse):
@@ -43,5 +43,5 @@ private:
     OptionStepper* pants;
     OptionStepper* hat;
     QLabel* errorLabel;
-    QPushButton* confirmButton;
+    MenuButton* confirmButton;
 };

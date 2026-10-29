@@ -17,7 +17,6 @@ namespace {
 constexpr int PREVIEW_SIZE = 160;
 // El mismo limite que aplica el servidor a los nombres.
 constexpr int MAX_NAME_LENGTH = 20;
-constexpr int CONFIRM_BUTTON_WIDTH = 200;
 }  // namespace
 
 CharacterScreen::CharacterScreen(QWidget* parent):
@@ -36,13 +35,14 @@ CharacterScreen::CharacterScreen(QWidget* parent):
     content->setSpacing(Theme::SCREEN_SPACING * 3);
     content->addStretch();
     content->addWidget(preview, 0, Qt::AlignVCenter);
-    content->addWidget(createForm());
+    // Arriba del todo: el formulario no se centra verticalmente.
+    content->addWidget(createForm(), 0, Qt::AlignTop);
     content->addStretch();
 
     errorLabel->setObjectName("errorLabel");
     errorLabel->setWordWrap(true);
     errorLabel->setFixedHeight(Theme::ERROR_LABEL_HEIGHT);
-    confirmButton->setFixedWidth(CONFIRM_BUTTON_WIDTH);
+    confirmButton->setSmall();
     // Sin nombre no hay personaje.
     confirmButton->setEnabled(false);
 
@@ -51,8 +51,7 @@ CharacterScreen::CharacterScreen(QWidget* parent):
     bottomRow->addWidget(confirmButton);
 
     addBackButton();
-    mainLayout->addWidget(createTitle("Tu personaje"));
-    mainLayout->addSpacing(10);
+    setTitle("Tu personaje");
     mainLayout->addLayout(content, 1);
     mainLayout->addLayout(bottomRow);
 
@@ -80,12 +79,20 @@ QWidget* CharacterScreen::createForm() {
     layout->setSpacing(Theme::SCREEN_SPACING);
     layout->addWidget(new QLabel("Nombre", form));
     layout->addWidget(nameInput);
-    layout->addWidget(hairStyle);
-    layout->addWidget(new QLabel("Color de pelo", form));
-    layout->addWidget(hairColor);
-    layout->addWidget(shirt);
-    layout->addWidget(pants);
-    layout->addWidget(hat);
+
+    // Peinado, color, camisa, pantalon y sombrero van encerrados en un panel.
+    auto* panel = new QWidget(form);
+    panel->setObjectName("stepperPanel");
+    auto* panelLayout = new QVBoxLayout(panel);
+    panelLayout->setContentsMargins(12, 10, 12, 10);
+    panelLayout->setSpacing(8);
+    panelLayout->addWidget(hairStyle);
+    panelLayout->addWidget(new QLabel("Color de pelo", panel));
+    panelLayout->addWidget(hairColor);
+    panelLayout->addWidget(shirt);
+    panelLayout->addWidget(pants);
+    panelLayout->addWidget(hat);
+    layout->addWidget(panel);
     layout->addStretch();
     return form;
 }

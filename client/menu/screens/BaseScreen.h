@@ -2,6 +2,7 @@
 
 #include <QWidget>
 
+class QHBoxLayout;
 class QLabel;
 class QVBoxLayout;
 
@@ -20,6 +21,9 @@ protected:
     QLabel* createTitle(const QString& text);
     // Agrega el boton "Volver" como primera fila; al tocarlo emite backRequested().
     void addBackButton();
+    // Titulo en la misma fila que "Volver" (si la hay), centrado.
+    void setTitle(const QString& text);
 
     QVBoxLayout* mainLayout;
+    QHBoxLayout* headerRow = nullptr;
 };

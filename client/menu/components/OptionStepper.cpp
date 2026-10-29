@@ -1,12 +1,29 @@
 #include "client/menu/components/OptionStepper.h"
 
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
+#include <QPixmap>
+#include <QPushButton>
 
-#include "client/menu/components/MenuButton.h"
+#include "client/menu/styles/StyleManager.h"
 
 namespace {
 constexpr int ARROW_WIDTH = 48;
+constexpr int ARROW_ICON_WIDTH = 26;
+constexpr int ARROW_ICON_HEIGHT = 30;
+constexpr int ARROW_HEIGHT = 40;
+
+// Solo el simbolo de la flecha: el objectName quita el recuadro de madera en la hoja global.
+QPushButton* createArrowButton(const QString& iconPath, QWidget* parent) {
+    auto* button = new QPushButton(parent);
+    button->setObjectName("arrowButton");
+    button->setIcon(QIcon(QPixmap(iconPath)));
+    button->setIconSize(QSize(ARROW_ICON_WIDTH, ARROW_ICON_HEIGHT));
+    button->setFixedSize(ARROW_WIDTH, ARROW_HEIGHT);
+    button->setCursor(Qt::PointingHandCursor);
+    return button;
+}
 }  // namespace
 
 OptionStepper::OptionStepper(const QString& title, int count, const QString& noneText,
@@ -19,10 +36,8 @@ OptionStepper::OptionStepper(const QString& title, int count, const QString& non
     // Sin esto hereda el fondo global de QWidget.
     setObjectName("optionStepper");
 
-    auto* previous = new MenuButton("‹", this);
-    auto* next = new MenuButton("›", this);
-    previous->setFixedWidth(ARROW_WIDTH);
-    next->setFixedWidth(ARROW_WIDTH);
+    auto* previous = createArrowButton(":/menu/botones/flecha_izq.png", this);
+    auto* next = createArrowButton(":/menu/botones/flecha_der.png", this);
     valueLabel->setAlignment(Qt::AlignCenter);
 
     auto* layout = new QHBoxLayout(this);

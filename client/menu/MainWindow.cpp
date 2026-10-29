@@ -1,6 +1,10 @@
 #include "client/menu/MainWindow.h"
 
+#include <QPalette>
+#include <QRandomGenerator>
+#include <QResizeEvent>
 #include <QStackedWidget>
+#include <QStringList>
 
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/screens/CharacterScreen.h"
@@ -12,15 +16,47 @@
 #include "client/menu/screens/PlaceholderScreen.h"
 #include "client/menu/styles/StyleManager.h"
 
+namespace {
+const QStringList BACKGROUNDS = {":/menu/fondos/tienda.png", ":/menu/fondos/casa_morada.png",
+                                 ":/menu/fondos/casa_roja.png"};
+}  // namespace
+
 MainWindow::MainWindow(ILobbyProtocol& lobby, QWidget* parent):
         QMainWindow(parent), lobby(lobby), stack(new QStackedWidget(this)), screenManager(*stack) {
     setWindowTitle("Stardew Valley");
-    resize(Theme::WINDOW_WIDTH, Theme::WINDOW_HEIGHT);
+    // Tamano fijo: los sprites de madera se agrandan con repeticion, no con escalado.
+    setFixedSize(Theme::WINDOW_WIDTH, Theme::WINDOW_HEIGHT);
     setStyleSheet(StyleManager::globalStyleSheet());
     setCentralWidget(stack);
 
+    // El stack pinta el fondo; las pantallas encima no tienen fondo propio.
+    stack->setAutoFillBackground(true);
+    int index = QRandomGenerator::global()->bounded(BACKGROUNDS.size());
+    background = QPixmap(BACKGROUNDS.at(index));
+
     setupScreens();
     screenManager.show(ScreenId::Login);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    updateBackground();
+}
+
+void MainWindow::updateBackground() {
+    if (background.isNull() || stack->size().isEmpty()) {
+        return;
+    }
+    // Cubre toda la ventana y recorta el centro. FastTransformation mantiene el pixel art nitido.
+    QSize target = stack->size();
+    QPixmap scaled = background.scaled(target, Qt::KeepAspectRatioByExpanding,
+                                       Qt::FastTransformation);
+    QPixmap cropped = scaled.copy((scaled.width() - target.width()) / 2,
+                                  (scaled.height() - target.height()) / 2, target.width(),
+                                  target.height());
+    QPalette palette = stack->palette();
+    palette.setBrush(QPalette::Window, cropped);
+    stack->setPalette(palette);
 }
 
 void MainWindow::setupScreens() {
