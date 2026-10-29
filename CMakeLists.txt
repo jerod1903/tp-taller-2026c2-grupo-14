@@ -146,6 +146,12 @@ if(TALLER_CLIENT)
     add_executable(taller_menu client/main.cpp ${TALLER_MENU_SOURCES})
     set_target_properties(taller_menu PROPERTIES AUTOMOC ON AUTORCC ON)
     target_link_libraries(taller_menu taller_common Qt6::Widgets)
+
+    # Carpeta de assets que no van en el binario (por ahora, los sprites del personaje).
+    # Provisorio: el instalador la tiene que copiar y esta ruta pasar a ser la instalada.
+    foreach(target taller_client taller_menu)
+        target_compile_definitions(${target} PRIVATE TALLER_ASSETS_DIR="${CMAKE_SOURCE_DIR}/Assets")
+    endforeach()
 endif()
 
 if(TALLER_SERVER)

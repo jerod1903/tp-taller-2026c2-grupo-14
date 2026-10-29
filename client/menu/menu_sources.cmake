@@ -3,6 +3,7 @@ set(TALLER_MENU_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/MainWindow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/backend/MockLobbyProtocol.cpp
     ${CMAKE_CURRENT_LIST_DIR}/components/CharacterPreview.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/CharacterSprites.cpp
     ${CMAKE_CURRENT_LIST_DIR}/components/ColorPicker.cpp
     ${CMAKE_CURRENT_LIST_DIR}/components/MenuButton.cpp
     ${CMAKE_CURRENT_LIST_DIR}/components/OptionStepper.cpp
@@ -22,6 +23,7 @@ set(TALLER_MENU_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/backend/ILobbyProtocol.h
     ${CMAKE_CURRENT_LIST_DIR}/backend/MockLobbyProtocol.h
     ${CMAKE_CURRENT_LIST_DIR}/components/CharacterPreview.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/CharacterSprites.h
     ${CMAKE_CURRENT_LIST_DIR}/components/ColorPicker.h
     ${CMAKE_CURRENT_LIST_DIR}/components/MenuButton.h
     ${CMAKE_CURRENT_LIST_DIR}/components/OptionStepper.h

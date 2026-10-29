@@ -14,7 +14,7 @@
 #include "client/menu/styles/StyleManager.h"
 
 namespace {
-constexpr int PREVIEW_SIZE = 160;
+constexpr int PREVIEW_SIZE = 240;
 // El mismo limite que aplica el servidor a los nombres.
 constexpr int MAX_NAME_LENGTH = 20;
 }  // namespace
