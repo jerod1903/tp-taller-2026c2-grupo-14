@@ -1,4 +1,5 @@
 #include "server/net/server_protocol.h"
+#include "common/game_codec.h"
 
 #include <algorithm>
 #include <string>
@@ -67,3 +68,13 @@ bool ServerProtocol::send_appearance(const CharacterAppearance& appearance) {
 }
 
 void ServerProtocol::shutdown() { baseProtocol.shutdown(); }
+
+
+
+std::optional<ClientMessage> ServerProtocol::recv_game_message() {
+    return read_client_message(baseProtocol);
+}
+
+bool ServerProtocol::send_game_message(const ServerMessage& msg) {
+    return write_message(baseProtocol, msg);
+}

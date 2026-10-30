@@ -7,6 +7,7 @@
 #include "common/base_protocol.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
+#include "common/game_dto.h"
 
 class ServerProtocol {
 public:
@@ -24,6 +25,10 @@ public:
     bool send_status(LobbyStatus status);
     bool send_world_list(const std::vector<WorldInfo>& worlds);
     bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
+
+    // Fase de partida: std::nullopt si el peer cerró.
+    std::optional<ClientMessage> recv_game_message();
+    bool send_game_message(const ServerMessage& msg);
 
     void shutdown();
 
