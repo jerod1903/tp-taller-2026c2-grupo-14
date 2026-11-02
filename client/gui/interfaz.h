@@ -1,31 +1,40 @@
-#ifndef INTERFAZ_JUEGO_H
-#define INTERFAZ_JUEGO_H
+#ifndef INTERFAZ_H
+#define INTERFAZ_H
+
+#include <cstdint>
+#include <map>
+#include <vector>
 
 #include <SDL2pp/SDL2pp.hh>
 
-#include "common/requests.h"
+#include "client/network/enviador.h"
+#include "client/network/recibidor.h"
+#include "common/estado_personaje.h"
 
 #include "calculador_camara.h"
-#include "caverna.h"
 #include "personaje.h"
 
-class InterfazJuego {
+class Interfaz {
 public:
-    InterfazJuego();
+    Interfaz(Enviador& enviador, Recibidor& recibidor);
     void ejecutar();
 
 private:
     void procesar_eventos();
     void actualizar();
-    void enviar_request(const Request& request);
+    // Crea los personajes nuevos, mueve los que ya estaban y borra los que no vinieron
+    void actualizar_personajes(const std::vector<EstadoPersonaje>& estado);
     void dibujar();
+    Enviador& enviador;
+    Recibidor& recibidor;
     SDL2pp::SDL sdl;
     SDL2pp::SDLImage sdl_image;
     SDL2pp::Window ventana;
     SDL2pp::Renderer renderer;
-    Caverna caverna;
-    Personaje personaje;
+    SDL2pp::Texture sprite_personaje;
     CalculadorCamara calculador_camara;
+    // id del jugador -> su personaje
+    std::map<uint16_t, Personaje> personajes;
     bool corriendo = true;
 };
 

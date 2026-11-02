@@ -10,6 +10,7 @@ target_sources(taller_common
     PUBLIC
     # .h files
     base_protocol.h
+    estado_personaje.h
     lobby_dto.h
     logger.h
     lib/queue.h

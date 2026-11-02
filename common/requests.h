@@ -7,8 +7,8 @@
 
 struct Request {
     Operation tipo;
-    uint8_t dir_x;  // 0 si no se mueve, 1 der, 2 izq
-    uint8_t dir_y;  // 0 si no se mueve, 1 arriba, 2 abajo
+    int8_t dir_x;  // -1 izq, 0 no se mueve, 1 der
+    int8_t dir_y;  // -1 arriba, 0 no se mueve, 1 abajo (en pantalla la y crece hacia abajo)
 };
 
 #endif

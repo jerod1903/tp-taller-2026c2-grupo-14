@@ -1,23 +1,27 @@
-#include "interfaz_juego.h"
+#include "interfaz.h"
 
 #include <map>
+#include <optional>
+#include <set>
 #include <utility>
+#include <vector>
 
 #include <SDL2/SDL_image.h>
 
 #include "constants.h"
 
-InterfazJuego::InterfazJuego():
+Interfaz::Interfaz(Enviador& enviador, Recibidor& recibidor):
+        enviador(enviador),
+        recibidor(recibidor),
         sdl(SDL_INIT_VIDEO),
         sdl_image(IMG_INIT_PNG),
         ventana("Jueguito", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, ANCHO_VENTANA,
                 ALTO_VENTANA, SDL_WINDOW_SHOWN),
         renderer(ventana, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        caverna(renderer, ESCALA),
-        personaje(renderer, ESCALA, caverna.posicion_inicial()),
+        sprite_personaje(renderer, RUTA_SPRITE_PERSONAJE),
         calculador_camara(ANCHO_VENTANA, ALTO_VENTANA) {}
 
-void InterfazJuego::ejecutar() {
+void Interfaz::ejecutar() {
     while (corriendo) {
         Uint32 inicio = SDL_GetTicks();
         procesar_eventos();
@@ -30,7 +34,7 @@ void InterfazJuego::ejecutar() {
     }
 }
 
-void InterfazJuego::procesar_eventos() {
+void Interfaz::procesar_eventos() {
     SDL_Event evento;
     while (SDL_PollEvent(&evento)) {
         if (evento.type == SDL_QUIT ||
@@ -40,7 +44,7 @@ void InterfazJuego::procesar_eventos() {
     }
 }
 
-void InterfazJuego::actualizar() {
+void Interfaz::actualizar() {
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
             {{1, 0}, {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D}},
@@ -55,26 +59,40 @@ void InterfazJuego::actualizar() {
             dir_y += direccion.second;
         }
     }
-    if (dir_x == 0 && dir_y == 0) {
-        return;
+    if (dir_x != 0 || dir_y != 0) {
+        Request request{};
+        request.tipo = Operation::Move;
+        request.dir_x = static_cast<int8_t>(dir_x);
+        request.dir_y = static_cast<int8_t>(dir_y);
+        enviador.enviar(request);
     }
-    Request request{};
-    request.tipo = Operation::Move;
-    request.dir_x = (dir_x > 0) ? 1 : (dir_x < 0) ? 2 : 0;
-    request.dir_y = (dir_y < 0) ? 1 : (dir_y > 0) ? 2 : 0;
-    enviar_request(request);
-    personaje.mover(dir_x * VELOCIDAD_MOV, dir_y * VELOCIDAD_MOV, caverna);
+    std::optional<std::vector<EstadoPersonaje>> estado = recibidor.recibir();
+    if (estado) {
+        actualizar_personajes(*estado);
+    }
 }
 
-// TODO: pasarle la request al protocolo cuando este implementado
-void InterfazJuego::enviar_request(const Request& /*request*/) {}
+void Interfaz::actualizar_personajes(const std::vector<EstadoPersonaje>& estado) {
+    std::set<uint16_t> presentes;
+    for (const EstadoPersonaje& jugador: estado) {
+        presentes.insert(jugador.id);
+        auto it = personajes.try_emplace(jugador.id, sprite_personaje, ESCALA).first;
+        it->second.actualizar(SDL2pp::Point(jugador.x, jugador.y));
+    }
+    std::erase_if(personajes,
+                  [&presentes](const auto& par) { return !presentes.contains(par.first); });
+}
 
-void InterfazJuego::dibujar() {
+void Interfaz::dibujar() {
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
-    SDL2pp::Rect camara =
-            calculador_camara.calcular(personaje.centro(), caverna.ancho_px(), caverna.alto_px());
-    caverna.dibujar(renderer, camara);
-    personaje.dibujar(renderer, camara);
+    auto propio = personajes.find(ID_PROPIO);
+    if (propio != personajes.end()) {
+        // TODO: pasar el tamaño del mapa cuando llegue del servidor; con 0 la camara no se mueve
+        SDL2pp::Rect camara = calculador_camara.calcular(propio->second.centro(), 0, 0);
+        for (const auto& [id, personaje]: personajes) {
+            personaje.dibujar(renderer, camara);
+        }
+    }
     renderer.Present();
 }

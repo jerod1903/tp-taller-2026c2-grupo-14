@@ -15,10 +15,12 @@ target_sources(taller_client
     menu/screens/PlaceholderScreen.cpp
     menu/styles/StyleManager.cpp
     gui/prueba.cpp
-    gui/interfaz_juego.cpp
-    gui/caverna.cpp
+    gui/cliente.cpp
+    gui/interfaz.cpp
     gui/personaje.cpp
     gui/calculador_camara.cpp
+    network/enviador.cpp
+    network/recibidor.cpp
     PUBLIC
     # .h files
     menu/MainWindow.h
@@ -36,9 +38,11 @@ target_sources(taller_client
     menu/screens/PlaceholderScreen.h
     menu/styles/CharacterColors.h
     menu/styles/StyleManager.h
-    gui/interfaz_juego.h
-    gui/caverna.h
+    gui/cliente.h
+    gui/interfaz.h
     gui/personaje.h
     gui/calculador_camara.h
     gui/constants.h
+    network/enviador.h
+    network/recibidor.h
     )
