@@ -26,7 +26,7 @@ MockLobbyProtocol::MockLobbyProtocol():
                 {"bosque_cerrado", "Bosque Cerrado"},
         },
         savedGames{
-                {1, "Granja de Martu", "Valle Clásico", "Martu", {3, 2, 6, 1, 0}, false},
+                {1, "Granja de prueba", "Valle Clásico", "Granjero", {3, 2, 6, 1, 0}, false},
                 {2, "Partida con los chicos", "Costa Brumosa", "Pandamos", {7, 5, 2, 3, 4}, true},
                 {3, "Prueba de mazmorra", "Bosque Cerrado", "dipa", {1, 9, 5, 2, 0}, true},
         },

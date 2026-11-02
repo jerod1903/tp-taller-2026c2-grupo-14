@@ -60,7 +60,7 @@ protected:
 }  // namespace
 
 TEST_F(ClientProtocolTest, LoginWithValidNameIsAccepted) {
-    EXPECT_EQ(client->login("martu"), LobbyStatus::Ok);
+    EXPECT_EQ(client->login("jugador"), LobbyStatus::Ok);
 }
 
 TEST_F(ClientProtocolTest, ServerClosingThrowsConnectionError) {
@@ -70,7 +70,7 @@ TEST_F(ClientProtocolTest, ServerClosingThrowsConnectionError) {
 }
 
 TEST_F(ClientProtocolTest, ListWorldsReturnsServerWorlds) {
-    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+    ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
     std::vector<WorldInfo> worlds = client->listWorlds();
     ASSERT_EQ(worlds.size(), WORLDS.size());
     for (std::size_t i = 0; i < worlds.size(); ++i) {
@@ -96,15 +96,16 @@ TEST_F(ClientProtocolTest, ListMyGamesReturnsAllFields) {
 }
 
 TEST_F(ClientProtocolTest, CheckInviteCodeReadsOnlyTheStatus) {
-    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+    ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
     EXPECT_EQ(client->checkInviteCode(CODE), LobbyStatus::Ok);
     // La respuesta es un solo byte: si se leyera de mas, la siguiente operacion se desfasaria.
     EXPECT_EQ(client->listWorlds().size(), WORLDS.size());
 }
 
 TEST_F(ClientProtocolTest, CreateGameAddsItToMyGames) {
-    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
-    CreateGameResponse response = client->createGame({"pueblo", "Mi granja", "Martu", APPEARANCE});
+    ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
+    CreateGameResponse response =
+            client->createGame({"pueblo", "Mi granja", "Granjero", APPEARANCE});
     ASSERT_EQ(response.status, LobbyStatus::Ok);
 
     std::vector<SavedGameInfo> games = client->listMyGames();
@@ -115,7 +116,7 @@ TEST_F(ClientProtocolTest, CreateGameAddsItToMyGames) {
 }
 
 TEST_F(ClientProtocolTest, JoinGameByCodeReturnsItsGameId) {
-    ASSERT_EQ(client->login("martu"), LobbyStatus::Ok);
+    ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
     JoinGameResponse response = client->joinGame({CODE, "Invitada", APPEARANCE});
     EXPECT_EQ(response.status, LobbyStatus::Ok);
     EXPECT_EQ(response.gameId, MULTI_ID);
