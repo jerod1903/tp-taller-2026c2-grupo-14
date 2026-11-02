@@ -23,10 +23,21 @@ QLabel* BaseScreen::createTitle(const QString& text) {
 
 void BaseScreen::addBackButton() {
     auto* backButton = new MenuButton("← Volver", this);
+    backButton->setBack();
     connect(backButton, &QPushButton::clicked, this, &BaseScreen::backRequested);
 
-    auto* row = new QHBoxLayout();
-    row->addWidget(backButton);
-    row->addStretch();
-    mainLayout->addLayout(row);
+    headerRow = new QHBoxLayout();
+    headerRow->addWidget(backButton, 0, Qt::AlignVCenter);
+    mainLayout->addLayout(headerRow);
+}
+
+void BaseScreen::setTitle(const QString& text) {
+    QLabel* title = createTitle(text);
+    if (!headerRow) {
+        mainLayout->addWidget(title);
+        return;
+    }
+    // Un espacio del mismo ancho que "Volver" a la derecha: el titulo queda centrado.
+    headerRow->addWidget(title, 1, Qt::AlignVCenter);
+    headerRow->addSpacing(Theme::BACK_BUTTON_WIDTH);
 }

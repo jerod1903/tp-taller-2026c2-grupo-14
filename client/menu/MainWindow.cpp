@@ -1,39 +1,84 @@
 #include "client/menu/MainWindow.h"
 
+#include <QPalette>
+#include <QRandomGenerator>
+#include <QResizeEvent>
 #include <QStackedWidget>
+#include <QStringList>
 
+#include "client/menu/backend/ILobbyProtocol.h"
+#include "client/menu/screens/CharacterScreen.h"
 #include "client/menu/screens/JoinGameScreen.h"
+#include "client/menu/screens/LoginScreen.h"
 #include "client/menu/screens/MainMenuScreen.h"
 #include "client/menu/screens/MyGamesScreen.h"
+#include "client/menu/screens/NewGameScreen.h"
 #include "client/menu/screens/PlaceholderScreen.h"
 #include "client/menu/styles/StyleManager.h"
+
+namespace {
+const QStringList BACKGROUNDS = {":/menu/fondos/tienda.png", ":/menu/fondos/casa_morada.png",
+                                 ":/menu/fondos/casa_roja.png"};
+}  // namespace
 
 MainWindow::MainWindow(ILobbyProtocol& lobby, QWidget* parent):
         QMainWindow(parent), lobby(lobby), stack(new QStackedWidget(this)), screenManager(*stack) {
     setWindowTitle("Stardew Valley");
-    resize(Theme::WINDOW_WIDTH, Theme::WINDOW_HEIGHT);
+    // Tamano fijo: los sprites de madera se agrandan con repeticion, no con escalado.
+    setFixedSize(Theme::WINDOW_WIDTH, Theme::WINDOW_HEIGHT);
     setStyleSheet(StyleManager::globalStyleSheet());
     setCentralWidget(stack);
 
+    // El stack pinta el fondo; las pantallas encima no tienen fondo propio.
+    stack->setAutoFillBackground(true);
+    int index = QRandomGenerator::global()->bounded(BACKGROUNDS.size());
+    background = QPixmap(BACKGROUNDS.at(index));
+
     setupScreens();
-    screenManager.show(ScreenId::MainMenu);
+    screenManager.show(ScreenId::Login);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    updateBackground();
+}
+
+void MainWindow::updateBackground() {
+    if (background.isNull() || stack->size().isEmpty()) {
+        return;
+    }
+    // Cubre toda la ventana y recorta el centro. FastTransformation mantiene el pixel art nitido.
+    QSize target = stack->size();
+    QPixmap scaled =
+            background.scaled(target, Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
+    QPixmap cropped =
+            scaled.copy((scaled.width() - target.width()) / 2,
+                        (scaled.height() - target.height()) / 2, target.width(), target.height());
+    QPalette palette = stack->palette();
+    palette.setBrush(QPalette::Window, cropped);
+    stack->setPalette(palette);
 }
 
 void MainWindow::setupScreens() {
+    auto* login = new LoginScreen(lobby);
     auto* mainMenu = new MainMenuScreen();
+    auto* newGame = new NewGameScreen(lobby);
     auto* joinGame = new JoinGameScreen(lobby);
     auto* myGames = new MyGamesScreen(lobby);
-    // Provisorias: se reemplazan por la pantalla real a medida que se implementan.
-    auto* newGame = new PlaceholderScreen("Nueva partida");
-    auto* character = new PlaceholderScreen("Personaje");
+    character = new CharacterScreen();
+    // Provisoria: representa "aca arranca SDL" hasta que exista ClientApp.
     auto* inGame = new PlaceholderScreen("Partida (arranca SDL)");
 
+    screenManager.add(ScreenId::Login, login);
     screenManager.add(ScreenId::MainMenu, mainMenu);
     screenManager.add(ScreenId::NewGame, newGame);
     screenManager.add(ScreenId::JoinGame, joinGame);
     screenManager.add(ScreenId::MyGames, myGames);
     screenManager.add(ScreenId::Character, character);
     screenManager.add(ScreenId::InGame, inGame);
+
+    connect(login, &LoginScreen::loggedIn, this,
+            [this]() { screenManager.show(ScreenId::MainMenu); });
 
     connect(mainMenu, &MainMenuScreen::newGameRequested, this,
             [this]() { screenManager.show(ScreenId::NewGame); });
@@ -44,15 +89,30 @@ void MainWindow::setupScreens() {
     // Cerrar la ultima ventana termina app.exec(); es la misma salida que usara IMenu::run().
     connect(mainMenu, &MainMenuScreen::exitRequested, this, &QMainWindow::close);
 
-    // Flujo unirse: codigo valido -> personaje. El codigo lo va a necesitar la pantalla
-    // de personaje para armar el JoinGameRequest; por ahora solo se navega.
-    connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this,
-            [this]() { screenManager.show(ScreenId::Character); });
-    connect(character, &BaseScreen::backRequested, this,
-            [this]() { screenManager.show(ScreenId::JoinGame); });
+    // Flujo crear: nombre y mundo -> personaje -> createGame.
+    connect(newGame, &NewGameScreen::gameConfigured, this,
+            [this](const QString& gameName, const QString& worldId) {
+                flow = CharacterFlow::Create;
+                pendingCreate.gameName = gameName.toStdString();
+                pendingCreate.worldId = worldId.toStdString();
+                screenManager.show(ScreenId::Character);
+            });
 
-    // Flujo retomar: partida cargada -> juego. Cuando exista QtMenu, aca se guarda la
-    // GameSession y se cierra la ventana para que arranque SDL.
+    // Flujo unirse: codigo valido -> personaje -> joinGame.
+    connect(joinGame, &JoinGameScreen::inviteCodeAccepted, this, [this](const QString& code) {
+        flow = CharacterFlow::Join;
+        pendingInviteCode = code.toStdString();
+        screenManager.show(ScreenId::Character);
+    });
+
+    connect(character, &CharacterScreen::characterChosen, this, &MainWindow::submitCharacter);
+    // "Volver" desde personaje regresa al paso anterior del flujo en curso.
+    connect(character, &BaseScreen::backRequested, this, [this]() {
+        screenManager.show(flow == CharacterFlow::Create ? ScreenId::NewGame : ScreenId::JoinGame);
+    });
+
+    // Flujo retomar: partida cargada -> juego. Cuando exista ClientApp, aca se guarda la
+    // partida elegida y se cierra la ventana para que arranque SDL.
     connect(myGames, &MyGamesScreen::gameEntered, this,
             [this]() { screenManager.show(ScreenId::InGame); });
 
@@ -61,5 +121,22 @@ void MainWindow::setupScreens() {
           static_cast<BaseScreen*>(myGames), static_cast<BaseScreen*>(inGame)}) {
         connect(screen, &BaseScreen::backRequested, this,
                 [this]() { screenManager.show(ScreenId::MainMenu); });
+    }
+}
+
+void MainWindow::submitCharacter(const QString& name, const CharacterAppearance& appearance) {
+    LobbyStatus status = LobbyStatus::Ok;
+    if (flow == CharacterFlow::Create) {
+        pendingCreate.characterName = name.toStdString();
+        pendingCreate.appearance = appearance;
+        status = lobby.createGame(pendingCreate).status;
+    } else {
+        status = lobby.joinGame({pendingInviteCode, name.toStdString(), appearance}).status;
+    }
+
+    if (status == LobbyStatus::Ok) {
+        screenManager.show(ScreenId::InGame);
+    } else {
+        character->showError(status);
     }
 }

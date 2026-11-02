@@ -1,19 +1,11 @@
+include(menu/menu_sources.cmake)
 target_sources(taller_client
     PRIVATE
+    # Menu en Qt: lista compartida con taller_menu (ver menu/menu_sources.cmake)
+    ${TALLER_MENU_SOURCES}
     # .cpp files
     main.cpp
-    menu/MainWindow.cpp
-    menu/backend/MockLobbyProtocol.cpp
-    menu/components/CharacterPreview.cpp
-    menu/components/MenuButton.cpp
-    menu/components/SavedGameRow.cpp
-    menu/navigation/ScreenManager.cpp
-    menu/screens/BaseScreen.cpp
-    menu/screens/JoinGameScreen.cpp
-    menu/screens/MainMenuScreen.cpp
-    menu/screens/MyGamesScreen.cpp
-    menu/screens/PlaceholderScreen.cpp
-    menu/styles/StyleManager.cpp
+    network/ClientProtocol.cpp
     gui/prueba.cpp
     gui/interfaz_juego.cpp
     gui/caverna.cpp
@@ -21,21 +13,7 @@ target_sources(taller_client
     gui/calculador_camara.cpp
     PUBLIC
     # .h files
-    menu/MainWindow.h
-    menu/backend/ILobbyProtocol.h
-    menu/backend/LobbyTypes.h
-    menu/backend/MockLobbyProtocol.h
-    menu/components/CharacterPreview.h
-    menu/components/MenuButton.h
-    menu/components/SavedGameRow.h
-    menu/navigation/ScreenManager.h
-    menu/screens/BaseScreen.h
-    menu/screens/JoinGameScreen.h
-    menu/screens/MainMenuScreen.h
-    menu/screens/MyGamesScreen.h
-    menu/screens/PlaceholderScreen.h
-    menu/styles/CharacterColors.h
-    menu/styles/StyleManager.h
+    network/ClientProtocol.h
     gui/interfaz_juego.h
     gui/caverna.h
     gui/personaje.h

@@ -1,0 +1,28 @@
+Assets de menu: Pixel Art Wooden GUI v1 por Narik (Soulofkiran)
+Fuente: https://soulofkiran.itch.io/pixel-art-wooden-gui-v1
+Licencia: Creative Commons Zero v1.0 Universal (CC0)
+Archivo original: Wooden Pixel Art GUI 32x32.png (832x1120)
+
+Archivos derivados (editados a partir del original):
+- botones/botones_madera_enlazados.png: tres botones enlazados del mismo color, con separacion reducida.
+- botones/flecha_play_madera.png: flecha dibujada con la paleta del pack, sin recuadro.
+- botones/boton_2x.png: boton de madera a 2x (pixel perfect). Las dos tapas redondas se mantienen y se agrego un tramo recto de 20 px en el medio.
+- botones/marco_lista_2x.png: mismo marco que input_2x pero con el interior transparente, para las listas.
+- botones/boton_320.png, boton_200.png, boton_deshabilitado_320.png, boton_deshabilitado_200.png: botones de madera a los anchos usados en la app (los deshabilitados son mas claros). Se agrandan repitiendo la columna central, sin escalar.
+- botones/input_320.png: input de madera a 320x56 con marco a 3x (mas grueso), con el centro repetido.
+- botones/boton_volver_140.png: boton de madera a 140x59 (70 por ciento), reducido desde boton_2x con vecino mas cercano.
+- botones/input_2x.png: panel de input a 2x, sin cadenas, con el interior semitransparente.
+- botones/flecha_der_2x.png y botones/flecha_izq_2x.png: flecha a 2x, espejada para el lado izquierdo.
+- botones/input_madera_panel.png: panel de madera sin cadenas (version 1x).
+
+Los originales no se incluyen en el repo.
+
+Fondos de menu: Cozy Village Backgrounds (pixel art, 12 escenas)
+Fuente: https://itch.io/t/7148100/cozy-village-backgrounds-12-pixel-art-scenes-in-3-times-of-day-up-to-2560x1440
+Licencia: NO CONFIRMADA. Verificar en la pagina antes de distribuir el repo.
+Los archivos se recortaron de capturas de baja resolucion, no del archivo original.
+Recorte: se quito la franja superior de la escena y unos pixeles del borde derecho. Luego se escalaron 2x con vecino mas cercano.
+
+- fondos/tienda.png
+- fondos/casa_morada.png
+- fondos/casa_roja.png

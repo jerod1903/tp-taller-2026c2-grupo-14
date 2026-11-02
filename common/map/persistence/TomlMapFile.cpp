@@ -1,7 +1,9 @@
 #include "common/map/persistence/TomlMapFile.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -118,9 +120,9 @@ toml::table serializeArea(const MapArea& area) {
     toml::array rows;
     for (const auto& tileRow: area.tiles) {
         toml::array row;
-        for (const auto tile: tileRow) {
-            row.push_back(std::string(toString(tile)));
-        }
+        std::transform(tileRow.begin(), tileRow.end(), std::back_inserter(row), [](auto tile) {
+            return toml::value<std::string>(std::string(toString(tile)));
+        });
         rows.push_back(std::move(row));
     }
     table.insert_or_assign("tiles", std::move(rows));
@@ -203,21 +205,17 @@ void saveTomlMapDefinition(const std::string& path, const MapDefinition& map) {
 
     // Serializa cada tipo de registro con la funcion que conoce sus campos.
     toml::array areas;
-    for (const auto& area: map.areas) {
-        areas.push_back(serializeArea(area));
-    }
+    std::transform(map.areas.begin(), map.areas.end(), std::back_inserter(areas), serializeArea);
     document.insert_or_assign("areas", std::move(areas));
 
     toml::array elements;
-    for (const auto& element: map.elements) {
-        elements.push_back(serializeElement(element));
-    }
+    std::transform(map.elements.begin(), map.elements.end(), std::back_inserter(elements),
+                   serializeElement);
     document.insert_or_assign("elements", std::move(elements));
 
     toml::array transitions;
-    for (const auto& transition: map.transitions) {
-        transitions.push_back(serializeTransition(transition));
-    }
+    std::transform(map.transitions.begin(), map.transitions.end(), std::back_inserter(transitions),
+                   serializeTransition);
     document.insert_or_assign("transitions", std::move(transitions));
 
     // Comprueba tanto la apertura como la escritura para no anunciar un guardado incompleto.
