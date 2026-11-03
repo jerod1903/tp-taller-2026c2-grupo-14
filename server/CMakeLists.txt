@@ -4,6 +4,10 @@ target_sources(taller_server
     main.cpp
     server.cpp
     game/game_registry.cpp
+    game/world/direction.cpp
+    game/world/grid.cpp
+    game/world/location.cpp
+    game/world/tile.cpp
     lobby/lobby_session.cpp
     net/acceptor.cpp
     net/server_protocol.cpp
@@ -13,6 +17,12 @@ target_sources(taller_server
     consts.h
     server.h
     game/game_registry.h
+    game/world/direction.h
+    game/world/grid.h
+    game/world/location.h
+    game/world/portal.h
+    game/world/position.h
+    game/world/tile.h
     lobby/lobby_session.h
     net/acceptor.h
     net/server_protocol.h
