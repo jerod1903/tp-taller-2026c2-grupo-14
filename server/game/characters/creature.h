@@ -7,14 +7,13 @@
 #include "server/game/world/direction.h"
 
 // Una entidad con vida que se mueve de a una celda. La posición lógica es siempre entera: el
-// avance parcial hacia la celda siguiente se acumula en `progress` y el cliente interpola.
+// avance parcial hacia la celda siguiente se acumula en `progress`.
 class Creature: public Entity {
 public:
     Creature(uint32_t id, const Position& pos, Location& location, int health, float base_speed);
 
     int get_health() const;
 
-    // La vida no baja de 0.
     virtual void take_damage(int amount);
     bool is_alive() const;
 
