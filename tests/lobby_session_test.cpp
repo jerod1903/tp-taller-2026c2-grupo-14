@@ -184,10 +184,10 @@ protected:
         return snapshot;
     }
 
-    void send_move(uint8_t dir_x, uint8_t dir_y) {
+    void send_move(int8_t dir_x, int8_t dir_y) {
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
-        ASSERT_TRUE(client->send_u8(dir_x));
-        ASSERT_TRUE(client->send_u8(dir_y));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_x)));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
 
     void send_leave_game() {
@@ -491,8 +491,6 @@ TEST_F(LobbySessionTest, CreateGameAddsSinglePlayerGameToMyGames) {
     std::vector<SavedGameInfo> games = registry.games_of("jero");
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, game_id);
-    EXPECT_EQ(games[0].gameName, "Granja de Martu");
-    EXPECT_EQ(games[0].gameId, *game_id);
     EXPECT_EQ(games[0].gameName, "Granja de prueba");
     EXPECT_EQ(games[0].worldName, "Pueblo");
     EXPECT_EQ(games[0].characterName, "Granjero");
@@ -653,7 +651,7 @@ TEST_F(LobbySessionTest, MovesInGameKeepTheSnapshotsComing) {
     expect_location("granja");
     uint32_t tick = recv_snapshot().tick;
     send_move(1, 0);
-    send_move(0, 2);
+    send_move(0, -1);
     EXPECT_GT(recv_snapshot().tick, tick);
 }
 

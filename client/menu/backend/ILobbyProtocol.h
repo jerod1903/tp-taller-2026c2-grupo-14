@@ -28,9 +28,9 @@ public:
     // Ok, InvalidInviteCode, GameFull o AlreadyMember (ya esta en esa partida: se entra con
     // loadGame desde sus partidas).
     virtual LobbyStatus checkInviteCode(const std::string& code) = 0;
-    virtual CreateGameResponse createGame(const CreateGameRequest& request) = 0;
+    virtual GameEnteredResponse createGame(const CreateGameRequest& request) = 0;
     // Entrar por primera vez a una partida multi, con el codigo de invitacion.
-    virtual JoinGameResponse joinGame(const JoinGameRequest& request) = 0;
+    virtual GameEnteredResponse joinGame(const JoinGameRequest& request) = 0;
     // Retomar una partida de la que ya es miembro, con el personaje guardado.
-    virtual LoadGameResponse loadGame(uint32_t gameId) = 0;
+    virtual GameEnteredResponse loadGame(uint32_t gameId) = 0;
 };

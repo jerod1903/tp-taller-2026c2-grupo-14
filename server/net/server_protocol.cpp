@@ -120,7 +120,8 @@ std::optional<Request> ServerProtocol::recv_request() {
     std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
     if (!dir_y)
         return std::nullopt;
-    return Request{static_cast<Operation>(*operation), *dir_x, *dir_y};
+    return Request{static_cast<Operation>(*operation), static_cast<int8_t>(*dir_x),
+                   static_cast<int8_t>(*dir_y)};
 }
 
 bool ServerProtocol::send_location_data(const LocationData& location) {

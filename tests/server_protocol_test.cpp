@@ -70,12 +70,12 @@ TEST_F(ServerProtocolTest, EmptySnapshotHasNoPlayers) {
 TEST_F(ServerProtocolTest, RecvRequestReadsOperationAndDirection) {
     ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
     ASSERT_TRUE(client->send_u8(1));
-    ASSERT_TRUE(client->send_u8(2));
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(-1)));
     std::optional<Request> request = server->recv_request();
     ASSERT_TRUE(request.has_value());
     EXPECT_EQ(request->tipo, Operation::Move);
     EXPECT_EQ(request->dir_x, 1);
-    EXPECT_EQ(request->dir_y, 2);
+    EXPECT_EQ(request->dir_y, -1);
 }
 
 TEST_F(ServerProtocolTest, RecvRequestCutInTheMiddleIsNullopt) {

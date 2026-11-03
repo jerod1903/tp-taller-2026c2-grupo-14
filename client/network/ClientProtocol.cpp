@@ -73,28 +73,31 @@ LobbyStatus ClientProtocol::checkInviteCode(const std::string& code) {
     return recvStatus();
 }
 
-CreateGameResponse ClientProtocol::createGame(const CreateGameRequest& request) {
+GameEnteredResponse ClientProtocol::createGame(const CreateGameRequest& request) {
     ensure(sendOperation(LobbyOp::CreateGame) && baseProtocol.send_string(request.worldId) &&
            baseProtocol.send_string(request.gameName) &&
            baseProtocol.send_string(request.characterName) && sendAppearance(request.appearance));
-    CreateGameResponse response{};
-    response.status = recvStatus();
-    response.gameId = ensure(baseProtocol.recv_u32());
-    return response;
+    return recvGameEntered();
 }
 
-JoinGameResponse ClientProtocol::joinGame(const JoinGameRequest& request) {
+GameEnteredResponse ClientProtocol::joinGame(const JoinGameRequest& request) {
     ensure(sendOperation(LobbyOp::JoinGame) && baseProtocol.send_string(request.inviteCode) &&
            baseProtocol.send_string(request.characterName) && sendAppearance(request.appearance));
-    JoinGameResponse response{};
-    response.status = recvStatus();
-    response.gameId = ensure(baseProtocol.recv_u32());
-    return response;
+    return recvGameEntered();
 }
 
-LoadGameResponse ClientProtocol::loadGame(uint32_t gameId) {
+GameEnteredResponse ClientProtocol::loadGame(uint32_t gameId) {
     ensure(sendOperation(LobbyOp::LoadGame) && baseProtocol.send_u32(gameId));
-    return {recvStatus()};
+    return recvGameEntered();
+}
+
+// Los ids van siempre, también con un status de error (en 0).
+GameEnteredResponse ClientProtocol::recvGameEntered() {
+    GameEnteredResponse response{};
+    response.status = recvStatus();
+    response.gameId = ensure(baseProtocol.recv_u32());
+    response.playerId = ensure(baseProtocol.recv_u32());
+    return response;
 }
 
 void ClientProtocol::shutdown() { baseProtocol.shutdown(); }
