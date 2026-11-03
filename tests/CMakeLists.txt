@@ -1,6 +1,7 @@
 target_sources(taller_tests
     PRIVATE
     # .cpp files
+    client_protocol_test.cpp
     game_registry_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
@@ -14,6 +15,8 @@ target_sources(taller_tests
     ../server/net/sender.cpp
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
+    # Código del cliente bajo test (sin Qt)
+    ../client/network/ClientProtocol.cpp
     PUBLIC
     # .h files
     )

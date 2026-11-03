@@ -16,7 +16,6 @@
 namespace {
 constexpr int DETAIL_PREVIEW_SIZE = 96;
 constexpr int WORLD_PREVIEW_HEIGHT = 200;
-constexpr int PLAY_BUTTON_WIDTH = 200;
 }  // namespace
 
 MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
@@ -26,7 +25,8 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
         gameList(new QListWidget(this)),
         detailOrHint(new QStackedWidget(this)),
         worldPreview(new QLabel(this)),
-        detailCharacter(new CharacterPreview(DETAIL_PREVIEW_SIZE, this)),
+        detailCharacter(
+                new CharacterPreview(QSize(DETAIL_PREVIEW_SIZE, DETAIL_PREVIEW_SIZE), this)),
         detailGameName(new QLabel(this)),
         detailInfo(new QLabel(this)),
         errorLabel(new QLabel(this)),
@@ -46,7 +46,7 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
     content->addWidget(listOrEmpty, 1);
 
     errorLabel->setObjectName("errorLabel");
-    playButton->setFixedWidth(PLAY_BUTTON_WIDTH);
+    playButton->setSmall();
     playButton->setEnabled(false);
 
     auto* bottomRow = new QHBoxLayout();
@@ -54,7 +54,7 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
     bottomRow->addWidget(playButton);
 
     addBackButton();
-    mainLayout->addWidget(createTitle("Mis partidas"));
+    setTitle("Mis partidas");
     mainLayout->addSpacing(10);
     mainLayout->addLayout(content, 1);
     mainLayout->addLayout(bottomRow);
@@ -138,11 +138,11 @@ void MyGamesScreen::showDetail(int row) {
 
     const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
     const QString characterName = QString::fromStdString(game.characterName);
-    worldPreview->setText("Mundo: " + QString::fromStdString(game.worldName) +
-                          "\n(vista previa pendiente)");
+    worldPreview->setText("(vista previa pendiente)");
     detailCharacter->setCharacter(game.appearance, characterName);
     detailGameName->setText(QString::fromStdString(game.gameName));
-    detailInfo->setText("Personaje: " + characterName + "\n" +
+    detailInfo->setText("Mundo: " + QString::fromStdString(game.worldName) + "\n" +
+                        "Personaje: " + characterName + "\n" +
                         (game.isMultiplayer ? "Multijugador" : "Individual"));
     detailOrHint->setCurrentIndex(1);
 }
@@ -153,9 +153,12 @@ void MyGamesScreen::playSelected() {
         return;
     }
 
-    GameEnteredResponse response = lobby.loadGame(games[static_cast<std::size_t>(row)].gameId);
-    if (response.status == LobbyStatus::Ok) {
-        emit gameEntered(response);
+    const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
+    LobbyStatus status = lobby.loadGame(game.gameId).status;
+    if (status == LobbyStatus::Ok) {
+        emit gameEntered(game.gameId);
+    } else if (status == LobbyStatus::AlreadyConnected) {
+        errorLabel->setText("Ya estás conectado a esa partida.");
     } else {
         errorLabel->setText("No se pudo cargar la partida. Probá de nuevo.");
     }

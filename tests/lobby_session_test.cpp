@@ -130,7 +130,7 @@ protected:
 
     // Crea una partida y devuelve su id.
     uint32_t create_game() {
-        send_create_game("granja", "Mi granja", "Martu");
+        send_create_game("granja", "Mi granja", "Granjero");
         expect_status(LobbyStatus::Ok);
         return recv_created_game_id();
     }
@@ -312,7 +312,7 @@ TEST_F(LobbySessionTest, ListMyGamesWithoutGamesReturnsEmptyList) {
 TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     const std::string me = "jero";
     std::optional<uint32_t> mine =
-            registry.create_game("Mi granja", "granja", GameMember{me, "Martu", APPEARANCE});
+            registry.create_game("Mi granja", "granja", GameMember{me, "Granjero", APPEARANCE});
     registry.create_game("Ajena", "pueblo", GameMember{"otro", "Otro", APPEARANCE});
 
     send_login(me);
@@ -323,7 +323,7 @@ TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     EXPECT_EQ(games[0].gameId, *mine);
     EXPECT_EQ(games[0].gameName, "Mi granja");
     EXPECT_EQ(games[0].worldName, "Granja");
-    EXPECT_EQ(games[0].characterName, "Martu");
+    EXPECT_EQ(games[0].characterName, "Granjero");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);
     EXPECT_EQ(games[0].appearance.hairColor, APPEARANCE.hairColor);
     EXPECT_EQ(games[0].appearance.shirt, APPEARANCE.shirt);
@@ -441,7 +441,7 @@ TEST_F(LobbySessionTest, LoadGameBeforeLoginClosesConnection) {
 TEST_F(LobbySessionTest, CreateGameAddsSinglePlayerGameToMyGames) {
     send_login("jero");
     expect_status(LobbyStatus::Ok);
-    send_create_game("pueblo", "Granja de Martu", "Martu");
+    send_create_game("pueblo", "Granja de prueba", "Granjero");
     expect_status(LobbyStatus::Ok);
     uint32_t game_id = recv_created_game_id();
     EXPECT_NE(game_id, 0u);
@@ -450,15 +450,17 @@ TEST_F(LobbySessionTest, CreateGameAddsSinglePlayerGameToMyGames) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, game_id);
     EXPECT_EQ(games[0].gameName, "Granja de Martu");
+    EXPECT_EQ(games[0].gameId, *game_id);
+    EXPECT_EQ(games[0].gameName, "Granja de prueba");
     EXPECT_EQ(games[0].worldName, "Pueblo");
-    EXPECT_EQ(games[0].characterName, "Martu");
+    EXPECT_EQ(games[0].characterName, "Granjero");
     EXPECT_FALSE(games[0].isMultiplayer);
 }
 
 TEST_F(LobbySessionTest, CreateGameLeavesCreatorConnected) {
     send_login("jero");
     expect_status(LobbyStatus::Ok);
-    send_create_game("granja", "Solo", "Martu");
+    send_create_game("granja", "Solo", "Granjero");
     expect_status(LobbyStatus::Ok);
     send_load_game(recv_created_game_id());
     expect_status(LobbyStatus::AlreadyConnected);
@@ -467,7 +469,7 @@ TEST_F(LobbySessionTest, CreateGameLeavesCreatorConnected) {
 TEST_F(LobbySessionTest, CreateGameInUnknownWorldRespondsWorldNotFound) {
     send_login("jero");
     expect_status(LobbyStatus::Ok);
-    send_create_game("../../etc", "Mi granja", "Martu");
+    send_create_game("../../etc", "Mi granja", "Granjero");
     expect_status(LobbyStatus::WorldNotFound);
     expect_entered_ids(0);
     EXPECT_TRUE(registry.games_of("jero").empty());
@@ -479,7 +481,7 @@ TEST_F(LobbySessionTest, CreateGameWithInvalidNamesRespondsInvalidName) {
     for (const std::string& game_name:
          {std::string(""), std::string(" Granja"), std::string("Granja "), std::string("Gr\nanja"),
           std::string(ServerConstants::MAX_NAME_LEN + 1, 'a')}) {
-        send_create_game("granja", game_name, "Martu");
+        send_create_game("granja", game_name, "Granjero");
         expect_status(LobbyStatus::InvalidName);
         expect_entered_ids(0);
     }
@@ -509,7 +511,7 @@ TEST_F(LobbySessionTest, CreateGameWithAppearanceOutOfCatalogRespondsInvalidAppe
     send_login("jero");
     expect_status(LobbyStatus::Ok);
     for (const CharacterAppearance& appearance: invalid_appearances()) {
-        send_create_game("granja", "Mi granja", "Martu", appearance);
+        send_create_game("granja", "Mi granja", "Granjero", appearance);
         expect_status(LobbyStatus::InvalidAppearance);
         expect_entered_ids(0);
     }
@@ -520,7 +522,7 @@ TEST_F(LobbySessionTest, CreateGameAcceptsLastIdOfEachPart) {
     send_login("jero");
     expect_status(LobbyStatus::Ok);
     send_create_game(
-            "granja", "Mi granja", "Martu",
+            "granja", "Mi granja", "Granjero",
             CharacterAppearance{AppearanceCatalog::HAIR_STYLES - 1,
                                 AppearanceCatalog::HAIR_COLORS - 1, AppearanceCatalog::SHIRTS - 1,
                                 AppearanceCatalog::PANTS - 1, AppearanceCatalog::HATS - 1});
