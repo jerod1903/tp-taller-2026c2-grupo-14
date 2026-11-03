@@ -25,6 +25,8 @@ public:
     // Hasta que exista la config TOML.
     static constexpr uint8_t MAX_PLAYERS = 4;
 
+    static constexpr const char* MAP_REQUIREMENTS = TALLER_MAPS_DIR "/config/map_requirements.toml";
+
     static constexpr int TICK_RATE = 30;
     // Mensajes pendientes por jugador; con la outbox llena se descartan snapshots.
     static constexpr unsigned int OUTBOX_SIZE = 64;
