@@ -72,12 +72,7 @@ namespace GameMap {
 
     class TileType {
         <<enumeration>>
-        GRASS
-        TILLABLE
-        DIRT
-        WATER
-        WALL
-        STONE
+        common/map: stardew::maps::TileType
     }
 
     class Position {

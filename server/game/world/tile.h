@@ -1,18 +1,15 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include <cstdint>
+#include "common/map/MapDefinition.h"
 
-enum class TileType : uint8_t {
-    GRASS,
-    TILLABLE,
-    DIRT,
-    WATER,
-    WALL,
-    STONE,
-};
+using stardew::maps::TileType;
 
-// Una celda de la grilla. Si es caminable se decide al construirla, no se deriva del tipo.
+// Agua, paredes de la caverna y piedra no se caminan; el resto del terreno sí.
+bool is_walkable_terrain(TileType type);
+
+// Una celda de la grilla. Si es caminable se decide al construirla: además del terreno, la puede
+// tapar una estructura o un NPC del mapa.
 class Tile {
 public:
     Tile(TileType type, bool walkable);

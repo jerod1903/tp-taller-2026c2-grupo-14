@@ -1,5 +1,9 @@
 #include "server/game/world/tile.h"
 
+bool is_walkable_terrain(TileType type) {
+    return type != TileType::Water && type != TileType::CaveWall && type != TileType::Stone;
+}
+
 Tile::Tile(TileType type, bool walkable): type(type), walkable(walkable) {}
 
 TileType Tile::get_type() const { return type; }
