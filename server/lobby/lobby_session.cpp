@@ -63,9 +63,8 @@ void LobbySession::start() {
 
 void LobbySession::run() {
     try {
-        if (handle_login()) {
-            while (should_keep_running() && handle_next_operation()) {}
-        }
+        while (should_keep_running() && !username && handle_login()) {}
+        while (should_keep_running() && username && handle_next_operation()) {}
     } catch (const LibError& e) {
         // El cliente cortó a mitad de un mensaje.
         Logger::debug("conexión cortada: {}", e.what());
@@ -104,7 +103,8 @@ bool LobbySession::handle_login() {
     if (status != LobbyStatus::Ok) {
         Logger::warn("login rechazado ({}): user '{}' versión {}", to_string(status),
                      printable(req->username), static_cast<unsigned>(req->protocolVersion));
-        return false;
+        // Con otra versión reintentar no sirve; un nombre inválido se puede corregir.
+        return status != LobbyStatus::ProtocolMismatch;
     }
     Logger::info("login: user '{}'", req->username);
     username = std::move(req->username);

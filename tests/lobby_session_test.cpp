@@ -174,6 +174,11 @@ protected:
 
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
 
+    void expect_login_retry_works() {
+        send_login("jero");
+        expect_status(LobbyStatus::Ok);
+    }
+
     bool wait_session_end() {
         for (int i = 0; i < MAX_POLLS && session->is_alive(); ++i) {
             std::this_thread::sleep_for(POLL_INTERVAL);
@@ -219,28 +224,28 @@ TEST_F(LobbySessionTest, VersionIsCheckedBeforeIdentity) {
     expect_server_closed();
 }
 
-TEST_F(LobbySessionTest, EmptyUsernameRespondsInvalidNameAndCloses) {
+TEST_F(LobbySessionTest, EmptyUsernameRespondsInvalidNameAndAllowsRetry) {
     send_login("");
     expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
+    expect_login_retry_works();
 }
 
-TEST_F(LobbySessionTest, TooLongUsernameRespondsInvalidNameAndCloses) {
+TEST_F(LobbySessionTest, TooLongUsernameRespondsInvalidNameAndAllowsRetry) {
     send_login(std::string(ServerConstants::MAX_NAME_LEN + 1, 'a'));
     expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
+    expect_login_retry_works();
 }
 
-TEST_F(LobbySessionTest, UsernameWithSpaceRespondsInvalidNameAndCloses) {
+TEST_F(LobbySessionTest, UsernameWithSpaceRespondsInvalidNameAndAllowsRetry) {
     send_login("jero 14");
     expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
+    expect_login_retry_works();
 }
 
-TEST_F(LobbySessionTest, UsernameWithNonAsciiRespondsInvalidNameAndCloses) {
+TEST_F(LobbySessionTest, UsernameWithNonAsciiRespondsInvalidNameAndAllowsRetry) {
     send_login("ñandú");
     expect_status(LobbyStatus::InvalidName);
-    expect_server_closed();
+    expect_login_retry_works();
 }
 
 TEST_F(LobbySessionTest, UnknownOperationClosesWithoutResponse) {

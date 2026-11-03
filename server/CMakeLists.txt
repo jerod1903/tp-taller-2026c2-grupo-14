@@ -3,6 +3,7 @@ target_sources(taller_server
     # .cpp files
     main.cpp
     server.cpp
+    game/game.cpp
     game/game_registry.cpp
     lobby/lobby_session.cpp
     net/acceptor.cpp
@@ -15,6 +16,7 @@ target_sources(taller_server
     consts.h
     server.h
     game/game_event.h
+    game/game.h
     game/game_registry.h
     lobby/lobby_session.h
     net/acceptor.h

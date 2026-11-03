@@ -2,7 +2,9 @@
 #define GAME_REGISTRY_H
 
 #include <cstdint>
+#include <list>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <random>
@@ -11,6 +13,7 @@
 #include <vector>
 
 #include "common/lobby_dto.h"
+#include "server/game/game.h"
 #include "server/persistence/game_store.h"
 
 // Monitor con las partidas conocidas por el servidor y el índice username -> partidas.
@@ -51,8 +54,17 @@ public:
     // un miembro invitado recibe NotOwner, y alguien que no participa GameNotFound.
     EnableMultiplayerResponse enable_multiplayer(uint32_t game_id, const std::string& username);
 
-    // El usuario se desconectó de la partida: puede volver a entrar con load_game.
+    // Lanza el Game de la partida si no estaba corriendo. Solo para un usuario conectado a ella:
+    // el Game sigue vivo mientras quede algún conectado.
+    Inbox& attach(uint32_t game_id);
+
+    bool is_running(uint32_t game_id) const;
+
+    // El usuario se desconectó de la partida: puede volver a entrar con load_game. Si era el
+    // último, el Game se detiene.
     void leave_game(uint32_t game_id, const std::string& username);
+
+    ~GameRegistry();
 
 private:
     const std::vector<WorldInfo> worlds;
@@ -66,6 +78,9 @@ private:
     std::map<uint32_t, std::set<std::string>> connected;
     std::mt19937 rng{std::random_device{}()};
     uint32_t next_game_id = 1;
+    std::map<uint32_t, std::unique_ptr<Game>> running;
+    // Detenidos que pueden seguir en su último tick; attach los destruye cuando terminan.
+    std::list<std::unique_ptr<Game>> finished;
     mutable std::mutex mutex;
 
     bool world_exists(const std::string& world_id) const;
@@ -73,6 +88,7 @@ private:
     void add(const GameRecord& game);
     // Las que siguen requieren tener el lock tomado.
     std::string new_invite_code();
+    void reap();
     static bool is_member(const GameRecord& game, const std::string& username);
     static std::optional<uint32_t> player_id_of(const GameRecord& game,
                                                 const std::string& username);
