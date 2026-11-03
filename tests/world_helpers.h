@@ -11,9 +11,9 @@
 
 // Grilla de pasto caminable, con paredes en `walls`.
 inline Grid make_grid(int width = 5, int height = 5, const std::vector<Position>& walls = {}) {
-    std::vector<Tile> tiles(width * height, Tile(TileType::GRASS, true));
+    std::vector<Tile> tiles(width * height, Tile(TileType::Grass, true));
     for (const Position& wall: walls) {
-        tiles[wall.y * width + wall.x] = Tile(TileType::WALL, false);
+        tiles[wall.y * width + wall.x] = Tile(TileType::CaveWall, false);
     }
     return Grid(width, height, std::move(tiles));
 }

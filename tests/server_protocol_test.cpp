@@ -54,6 +54,12 @@ TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndConnectedPlayers) {
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(3));
 }
 
+TEST_F(ServerProtocolTest, GameEndedGoesWithItsTagAndReason) {
+    ASSERT_TRUE(server->send_game_ended(GameEnded{EndReason::Left}));
+    expect_msg(GameMsg::GameEnded);
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(EndReason::Left)));
+}
+
 TEST_F(ServerProtocolTest, EmptySnapshotHasNoPlayers) {
     ASSERT_TRUE(server->send_snapshot(Snapshot{0, {}}));
     expect_msg(GameMsg::Snapshot);
@@ -64,12 +70,12 @@ TEST_F(ServerProtocolTest, EmptySnapshotHasNoPlayers) {
 TEST_F(ServerProtocolTest, RecvRequestReadsOperationAndDirection) {
     ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
     ASSERT_TRUE(client->send_u8(1));
-    ASSERT_TRUE(client->send_u8(2));
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(-1)));
     std::optional<Request> request = server->recv_request();
     ASSERT_TRUE(request.has_value());
     EXPECT_EQ(request->tipo, Operation::Move);
     EXPECT_EQ(request->dir_x, 1);
-    EXPECT_EQ(request->dir_y, 2);
+    EXPECT_EQ(request->dir_y, -1);
 }
 
 TEST_F(ServerProtocolTest, RecvRequestCutInTheMiddleIsNullopt) {

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -9,6 +10,8 @@
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "server/consts.h"
+#include "server/net/receiver.h"
+#include "server/net/sender.h"
 
 namespace {
 
@@ -63,9 +66,8 @@ void LobbySession::start() {
 
 void LobbySession::run() {
     try {
-        if (handle_login()) {
-            while (should_keep_running() && handle_next_operation()) {}
-        }
+        while (should_keep_running() && !username && handle_login()) {}
+        while (should_keep_running() && username && handle_next_operation()) {}
     } catch (const LibError& e) {
         // El cliente cortó a mitad de un mensaje.
         Logger::debug("conexión cortada: {}", e.what());
@@ -104,7 +106,8 @@ bool LobbySession::handle_login() {
     if (status != LobbyStatus::Ok) {
         Logger::warn("login rechazado ({}): user '{}' versión {}", to_string(status),
                      printable(req->username), static_cast<unsigned>(req->protocolVersion));
-        return false;
+        // Con otra versión reintentar no sirve; un nombre inválido se puede corregir.
+        return status != LobbyStatus::ProtocolMismatch;
     }
     Logger::info("login: user '{}'", req->username);
     username = std::move(req->username);
@@ -152,16 +155,14 @@ bool LobbySession::handle_create_game() {
         return protocol.send_game_entered(
                 GameEnteredResponse{LobbyStatus::InvalidAppearance, 0, 0});
     }
-    std::optional<uint32_t> game_id = registry.create_game(
-            req->gameName, req->worldId,
-            GameMember{*username, std::move(req->characterName), req->appearance});
+    GameMember owner{*username, std::move(req->characterName), req->appearance};
+    std::optional<uint32_t> game_id = registry.create_game(req->gameName, req->worldId, owner);
     if (!game_id) {
         return protocol.send_game_entered(GameEnteredResponse{LobbyStatus::WorldNotFound, 0, 0});
     }
     Logger::info("user '{}' creó la partida {} '{}'", *username, *game_id, req->gameName);
-    enter_game(*game_id);
-    return protocol.send_game_entered(
-            GameEnteredResponse{LobbyStatus::Ok, *game_id, GameRegistry::OWNER_PLAYER_ID});
+    return enter_game(GameEnteredResponse{LobbyStatus::Ok, *game_id, GameRegistry::OWNER_PLAYER_ID},
+                      owner);
 }
 
 bool LobbySession::handle_join_game() {
@@ -176,13 +177,13 @@ bool LobbySession::handle_join_game() {
         return protocol.send_game_entered(
                 GameEnteredResponse{LobbyStatus::InvalidAppearance, 0, 0});
     }
-    GameEnteredResponse response = registry.join_game(
-            req->inviteCode, GameMember{*username, std::move(req->characterName), req->appearance});
-    if (response.status == LobbyStatus::Ok) {
-        Logger::info("user '{}' se unió a la partida {}", *username, response.gameId);
-        enter_game(response.gameId);
+    GameMember member{*username, std::move(req->characterName), req->appearance};
+    GameEnteredResponse response = registry.join_game(req->inviteCode, member);
+    if (response.status != LobbyStatus::Ok) {
+        return protocol.send_game_entered(response);
     }
-    return protocol.send_game_entered(response);
+    Logger::info("user '{}' se unió a la partida {}", *username, response.gameId);
+    return enter_game(response, member);
 }
 
 bool LobbySession::handle_load_game() {
@@ -192,11 +193,11 @@ bool LobbySession::handle_load_game() {
     }
     // Volver a pedir la partida en la que ya está no la suelta: responde AlreadyConnected.
     GameEnteredResponse response = registry.load_game(req->gameId, *username);
-    if (response.status == LobbyStatus::Ok) {
-        Logger::info("user '{}' retomó la partida {}", *username, req->gameId);
-        enter_game(req->gameId);
+    if (response.status != LobbyStatus::Ok) {
+        return protocol.send_game_entered(response);
     }
-    return protocol.send_game_entered(response);
+    Logger::info("user '{}' retomó la partida {}", *username, req->gameId);
+    return enter_game(response, registry.member_of(req->gameId, response.playerId));
 }
 
 bool LobbySession::handle_enable_multiplayer() {
@@ -211,11 +212,37 @@ bool LobbySession::handle_enable_multiplayer() {
     return protocol.send_enable_multiplayer(response);
 }
 
-void LobbySession::enter_game(uint32_t game_id) {
-    if (current_game) {
-        registry.leave_game(*current_game, *username);
+bool LobbySession::enter_game(const GameEnteredResponse& response, const GameMember& member) {
+    current_game = response.gameId;
+    if (!protocol.send_game_entered(response) || !play(response.playerId, member)) {
+        return false;
     }
-    current_game = game_id;
+    // Se suelta antes del GameEnded: el cliente puede volver a cargarla apenas lo recibe.
+    registry.leave_game(*current_game, *username);
+    current_game.reset();
+    Logger::info("user '{}' volvió al lobby", *username);
+    return protocol.send_game_ended(GameEnded{EndReason::Left});
+}
+
+bool LobbySession::play(uint32_t player_id, const GameMember& member) {
+    Inbox& inbox = registry.attach(*current_game);
+    std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(ServerConstants::OUTBOX_SIZE);
+    inbox.push(PlayerJoined{player_id, member, outbox});
+    Sender sender(protocol, outbox);
+    Receiver receiver(protocol, inbox, player_id);
+    sender.start();
+    receiver.start();
+    receiver.join();
+    if (receiver.has_left()) {
+        // El Game cierra la outbox al procesar el PlayerLeft; el Sender la vacía y termina.
+        sender.join();
+        return true;
+    }
+    // El Sender puede seguir bloqueado en un send.
+    try {
+        protocol.shutdown();
+    } catch (const LibError&) {}
+    return false;
 }
 
 LobbyStatus LobbySession::validate(const LoginRequest& req) const {

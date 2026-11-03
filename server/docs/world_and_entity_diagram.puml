@@ -48,8 +48,6 @@ namespace GameMap {
 
     class DungeonLevel {
         -int depth
-        -Portal exitPortal
-        -Position stairsDown
     }
 
     class Portal {
@@ -72,12 +70,7 @@ namespace GameMap {
 
     class TileType {
         <<enumeration>>
-        GRASS
-        TILLABLE
-        DIRT
-        WATER
-        WALL
-        STONE
+        common/map: stardew::maps::TileType
     }
 
     class Position {

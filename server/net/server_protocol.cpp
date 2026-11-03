@@ -120,7 +120,8 @@ std::optional<Request> ServerProtocol::recv_request() {
     std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
     if (!dir_y)
         return std::nullopt;
-    return Request{static_cast<Operation>(*operation), *dir_x, *dir_y};
+    return Request{static_cast<Operation>(*operation), static_cast<int8_t>(*dir_x),
+                   static_cast<int8_t>(*dir_y)};
 }
 
 bool ServerProtocol::send_location_data(const LocationData& location) {
@@ -132,6 +133,11 @@ bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
            send_count(snapshot.players.size()) &&
            std::all_of(snapshot.players.begin(), snapshot.players.end(),
                        [this](uint32_t player_id) { return baseProtocol.send_u32(player_id); });
+}
+
+bool ServerProtocol::send_game_ended(const GameEnded& ended) {
+    return send_game_msg(GameMsg::GameEnded) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(ended.reason));
 }
 
 bool ServerProtocol::send_game_msg(GameMsg msg) {

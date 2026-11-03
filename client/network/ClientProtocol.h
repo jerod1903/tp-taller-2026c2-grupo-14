@@ -22,9 +22,9 @@ public:
     std::vector<WorldInfo> listWorlds() override;
     std::vector<SavedGameInfo> listMyGames() override;
     LobbyStatus checkInviteCode(const std::string& code) override;
-    CreateGameResponse createGame(const CreateGameRequest& request) override;
-    JoinGameResponse joinGame(const JoinGameRequest& request) override;
-    LoadGameResponse loadGame(uint32_t gameId) override;
+    GameEnteredResponse createGame(const CreateGameRequest& request) override;
+    GameEnteredResponse joinGame(const JoinGameRequest& request) override;
+    GameEnteredResponse loadGame(uint32_t gameId) override;
 
     void shutdown();
 
@@ -34,6 +34,7 @@ private:
     bool sendAppearance(const CharacterAppearance& appearance);
 
     LobbyStatus recvStatus();
+    GameEnteredResponse recvGameEntered();
     CharacterAppearance recvAppearance();
 
     BaseProtocol baseProtocol;

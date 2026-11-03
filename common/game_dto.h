@@ -10,6 +10,7 @@
 enum class GameMsg : uint8_t {
     LocationData,
     Snapshot,
+    GameEnded,
 };
 
 // El área en la que está el jugador. Se manda al entrar y cada vez que cambia.
@@ -21,6 +22,15 @@ struct LocationData {
 struct Snapshot {
     uint32_t tick;
     std::vector<uint32_t> players;  // playerIds
+};
+
+enum class EndReason : uint8_t {
+    Left,  // el jugador pidió LeaveGame: la conexión vuelve al lobby
+};
+
+// Último mensaje de la partida: lo que llegue después es del lobby.
+struct GameEnded {
+    EndReason reason;
 };
 
 #endif  // GAME_DTO_H

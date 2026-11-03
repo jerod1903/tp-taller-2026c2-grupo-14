@@ -46,10 +46,10 @@ protected:
         Logger::set_level(LogLevel::Info);
     }
 
-    void send_move(uint8_t dir_x, uint8_t dir_y) {
+    void send_move(int8_t dir_x, int8_t dir_y) {
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
-        ASSERT_TRUE(client->send_u8(dir_x));
-        ASSERT_TRUE(client->send_u8(dir_y));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_x)));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
 
     Inbox inbox;
@@ -59,14 +59,14 @@ protected:
 };
 
 TEST_F(ReceiverTest, ForwardsRequestsAsPlayerActions) {
-    send_move(1, 2);
+    send_move(1, -1);
     GameEvent event = inbox.pop();
     const PlayerAction* action = std::get_if<PlayerAction>(&event);
     ASSERT_NE(action, nullptr);
     EXPECT_EQ(action->playerId, PLAYER_ID);
     EXPECT_EQ(action->request.tipo, Operation::Move);
     EXPECT_EQ(action->request.dir_x, 1);
-    EXPECT_EQ(action->request.dir_y, 2);
+    EXPECT_EQ(action->request.dir_y, -1);
 }
 
 TEST_F(ReceiverTest, ClientDisconnectPostsPlayerLeft) {
@@ -75,6 +75,23 @@ TEST_F(ReceiverTest, ClientDisconnectPostsPlayerLeft) {
     const PlayerLeft* left = std::get_if<PlayerLeft>(&event);
     ASSERT_NE(left, nullptr);
     EXPECT_EQ(left->playerId, PLAYER_ID);
+}
+
+TEST_F(ReceiverTest, LeaveGamePostsPlayerLeftAndEndsTheThread) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::LeaveGame)));
+    ASSERT_TRUE(client->send_u8(0));
+    ASSERT_TRUE(client->send_u8(0));
+    GameEvent event = inbox.pop();
+    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
+    receiver->join();
+    EXPECT_TRUE(receiver->has_left());
+}
+
+TEST_F(ReceiverTest, ClientDisconnectIsNotALeave) {
+    client.reset();
+    inbox.pop();
+    receiver->join();
+    EXPECT_FALSE(receiver->has_left());
 }
 
 TEST_F(ReceiverTest, ClosedInboxEndsTheThread) {

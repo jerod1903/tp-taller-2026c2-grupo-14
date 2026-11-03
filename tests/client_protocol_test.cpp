@@ -104,11 +104,13 @@ TEST_F(ClientProtocolTest, CheckInviteCodeReadsOnlyTheStatus) {
 
 TEST_F(ClientProtocolTest, CreateGameAddsItToMyGames) {
     ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
-    CreateGameResponse response =
+    GameEnteredResponse response =
             client->createGame({"pueblo", "Mi granja", "Granjero", APPEARANCE});
     ASSERT_EQ(response.status, LobbyStatus::Ok);
+    EXPECT_EQ(response.playerId, GameRegistry::OWNER_PLAYER_ID);
 
-    std::vector<SavedGameInfo> games = client->listMyGames();
+    // Después del Ok la conexión ya es de la partida: se consulta al registry.
+    std::vector<SavedGameInfo> games = registry.games_of("jugador");
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, response.gameId);
     EXPECT_EQ(games[0].worldName, "Pueblo");
@@ -117,7 +119,7 @@ TEST_F(ClientProtocolTest, CreateGameAddsItToMyGames) {
 
 TEST_F(ClientProtocolTest, JoinGameByCodeReturnsItsGameId) {
     ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
-    JoinGameResponse response = client->joinGame({CODE, "Invitada", APPEARANCE});
+    GameEnteredResponse response = client->joinGame({CODE, "Invitada", APPEARANCE});
     EXPECT_EQ(response.status, LobbyStatus::Ok);
     EXPECT_EQ(response.gameId, MULTI_ID);
 }
