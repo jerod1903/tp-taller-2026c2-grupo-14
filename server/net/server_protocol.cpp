@@ -132,7 +132,16 @@ bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
     return send_game_msg(GameMsg::Snapshot) && baseProtocol.send_u32(snapshot.tick) &&
            send_count(snapshot.players.size()) &&
            std::all_of(snapshot.players.begin(), snapshot.players.end(),
-                       [this](uint32_t player_id) { return baseProtocol.send_u32(player_id); });
+                       [this](const PlayerState& player) { return send_player_state(player); });
+}
+
+bool ServerProtocol::send_player_state(const PlayerState& player) {
+    return baseProtocol.send_u32(player.playerId) && baseProtocol.send_string(player.areaId) &&
+           baseProtocol.send_u16(player.x) && baseProtocol.send_u16(player.y) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(player.dirX)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(player.dirY)) &&
+           baseProtocol.send_u16(player.progress) && baseProtocol.send_u16(player.health) &&
+           baseProtocol.send_u16(player.energy) && baseProtocol.send_u32(player.gold);
 }
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {

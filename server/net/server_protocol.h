@@ -47,6 +47,7 @@ private:
 
     bool send_game_msg(GameMsg msg);
     bool send_count(std::size_t count);
+    bool send_player_state(const PlayerState& player);
     bool send_appearance(const CharacterAppearance& appearance);
     std::optional<CharacterAppearance> recv_appearance();
 };

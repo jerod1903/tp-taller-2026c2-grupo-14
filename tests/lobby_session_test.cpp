@@ -177,12 +177,36 @@ protected:
     Snapshot recv_snapshot() {
         EXPECT_EQ(client->recv_u8(),
                   std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
+        return recv_snapshot_body();
+    }
+
+    // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
+    Snapshot recv_snapshot_body() {
         Snapshot snapshot{client->recv_u32().value_or(0), {}};
         uint16_t count = client->recv_u16().value_or(0);
         for (uint16_t i = 0; i < count; ++i) {
-            snapshot.players.push_back(client->recv_u32().value_or(UINT32_MAX));
+            PlayerState player{};
+            player.playerId = client->recv_u32().value_or(UINT32_MAX);
+            player.areaId = client->recv_string().value_or("");
+            player.x = client->recv_u16().value_or(0);
+            player.y = client->recv_u16().value_or(0);
+            player.dirX = static_cast<int8_t>(client->recv_u8().value_or(0));
+            player.dirY = static_cast<int8_t>(client->recv_u8().value_or(0));
+            player.progress = client->recv_u16().value_or(0);
+            player.health = client->recv_u16().value_or(0);
+            player.energy = client->recv_u16().value_or(0);
+            player.gold = client->recv_u32().value_or(0);
+            snapshot.players.push_back(player);
         }
         return snapshot;
+    }
+
+    static std::vector<uint32_t> ids_of(const Snapshot& snapshot) {
+        std::vector<uint32_t> ids;
+        for (const PlayerState& player: snapshot.players) {
+            ids.push_back(player.playerId);
+        }
+        return ids;
     }
 
     void send_move(int8_t dir_x, int8_t dir_y) {
@@ -201,11 +225,7 @@ protected:
     std::optional<EndReason> recv_game_ended() {
         std::optional<uint8_t> tag;
         while ((tag = client->recv_u8()) && *tag == static_cast<uint8_t>(GameMsg::Snapshot)) {
-            client->recv_u32();
-            uint16_t count = client->recv_u16().value_or(0);
-            for (uint16_t i = 0; i < count; ++i) {
-                client->recv_u32();
-            }
+            recv_snapshot_body();
         }
         if (tag != std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::GameEnded))) {
             return std::nullopt;
@@ -629,7 +649,7 @@ TEST_F(LobbySessionTest, EnteredGameSendsTheLocationThenSnapshots) {
     recv_created_game_id();
     expect_location("pueblo");
     Snapshot snapshot = recv_snapshot();
-    EXPECT_EQ(snapshot.players, (std::vector<uint32_t>{GameRegistry::OWNER_PLAYER_ID}));
+    EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{GameRegistry::OWNER_PLAYER_ID}));
     EXPECT_GT(recv_snapshot().tick, snapshot.tick);
 }
 
@@ -640,7 +660,7 @@ TEST_F(LobbySessionTest, JoinedPlayerAppearsInTheSnapshotsWithItsId) {
     expect_status(LobbyStatus::Ok);
     expect_entered_ids(MULTI_ID, 1);
     expect_location("granja");
-    EXPECT_EQ(recv_snapshot().players, (std::vector<uint32_t>{1}));
+    EXPECT_EQ(ids_of(recv_snapshot()), (std::vector<uint32_t>{1}));
 }
 
 TEST_F(LobbySessionTest, MovesInGameKeepTheSnapshotsComing) {

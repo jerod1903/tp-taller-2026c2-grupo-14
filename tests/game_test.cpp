@@ -11,6 +11,7 @@
 
 #include "common/logger.h"
 #include "common/operations.h"
+#include "server/consts.h"
 #include "tests/test_worlds.h"
 
 namespace {
@@ -39,6 +40,18 @@ protected:
         return std::get<Snapshot>(message);
     }
 
+    static std::vector<uint32_t> ids_of(const Snapshot& snapshot) {
+        std::vector<uint32_t> ids;
+        for (const PlayerState& player: snapshot.players) {
+            ids.push_back(player.playerId);
+        }
+        return ids;
+    }
+
+    void move(uint32_t player_id, int8_t dir_x, int8_t dir_y) {
+        game.get_inbox().push(PlayerAction{player_id, Request{Operation::Move, dir_x, dir_y}});
+    }
+
     // Saltea snapshots viejos hasta uno que cumpla la condición.
     template <typename Condition>
     static Snapshot wait_snapshot(Outbox& outbox, Condition condition) {
@@ -65,7 +78,43 @@ TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
     first->pop();
     Snapshot snapshot =
             wait_snapshot(*first, [](const Snapshot& s) { return s.players.size() == 2; });
-    EXPECT_EQ(snapshot.players, (std::vector<uint32_t>{0, 1}));
+    EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{0, 1}));
+}
+
+// En el mapa de ejemplo el spawn_point de la granja está en (14, 6), con pasto a la derecha.
+TEST_F(GameTest, JoinedPlayerStartsStillOnTheSpawnOfTheFarm) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    outbox->pop();
+    PlayerState player = next_snapshot(*outbox).players.at(0);
+    EXPECT_EQ(player.areaId, "granja");
+    EXPECT_EQ(player.x, 14);
+    EXPECT_EQ(player.y, 6);
+    EXPECT_EQ(player.dirX, 0);
+    EXPECT_EQ(player.dirY, 0);
+    EXPECT_EQ(player.health, ServerConstants::INITIAL_HEALTH);
+    EXPECT_EQ(player.gold, static_cast<uint32_t>(ServerConstants::INITIAL_GOLD));
+}
+
+TEST_F(GameTest, MoveMakesThePlayerWalkThatWay) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    outbox->pop();
+    move(0, 1, 0);
+    Snapshot snapshot =
+            wait_snapshot(*outbox, [](const Snapshot& s) { return s.players.at(0).x == 15; });
+    EXPECT_EQ(snapshot.players.at(0).dirX, 1);
+    EXPECT_EQ(snapshot.players.at(0).y, 6);
+}
+
+TEST_F(GameTest, MoveZeroStopsThePlayer) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    outbox->pop();
+    move(0, 1, 0);
+    wait_snapshot(*outbox, [](const Snapshot& s) { return s.players.at(0).x == 15; });
+    move(0, 0, 0);
+    PlayerState stopped = wait_snapshot(*outbox, [](const Snapshot& s) {
+                              return s.players.at(0).dirX == 0;
+                          }).players.at(0);
+    EXPECT_EQ(next_snapshot(*outbox).players.at(0), stopped);
 }
 
 TEST_F(GameTest, TickIncreasesBetweenSnapshots) {
@@ -82,7 +131,7 @@ TEST_F(GameTest, LeftPlayerIsNoLongerInTheSnapshots) {
     stays->pop();
     Snapshot snapshot =
             wait_snapshot(*stays, [](const Snapshot& s) { return s.players.size() == 1; });
-    EXPECT_EQ(snapshot.players, (std::vector<uint32_t>{0}));
+    EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{0}));
 }
 
 TEST_F(GameTest, LeftPlayerOutboxIsClosedAfterItsPendingMessages) {

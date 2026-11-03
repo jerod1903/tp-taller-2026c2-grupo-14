@@ -16,6 +16,32 @@ constexpr std::chrono::nanoseconds TICK_DURATION =
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
         ServerConstants::TICK_RATE;
 const float TICK_SECONDS = std::chrono::duration<float>(TICK_DURATION).count();
+
+// Un solo eje por vez: con una diagonal camina en horizontal.
+Direction direction_of(const Request& request) {
+    if (request.dir_x != 0) {
+        return request.dir_x > 0 ? Direction::RIGHT : Direction::LEFT;
+    }
+    if (request.dir_y != 0) {
+        return request.dir_y > 0 ? Direction::DOWN : Direction::UP;
+    }
+    return Direction::NONE;
+}
+
+PlayerState state_of(uint32_t player_id, const Player& player) {
+    Position pos = player.get_position();
+    Position next = step(pos, player.get_direction());
+    return PlayerState{player_id,
+                       player.get_location().get_name(),
+                       static_cast<uint16_t>(pos.x),
+                       static_cast<uint16_t>(pos.y),
+                       static_cast<int8_t>(next.x - pos.x),
+                       static_cast<int8_t>(next.y - pos.y),
+                       static_cast<uint16_t>(player.get_progress() * PROGRESS_SCALE),
+                       static_cast<uint16_t>(player.get_health()),
+                       static_cast<uint16_t>(player.get_energy()),
+                       static_cast<uint32_t>(player.get_gold())};
+}
 }  // namespace
 
 Game::Game(std::string world_id, const stardew::maps::MapDefinition& map):
@@ -55,32 +81,50 @@ void Game::process_events() {
 }
 
 void Game::handle(const PlayerJoined& joined) {
-    players.insert_or_assign(joined.playerId, joined.outbox);
+    remove(joined.playerId);
+    auto character = std::make_unique<Player>(
+            joined.playerId, world->get_spawn(), world->get_farm(), joined.member.characterName,
+            ServerConstants::INITIAL_HEALTH, ServerConstants::PLAYER_SPEED,
+            ServerConstants::INITIAL_GOLD, ServerConstants::INITIAL_ENERGY);
+    world->add_player(*character);
+    players.emplace(joined.playerId, ConnectedPlayer{joined.outbox, std::move(character)});
     send(*joined.outbox, LocationData{world_id});
 }
 
 void Game::handle(const PlayerAction& action) {
-    Logger::debug("jugador {}: acción {}", action.playerId, static_cast<int>(action.request.tipo));
+    auto player = players.find(action.playerId);
+    if (player == players.end() || action.request.tipo != Operation::Move) {
+        return;
+    }
+    player->second.character->set_direction(direction_of(action.request));
 }
 
 void Game::handle(const PlayerLeft& left) {
-    std::map<uint32_t, std::shared_ptr<Outbox>>::iterator player = players.find(left.playerId);
+    auto player = players.find(left.playerId);
     if (player == players.end()) {
         return;
     }
     try {
-        player->second->close();
+        player->second.outbox->close();
     } catch (const std::runtime_error&) {}
-    players.erase(player);
+    remove(left.playerId);
+}
+
+void Game::remove(uint32_t player_id) {
+    auto player = players.find(player_id);
+    if (player != players.end()) {
+        world->remove_player(*player->second.character);
+        players.erase(player);
+    }
 }
 
 void Game::broadcast_snapshot() {
     Snapshot snapshot{tick, {}};
-    for (const std::pair<const uint32_t, std::shared_ptr<Outbox>>& player: players) {
-        snapshot.players.push_back(player.first);
+    for (const auto& [player_id, player]: players) {
+        snapshot.players.push_back(state_of(player_id, *player.character));
     }
-    for (const std::pair<const uint32_t, std::shared_ptr<Outbox>>& player: players) {
-        send(*player.second, snapshot);
+    for (const auto& [player_id, player]: players) {
+        send(*player.outbox, snapshot);
     }
 }
 
