@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "server/game/characters/entity.h"
+
 Location::Location(std::string name, Grid grid): name(std::move(name)), grid(std::move(grid)) {}
 
 const std::string& Location::get_name() const { return name; }
@@ -31,3 +33,10 @@ void Location::remove_entity(const Entity& entity) {
 }
 
 const std::vector<Entity*>& Location::get_entities() const { return entities; }
+
+void Location::update_entities(float dt) {
+    std::vector<Entity*> current = entities;
+    for (Entity* entity: current) {
+        entity->update(dt);
+    }
+}

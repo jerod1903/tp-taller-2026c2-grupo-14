@@ -44,6 +44,9 @@ protected:
     Grid grid;
     std::vector<Portal> portals;
     std::vector<Entity*> entities;
+
+    // Llama al update() de cada entidad. Recorre una copia: una entidad puede darse de baja.
+    void update_entities(float dt);
 };
 
 #endif  // LOCATION_H
