@@ -9,6 +9,9 @@
 #include <string>
 #include <vector>
 
+
+#include <memory>
+#include "server/game/game.h"
 #include "common/lobby_dto.h"
 #include "server/persistence/game_store.h"
 
@@ -32,6 +35,9 @@ public:
     std::optional<uint32_t> create_game(const std::string& game_name, const std::string& world_id,
                                         bool is_multiplayer, const GameMember& owner);
 
+    // Devuelve la partida en ejecución, creándola y arrancando su hilo si todavía no corre.
+    Game& running_game(uint32_t game_id);
+
 private:
     const std::vector<WorldInfo> worlds;
     const uint8_t max_players;
@@ -44,6 +50,8 @@ private:
 
     bool world_exists(const std::string& world_id) const;
     void add(const GameRecord& game);
+
+    std::map<uint32_t, std::unique_ptr<Game>> running;
 };
 
 #endif  // GAME_REGISTRY_H

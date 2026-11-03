@@ -80,3 +80,15 @@ void GameRegistry::add(const GameRecord& game) {
     }
     games.insert_or_assign(game.gameId, game);
 }
+
+
+Game& GameRegistry::running_game(uint32_t game_id) {
+    std::lock_guard<std::mutex> lock(mutex);
+    std::map<uint32_t, std::unique_ptr<Game>>::iterator it = running.find(game_id);
+    if (it == running.end()) {
+        std::unique_ptr<Game> game = std::make_unique<Game>();
+        game->start();
+        it = running.emplace(game_id, std::move(game)).first;
+    }
+    return *it->second;
+}

@@ -150,3 +150,8 @@ LobbySession::~LobbySession() {
         join();
     }
 }
+
+void LobbySession::enter_game(uint32_t game_id) {
+    Game& game = registry.running_game(game_id);
+    game.add_player(std::move(protocol));
+}

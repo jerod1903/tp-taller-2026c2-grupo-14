@@ -24,7 +24,7 @@ struct PlayerState {
     uint32_t coins;
 };
 
-using ClientMessage = std::variant<MoveCommand, PicarCommand>;
+using ClientMessage = std::variant<MoveCommand, PickCommand>;
 using ServerMessage = std::variant<PlayerState>;
 
 #endif  // GAME_DTO_H

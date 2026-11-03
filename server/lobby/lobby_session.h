@@ -39,6 +39,11 @@ private:
     // Operaciones válidas después del login. LOGIN no está: va una sola vez por conexión.
     const HandlerMap handlers;
 
+
+    // Le entrega la conexión a la partida. Después de esto `protocol` ya no sirve.
+    void enter_game(uint32_t game_id);
+
+
     // Cada una retorna false si hay que cerrar la conexión.
     bool handle_login();
     bool handle_next_operation();

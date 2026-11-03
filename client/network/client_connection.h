@@ -9,8 +9,6 @@
 #include "common/lib/thread.h"
 
 
-
-
 // Saca de la cola de envio y manda por el socket. Termina si la cola se cierra
 // (ClosedQueue) o si send() devuelve false.
 class ClientSender: public Thread {
