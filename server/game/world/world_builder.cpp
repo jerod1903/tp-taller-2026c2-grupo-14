@@ -104,6 +104,17 @@ Grid cabin_interior() {
     return Grid(CabinInterior::WIDTH, CabinInterior::HEIGHT, std::move(tiles));
 }
 
+// El primer spawn_point de la granja; sin uno, el jugador aparece en la puerta de la cabaña.
+Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area,
+                  const Farm& farm) {
+    auto spawn = std::find_if(map.elements.begin(), map.elements.end(),
+                              [&farm_area](const maps::MapElement& element) {
+                                  return element.areaId == farm_area.id &&
+                                         element.type == maps::ElementType::SpawnPoint;
+                              });
+    return spawn != map.elements.end() ? Position{spawn->x, spawn->y} : farm.get_cabin_pos();
+}
+
 std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::MapArea& area) {
     auto cabin = std::find_if(
             map.elements.begin(), map.elements.end(), [&area](const maps::MapElement& element) {
@@ -162,5 +173,6 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
 
     // Los portales van al final: apuntan a Locations que tienen que existir.
     add_portals(map, locations);
-    return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon));
+    Position spawn = spawn_of(map, farm_area, *farm);
+    return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon), spawn);
 }

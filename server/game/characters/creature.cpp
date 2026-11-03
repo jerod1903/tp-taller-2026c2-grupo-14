@@ -25,6 +25,8 @@ void Creature::set_direction(Direction dir) {
 
 Direction Creature::get_direction() const { return direction; }
 
+float Creature::get_progress() const { return progress; }
+
 bool Creature::has_stepped() const { return stepped; }
 
 bool Creature::advance(float dt) {

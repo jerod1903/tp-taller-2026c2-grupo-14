@@ -25,7 +25,8 @@ std::unique_ptr<World> make_world() {
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));
     }
-    return std::make_unique<World>(std::move(farm), std::move(town), Dungeon(std::move(levels)));
+    return std::make_unique<World>(std::move(farm), std::move(town), Dungeon(std::move(levels)),
+                                   Position{0, 0});
 }
 
 class WorldTest: public ::testing::Test {

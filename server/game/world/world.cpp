@@ -6,14 +6,17 @@
 
 #include "server/game/characters/player.h"
 
-World::World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon):
-        farm(std::move(farm)), town(std::move(town)), dungeon(std::move(dungeon)) {}
+World::World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon,
+             const Position& spawn):
+        farm(std::move(farm)), town(std::move(town)), dungeon(std::move(dungeon)), spawn(spawn) {}
 
 Farm& World::get_farm() { return *farm; }
 
 Town& World::get_town() { return *town; }
 
 Dungeon& World::get_dungeon() { return dungeon; }
+
+const Position& World::get_spawn() const { return spawn; }
 
 void World::add_player(Player& player) {
     player.get_location().add_entity(player);
