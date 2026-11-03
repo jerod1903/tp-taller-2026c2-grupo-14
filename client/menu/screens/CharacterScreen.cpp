@@ -1,0 +1,156 @@
+#include "client/menu/screens/CharacterScreen.h"
+
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QShowEvent>
+#include <QVBoxLayout>
+
+#include "client/menu/components/CharacterPreview.h"
+#include "client/menu/components/ColorPicker.h"
+#include "client/menu/components/MenuButton.h"
+#include "client/menu/components/OptionStepper.h"
+#include "client/menu/styles/StyleManager.h"
+#include "common/appearance_catalog.h"
+
+namespace {
+// Tan alto como el formulario de al lado: el personaje (24x35) entra 12 veces, 288x420.
+const QSize PREVIEW_SIZE(288, 442);
+// El mismo limite que aplica el servidor a los nombres.
+constexpr int MAX_NAME_LENGTH = 20;
+}  // namespace
+
+CharacterScreen::CharacterScreen(QWidget* parent):
+        BaseScreen(parent),
+        preview(new CharacterPreview(PREVIEW_SIZE, this)),
+        nameInput(new QLineEdit(this)),
+        hairStyle(new OptionStepper("Peinado", AppearanceCatalog::HAIR_STYLES, QString(), this)),
+        hairColor(new ColorPicker(this)),
+        shirt(new OptionStepper("Camisa", AppearanceCatalog::SHIRTS, QString(), this)),
+        pants(new OptionStepper("Pantalón", AppearanceCatalog::PANTS, QString(), this)),
+        hat(new OptionStepper("Sombrero", AppearanceCatalog::HATS, "Sin sombrero", this)),
+        errorLabel(new QLabel(this)),
+        confirmButton(new MenuButton("Confirmar", this)) {
+    auto* content = new QHBoxLayout();
+    content->setSpacing(Theme::SCREEN_SPACING * 3);
+    content->addStretch();
+    content->addWidget(preview, 0, Qt::AlignTop);
+    // Arriba del todo: el formulario no se centra verticalmente.
+    content->addWidget(createForm(), 0, Qt::AlignTop);
+    content->addStretch();
+
+    errorLabel->setObjectName("errorLabel");
+    errorLabel->setWordWrap(true);
+    errorLabel->setFixedHeight(Theme::ERROR_LABEL_HEIGHT);
+    confirmButton->setSmall();
+    // Sin nombre no hay personaje.
+    confirmButton->setEnabled(false);
+
+    auto* bottomRow = new QHBoxLayout();
+    bottomRow->addWidget(errorLabel, 1);
+    bottomRow->addWidget(confirmButton);
+
+    addBackButton();
+    setTitle("Tu personaje");
+    mainLayout->addLayout(content, 1);
+    mainLayout->addLayout(bottomRow);
+
+    connect(nameInput, &QLineEdit::textChanged, this, [this](const QString& text) {
+        confirmButton->setEnabled(!text.trimmed().isEmpty());
+        errorLabel->clear();
+        refreshPreview();
+    });
+    connect(nameInput, &QLineEdit::returnPressed, this, &CharacterScreen::confirm);
+    for (OptionStepper* stepper: {hairStyle, shirt, pants, hat}) {
+        connect(stepper, &OptionStepper::valueChanged, this, &CharacterScreen::refreshPreview);
+    }
+    connect(hairColor, &ColorPicker::valueChanged, this, &CharacterScreen::refreshPreview);
+    connect(confirmButton, &QPushButton::clicked, this, &CharacterScreen::confirm);
+}
+
+QWidget* CharacterScreen::createForm() {
+    nameInput->setPlaceholderText("Nombre del personaje");
+    nameInput->setMaxLength(MAX_NAME_LENGTH);
+
+    auto* form = new QWidget(this);
+    form->setFixedWidth(Theme::MENU_COLUMN_WIDTH);
+    auto* layout = new QVBoxLayout(form);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(Theme::SCREEN_SPACING);
+    layout->addWidget(new QLabel("Nombre", form));
+    layout->addWidget(nameInput);
+
+    // Peinado, color, camisa, pantalon y sombrero van encerrados en un panel.
+    auto* panel = new QWidget(form);
+    panel->setObjectName("stepperPanel");
+    auto* panelLayout = new QVBoxLayout(panel);
+    panelLayout->setContentsMargins(12, 10, 12, 10);
+    panelLayout->setSpacing(8);
+    panelLayout->addWidget(hairStyle);
+    panelLayout->addWidget(new QLabel("Color de pelo", panel));
+    panelLayout->addWidget(hairColor);
+    panelLayout->addWidget(shirt);
+    panelLayout->addWidget(pants);
+    panelLayout->addWidget(hat);
+    layout->addWidget(panel);
+    layout->addStretch();
+    return form;
+}
+
+void CharacterScreen::showEvent(QShowEvent* event) {
+    BaseScreen::showEvent(event);
+    nameInput->clear();
+    for (OptionStepper* stepper: {hairStyle, shirt, pants, hat}) {
+        stepper->setValue(0);
+    }
+    hairColor->setValue(0);
+    errorLabel->clear();
+    refreshPreview();
+    nameInput->setFocus();
+}
+
+CharacterAppearance CharacterScreen::currentAppearance() const {
+    CharacterAppearance appearance{};
+    appearance.hairStyle = static_cast<uint16_t>(hairStyle->value());
+    appearance.hairColor = static_cast<uint8_t>(hairColor->value());
+    appearance.shirt = static_cast<uint16_t>(shirt->value());
+    appearance.pants = static_cast<uint16_t>(pants->value());
+    appearance.hat = static_cast<uint16_t>(hat->value());
+    return appearance;
+}
+
+void CharacterScreen::refreshPreview() {
+    preview->setCharacter(currentAppearance(), nameInput->text().trimmed());
+}
+
+void CharacterScreen::confirm() {
+    const QString name = nameInput->text().trimmed();
+    if (name.isEmpty()) {
+        return;
+    }
+    emit characterChosen(name, currentAppearance());
+}
+
+void CharacterScreen::showError(LobbyStatus status) {
+    switch (status) {
+        case LobbyStatus::InvalidName:
+            errorLabel->setText("Usá solo letras, números, guion o guion bajo, sin espacios.");
+            break;
+        case LobbyStatus::NameTaken:
+            errorLabel->setText("Ya hay un personaje con ese nombre en la partida.");
+            break;
+        case LobbyStatus::InvalidAppearance:
+            errorLabel->setText("Alguna parte del personaje no es válida. Probá con otra.");
+            break;
+        case LobbyStatus::GameFull:
+            errorLabel->setText("La partida ya tiene el máximo de jugadores.");
+            break;
+        case LobbyStatus::GameNotFound:
+        case LobbyStatus::GameClosed:
+            errorLabel->setText("La partida ya no está disponible.");
+            break;
+        default:
+            errorLabel->setText("No se pudo crear el personaje. Intentá de nuevo.");
+            break;
+    }
+}

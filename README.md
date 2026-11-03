@@ -67,3 +67,8 @@ Di Paola, M. (2024). _hands-on-threads_ [Código Fuente](https://github.com/eldi
   - `thread.h`
   - `queue.h`
 - **Licencia:** GNU General Public License v2.0 (GPL v2)
+
+## Assets de terceros
+
+- **Fondos, botones e inputs del menú:** Pixel Art Wooden GUI v1 por Narik (Soulofkiran), licencia CC0. Ver [`Assets/Menu/LICENSE.txt`](Assets/Menu/LICENSE.txt). Fondos: Cozy Village Backgrounds (licencia pendiente de verificar).
+- **Hojas de personaje (`StardewValley_Character_*`):** provistas por la cátedra. No se incluyen en el repositorio.

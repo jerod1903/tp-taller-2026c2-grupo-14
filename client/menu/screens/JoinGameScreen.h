@@ -1,7 +1,7 @@
 #pragma once
 
-#include "client/menu/backend/LobbyTypes.h"
 #include "client/menu/screens/BaseScreen.h"
+#include "common/lobby_dto.h"
 
 class ILobbyProtocol;
 class QLabel;

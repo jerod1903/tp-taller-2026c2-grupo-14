@@ -42,6 +42,21 @@ set_project_warnings(taller_common ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 # location (so our dependants will not have to explicitly request this)
 target_include_directories(taller_common PUBLIC .)
 
+# toml++ (header-only) para leer y escribir los mapas en common/map
+include(FetchContent)
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG v3.4.0
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(tomlplusplus)
+target_link_libraries(taller_common PUBLIC tomlplusplus::tomlplusplus)
+
+# Ruta absoluta a maps/ para que cliente, servidor y editor no dependan del cwd
+target_compile_definitions(taller_common PUBLIC TALLER_MAPS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/maps")
+
 # HEY!! TODO XXX: you need to install some runtime and dev libraries *before*
 # compiling the client/editor code.
 #
@@ -109,7 +124,7 @@ if(TALLER_CLIENT)
     add_executable(taller_client)
 
     # Run Qt's moc only on the client target (Q_OBJECT classes)
-    set_target_properties(taller_client PROPERTIES AUTOMOC ON)
+    set_target_properties(taller_client PROPERTIES AUTOMOC ON AUTORCC ON)
 
     # Make them depend on taller_common lib
     add_dependencies(taller_client taller_common SDL2pp::SDL2pp)
@@ -125,6 +140,18 @@ if(TALLER_CLIENT)
 
     # Link the taller_common lib target
     target_link_libraries(taller_client taller_common SDL2pp::SDL2pp Qt6::Widgets)
+
+    # Solo el menu en Qt, sin SDL: para ver las pantallas sin compilar el juego.
+    include(client/menu/menu_sources.cmake)
+    add_executable(taller_menu client/main.cpp ${TALLER_MENU_SOURCES})
+    set_target_properties(taller_menu PROPERTIES AUTOMOC ON AUTORCC ON)
+    target_link_libraries(taller_menu taller_common Qt6::Widgets)
+
+    # Carpeta de assets que no van en el binario (por ahora, los sprites del personaje).
+    # Provisorio: el instalador la tiene que copiar y esta ruta pasar a ser la instalada.
+    foreach(target taller_client taller_menu)
+        target_compile_definitions(${target} PRIVATE TALLER_ASSETS_DIR="${CMAKE_SOURCE_DIR}/Assets")
+    endforeach()
 endif()
 
 if(TALLER_SERVER)

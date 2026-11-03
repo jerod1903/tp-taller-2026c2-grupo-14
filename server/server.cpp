@@ -1,12 +1,16 @@
-#include "server.h"
+#include "server/server.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "common/logger.h"
+#include "server/consts.h"
 
-#include "consts.h"
-
-Server::Server(const char* servicename, std::istream& input): input(input), acceptor(servicename) {}
+Server::Server(const char* servicename, std::istream& input, std::vector<WorldInfo> worlds):
+        input(input),
+        registry(std::move(worlds), store, ServerConstants::MAX_PLAYERS),
+        acceptor(servicename, registry) {}
 
 void Server::execute() {
     acceptor.start();

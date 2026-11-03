@@ -1,0 +1,20 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/menu">
+        <file alias="botones/boton.png">../../../Assets/Menu/botones/boton_2x.png</file>
+        <file alias="botones/input.png">../../../Assets/Menu/botones/input_2x.png</file>
+        <file alias="botones/marco_lista.png">../../../Assets/Menu/botones/marco_lista_2x.png</file>
+        <file alias="botones/boton_deshabilitado.png">../../../Assets/Menu/botones/boton_deshabilitado_2x.png</file>
+        <file alias="botones/boton_320.png">../../../Assets/Menu/botones/boton_320.png</file>
+        <file alias="botones/boton_200.png">../../../Assets/Menu/botones/boton_200.png</file>
+        <file alias="botones/boton_deshabilitado_320.png">../../../Assets/Menu/botones/boton_deshabilitado_320.png</file>
+        <file alias="botones/boton_deshabilitado_200.png">../../../Assets/Menu/botones/boton_deshabilitado_200.png</file>
+        <file alias="botones/input_320.png">../../../Assets/Menu/botones/input_320.png</file>
+        <file alias="botones/boton_volver.png">../../../Assets/Menu/botones/boton_volver_140.png</file>
+        <file alias="botones/flecha_der.png">../../../Assets/Menu/botones/flecha_der_2x.png</file>
+        <file alias="botones/flecha_izq.png">../../../Assets/Menu/botones/flecha_izq_2x.png</file>
+        <file alias="fondos/tienda.png">../../../Assets/Menu/fondos/tienda.png</file>
+        <file alias="fondos/casa_morada.png">../../../Assets/Menu/fondos/casa_morada.png</file>
+        <file alias="fondos/casa_roja.png">../../../Assets/Menu/fondos/casa_roja.png</file>
+    </qresource>
+</RCC>

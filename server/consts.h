@@ -2,6 +2,7 @@
 #define SERVER_CONSTANTS_H
 
 #include <cstddef>
+#include <cstdint>
 
 class ServerConstants {
 public:
@@ -20,6 +21,9 @@ public:
 
     static constexpr std::size_t MAX_NAME_LEN = 20;
     static constexpr std::size_t MAX_LOGGED_LEN = 2 * MAX_NAME_LEN;
+
+    // Hasta que exista la config TOML.
+    static constexpr uint8_t MAX_PLAYERS = 4;
 };
 
 #endif  // SERVER_CONSTANTS_H

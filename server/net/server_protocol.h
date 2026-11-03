@@ -1,0 +1,47 @@
+#ifndef SERVER_PROTOCOL_H
+#define SERVER_PROTOCOL_H
+
+#include <optional>
+#include <vector>
+
+#include "common/base_protocol.h"
+#include "common/lobby_dto.h"
+#include "common/net/socket.h"
+
+class ServerProtocol {
+public:
+    explicit ServerProtocol(Socket&& socket);
+
+    ServerProtocol(const ServerProtocol&) = delete;
+    ServerProtocol& operator=(const ServerProtocol&) = delete;
+    ServerProtocol(ServerProtocol&&) = default;
+    ServerProtocol& operator=(ServerProtocol&&) = default;
+
+    // std::nullopt si el peer cerró.
+    std::optional<LobbyOp> recv_operation();
+    std::optional<LoginRequest> recv_login();
+    std::optional<CheckInviteCodeRequest> recv_check_invite_code();
+    std::optional<CreateGameRequest> recv_create_game();
+    std::optional<JoinGameRequest> recv_join_game();
+    std::optional<LoadGameRequest> recv_load_game();
+    std::optional<EnableMultiplayerRequest> recv_enable_multiplayer();
+
+    bool send_status(LobbyStatus status);
+    bool send_world_list(const std::vector<WorldInfo>& worlds);
+    bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
+    bool send_create_game(const CreateGameResponse& response);
+    bool send_join_game(const JoinGameResponse& response);
+    bool send_load_game(const LoadGameResponse& response);
+    bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
+
+    void shutdown();
+
+private:
+    BaseProtocol baseProtocol;
+
+    bool send_count(std::size_t count);
+    bool send_appearance(const CharacterAppearance& appearance);
+    std::optional<CharacterAppearance> recv_appearance();
+};
+
+#endif  // SERVER_PROTOCOL_H

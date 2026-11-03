@@ -9,7 +9,7 @@ PlaceholderScreen::PlaceholderScreen(const QString& title, QWidget* parent): Bas
 
     addBackButton();
     mainLayout->addStretch();
-    mainLayout->addWidget(createTitle(title));
+    setTitle(title);
     mainLayout->addWidget(message);
     mainLayout->addStretch();
 }
