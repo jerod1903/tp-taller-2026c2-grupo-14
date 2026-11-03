@@ -20,6 +20,7 @@ target_sources(taller_server
     game/world/tile.cpp
     game/world/town/town.cpp
     game/world/world.cpp
+    game/world/world_builder.cpp
     lobby/lobby_session.cpp
     net/acceptor.cpp
     net/receiver.cpp
@@ -50,6 +51,7 @@ target_sources(taller_server
     game/world/tile.h
     game/world/town/town.h
     game/world/world.h
+    game/world/world_builder.h
     lobby/lobby_session.h
     net/acceptor.h
     net/receiver.h
