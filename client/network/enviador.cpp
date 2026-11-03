@@ -1,8 +1,5 @@
 #include "enviador.h"
 
-// TODO: descomentar cuando exista el protocolo del cliente
-// Enviador::Enviador(ProtocoloCliente& protocolo): protocolo(protocolo) {}
+Enviador::Enviador(ClientProtocol& protocolo): protocolo(protocolo) {}
 
-void Enviador::enviar(const Request& /*request*/) {
-    // protocolo.enviar_request(request);
-}
+void Enviador::enviar(const Request& request) { protocolo.sendRequest(request); }

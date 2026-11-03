@@ -1,19 +1,18 @@
 #ifndef ENVIADOR_H
 #define ENVIADOR_H
 
+#include "client/network/ClientProtocol.h"
 #include "common/requests.h"
-// TODO: descomentar cuando exista el protocolo del cliente
-// #include "protocolo_cliente.h"
 
 // Se encarga de mandarle al servidor las acciones del usuario.
 class Enviador {
 public:
-    // TODO: descomentar cuando exista el protocolo del cliente
-    // explicit Enviador(ProtocoloCliente& protocolo);
+    explicit Enviador(ClientProtocol& protocolo);
+    // Si se corto la conexion tira LobbyConnectionError
     void enviar(const Request& request);
 
 private:
-    // ProtocoloCliente& protocolo;
+    ClientProtocol& protocolo;
 };
 
 #endif

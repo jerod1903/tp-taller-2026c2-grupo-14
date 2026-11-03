@@ -2,12 +2,18 @@
 
 #include <cstdint>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "common/base_protocol.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
+#include "common/requests.h"
+
+// Lo que manda el servidor durante la partida.
+using ServerGameMessage = std::variant<LocationData, Snapshot, GameEnded>;
 
 // Lado cliente del protocolo del lobby: cada metodo manda una operacion y espera su respuesta.
 // Si el servidor corta la conexion a mitad de una respuesta, tira LobbyConnectionError.
@@ -26,6 +32,11 @@ public:
     GameEnteredResponse joinGame(const JoinGameRequest& request) override;
     GameEnteredResponse loadGame(uint32_t gameId) override;
 
+    // Durante la partida. No son parte de ILobbyProtocol: el menu no los usa.
+    void sendRequest(const Request& request);
+    // Bloquea hasta que llega un mensaje. Si el tag no se conoce tira std::runtime_error.
+    ServerGameMessage recvGameMessage();
+
     void shutdown();
 
 private:
@@ -36,6 +47,8 @@ private:
     LobbyStatus recvStatus();
     GameEnteredResponse recvGameEntered();
     CharacterAppearance recvAppearance();
+    Snapshot recvSnapshot();
+    PlayerState recvPlayerState();
 
     BaseProtocol baseProtocol;
 };
