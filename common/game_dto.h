@@ -18,10 +18,30 @@ struct LocationData {
     std::string worldId;
 };
 
-// Estado de la partida en un tick. Por ahora solo quiénes están conectados.
+// En milésimas de celda: progress = PROGRESS_SCALE es haber llegado a la celda vecina.
+constexpr uint16_t PROGRESS_SCALE = 1000;
+
+// Un jugador en un tick. Está en la celda (x, y) del área areaId; si camina, avanzó `progress`
+// hacia la celda vecina en (dirX, dirY), que van en -1, 0 o 1 como en un Request.
+struct PlayerState {
+    uint32_t playerId;
+    std::string areaId;
+    uint16_t x;
+    uint16_t y;
+    int8_t dirX;
+    int8_t dirY;
+    uint16_t progress;
+    uint16_t health;
+    uint16_t energy;
+    uint32_t gold;
+
+    bool operator==(const PlayerState&) const = default;
+};
+
+// Estado de la partida en un tick: todos los jugadores conectados, en cualquier área.
 struct Snapshot {
     uint32_t tick;
-    std::vector<uint32_t> players;  // playerIds
+    std::vector<PlayerState> players;
 };
 
 enum class EndReason : uint8_t {

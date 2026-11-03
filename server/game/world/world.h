@@ -16,7 +16,9 @@ class Player;
 // posiciones de origen y llegada salen de ahí.
 class World {
 public:
-    World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon);
+    // `spawn` es la celda de la granja donde aparece un jugador al entrar.
+    World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon,
+          const Position& spawn);
 
     World(const World&) = delete;
     World& operator=(const World&) = delete;
@@ -26,6 +28,7 @@ public:
     Farm& get_farm();
     Town& get_town();
     Dungeon& get_dungeon();
+    const Position& get_spawn() const;
 
     // Lo da de alta (o de baja) también en su Location actual.
     void add_player(Player& player);
@@ -44,6 +47,7 @@ private:
     std::unique_ptr<Farm> farm;
     std::unique_ptr<Town> town;
     Dungeon dungeon;
+    Position spawn;
     std::vector<Player*> players;
 
     // Para cada jugador que en este tick entró a la celda de un portal, llama a travel().

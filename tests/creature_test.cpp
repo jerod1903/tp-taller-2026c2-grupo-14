@@ -34,6 +34,14 @@ TEST_F(CreatureTest, SpeedScalesTheProgress) {
     EXPECT_EQ(fast.get_position(), (Position{0, 1}));
 }
 
+TEST_F(CreatureTest, ProgressIsTheFractionTowardsTheNextCell) {
+    creature.set_direction(Direction::DOWN);
+    creature.update(0.25f);
+    EXPECT_FLOAT_EQ(creature.get_progress(), 0.25f);
+    creature.set_direction(Direction::RIGHT);
+    EXPECT_FLOAT_EQ(creature.get_progress(), 0.0f);
+}
+
 TEST_F(CreatureTest, KeepsTheLeftoverProgress) {
     creature.set_direction(Direction::DOWN);
     creature.update(1.5f);

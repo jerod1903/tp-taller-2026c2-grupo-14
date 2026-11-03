@@ -23,6 +23,8 @@ public:
     // Hacia dónde camina; NONE frena. Cambiar de dirección reinicia `progress`.
     void set_direction(Direction dir);
     Direction get_direction() const;
+    // Fracción en [0, 1) del camino hacia la celda siguiente, para que el cliente interpole.
+    float get_progress() const;
 
     // true si en el último advance() entró a una celda nueva. Los portales se disparan al entrar,
     // no por estar parado encima: si no, quien llega sobre un portal de vuelta rebota.

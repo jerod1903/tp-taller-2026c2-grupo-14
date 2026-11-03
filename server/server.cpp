@@ -7,9 +7,9 @@
 #include "common/logger.h"
 #include "server/consts.h"
 
-Server::Server(const char* servicename, std::istream& input, std::vector<WorldInfo> worlds):
+Server::Server(const char* servicename, std::istream& input, const std::vector<GameWorld>& worlds):
         input(input),
-        registry(std::move(worlds), store, ServerConstants::MAX_PLAYERS),
+        registry(worlds, store, ServerConstants::MAX_PLAYERS),
         acceptor(servicename, registry) {}
 
 void Server::execute() {

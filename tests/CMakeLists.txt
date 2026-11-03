@@ -11,6 +11,7 @@ target_sources(taller_tests
     lobby_session_test.cpp
     logger_test.cpp
     world_builder_test.cpp
+    world_loader_test.cpp
     world_test.cpp
     receiver_test.cpp
     sender_test.cpp
@@ -32,6 +33,7 @@ target_sources(taller_tests
     ../server/game/world/town/town.cpp
     ../server/game/world/world.cpp
     ../server/game/world/world_builder.cpp
+    ../server/game/world/world_loader.cpp
     ../server/game/game_registry.cpp
     ../server/game/game.cpp
     ../server/lobby/lobby_session.cpp

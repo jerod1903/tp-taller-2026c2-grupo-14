@@ -14,6 +14,7 @@
 
 #include "common/lobby_dto.h"
 #include "server/game/game.h"
+#include "server/game/world/world_loader.h"
 #include "server/persistence/game_store.h"
 
 // Monitor con las partidas conocidas por el servidor y el índice username -> partidas.
@@ -21,7 +22,7 @@
 // partidas aunque nadie más esté conectado.
 class GameRegistry {
 public:
-    GameRegistry(std::vector<WorldInfo> worlds, GameStore& store, uint8_t max_players);
+    GameRegistry(const std::vector<GameWorld>& worlds, GameStore& store, uint8_t max_players);
 
     GameRegistry(const GameRegistry&) = delete;
     GameRegistry& operator=(const GameRegistry&) = delete;
@@ -47,7 +48,8 @@ public:
     // Suma un miembro nuevo a la partida del código y lo deja conectado a ella.
     GameEnteredResponse join_game(const std::string& code, const GameMember& member);
 
-    // Conecta a un miembro existente. GameNotFound también si el usuario no participa.
+    // Conecta a un miembro existente. GameNotFound también si el usuario no participa, y
+    // WorldNotFound si el mapa de la partida ya no se carga.
     GameEnteredResponse load_game(uint32_t game_id, const std::string& username);
 
     GameMember member_of(uint32_t game_id, uint32_t player_id) const;
@@ -70,6 +72,7 @@ public:
 
 private:
     const std::vector<WorldInfo> worlds;
+    const std::map<std::string, stardew::maps::MapDefinition> maps;
     // Cupo de una partida cuando pasa a multi.
     const uint8_t max_players;
     GameStore& store;

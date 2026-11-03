@@ -45,6 +45,7 @@ maps::MapDefinition make_map() {
     map.elements = {
             element("cabin", "farm", ElementType::Cabin, ElementLayer::Structure, 1, 1, 3, 2),
             element("farm-gate", "farm", ElementType::Door, ElementLayer::Structure, 5, 4),
+            element("spawn", "farm", ElementType::SpawnPoint, ElementLayer::Object, 0, 4),
             element("market", "village", ElementType::Market, ElementLayer::Structure, 0, 0, 2, 1),
             element("marnie", "village", ElementType::MerchantMarnie, ElementLayer::Npc, 3, 0),
             element("mine", "village", ElementType::DungeonEntrance, ElementLayer::Structure, 5, 0),
@@ -136,6 +137,17 @@ TEST_F(WorldBuilderTest, CabinDoorLeadsToTheInteriorAndBack) {
     EXPECT_EQ(in->arrival, CabinInterior::DOOR);
     EXPECT_EQ(farm().get_cabin().portal_at(CabinInterior::DOOR)->target, &farm());
     EXPECT_EQ(farm().get_cabin().get_grid().get_width(), CabinInterior::WIDTH);
+}
+
+TEST_F(WorldBuilderTest, PlayersSpawnOnTheSpawnPointOfTheFarm) {
+    EXPECT_EQ(world->get_spawn(), (Position{0, 4}));
+}
+
+TEST(WorldBuilderSpawnTest, WithoutSpawnPointPlayersSpawnOnTheCabinDoor) {
+    maps::MapDefinition map = make_map();
+    map.elements.erase(std::find_if(map.elements.begin(), map.elements.end(),
+                                    [](const maps::MapElement& e) { return e.id == "spawn"; }));
+    EXPECT_EQ(build_world(map)->get_spawn(), (Position{2, 2}));
 }
 
 TEST(WorldBuilderErrorsTest, FarmWithoutCabinIsRejected) {

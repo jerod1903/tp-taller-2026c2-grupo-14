@@ -13,6 +13,7 @@
 #include "server/game/game_registry.h"
 #include "server/lobby/lobby_session.h"
 #include "server/persistence/in_memory_game_store.h"
+#include "tests/test_worlds.h"
 
 namespace {
 
@@ -52,7 +53,7 @@ protected:
 
     // Declarados antes que la sesion: la sesion usa al registry y se destruye primero.
     InMemoryGameStore store{{MULTI_GAME}};
-    GameRegistry registry{WORLDS, store, MAX_PLAYERS};
+    GameRegistry registry{test_worlds(WORLDS), store, MAX_PLAYERS};
     std::unique_ptr<ClientProtocol> client;
     std::unique_ptr<LobbySession> session;
 };

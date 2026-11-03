@@ -132,8 +132,8 @@ struct LoadGameRequest {
 // Respuesta común a CREATE_GAME, JOIN_GAME y LOAD_GAME. Status posibles:
 // - CREATE_GAME: Ok, InvalidName, InvalidAppearance, WorldNotFound
 // - JOIN_GAME: Ok, InvalidName, InvalidAppearance, InvalidInviteCode, GameFull, NameTaken,
-//   AlreadyMember
-// - LOAD_GAME: Ok, GameNotFound, AlreadyConnected
+//   AlreadyMember, WorldNotFound (el mapa de la partida ya no se carga)
+// - LOAD_GAME: Ok, GameNotFound, AlreadyConnected, WorldNotFound
 struct GameEnteredResponse {
     LobbyStatus status;
     uint32_t gameId;    // válido solo si status == Ok
