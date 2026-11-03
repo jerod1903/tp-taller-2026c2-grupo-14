@@ -28,15 +28,14 @@ private:
 std::vector<std::unique_ptr<DungeonLevel>> make_levels(int count) {
     std::vector<std::unique_ptr<DungeonLevel>> levels;
     for (int depth = 0; depth < count; ++depth) {
-        levels.push_back(
-                std::make_unique<DungeonLevel>("level", make_grid(), depth, Position{4, 4}));
+        levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));
     }
     return levels;
 }
 
 class DungeonLevelTest: public ::testing::Test {
 protected:
-    DungeonLevel level{"level", make_grid(), 0, Position{4, 4}};
+    DungeonLevel level{"level", make_grid(), 0};
     int deaths = 0;
 };
 
@@ -61,14 +60,6 @@ TEST_F(DungeonLevelTest, DeadEnemiesAreRemovedOnUpdate) {
     level.update(0.1f);
     ASSERT_EQ(level.get_entities().size(), 1u);
     EXPECT_EQ(level.get_entities()[0]->get_id(), 2u);
-}
-
-TEST_F(DungeonLevelTest, ExitPortalIsAPortalOfTheLevel) {
-    TestLocation town;
-    level.set_exit_portal(Portal{Position{0, 4}, &town, Position{2, 2}});
-    EXPECT_EQ(level.get_exit_portal().target, &town);
-    ASSERT_TRUE(level.portal_at(Position{0, 4}).has_value());
-    EXPECT_EQ(level.portal_at(Position{0, 4})->target, &town);
 }
 
 TEST(DungeonTest, RequiresExactlyLevelCountLevels) {

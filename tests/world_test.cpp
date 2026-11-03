@@ -23,7 +23,7 @@ std::unique_ptr<World> make_world() {
     auto town = std::make_unique<Town>("town", make_grid());
     std::vector<std::unique_ptr<DungeonLevel>> levels;
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
-        levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth, CABIN_POS));
+        levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));
     }
     return std::make_unique<World>(std::move(farm), std::move(town), Dungeon(std::move(levels)));
 }

@@ -48,8 +48,6 @@ namespace GameMap {
 
     class DungeonLevel {
         -int depth
-        -Portal exitPortal
-        -Position stairsDown
     }
 
     class Portal {
