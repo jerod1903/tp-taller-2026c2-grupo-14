@@ -13,6 +13,7 @@ public:
 
     void start() override;
     void run() override;
+    void join() override;
 
     // Si puede estar bloqueado en un send, cortar la conexión antes de destruirlo.
     ~Sender() override;

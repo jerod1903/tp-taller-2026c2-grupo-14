@@ -32,6 +32,11 @@ bool Sender::send(const GameMessage& message) {
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 
+void Sender::join() {
+    Thread::join();
+    started = false;  // El destructor no lo vuelve a joinear.
+}
+
 Sender::~Sender() {
     stop();
     try {

@@ -59,7 +59,16 @@ void Game::handle(const PlayerAction& action) {
     Logger::debug("jugador {}: acción {}", action.playerId, static_cast<int>(action.request.tipo));
 }
 
-void Game::handle(const PlayerLeft& left) { players.erase(left.playerId); }
+void Game::handle(const PlayerLeft& left) {
+    std::map<uint32_t, std::shared_ptr<Outbox>>::iterator player = players.find(left.playerId);
+    if (player == players.end()) {
+        return;
+    }
+    try {
+        player->second->close();
+    } catch (const std::runtime_error&) {}
+    players.erase(player);
+}
 
 void Game::broadcast_snapshot() {
     Snapshot snapshot{tick, {}};

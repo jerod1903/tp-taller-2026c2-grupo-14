@@ -46,9 +46,11 @@ private:
     bool handle_join_game();
     bool handle_load_game();
     bool handle_enable_multiplayer();
-    // Responde el ingreso y, con Ok, juega hasta que se corte la conexión: retorna false.
+    // Responde el ingreso y, con Ok, juega. Con LeaveGame vuelve al lobby; si se corta la
+    // conexión retorna false.
     bool enter_game(const GameEnteredResponse& response, const GameMember& member);
-    void play(uint32_t player_id, const GameMember& member);
+    // true si el jugador salió con LeaveGame y la conexión sigue abierta.
+    bool play(uint32_t player_id, const GameMember& member);
     LobbyStatus validate(const LoginRequest& req) const;
 };
 

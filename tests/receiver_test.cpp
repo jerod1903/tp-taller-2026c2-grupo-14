@@ -77,6 +77,23 @@ TEST_F(ReceiverTest, ClientDisconnectPostsPlayerLeft) {
     EXPECT_EQ(left->playerId, PLAYER_ID);
 }
 
+TEST_F(ReceiverTest, LeaveGamePostsPlayerLeftAndEndsTheThread) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::LeaveGame)));
+    ASSERT_TRUE(client->send_u8(0));
+    ASSERT_TRUE(client->send_u8(0));
+    GameEvent event = inbox.pop();
+    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
+    receiver->join();
+    EXPECT_TRUE(receiver->has_left());
+}
+
+TEST_F(ReceiverTest, ClientDisconnectIsNotALeave) {
+    client.reset();
+    inbox.pop();
+    receiver->join();
+    EXPECT_FALSE(receiver->has_left());
+}
+
 TEST_F(ReceiverTest, ClosedInboxEndsTheThread) {
     inbox.close();
     send_move(0, 0);

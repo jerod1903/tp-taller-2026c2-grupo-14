@@ -84,6 +84,18 @@ TEST_F(GameTest, LeftPlayerIsNoLongerInTheSnapshots) {
     EXPECT_EQ(snapshot.players, (std::vector<uint32_t>{0}));
 }
 
+TEST_F(GameTest, LeftPlayerOutboxIsClosedAfterItsPendingMessages) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    game.get_inbox().push(PlayerLeft{0});
+    EXPECT_TRUE(std::holds_alternative<LocationData>(outbox->pop()));
+    try {
+        for (int i = 0; i < 1000; ++i) {
+            outbox->pop();
+        }
+        FAIL() << "la outbox sigue abierta";
+    } catch (const ClosedQueue&) {}
+}
+
 TEST_F(GameTest, ActionsDoNotStopTheLoop) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();

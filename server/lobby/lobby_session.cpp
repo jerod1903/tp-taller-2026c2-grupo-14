@@ -214,13 +214,17 @@ bool LobbySession::handle_enable_multiplayer() {
 
 bool LobbySession::enter_game(const GameEnteredResponse& response, const GameMember& member) {
     current_game = response.gameId;
-    if (protocol.send_game_entered(response)) {
-        play(response.playerId, member);
+    if (!protocol.send_game_entered(response) || !play(response.playerId, member)) {
+        return false;
     }
-    return false;
+    // Se suelta antes del GameEnded: el cliente puede volver a cargarla apenas lo recibe.
+    registry.leave_game(*current_game, *username);
+    current_game.reset();
+    Logger::info("user '{}' volvió al lobby", *username);
+    return protocol.send_game_ended(GameEnded{EndReason::Left});
 }
 
-void LobbySession::play(uint32_t player_id, const GameMember& member) {
+bool LobbySession::play(uint32_t player_id, const GameMember& member) {
     Inbox& inbox = registry.attach(*current_game);
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(ServerConstants::OUTBOX_SIZE);
     inbox.push(PlayerJoined{player_id, member, outbox});
@@ -229,10 +233,16 @@ void LobbySession::play(uint32_t player_id, const GameMember& member) {
     sender.start();
     receiver.start();
     receiver.join();
+    if (receiver.has_left()) {
+        // El Game cierra la outbox al procesar el PlayerLeft; el Sender la vacía y termina.
+        sender.join();
+        return true;
+    }
     // El Sender puede seguir bloqueado en un send.
     try {
         protocol.shutdown();
     } catch (const LibError&) {}
+    return false;
 }
 
 LobbyStatus LobbySession::validate(const LoginRequest& req) const {

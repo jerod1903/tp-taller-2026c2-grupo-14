@@ -4,6 +4,7 @@
 
 #include "common/logger.h"
 #include "common/net/liberror.h"
+#include "common/operations.h"
 
 Receiver::Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id):
         protocol(protocol), inbox(inbox), player_id(player_id) {}
@@ -16,9 +17,11 @@ void Receiver::start() {
 void Receiver::run() {
     try {
         std::optional<Request> request;
-        while (should_keep_running() && (request = protocol.recv_request())) {
+        while (should_keep_running() && (request = protocol.recv_request()) &&
+               request->tipo != Operation::LeaveGame) {
             inbox.push(PlayerAction{player_id, *request});
         }
+        left = request && request->tipo == Operation::LeaveGame;
     } catch (const LibError& e) {
         Logger::debug("conexión cortada: {}", e.what());
     } catch (const ClosedQueue&) {
@@ -33,6 +36,8 @@ void Receiver::join() {
     Thread::join();
     started = false;  // El destructor no lo vuelve a joinear.
 }
+
+bool Receiver::has_left() const { return left; }
 
 Receiver::~Receiver() {
     stop();

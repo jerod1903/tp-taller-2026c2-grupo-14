@@ -190,6 +190,29 @@ protected:
         ASSERT_TRUE(client->send_u8(dir_y));
     }
 
+    void send_leave_game() {
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::LeaveGame)));
+        ASSERT_TRUE(client->send_u8(0));
+        ASSERT_TRUE(client->send_u8(0));
+    }
+
+    // Descarta los snapshots que estaban en camino hasta el GameEnded y devuelve su motivo.
+    std::optional<EndReason> recv_game_ended() {
+        std::optional<uint8_t> tag;
+        while ((tag = client->recv_u8()) && *tag == static_cast<uint8_t>(GameMsg::Snapshot)) {
+            client->recv_u32();
+            uint16_t count = client->recv_u16().value_or(0);
+            for (uint16_t i = 0; i < count; ++i) {
+                client->recv_u32();
+            }
+        }
+        if (tag != std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::GameEnded))) {
+            return std::nullopt;
+        }
+        std::optional<uint8_t> reason = client->recv_u8();
+        return reason ? std::optional<EndReason>(static_cast<EndReason>(*reason)) : std::nullopt;
+    }
+
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
 
     void expect_login_retry_works() {
@@ -643,6 +666,35 @@ TEST_F(LobbySessionTest, DisconnectingInGameEndsTheGame) {
     ASSERT_TRUE(wait_session_end());
     EXPECT_FALSE(registry.is_running(MULTI_ID));
     EXPECT_EQ(registry.load_game(MULTI_ID, OWNER).status, LobbyStatus::Ok);
+}
+
+TEST_F(LobbySessionTest, LeaveGameEndsWithGameEndedAndReturnsToTheLobby) {
+    send_login(OWNER);
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
+    expect_location("granja");
+    send_leave_game();
+    EXPECT_EQ(recv_game_ended(), std::optional<EndReason>(EndReason::Left));
+    EXPECT_FALSE(registry.is_running(MULTI_ID));
+    send_op(LobbyOp::ListWorlds);
+    EXPECT_EQ(recv_world_list().size(), WORLDS.size());
+}
+
+TEST_F(LobbySessionTest, LeftPlayerCanEnterTheGameAgain) {
+    send_login(OWNER);
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
+    expect_location("granja");
+    send_leave_game();
+    ASSERT_EQ(recv_game_ended(), std::optional<EndReason>(EndReason::Left));
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
+    expect_location("granja");
 }
 
 }  // namespace
