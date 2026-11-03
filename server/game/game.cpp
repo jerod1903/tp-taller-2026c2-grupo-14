@@ -9,14 +9,17 @@
 
 #include "common/logger.h"
 #include "server/consts.h"
+#include "server/game/world/world_builder.h"
 
 namespace {
 constexpr std::chrono::nanoseconds TICK_DURATION =
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
         ServerConstants::TICK_RATE;
+const float TICK_SECONDS = std::chrono::duration<float>(TICK_DURATION).count();
 }  // namespace
 
-Game::Game(std::string world_id): world_id(std::move(world_id)) {}
+Game::Game(std::string world_id, const stardew::maps::MapDefinition& map):
+        world_id(std::move(world_id)), world(build_world(map)) {}
 
 Inbox& Game::get_inbox() { return inbox; }
 
@@ -30,6 +33,7 @@ void Game::run() {
     try {
         while (should_keep_running()) {
             process_events();
+            world->update(TICK_SECONDS);
             ++tick;
             broadcast_snapshot();
             next += TICK_DURATION;

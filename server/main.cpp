@@ -1,6 +1,5 @@
 #include <exception>
 #include <iostream>
-#include <utility>
 #include <vector>
 
 #include "common/map/persistence/MapRequirementsLoader.h"
@@ -16,13 +15,10 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        std::vector<WorldInfo> worlds;
-        for (const GameWorld& world:
-             load_worlds(TALLER_MAPS_DIR,
-                         stardew::maps::loadMapRequirements(ServerConstants::MAP_REQUIREMENTS))) {
-            worlds.push_back(world.info);
-        }
-        Server server(argv[ServerConstants::ARG_SERVICENAME], std::cin, std::move(worlds));
+        std::vector<GameWorld> worlds =
+                load_worlds(TALLER_MAPS_DIR,
+                            stardew::maps::loadMapRequirements(ServerConstants::MAP_REQUIREMENTS));
+        Server server(argv[ServerConstants::ARG_SERVICENAME], std::cin, worlds);
         server.execute();
     } catch (const std::exception& e) {
         std::cerr << ServerConstants::ERROR_PREFIX << e.what() << '\n';

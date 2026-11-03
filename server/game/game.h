@@ -7,11 +7,14 @@
 #include <string>
 
 #include "common/lib/thread.h"
+#include "common/map/MapDefinition.h"
 #include "server/game/game_event.h"
+#include "server/game/world/world.h"
 
 class Game: public Thread {
 public:
-    explicit Game(std::string world_id);
+    // Arma el World a partir del mapa, que tiene que estar validado.
+    Game(std::string world_id, const stardew::maps::MapDefinition& map);
 
     Inbox& get_inbox();
 
@@ -25,6 +28,7 @@ private:
     bool started = false;
     const std::string world_id;
     Inbox inbox;
+    std::unique_ptr<World> world;
     std::map<uint32_t, std::shared_ptr<Outbox>> players;
     uint32_t tick = 0;
 

@@ -11,6 +11,7 @@
 
 #include "common/logger.h"
 #include "common/operations.h"
+#include "tests/test_worlds.h"
 
 namespace {
 
@@ -48,7 +49,7 @@ protected:
         return snapshot;
     }
 
-    Game game{WORLD_ID};
+    Game game{WORLD_ID, example_map()};
 };
 
 TEST_F(GameTest, JoinedPlayerReceivesTheLocationFirst) {

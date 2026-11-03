@@ -18,10 +18,27 @@ constexpr std::size_t INVITE_CODE_LEN = 6;
 // Sin 0/O ni 1/I: el código se dicta y se tipea a mano.
 constexpr std::string_view INVITE_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+std::vector<WorldInfo> infos_of(const std::vector<GameWorld>& worlds) {
+    std::vector<WorldInfo> infos;
+    for (const GameWorld& world: worlds) {
+        infos.push_back(world.info);
+    }
+    return infos;
+}
+
+std::map<std::string, stardew::maps::MapDefinition> maps_of(const std::vector<GameWorld>& worlds) {
+    std::map<std::string, stardew::maps::MapDefinition> maps;
+    for (const GameWorld& world: worlds) {
+        maps.emplace(world.info.worldId, world.map);
+    }
+    return maps;
+}
+
 }  // namespace
 
-GameRegistry::GameRegistry(std::vector<WorldInfo> worlds, GameStore& store, uint8_t max_players):
-        worlds(std::move(worlds)), max_players(max_players), store(store) {
+GameRegistry::GameRegistry(const std::vector<GameWorld>& worlds, GameStore& store,
+                           uint8_t max_players):
+        worlds(infos_of(worlds)), maps(maps_of(worlds)), max_players(max_players), store(store) {
     for (const GameRecord& game: store.load_all()) {
         add(game);
         next_game_id = std::max(next_game_id, game.gameId + 1);
@@ -88,6 +105,9 @@ GameEnteredResponse GameRegistry::join_game(const std::string& code, const GameM
         return GameEnteredResponse{LobbyStatus::InvalidInviteCode, 0, 0};
     }
     GameRecord& game = games.at(id->second);
+    if (!world_exists(game.worldId)) {
+        return GameEnteredResponse{LobbyStatus::WorldNotFound, 0, 0};
+    }
     if (is_member(game, member.username)) {
         return GameEnteredResponse{LobbyStatus::AlreadyMember, 0, 0};
     }
@@ -112,6 +132,9 @@ GameEnteredResponse GameRegistry::load_game(uint32_t game_id, const std::string&
             game == games.end() ? std::nullopt : player_id_of(game->second, username);
     if (!player_id) {
         return GameEnteredResponse{LobbyStatus::GameNotFound, 0, 0};
+    }
+    if (!world_exists(game->second.worldId)) {
+        return GameEnteredResponse{LobbyStatus::WorldNotFound, 0, 0};
     }
     if (!connected[game_id].insert(username).second) {
         return GameEnteredResponse{LobbyStatus::AlreadyConnected, 0, 0};
@@ -150,7 +173,8 @@ Inbox& GameRegistry::attach(uint32_t game_id) {
     reap();
     std::unique_ptr<Game>& game = running[game_id];
     if (!game) {
-        game = std::make_unique<Game>(games.at(game_id).worldId);
+        const std::string& world_id = games.at(game_id).worldId;
+        game = std::make_unique<Game>(world_id, maps.at(world_id));
         game->start();
     }
     return game->get_inbox();
