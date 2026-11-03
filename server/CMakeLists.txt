@@ -4,6 +4,9 @@ target_sources(taller_server
     main.cpp
     server.cpp
     game/game_registry.cpp
+    game/characters/creature.cpp
+    game/characters/entity.cpp
+    game/characters/player.cpp
     game/world/direction.cpp
     game/world/grid.cpp
     game/world/location.cpp
@@ -17,6 +20,9 @@ target_sources(taller_server
     consts.h
     server.h
     game/game_registry.h
+    game/characters/creature.h
+    game/characters/entity.h
+    game/characters/player.h
     game/world/direction.h
     game/world/grid.h
     game/world/location.h

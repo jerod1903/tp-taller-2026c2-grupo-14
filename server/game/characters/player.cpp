@@ -1,0 +1,21 @@
+#include "server/game/characters/player.h"
+
+#include <utility>
+
+Player::Player(uint32_t id, const Position& pos, Location& location, std::string name, int health,
+               float base_speed, int gold, int energy):
+        Creature(id, pos, location, health, base_speed),
+        name(std::move(name)),
+        gold(gold),
+        energy(energy) {}
+
+const std::string& Player::get_name() const { return name; }
+
+int Player::get_gold() const { return gold; }
+
+int Player::get_energy() const { return energy; }
+
+// TODO: herramientas e inventario.
+void Player::use_tool(const Position&) {}
+
+void Player::update(float dt) { advance(dt); }
