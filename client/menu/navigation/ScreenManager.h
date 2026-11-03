@@ -6,6 +6,7 @@ class QStackedWidget;
 class QWidget;
 
 enum class ScreenId {
+    Login,
     MainMenu,
     NewGame,
     JoinGame,

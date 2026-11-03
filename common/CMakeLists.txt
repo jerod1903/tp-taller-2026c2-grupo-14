@@ -7,13 +7,30 @@ target_sources(taller_common
     net/resolver.cpp
     net/resolvererror.cpp
     net/socket.cpp
+    map/persistence/MapRepository.cpp
+    map/persistence/MapRequirementsLoader.cpp
+    map/persistence/TomlMapFile.cpp
+    map/service/MapService.cpp
+    map/validation/MapValidator.cpp
     PUBLIC
     # .h files
+    appearance_catalog.h
     base_protocol.h
+    game_dto.h
+    estado_personaje.h
     lobby_dto.h
     logger.h
     lib/queue.h
     lib/thread.h
+    map/MapDefinition.h
+    map/MapRequirements.h
+    map/MapValidationIssue.h
+    map/persistence/MapRepository.h
+    map/persistence/MapRequirementsLoader.h
+    map/persistence/TomlMapFile.h
+    map/persistence/TomlTableReader.h
+    map/service/MapService.h
+    map/validation/MapValidator.h
     net/liberror.h
     net/resolver.h
     net/resolvererror.h

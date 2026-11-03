@@ -1,15 +1,16 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
-#include "client/menu/backend/LobbyTypes.h"
 #include "client/menu/screens/BaseScreen.h"
+#include "common/lobby_dto.h"
 
 class CharacterPreview;
 class ILobbyProtocol;
 class QLabel;
 class QListWidget;
-class QPushButton;
+class MenuButton;
 class QShowEvent;
 class QStackedWidget;
 
@@ -23,7 +24,7 @@ public:
 
 signals:
     // El servidor cargo la partida: el menu termina y empieza el juego.
-    void gameEntered(const GameEnteredResponse& response);
+    void gameEntered(uint32_t gameId);
 
 protected:
     // La lista se pide al servidor cada vez que se entra, para que este actualizada.
@@ -46,5 +47,5 @@ private:
     QLabel* detailGameName;
     QLabel* detailInfo;
     QLabel* errorLabel;
-    QPushButton* playButton;
+    MenuButton* playButton;
 };

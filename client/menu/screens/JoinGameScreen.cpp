@@ -39,7 +39,7 @@ JoinGameScreen::JoinGameScreen(ILobbyProtocol& lobby, QWidget* parent):
 
     addBackButton();
     mainLayout->addStretch();
-    mainLayout->addWidget(createTitle("Unirse a partida"));
+    setTitle("Unirse a partida");
     mainLayout->addSpacing(30);
     mainLayout->addWidget(formColumn, 0, Qt::AlignHCenter);
     mainLayout->addStretch();
@@ -75,10 +75,15 @@ void JoinGameScreen::submitCode() {
 void JoinGameScreen::showError(LobbyStatus status) {
     switch (status) {
         case LobbyStatus::InvalidInviteCode:
-            errorLabel->setText("No hay ninguna partida con ese código. Revisalo e intentá de nuevo.");
+            errorLabel->setText(
+                    "No hay ninguna partida con ese código. Revisalo e intentá de nuevo.");
             break;
         case LobbyStatus::GameFull:
             errorLabel->setText("La partida ya tiene el máximo de jugadores.");
+            break;
+        // El servidor no dice cual es la partida: se entra desde la lista propia.
+        case LobbyStatus::AlreadyMember:
+            errorLabel->setText("Ya estás en esa partida. Entrá desde \"Mis partidas\".");
             break;
         default:
             errorLabel->setText("No se pudo verificar el código. Intentá de nuevo.");

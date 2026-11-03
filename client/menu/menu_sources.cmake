@@ -1,0 +1,42 @@
+# Fuentes del menu en Qt. Lo usan taller_client (con el juego) y taller_menu (solo el menu, sin SDL).
+set(TALLER_MENU_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/MainWindow.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/backend/MockLobbyProtocol.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/CharacterPreview.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/CharacterSprites.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/ColorPicker.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/MenuButton.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/OptionStepper.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/SavedGameRow.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/navigation/ScreenManager.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/BaseScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/CharacterScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/JoinGameScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/LoginScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/MainMenuScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/MyGamesScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/NewGameScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/screens/PlaceholderScreen.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/styles/StyleManager.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/resources/menu.qrc
+    ${CMAKE_CURRENT_LIST_DIR}/MainWindow.h
+    ${CMAKE_CURRENT_LIST_DIR}/backend/ILobbyProtocol.h
+    ${CMAKE_CURRENT_LIST_DIR}/backend/MockLobbyProtocol.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/CharacterPreview.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/CharacterSprites.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/ColorPicker.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/MenuButton.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/OptionStepper.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/SavedGameRow.h
+    ${CMAKE_CURRENT_LIST_DIR}/navigation/ScreenManager.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/BaseScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/CharacterScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/JoinGameScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/LoginScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/MainMenuScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/MyGamesScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/NewGameScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/screens/PlaceholderScreen.h
+    ${CMAKE_CURRENT_LIST_DIR}/styles/CharacterColors.h
+    ${CMAKE_CURRENT_LIST_DIR}/styles/StyleManager.h
+)

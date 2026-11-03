@@ -3,12 +3,16 @@ target_sources(taller_tests
     # .cpp files
     creature_test.cpp
     dungeon_test.cpp
+    client_protocol_test.cpp
     game_registry_test.cpp
     grid_test.cpp
     location_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
     world_test.cpp
+    receiver_test.cpp
+    sender_test.cpp
+    server_protocol_test.cpp
     # Código del servidor bajo test (sin main.cpp)
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
@@ -27,8 +31,12 @@ target_sources(taller_tests
     ../server/game/world/world.cpp
     ../server/game/game_registry.cpp
     ../server/lobby/lobby_session.cpp
+    ../server/net/receiver.cpp
+    ../server/net/sender.cpp
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
+    # Código del cliente bajo test (sin Qt)
+    ../client/network/ClientProtocol.cpp
     PUBLIC
     # .h files
     world_helpers.h

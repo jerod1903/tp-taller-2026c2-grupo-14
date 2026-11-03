@@ -21,12 +21,15 @@ target_sources(taller_server
     game/world/world.cpp
     lobby/lobby_session.cpp
     net/acceptor.cpp
+    net/receiver.cpp
+    net/sender.cpp
     net/server_protocol.cpp
     persistence/in_memory_game_store.cpp
     PUBLIC
     # .h files
     consts.h
     server.h
+    game/game_event.h
     game/game_registry.h
     game/characters/creature.h
     game/characters/enemies/enemy.h
@@ -47,6 +50,8 @@ target_sources(taller_server
     game/world/world.h
     lobby/lobby_session.h
     net/acceptor.h
+    net/receiver.h
+    net/sender.h
     net/server_protocol.h
     persistence/game_store.h
     persistence/in_memory_game_store.h

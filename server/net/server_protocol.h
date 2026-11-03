@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "common/base_protocol.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
+#include "common/requests.h"
 
 class ServerProtocol {
 public:
@@ -20,18 +22,32 @@ public:
     // std::nullopt si el peer cerró.
     std::optional<LobbyOp> recv_operation();
     std::optional<LoginRequest> recv_login();
+    std::optional<CheckInviteCodeRequest> recv_check_invite_code();
+    std::optional<CreateGameRequest> recv_create_game();
+    std::optional<JoinGameRequest> recv_join_game();
+    std::optional<LoadGameRequest> recv_load_game();
+    std::optional<EnableMultiplayerRequest> recv_enable_multiplayer();
 
     bool send_status(LobbyStatus status);
     bool send_world_list(const std::vector<WorldInfo>& worlds);
     bool send_saved_game_list(const std::vector<SavedGameInfo>& games);
+    bool send_game_entered(const GameEnteredResponse& response);
+
+    // Durante la partida.
+    std::optional<Request> recv_request();
+    bool send_location_data(const LocationData& location);
+    bool send_snapshot(const Snapshot& snapshot);
+    bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
 
     void shutdown();
 
 private:
     BaseProtocol baseProtocol;
 
+    bool send_game_msg(GameMsg msg);
     bool send_count(std::size_t count);
     bool send_appearance(const CharacterAppearance& appearance);
+    std::optional<CharacterAppearance> recv_appearance();
 };
 
 #endif  // SERVER_PROTOCOL_H

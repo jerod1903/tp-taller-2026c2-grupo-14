@@ -14,7 +14,7 @@ SavedGameRow::SavedGameRow(const SavedGameInfo& game, QWidget* parent): QWidget(
     setObjectName("savedGameRow");
 
     const QString characterName = QString::fromStdString(game.characterName);
-    auto* preview = new CharacterPreview(ROW_PREVIEW_SIZE, this);
+    auto* preview = new CharacterPreview(QSize(ROW_PREVIEW_SIZE, ROW_PREVIEW_SIZE), this);
     preview->setCharacter(game.appearance, characterName);
 
     auto* gameName = new QLabel(QString::fromStdString(game.gameName), this);
