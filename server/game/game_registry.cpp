@@ -79,39 +79,42 @@ LobbyStatus GameRegistry::check_invite_code(const std::string& code,
     return LobbyStatus::Ok;
 }
 
-JoinGameResponse GameRegistry::join_game(const std::string& code, const GameMember& member) {
+GameEnteredResponse GameRegistry::join_game(const std::string& code, const GameMember& member) {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<std::string, uint32_t>::const_iterator id = games_by_code.find(code);
     if (id == games_by_code.end()) {
-        return JoinGameResponse{LobbyStatus::InvalidInviteCode, 0};
+        return GameEnteredResponse{LobbyStatus::InvalidInviteCode, 0, 0};
     }
     GameRecord& game = games.at(id->second);
     if (is_member(game, member.username)) {
-        return JoinGameResponse{LobbyStatus::AlreadyMember, 0};
+        return GameEnteredResponse{LobbyStatus::AlreadyMember, 0, 0};
     }
     if (game.members.size() >= game.maxPlayers) {
-        return JoinGameResponse{LobbyStatus::GameFull, 0};
+        return GameEnteredResponse{LobbyStatus::GameFull, 0, 0};
     }
     if (name_taken(game, member.characterName)) {
-        return JoinGameResponse{LobbyStatus::NameTaken, 0};
+        return GameEnteredResponse{LobbyStatus::NameTaken, 0, 0};
     }
+    uint32_t player_id = static_cast<uint32_t>(game.members.size());
     game.members.push_back(member);
     store.save(game);
     games_by_user[member.username].insert(game.gameId);
     connected[game.gameId].insert(member.username);
-    return JoinGameResponse{LobbyStatus::Ok, game.gameId};
+    return GameEnteredResponse{LobbyStatus::Ok, game.gameId, player_id};
 }
 
-LobbyStatus GameRegistry::load_game(uint32_t game_id, const std::string& username) {
+GameEnteredResponse GameRegistry::load_game(uint32_t game_id, const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<uint32_t, GameRecord>::const_iterator game = games.find(game_id);
-    if (game == games.end() || !is_member(game->second, username)) {
-        return LobbyStatus::GameNotFound;
+    std::optional<uint32_t> player_id =
+            game == games.end() ? std::nullopt : player_id_of(game->second, username);
+    if (!player_id) {
+        return GameEnteredResponse{LobbyStatus::GameNotFound, 0, 0};
     }
     if (!connected[game_id].insert(username).second) {
-        return LobbyStatus::AlreadyConnected;
+        return GameEnteredResponse{LobbyStatus::AlreadyConnected, 0, 0};
     }
-    return LobbyStatus::Ok;
+    return GameEnteredResponse{LobbyStatus::Ok, game_id, *player_id};
 }
 
 EnableMultiplayerResponse GameRegistry::enable_multiplayer(uint32_t game_id,
@@ -183,8 +186,18 @@ std::string GameRegistry::new_invite_code() {
 }
 
 bool GameRegistry::is_member(const GameRecord& game, const std::string& username) {
-    return std::any_of(game.members.begin(), game.members.end(),
-                       [&username](const GameMember& m) { return m.username == username; });
+    return player_id_of(game, username).has_value();
+}
+
+std::optional<uint32_t> GameRegistry::player_id_of(const GameRecord& game,
+                                                   const std::string& username) {
+    std::vector<GameMember>::const_iterator member =
+            std::find_if(game.members.begin(), game.members.end(),
+                         [&username](const GameMember& m) { return m.username == username; });
+    if (member == game.members.end()) {
+        return std::nullopt;
+    }
+    return static_cast<uint32_t>(member - game.members.begin());
 }
 
 bool GameRegistry::name_taken(const GameRecord& game, const std::string& character_name) {

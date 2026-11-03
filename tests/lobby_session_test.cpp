@@ -132,7 +132,17 @@ protected:
     uint32_t create_game() {
         send_create_game("granja", "Mi granja", "Granjero");
         expect_status(LobbyStatus::Ok);
-        return client->recv_u32().value_or(0);
+        return recv_created_game_id();
+    }
+
+    // Lee los ids de un GameEnteredResponse Ok de CREATE_GAME: el gameId lo asigna el registry y
+    // el creador es siempre el primer jugador.
+    uint32_t recv_created_game_id() {
+        std::optional<uint32_t> game_id = client->recv_u32();
+        std::optional<uint32_t> player_id = client->recv_u32();
+        EXPECT_TRUE(game_id && player_id);
+        EXPECT_EQ(player_id.value_or(UINT32_MAX), GameRegistry::OWNER_PLAYER_ID);
+        return game_id.value_or(0);
     }
 
     void send_enable_multiplayer(uint32_t game_id) {
@@ -153,10 +163,13 @@ protected:
         ASSERT_TRUE(client->send_u16(appearance.hat));
     }
 
-    void expect_game_id(uint32_t expected) {
-        std::optional<uint32_t> game_id = client->recv_u32();
-        ASSERT_TRUE(game_id.has_value());
-        EXPECT_EQ(*game_id, expected);
+    // Los ids que siguen al status en un GameEnteredResponse. Van en 0 si el status no es Ok.
+    void expect_entered_ids(uint32_t game_id, uint32_t player_id = 0) {
+        std::optional<uint32_t> received_game = client->recv_u32();
+        std::optional<uint32_t> received_player = client->recv_u32();
+        ASSERT_TRUE(received_game && received_player);
+        EXPECT_EQ(*received_game, game_id);
+        EXPECT_EQ(*received_player, player_id);
     }
 
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
@@ -362,7 +375,7 @@ TEST_F(LobbySessionTest, JoinGameByCodeAddsItToMyGames) {
     expect_status(LobbyStatus::Ok);
     send_join_game(CODE, "Invitado");
     expect_status(LobbyStatus::Ok);
-    expect_game_id(MULTI_ID);
+    expect_entered_ids(MULTI_ID, 1);
     send_op(LobbyOp::ListMyGames);
     std::vector<SavedGameInfo> games = recv_saved_game_list();
     ASSERT_EQ(games.size(), 1u);
@@ -376,7 +389,7 @@ TEST_F(LobbySessionTest, JoinGameWithInvalidCharacterNameRespondsInvalidName) {
     expect_status(LobbyStatus::Ok);
     send_join_game(CODE, "con espacio");
     expect_status(LobbyStatus::InvalidName);
-    expect_game_id(0);
+    expect_entered_ids(0);
     EXPECT_TRUE(registry.games_of("jero").empty());
 }
 
@@ -385,7 +398,7 @@ TEST_F(LobbySessionTest, JoinGameWithUnknownCodeRespondsInvalidInviteCode) {
     expect_status(LobbyStatus::Ok);
     send_join_game("NOEXIS", "Invitado");
     expect_status(LobbyStatus::InvalidInviteCode);
-    expect_game_id(0);
+    expect_entered_ids(0);
 }
 
 TEST_F(LobbySessionTest, LoadOwnGameTwiceRespondsAlreadyConnected) {
@@ -393,8 +406,10 @@ TEST_F(LobbySessionTest, LoadOwnGameTwiceRespondsAlreadyConnected) {
     expect_status(LobbyStatus::Ok);
     send_load_game(MULTI_ID);
     expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
     send_load_game(MULTI_ID);
     expect_status(LobbyStatus::AlreadyConnected);
+    expect_entered_ids(0);
 }
 
 TEST_F(LobbySessionTest, LoadForeignGameRespondsGameNotFound) {
@@ -410,7 +425,7 @@ TEST_F(LobbySessionTest, ClosingSessionDisconnectsFromItsGame) {
     send_load_game(MULTI_ID);
     expect_status(LobbyStatus::Ok);
     session.reset();
-    EXPECT_EQ(registry.load_game(MULTI_ID, OWNER), LobbyStatus::Ok);
+    EXPECT_EQ(registry.load_game(MULTI_ID, OWNER).status, LobbyStatus::Ok);
 }
 
 TEST_F(LobbySessionTest, JoinGameBeforeLoginClosesConnection) {
@@ -428,12 +443,13 @@ TEST_F(LobbySessionTest, CreateGameAddsSinglePlayerGameToMyGames) {
     expect_status(LobbyStatus::Ok);
     send_create_game("pueblo", "Granja de prueba", "Granjero");
     expect_status(LobbyStatus::Ok);
-    std::optional<uint32_t> game_id = client->recv_u32();
-    ASSERT_TRUE(game_id.has_value());
-    EXPECT_NE(*game_id, 0u);
+    uint32_t game_id = recv_created_game_id();
+    EXPECT_NE(game_id, 0u);
     send_op(LobbyOp::ListMyGames);
     std::vector<SavedGameInfo> games = recv_saved_game_list();
     ASSERT_EQ(games.size(), 1u);
+    EXPECT_EQ(games[0].gameId, game_id);
+    EXPECT_EQ(games[0].gameName, "Granja de Martu");
     EXPECT_EQ(games[0].gameId, *game_id);
     EXPECT_EQ(games[0].gameName, "Granja de prueba");
     EXPECT_EQ(games[0].worldName, "Pueblo");
@@ -446,9 +462,7 @@ TEST_F(LobbySessionTest, CreateGameLeavesCreatorConnected) {
     expect_status(LobbyStatus::Ok);
     send_create_game("granja", "Solo", "Granjero");
     expect_status(LobbyStatus::Ok);
-    std::optional<uint32_t> game_id = client->recv_u32();
-    ASSERT_TRUE(game_id.has_value());
-    send_load_game(*game_id);
+    send_load_game(recv_created_game_id());
     expect_status(LobbyStatus::AlreadyConnected);
 }
 
@@ -457,7 +471,7 @@ TEST_F(LobbySessionTest, CreateGameInUnknownWorldRespondsWorldNotFound) {
     expect_status(LobbyStatus::Ok);
     send_create_game("../../etc", "Mi granja", "Granjero");
     expect_status(LobbyStatus::WorldNotFound);
-    expect_game_id(0);
+    expect_entered_ids(0);
     EXPECT_TRUE(registry.games_of("jero").empty());
 }
 
@@ -469,11 +483,11 @@ TEST_F(LobbySessionTest, CreateGameWithInvalidNamesRespondsInvalidName) {
           std::string(ServerConstants::MAX_NAME_LEN + 1, 'a')}) {
         send_create_game("granja", game_name, "Granjero");
         expect_status(LobbyStatus::InvalidName);
-        expect_game_id(0);
+        expect_entered_ids(0);
     }
     send_create_game("granja", "Mi granja", "con espacio");
     expect_status(LobbyStatus::InvalidName);
-    expect_game_id(0);
+    expect_entered_ids(0);
     EXPECT_TRUE(registry.games_of("jero").empty());
 }
 
@@ -499,7 +513,7 @@ TEST_F(LobbySessionTest, CreateGameWithAppearanceOutOfCatalogRespondsInvalidAppe
     for (const CharacterAppearance& appearance: invalid_appearances()) {
         send_create_game("granja", "Mi granja", "Granjero", appearance);
         expect_status(LobbyStatus::InvalidAppearance);
-        expect_game_id(0);
+        expect_entered_ids(0);
     }
     EXPECT_TRUE(registry.games_of("jero").empty());
 }
@@ -521,7 +535,7 @@ TEST_F(LobbySessionTest, JoinGameWithAppearanceOutOfCatalogRespondsInvalidAppear
     for (const CharacterAppearance& appearance: invalid_appearances()) {
         send_join_game(CODE, "Invitado", appearance);
         expect_status(LobbyStatus::InvalidAppearance);
-        expect_game_id(0);
+        expect_entered_ids(0);
     }
     EXPECT_TRUE(registry.games_of("jero").empty());
 }
@@ -536,7 +550,7 @@ TEST_F(LobbySessionTest, EnableMultiplayerRespondsInviteCodeThatOthersCanUse) {
     ASSERT_TRUE(code.has_value());
     EXPECT_EQ(code->size(), 6u);
 
-    JoinGameResponse joined = registry.join_game(*code, GameMember{"otro", "Otro", APPEARANCE});
+    GameEnteredResponse joined = registry.join_game(*code, GameMember{"otro", "Otro", APPEARANCE});
     EXPECT_EQ(joined.status, LobbyStatus::Ok);
     EXPECT_EQ(joined.gameId, game_id);
 }

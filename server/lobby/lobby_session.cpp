@@ -146,20 +146,22 @@ bool LobbySession::handle_create_game() {
         return false;
     }
     if (!is_valid_game_name(req->gameName) || !is_valid_name(req->characterName)) {
-        return protocol.send_create_game(CreateGameResponse{LobbyStatus::InvalidName, 0});
+        return protocol.send_game_entered(GameEnteredResponse{LobbyStatus::InvalidName, 0, 0});
     }
     if (!AppearanceCatalog::is_valid(req->appearance)) {
-        return protocol.send_create_game(CreateGameResponse{LobbyStatus::InvalidAppearance, 0});
+        return protocol.send_game_entered(
+                GameEnteredResponse{LobbyStatus::InvalidAppearance, 0, 0});
     }
     std::optional<uint32_t> game_id = registry.create_game(
             req->gameName, req->worldId,
             GameMember{*username, std::move(req->characterName), req->appearance});
     if (!game_id) {
-        return protocol.send_create_game(CreateGameResponse{LobbyStatus::WorldNotFound, 0});
+        return protocol.send_game_entered(GameEnteredResponse{LobbyStatus::WorldNotFound, 0, 0});
     }
     Logger::info("user '{}' creó la partida {} '{}'", *username, *game_id, req->gameName);
     enter_game(*game_id);
-    return protocol.send_create_game(CreateGameResponse{LobbyStatus::Ok, *game_id});
+    return protocol.send_game_entered(
+            GameEnteredResponse{LobbyStatus::Ok, *game_id, GameRegistry::OWNER_PLAYER_ID});
 }
 
 bool LobbySession::handle_join_game() {
@@ -168,18 +170,19 @@ bool LobbySession::handle_join_game() {
         return false;
     }
     if (!is_valid_name(req->characterName)) {
-        return protocol.send_join_game(JoinGameResponse{LobbyStatus::InvalidName, 0});
+        return protocol.send_game_entered(GameEnteredResponse{LobbyStatus::InvalidName, 0, 0});
     }
     if (!AppearanceCatalog::is_valid(req->appearance)) {
-        return protocol.send_join_game(JoinGameResponse{LobbyStatus::InvalidAppearance, 0});
+        return protocol.send_game_entered(
+                GameEnteredResponse{LobbyStatus::InvalidAppearance, 0, 0});
     }
-    JoinGameResponse response = registry.join_game(
+    GameEnteredResponse response = registry.join_game(
             req->inviteCode, GameMember{*username, std::move(req->characterName), req->appearance});
     if (response.status == LobbyStatus::Ok) {
         Logger::info("user '{}' se unió a la partida {}", *username, response.gameId);
         enter_game(response.gameId);
     }
-    return protocol.send_join_game(response);
+    return protocol.send_game_entered(response);
 }
 
 bool LobbySession::handle_load_game() {
@@ -188,12 +191,12 @@ bool LobbySession::handle_load_game() {
         return false;
     }
     // Volver a pedir la partida en la que ya está no la suelta: responde AlreadyConnected.
-    LobbyStatus status = registry.load_game(req->gameId, *username);
-    if (status == LobbyStatus::Ok) {
+    GameEnteredResponse response = registry.load_game(req->gameId, *username);
+    if (response.status == LobbyStatus::Ok) {
         Logger::info("user '{}' retomó la partida {}", *username, req->gameId);
         enter_game(req->gameId);
     }
-    return protocol.send_load_game(LoadGameResponse{status});
+    return protocol.send_game_entered(response);
 }
 
 bool LobbySession::handle_enable_multiplayer() {

@@ -66,9 +66,9 @@ TEST(GameRegistryTest, CreatorIsConnectedToNewGame) {
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
     std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Granjero"));
     ASSERT_TRUE(id.has_value());
-    EXPECT_EQ(registry.load_game(*id, "jero"), LobbyStatus::AlreadyConnected);
+    EXPECT_EQ(registry.load_game(*id, "jero").status, LobbyStatus::AlreadyConnected);
     registry.leave_game(*id, "jero");
-    EXPECT_EQ(registry.load_game(*id, "jero"), LobbyStatus::Ok);
+    EXPECT_EQ(registry.load_game(*id, "jero").status, LobbyStatus::Ok);
 }
 
 TEST(GameRegistryTest, NewGamesStartAsSinglePlayerWithoutInviteCode) {
@@ -189,7 +189,7 @@ TEST(GameRegistryTest, JoinAddsMemberAndSavesIt) {
     InMemoryGameStore store({multi_game("user_10")});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
     std::string guest = "user_20";
-    JoinGameResponse response = registry.join_game(CODE, member(guest, "Invitado"));
+    GameEnteredResponse response = registry.join_game(CODE, member(guest, "Invitado"));
     EXPECT_EQ(response.status, LobbyStatus::Ok);
     EXPECT_EQ(response.gameId, MULTI_ID);
     std::vector<SavedGameInfo> games = registry.games_of(guest);
@@ -230,25 +230,45 @@ TEST(GameRegistryTest, JoinLeavesTheNewMemberConnected) {
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
     std::string guest = "user_20";
     ASSERT_EQ(registry.join_game(CODE, member(guest, "Invitado")).status, LobbyStatus::Ok);
-    EXPECT_EQ(registry.load_game(MULTI_ID, guest), LobbyStatus::AlreadyConnected);
+    EXPECT_EQ(registry.load_game(MULTI_ID, guest).status, LobbyStatus::AlreadyConnected);
 }
 
 TEST(GameRegistryTest, LoadOwnGameConnectsOnlyOnce) {
     std::string owner = "user_10";
     InMemoryGameStore store({multi_game(owner)});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
-    EXPECT_EQ(registry.load_game(MULTI_ID, owner), LobbyStatus::Ok);
-    EXPECT_EQ(registry.load_game(MULTI_ID, owner), LobbyStatus::AlreadyConnected);
+    EXPECT_EQ(registry.load_game(MULTI_ID, owner).status, LobbyStatus::Ok);
+    EXPECT_EQ(registry.load_game(MULTI_ID, owner).status, LobbyStatus::AlreadyConnected);
     registry.leave_game(MULTI_ID, owner);
-    EXPECT_EQ(registry.load_game(MULTI_ID, owner), LobbyStatus::Ok);
+    EXPECT_EQ(registry.load_game(MULTI_ID, owner).status, LobbyStatus::Ok);
+}
+
+// El playerId es la posición en members: el mismo al unirse y en cada LOAD_GAME posterior.
+TEST(GameRegistryTest, PlayerIdIsStableAcrossJoinAndLoad) {
+    std::string owner = "user_10";
+    std::string guest = "user_20";
+    InMemoryGameStore store({multi_game(owner)});
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    GameEnteredResponse joined = registry.join_game(CODE, member(guest, "Invitado"));
+    ASSERT_EQ(joined.status, LobbyStatus::Ok);
+    EXPECT_EQ(joined.playerId, 1u);
+    registry.leave_game(MULTI_ID, guest);
+
+    GameEnteredResponse guest_load = registry.load_game(MULTI_ID, guest);
+    ASSERT_EQ(guest_load.status, LobbyStatus::Ok);
+    EXPECT_EQ(guest_load.gameId, MULTI_ID);
+    EXPECT_EQ(guest_load.playerId, joined.playerId);
+    GameEnteredResponse owner_load = registry.load_game(MULTI_ID, owner);
+    ASSERT_EQ(owner_load.status, LobbyStatus::Ok);
+    EXPECT_EQ(owner_load.playerId, GameRegistry::OWNER_PLAYER_ID);
 }
 
 // Inexistente y ajena responden igual: no se puede averiguar qué ids existen.
 TEST(GameRegistryTest, LoadUnknownOrForeignGameIsGameNotFound) {
     InMemoryGameStore store({multi_game("user_10")});
     GameRegistry registry(WORLDS, store, MAX_PLAYERS);
-    EXPECT_EQ(registry.load_game(MULTI_ID + 1, "user_10"), LobbyStatus::GameNotFound);
-    EXPECT_EQ(registry.load_game(MULTI_ID, "user_20"), LobbyStatus::GameNotFound);
+    EXPECT_EQ(registry.load_game(MULTI_ID + 1, "user_10").status, LobbyStatus::GameNotFound);
+    EXPECT_EQ(registry.load_game(MULTI_ID, "user_20").status, LobbyStatus::GameNotFound);
 }
 
 TEST(GameRegistryTest, EnableMultiplayerTurnsGameIntoMultiWithInviteCode) {
@@ -267,7 +287,7 @@ TEST(GameRegistryTest, EnableMultiplayerTurnsGameIntoMultiWithInviteCode) {
     EXPECT_EQ(saved[0].inviteCode, response.inviteCode);
     EXPECT_TRUE(registry.games_of("jero")[0].isMultiplayer);
 
-    JoinGameResponse joined =
+    GameEnteredResponse joined =
             registry.join_game(response.inviteCode, member("invitado", "Invitado"));
     EXPECT_EQ(joined.status, LobbyStatus::Ok);
     EXPECT_EQ(joined.gameId, *id);
