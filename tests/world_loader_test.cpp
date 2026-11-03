@@ -86,4 +86,14 @@ TEST_F(WorldLoaderTest, MissingDirectoryGivesNoWorlds) {
     EXPECT_TRUE(load().empty());
 }
 
+// Con el mapa de ejemplo el server siempre tiene al menos un mundo para crear partidas.
+TEST_F(WorldLoaderTest, TheExampleMapOfTheRepoIsOffered) {
+    std::vector<GameWorld> worlds = load_worlds(
+            TALLER_MAPS_DIR,
+            stardew::maps::loadMapRequirements(TALLER_MAPS_DIR "/config/map_requirements.toml"));
+    ASSERT_FALSE(worlds.empty());
+    EXPECT_EQ(worlds[0].info.worldId, "valle");
+    EXPECT_EQ(worlds[0].info.name, "Valle de ejemplo");
+}
+
 }  // namespace

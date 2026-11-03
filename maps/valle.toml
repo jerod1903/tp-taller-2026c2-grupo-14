@@ -1,0 +1,974 @@
+format_version = 1
+name = "Valle de ejemplo"
+
+[[areas]]
+id = "granja"
+type = "farm"
+width = 30
+height = 20
+tiles = [
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "water", "water", "water", "water", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "water", "water", "water", "water", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "water", "water", "water", "water", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "dirt", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+]
+
+[[areas]]
+id = "pueblo"
+type = "village"
+width = 30
+height = 20
+tiles = [
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "path", "grass", "grass", "grass", "grass"],
+    ["path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path", "path"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "water", "water", "water", "water", "water", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "water", "water", "water", "water", "water", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "water", "water", "water", "water", "water", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+    ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
+]
+
+[[areas]]
+id = "mina-1"
+type = "dungeon_floor"
+floor = 1
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-2"
+type = "dungeon_floor"
+floor = 2
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-3"
+type = "dungeon_floor"
+floor = 3
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-4"
+type = "dungeon_floor"
+floor = 4
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-5"
+type = "dungeon_floor"
+floor = 5
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-6"
+type = "dungeon_floor"
+floor = 6
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-7"
+type = "dungeon_floor"
+floor = 7
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-8"
+type = "dungeon_floor"
+floor = 8
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-9"
+type = "dungeon_floor"
+floor = 9
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[areas]]
+id = "mina-10"
+type = "dungeon_floor"
+floor = 10
+width = 20
+height = 15
+tiles = [
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall", "cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
+    ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
+]
+
+[[elements]]
+id = "cabana"
+area = "granja"
+type = "cabin"
+layer = "structure"
+x = 12
+y = 2
+width = 5
+height = 3
+
+[[elements]]
+id = "granja-porton"
+area = "granja"
+type = "door"
+layer = "structure"
+x = 29
+y = 10
+width = 1
+height = 1
+
+[[elements]]
+id = "granja-spawn"
+area = "granja"
+type = "spawn_point"
+layer = "object"
+x = 14
+y = 6
+width = 1
+height = 1
+
+[[elements]]
+id = "pueblo-porton"
+area = "pueblo"
+type = "door"
+layer = "structure"
+x = 0
+y = 10
+width = 1
+height = 1
+
+[[elements]]
+id = "mercado"
+area = "pueblo"
+type = "market"
+layer = "structure"
+x = 4
+y = 3
+width = 4
+height = 3
+
+[[elements]]
+id = "centro-comunitario"
+area = "pueblo"
+type = "community_center"
+layer = "structure"
+x = 12
+y = 2
+width = 6
+height = 4
+
+[[elements]]
+id = "entrada-mina"
+area = "pueblo"
+type = "dungeon_entrance"
+layer = "structure"
+x = 24
+y = 2
+width = 3
+height = 2
+
+[[elements]]
+id = "marnie"
+area = "pueblo"
+type = "merchant_marnie"
+layer = "npc"
+x = 5
+y = 7
+width = 1
+height = 1
+
+[[elements]]
+id = "clint"
+area = "pueblo"
+type = "merchant_clint"
+layer = "npc"
+x = 9
+y = 7
+width = 1
+height = 1
+
+[[elements]]
+id = "pierre"
+area = "pueblo"
+type = "merchant_pierre"
+layer = "npc"
+x = 15
+y = 7
+width = 1
+height = 1
+
+[[elements]]
+id = "robin"
+area = "pueblo"
+type = "merchant_robin"
+layer = "npc"
+x = 20
+y = 7
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-1-salida"
+area = "mina-1"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-1-mineral-1"
+area = "mina-1"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-1-mineral-2"
+area = "mina-1"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-1-escalera"
+area = "mina-1"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-2-salida"
+area = "mina-2"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-2-mineral-1"
+area = "mina-2"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-2-mineral-2"
+area = "mina-2"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-2-escalera"
+area = "mina-2"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-3-salida"
+area = "mina-3"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-3-mineral-1"
+area = "mina-3"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-3-mineral-2"
+area = "mina-3"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-3-escalera"
+area = "mina-3"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-4-salida"
+area = "mina-4"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-4-mineral-1"
+area = "mina-4"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-4-mineral-2"
+area = "mina-4"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-4-escalera"
+area = "mina-4"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-5-salida"
+area = "mina-5"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-5-mineral-1"
+area = "mina-5"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-5-mineral-2"
+area = "mina-5"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-5-escalera"
+area = "mina-5"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-6-salida"
+area = "mina-6"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-6-mineral-1"
+area = "mina-6"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-6-mineral-2"
+area = "mina-6"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-6-escalera"
+area = "mina-6"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-7-salida"
+area = "mina-7"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-7-mineral-1"
+area = "mina-7"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-7-mineral-2"
+area = "mina-7"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-7-escalera"
+area = "mina-7"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-8-salida"
+area = "mina-8"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-8-mineral-1"
+area = "mina-8"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-8-mineral-2"
+area = "mina-8"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-8-escalera"
+area = "mina-8"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-9-salida"
+area = "mina-9"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-9-mineral-1"
+area = "mina-9"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-9-mineral-2"
+area = "mina-9"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-9-escalera"
+area = "mina-9"
+type = "stairs"
+layer = "structure"
+x = 17
+y = 12
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-10-salida"
+area = "mina-10"
+type = "door"
+layer = "structure"
+x = 1
+y = 1
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-10-mineral-1"
+area = "mina-10"
+type = "ore_node"
+layer = "object"
+x = 4
+y = 11
+width = 1
+height = 1
+
+[[elements]]
+id = "mina-10-mineral-2"
+area = "mina-10"
+type = "ore_node"
+layer = "object"
+x = 16
+y = 2
+width = 1
+height = 1
+
+[[transitions]]
+id = "granja-a-pueblo"
+from_area = "granja"
+trigger_element = "granja-porton"
+to_area = "pueblo"
+target_x = 1
+target_y = 10
+
+[[transitions]]
+id = "pueblo-a-granja"
+from_area = "pueblo"
+trigger_element = "pueblo-porton"
+to_area = "granja"
+target_x = 28
+target_y = 10
+
+[[transitions]]
+id = "pueblo-a-mina"
+from_area = "pueblo"
+trigger_element = "entrada-mina"
+to_area = "mina-1"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-1-salida-ruta"
+from_area = "mina-1"
+trigger_element = "mina-1-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-1-escalera-ruta"
+from_area = "mina-1"
+trigger_element = "mina-1-escalera"
+to_area = "mina-2"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-2-salida-ruta"
+from_area = "mina-2"
+trigger_element = "mina-2-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-2-escalera-ruta"
+from_area = "mina-2"
+trigger_element = "mina-2-escalera"
+to_area = "mina-3"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-3-salida-ruta"
+from_area = "mina-3"
+trigger_element = "mina-3-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-3-escalera-ruta"
+from_area = "mina-3"
+trigger_element = "mina-3-escalera"
+to_area = "mina-4"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-4-salida-ruta"
+from_area = "mina-4"
+trigger_element = "mina-4-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-4-escalera-ruta"
+from_area = "mina-4"
+trigger_element = "mina-4-escalera"
+to_area = "mina-5"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-5-salida-ruta"
+from_area = "mina-5"
+trigger_element = "mina-5-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-5-escalera-ruta"
+from_area = "mina-5"
+trigger_element = "mina-5-escalera"
+to_area = "mina-6"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-6-salida-ruta"
+from_area = "mina-6"
+trigger_element = "mina-6-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-6-escalera-ruta"
+from_area = "mina-6"
+trigger_element = "mina-6-escalera"
+to_area = "mina-7"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-7-salida-ruta"
+from_area = "mina-7"
+trigger_element = "mina-7-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-7-escalera-ruta"
+from_area = "mina-7"
+trigger_element = "mina-7-escalera"
+to_area = "mina-8"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-8-salida-ruta"
+from_area = "mina-8"
+trigger_element = "mina-8-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-8-escalera-ruta"
+from_area = "mina-8"
+trigger_element = "mina-8-escalera"
+to_area = "mina-9"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-9-salida-ruta"
+from_area = "mina-9"
+trigger_element = "mina-9-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
+
+[[transitions]]
+id = "mina-9-escalera-ruta"
+from_area = "mina-9"
+trigger_element = "mina-9-escalera"
+to_area = "mina-10"
+target_x = 2
+target_y = 1
+
+[[transitions]]
+id = "mina-10-salida-ruta"
+from_area = "mina-10"
+trigger_element = "mina-10-salida"
+to_area = "pueblo"
+target_x = 25
+target_y = 5
