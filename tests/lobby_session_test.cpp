@@ -13,9 +13,11 @@
 
 #include "common/appearance_catalog.h"
 #include "common/base_protocol.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/logger.h"
 #include "common/net/socket.h"
+#include "common/operations.h"
 #include "server/consts.h"
 #include "server/game/game_registry.h"
 #include "server/persistence/in_memory_game_store.h"
@@ -128,13 +130,6 @@ protected:
         send_appearance(appearance);
     }
 
-    // Crea una partida y devuelve su id.
-    uint32_t create_game() {
-        send_create_game("granja", "Mi granja", "Martu");
-        expect_status(LobbyStatus::Ok);
-        return recv_created_game_id();
-    }
-
     // Lee los ids de un GameEnteredResponse Ok de CREATE_GAME: el gameId lo asigna el registry y
     // el creador es siempre el primer jugador.
     uint32_t recv_created_game_id() {
@@ -170,6 +165,29 @@ protected:
         ASSERT_TRUE(received_game && received_player);
         EXPECT_EQ(*received_game, game_id);
         EXPECT_EQ(*received_player, player_id);
+    }
+
+    void expect_location(const std::string& world_id) {
+        EXPECT_EQ(client->recv_u8(),
+                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::LocationData)));
+        EXPECT_EQ(client->recv_string(), std::optional<std::string>(world_id));
+    }
+
+    Snapshot recv_snapshot() {
+        EXPECT_EQ(client->recv_u8(),
+                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
+        Snapshot snapshot{client->recv_u32().value_or(0), {}};
+        uint16_t count = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < count; ++i) {
+            snapshot.players.push_back(client->recv_u32().value_or(UINT32_MAX));
+        }
+        return snapshot;
+    }
+
+    void send_move(uint8_t dir_x, uint8_t dir_y) {
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
+        ASSERT_TRUE(client->send_u8(dir_x));
+        ASSERT_TRUE(client->send_u8(dir_y));
     }
 
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
@@ -381,8 +399,7 @@ TEST_F(LobbySessionTest, JoinGameByCodeAddsItToMyGames) {
     send_join_game(CODE, "Invitado");
     expect_status(LobbyStatus::Ok);
     expect_entered_ids(MULTI_ID, 1);
-    send_op(LobbyOp::ListMyGames);
-    std::vector<SavedGameInfo> games = recv_saved_game_list();
+    std::vector<SavedGameInfo> games = registry.games_of("jero");
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, MULTI_ID);
     EXPECT_EQ(games[0].characterName, "Invitado");
@@ -406,15 +423,13 @@ TEST_F(LobbySessionTest, JoinGameWithUnknownCodeRespondsInvalidInviteCode) {
     expect_entered_ids(0);
 }
 
-TEST_F(LobbySessionTest, LoadOwnGameTwiceRespondsAlreadyConnected) {
+TEST_F(LobbySessionTest, LoadedGameKeepsTheUserConnected) {
     send_login(OWNER);
     expect_status(LobbyStatus::Ok);
     send_load_game(MULTI_ID);
     expect_status(LobbyStatus::Ok);
     expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
-    send_load_game(MULTI_ID);
-    expect_status(LobbyStatus::AlreadyConnected);
-    expect_entered_ids(0);
+    EXPECT_EQ(registry.load_game(MULTI_ID, OWNER).status, LobbyStatus::AlreadyConnected);
 }
 
 TEST_F(LobbySessionTest, LoadForeignGameRespondsGameNotFound) {
@@ -450,8 +465,7 @@ TEST_F(LobbySessionTest, CreateGameAddsSinglePlayerGameToMyGames) {
     expect_status(LobbyStatus::Ok);
     uint32_t game_id = recv_created_game_id();
     EXPECT_NE(game_id, 0u);
-    send_op(LobbyOp::ListMyGames);
-    std::vector<SavedGameInfo> games = recv_saved_game_list();
+    std::vector<SavedGameInfo> games = registry.games_of("jero");
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, game_id);
     EXPECT_EQ(games[0].gameName, "Granja de Martu");
@@ -465,8 +479,8 @@ TEST_F(LobbySessionTest, CreateGameLeavesCreatorConnected) {
     expect_status(LobbyStatus::Ok);
     send_create_game("granja", "Solo", "Martu");
     expect_status(LobbyStatus::Ok);
-    send_load_game(recv_created_game_id());
-    expect_status(LobbyStatus::AlreadyConnected);
+    EXPECT_EQ(registry.load_game(recv_created_game_id(), "jero").status,
+              LobbyStatus::AlreadyConnected);
 }
 
 TEST_F(LobbySessionTest, CreateGameInUnknownWorldRespondsWorldNotFound) {
@@ -544,9 +558,10 @@ TEST_F(LobbySessionTest, JoinGameWithAppearanceOutOfCatalogRespondsInvalidAppear
 }
 
 TEST_F(LobbySessionTest, EnableMultiplayerRespondsInviteCodeThatOthersCanUse) {
+    uint32_t game_id = *registry.create_game("Mi granja", "granja", {"jero", "Martu", APPEARANCE});
+    registry.leave_game(game_id, "jero");
     send_login("jero");
     expect_status(LobbyStatus::Ok);
-    uint32_t game_id = create_game();
     send_enable_multiplayer(game_id);
     expect_status(LobbyStatus::Ok);
     std::optional<std::string> code = client->recv_string();
@@ -580,6 +595,54 @@ TEST_F(LobbySessionTest, EnableMultiplayerByInvitedMemberRespondsNotOwner) {
 TEST_F(LobbySessionTest, EnableMultiplayerBeforeLoginClosesConnection) {
     send_op(LobbyOp::EnableMultiplayer);
     expect_server_closed();
+}
+
+TEST_F(LobbySessionTest, EnteredGameSendsTheLocationThenSnapshots) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_create_game("pueblo", "Mi granja", "Martu");
+    expect_status(LobbyStatus::Ok);
+    recv_created_game_id();
+    expect_location("pueblo");
+    Snapshot snapshot = recv_snapshot();
+    EXPECT_EQ(snapshot.players, (std::vector<uint32_t>{GameRegistry::OWNER_PLAYER_ID}));
+    EXPECT_GT(recv_snapshot().tick, snapshot.tick);
+}
+
+TEST_F(LobbySessionTest, JoinedPlayerAppearsInTheSnapshotsWithItsId) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_join_game(CODE, "Invitado");
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, 1);
+    expect_location("granja");
+    EXPECT_EQ(recv_snapshot().players, (std::vector<uint32_t>{1}));
+}
+
+TEST_F(LobbySessionTest, MovesInGameKeepTheSnapshotsComing) {
+    send_login(OWNER);
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
+    expect_location("granja");
+    uint32_t tick = recv_snapshot().tick;
+    send_move(1, 0);
+    send_move(0, 2);
+    EXPECT_GT(recv_snapshot().tick, tick);
+}
+
+TEST_F(LobbySessionTest, DisconnectingInGameEndsTheGame) {
+    send_login(OWNER);
+    expect_status(LobbyStatus::Ok);
+    send_load_game(MULTI_ID);
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
+    expect_location("granja");
+    client.reset();
+    ASSERT_TRUE(wait_session_end());
+    EXPECT_FALSE(registry.is_running(MULTI_ID));
+    EXPECT_EQ(registry.load_game(MULTI_ID, OWNER).status, LobbyStatus::Ok);
 }
 
 }  // namespace

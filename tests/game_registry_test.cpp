@@ -1,8 +1,8 @@
 #include "server/game/game_registry.h"
 
 #include <algorithm>
-#include <memory>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>

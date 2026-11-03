@@ -119,6 +119,11 @@ GameEnteredResponse GameRegistry::load_game(uint32_t game_id, const std::string&
     return GameEnteredResponse{LobbyStatus::Ok, game_id, *player_id};
 }
 
+GameMember GameRegistry::member_of(uint32_t game_id, uint32_t player_id) const {
+    std::lock_guard<std::mutex> lock(mutex);
+    return games.at(game_id).members.at(player_id);
+}
+
 EnableMultiplayerResponse GameRegistry::enable_multiplayer(uint32_t game_id,
                                                            const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);

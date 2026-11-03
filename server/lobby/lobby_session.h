@@ -29,10 +29,7 @@ private:
     GameRegistry& registry;
     // Vacío hasta que el login sea válido. Solo lo toca el thread de la sesión.
     std::optional<std::string> username;
-    // La partida a la que entró con CREATE_GAME, JOIN_GAME o LOAD_GAME. Se suelta al cerrar la
-    // sesión.
-    // TODO: después de entrar, la sesión sigue en el loop del lobby. Falta pasar la conexión a la
-    // partida en curso cuando exista el loop del juego.
+    // La partida reservada con CREATE_GAME, JOIN_GAME o LOAD_GAME. Se suelta al cerrar la sesión.
     std::optional<uint32_t> current_game;
 
     using HandlerMap = std::map<LobbyOp, std::function<bool()>>;
@@ -49,8 +46,9 @@ private:
     bool handle_join_game();
     bool handle_load_game();
     bool handle_enable_multiplayer();
-    // Pasa a la partida que se acaba de entrar, soltando la anterior si había otra.
-    void enter_game(uint32_t game_id);
+    // Responde el ingreso y, con Ok, juega hasta que se corte la conexión: retorna false.
+    bool enter_game(const GameEnteredResponse& response, const GameMember& member);
+    void play(uint32_t player_id, const GameMember& member);
     LobbyStatus validate(const LoginRequest& req) const;
 };
 

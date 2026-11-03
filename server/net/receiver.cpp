@@ -29,6 +29,11 @@ void Receiver::run() {
     } catch (const ClosedQueue&) {}
 }
 
+void Receiver::join() {
+    Thread::join();
+    started = false;  // El destructor no lo vuelve a joinear.
+}
+
 Receiver::~Receiver() {
     stop();
     if (started) {

@@ -14,6 +14,7 @@ public:
 
     void start() override;
     void run() override;
+    void join() override;
 
     // Si puede estar bloqueado en el recv, cortar la conexión antes de destruirlo.
     ~Receiver() override;

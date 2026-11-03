@@ -50,6 +50,8 @@ public:
     // Conecta a un miembro existente. GameNotFound también si el usuario no participa.
     GameEnteredResponse load_game(uint32_t game_id, const std::string& username);
 
+    GameMember member_of(uint32_t game_id, uint32_t player_id) const;
+
     // Pasa la partida a multi (si no lo era) y devuelve su código de invitación. Solo el creador:
     // un miembro invitado recibe NotOwner, y alguien que no participa GameNotFound.
     EnableMultiplayerResponse enable_multiplayer(uint32_t game_id, const std::string& username);
