@@ -1,14 +1,35 @@
 target_sources(taller_tests
     PRIVATE
     # .cpp files
+    creature_test.cpp
+    dungeon_test.cpp
     game_registry_test.cpp
+    grid_test.cpp
+    location_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
+    world_test.cpp
     # Código del servidor bajo test (sin main.cpp)
+    ../server/game/characters/creature.cpp
+    ../server/game/characters/enemies/enemy.cpp
+    ../server/game/characters/enemies/skeleton.cpp
+    ../server/game/characters/entity.cpp
+    ../server/game/characters/player.cpp
+    ../server/game/world/direction.cpp
+    ../server/game/world/dungeon/dungeon.cpp
+    ../server/game/world/dungeon/dungeon_level.cpp
+    ../server/game/world/farm/cabin.cpp
+    ../server/game/world/farm/farm.cpp
+    ../server/game/world/grid.cpp
+    ../server/game/world/location.cpp
+    ../server/game/world/tile.cpp
+    ../server/game/world/town/town.cpp
+    ../server/game/world/world.cpp
     ../server/game/game_registry.cpp
     ../server/lobby/lobby_session.cpp
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
     PUBLIC
     # .h files
+    world_helpers.h
     )
