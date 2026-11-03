@@ -2,15 +2,18 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <thread>
+#include <variant>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "common/lobby_dto.h"
+#include "server/game/game_event.h"
 #include "server/persistence/in_memory_game_store.h"
 
 namespace {
@@ -358,6 +361,60 @@ TEST(GameRegistryTest, ConcurrentJoinsNeverExceedMaxPlayers) {
     }
     EXPECT_EQ(std::count(results.begin(), results.end(), LobbyStatus::Ok), MAX_PLAYERS - 1);
     EXPECT_EQ(store.load_all()[0].members.size(), static_cast<std::size_t>(MAX_PLAYERS));
+}
+TEST(GameRegistryTest, GameRunsOnlyAfterAttach) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    EXPECT_FALSE(registry.is_running(*id));
+    registry.attach(*id);
+    EXPECT_TRUE(registry.is_running(*id));
+}
+
+TEST(GameRegistryTest, AttachedGameSendsItsWorld) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "pueblo", member("jero", "Martu"));
+    std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
+    registry.attach(*id).push(PlayerJoined{0, member("jero", "Martu"), outbox});
+    GameMessage message = outbox->pop();
+    ASSERT_TRUE(std::holds_alternative<LocationData>(message));
+    EXPECT_EQ(std::get<LocationData>(message).worldId, "pueblo");
+}
+
+TEST(GameRegistryTest, PlayersOfAGameShareItsInbox) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Multi", "granja", member("jero", "Martu"));
+    std::string code = registry.enable_multiplayer(*id, "jero").inviteCode;
+    ASSERT_EQ(registry.join_game(code, member("santi", "Santu")).status, LobbyStatus::Ok);
+    EXPECT_EQ(&registry.attach(*id), &registry.attach(*id));
+}
+
+TEST(GameRegistryTest, GameStopsWhenTheLastPlayerLeaves) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Multi", "granja", member("jero", "Martu"));
+    std::string code = registry.enable_multiplayer(*id, "jero").inviteCode;
+    registry.join_game(code, member("santi", "Santu"));
+    registry.attach(*id);
+    registry.leave_game(*id, "santi");
+    EXPECT_TRUE(registry.is_running(*id));
+    registry.leave_game(*id, "jero");
+    EXPECT_FALSE(registry.is_running(*id));
+}
+
+TEST(GameRegistryTest, EmptiedGameRelaunchesOnLoad) {
+    InMemoryGameStore store;
+    GameRegistry registry(WORLDS, store, MAX_PLAYERS);
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    registry.attach(*id);
+    registry.leave_game(*id, "jero");
+    ASSERT_EQ(registry.load_game(*id, "jero").status, LobbyStatus::Ok);
+    std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
+    registry.attach(*id).push(PlayerJoined{0, member("jero", "Martu"), outbox});
+    EXPECT_TRUE(registry.is_running(*id));
+    EXPECT_TRUE(std::holds_alternative<LocationData>(outbox->pop()));
 }
 
 TEST(GameRegistryTest, ConcurrentCreatesAndQueriesStayConsistent) {

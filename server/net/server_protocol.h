@@ -37,6 +37,7 @@ public:
     std::optional<Request> recv_request();
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);
+    bool send_game_ended(const GameEnded& ended);
     bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
 
     void shutdown();

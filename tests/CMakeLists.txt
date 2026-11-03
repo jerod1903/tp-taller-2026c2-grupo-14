@@ -5,6 +5,7 @@ target_sources(taller_tests
     dungeon_test.cpp
     client_protocol_test.cpp
     game_registry_test.cpp
+    game_test.cpp
     grid_test.cpp
     location_test.cpp
     lobby_session_test.cpp
@@ -30,6 +31,7 @@ target_sources(taller_tests
     ../server/game/world/town/town.cpp
     ../server/game/world/world.cpp
     ../server/game/game_registry.cpp
+    ../server/game/game.cpp
     ../server/lobby/lobby_session.cpp
     ../server/net/receiver.cpp
     ../server/net/sender.cpp

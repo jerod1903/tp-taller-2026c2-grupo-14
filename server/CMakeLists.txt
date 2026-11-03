@@ -3,6 +3,7 @@ target_sources(taller_server
     # .cpp files
     main.cpp
     server.cpp
+    game/game.cpp
     game/game_registry.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
@@ -30,6 +31,7 @@ target_sources(taller_server
     consts.h
     server.h
     game/game_event.h
+    game/game.h
     game/game_registry.h
     game/characters/creature.h
     game/characters/enemies/enemy.h

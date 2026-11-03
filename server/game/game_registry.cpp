@@ -1,7 +1,9 @@
 #include "server/game/game_registry.h"
 
 #include <algorithm>
+#include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <string_view>
@@ -117,6 +119,11 @@ GameEnteredResponse GameRegistry::load_game(uint32_t game_id, const std::string&
     return GameEnteredResponse{LobbyStatus::Ok, game_id, *player_id};
 }
 
+GameMember GameRegistry::member_of(uint32_t game_id, uint32_t player_id) const {
+    std::lock_guard<std::mutex> lock(mutex);
+    return games.at(game_id).members.at(player_id);
+}
+
 EnableMultiplayerResponse GameRegistry::enable_multiplayer(uint32_t game_id,
                                                            const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);
@@ -138,6 +145,22 @@ EnableMultiplayerResponse GameRegistry::enable_multiplayer(uint32_t game_id,
     return EnableMultiplayerResponse{LobbyStatus::Ok, game.inviteCode};
 }
 
+Inbox& GameRegistry::attach(uint32_t game_id) {
+    std::lock_guard<std::mutex> lock(mutex);
+    reap();
+    std::unique_ptr<Game>& game = running[game_id];
+    if (!game) {
+        game = std::make_unique<Game>(games.at(game_id).worldId);
+        game->start();
+    }
+    return game->get_inbox();
+}
+
+bool GameRegistry::is_running(uint32_t game_id) const {
+    std::lock_guard<std::mutex> lock(mutex);
+    return running.count(game_id) > 0;
+}
+
 void GameRegistry::leave_game(uint32_t game_id, const std::string& username) {
     std::lock_guard<std::mutex> lock(mutex);
     std::map<uint32_t, std::set<std::string>>::iterator users = connected.find(game_id);
@@ -145,8 +168,22 @@ void GameRegistry::leave_game(uint32_t game_id, const std::string& username) {
         return;
     }
     users->second.erase(username);
-    if (users->second.empty()) {
-        connected.erase(users);
+    if (!users->second.empty()) {
+        return;
+    }
+    connected.erase(users);
+    std::map<uint32_t, std::unique_ptr<Game>>::iterator game = running.find(game_id);
+    if (game != running.end()) {
+        game->second->stop();
+        finished.push_back(std::move(game->second));
+        running.erase(game);
+    }
+}
+
+GameRegistry::~GameRegistry() {
+    // Se detienen todos antes de joinear para no esperar un tick por cada uno.
+    for (std::pair<const uint32_t, std::unique_ptr<Game>>& game: running) {
+        game.second->stop();
     }
 }
 
@@ -183,6 +220,10 @@ std::string GameRegistry::new_invite_code() {
         }
     } while (games_by_code.count(code) > 0);
     return code;
+}
+
+void GameRegistry::reap() {
+    finished.remove_if([](const std::unique_ptr<Game>& game) { return !game->is_alive(); });
 }
 
 bool GameRegistry::is_member(const GameRecord& game, const std::string& username) {

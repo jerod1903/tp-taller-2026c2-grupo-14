@@ -134,6 +134,11 @@ bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
                        [this](uint32_t player_id) { return baseProtocol.send_u32(player_id); });
 }
 
+bool ServerProtocol::send_game_ended(const GameEnded& ended) {
+    return send_game_msg(GameMsg::GameEnded) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(ended.reason));
+}
+
 bool ServerProtocol::send_game_msg(GameMsg msg) {
     return baseProtocol.send_u8(static_cast<uint8_t>(msg));
 }
