@@ -8,7 +8,8 @@
                 "/usr/local/include"
             ],
             "defines": [
-                "_REENTRANT"
+                "_REENTRANT",
+                "TALLER_MAPS_DIR=\"${workspaceFolder}/maps\""
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",

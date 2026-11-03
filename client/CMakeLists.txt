@@ -11,6 +11,7 @@ target_sources(taller_client
     gui/interfaz.cpp
     gui/personaje.cpp
     gui/calculador_camara.cpp
+    gui/mapa.cpp
     network/enviador.cpp
     network/recibidor.cpp
     PUBLIC
@@ -20,6 +21,7 @@ target_sources(taller_client
     gui/interfaz.h
     gui/personaje.h
     gui/calculador_camara.h
+    gui/mapa.h
     gui/constants.h
     network/enviador.h
     network/recibidor.h

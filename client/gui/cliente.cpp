@@ -5,13 +5,12 @@
 
 #include "interfaz.h"
 
+Cliente::Cliente(ClientProtocol& protocolo, uint32_t id_propio):
+        protocolo(protocolo), id_propio(id_propio) {}
+
 void Cliente::ejecutar() {
-    // TODO: cuando exista el protocolo del cliente:
-    // ProtocoloCliente protocolo(host, puerto);
-    // Enviador enviador(protocolo);
-    // Recibidor recibidor(protocolo);
-    Enviador enviador;
-    Recibidor recibidor;
-    Interfaz interfaz(enviador, recibidor);
+    Enviador enviador(protocolo);
+    Recibidor recibidor(protocolo);
+    Interfaz interfaz(enviador, recibidor, id_propio);
     interfaz.ejecutar();
 }

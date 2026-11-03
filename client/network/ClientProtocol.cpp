@@ -1,7 +1,10 @@
 #include "client/network/ClientProtocol.h"
 
 #include <optional>
+#include <stdexcept>
+#include <string>
 #include <utility>
+#include <vector>
 
 // Formato de los mensajes (enteros en big endian, strings con largo u16 adelante,
 // apariencia = hairStyle u16, hairColor u8, shirt u16, pants u16, hat u16):
@@ -15,6 +18,14 @@
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
 //   LoadGame:        op, gameId u32                              -> status u8
 //
+// Durante la partida:
+//   Request:         op u8, dirX u8, dirY u8 (-1 viaja como 0xFF)
+//   Mensajes del servidor, con su tag GameMsg u8 adelante:
+//     LocationData:  worldId
+//     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u16, y u16, dirX u8, dirY u8,
+//                    progress u16, health u16, energy u16, gold u32)*
+//     GameEnded:     reason u8
+//   
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
 
@@ -100,6 +111,25 @@ GameEnteredResponse ClientProtocol::recvGameEntered() {
     return response;
 }
 
+void ClientProtocol::sendRequest(const Request& request) {
+    ensure(baseProtocol.send_u8(static_cast<uint8_t>(request.tipo)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(request.dir_x)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(request.dir_y)));
+}
+
+ServerGameMessage ClientProtocol::recvGameMessage() {
+    auto msg = static_cast<GameMsg>(ensure(baseProtocol.recv_u8()));
+    switch (msg) {
+        case GameMsg::LocationData:
+            return LocationData{ensure(baseProtocol.recv_string())};
+        case GameMsg::Snapshot:
+            return recvSnapshot();
+        case GameMsg::GameEnded:
+            return GameEnded{static_cast<EndReason>(ensure(baseProtocol.recv_u8()))};
+    }
+    throw std::runtime_error("mensaje de partida desconocido");
+}
+
 void ClientProtocol::shutdown() { baseProtocol.shutdown(); }
 
 bool ClientProtocol::sendOperation(LobbyOp op) {
@@ -124,4 +154,29 @@ CharacterAppearance ClientProtocol::recvAppearance() {
     appearance.pants = ensure(baseProtocol.recv_u16());
     appearance.hat = ensure(baseProtocol.recv_u16());
     return appearance;
+}
+
+Snapshot ClientProtocol::recvSnapshot() {
+    Snapshot snapshot{};
+    snapshot.tick = ensure(baseProtocol.recv_u32());
+    uint16_t count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < count; ++i) {
+        snapshot.players.push_back(recvPlayerState());
+    }
+    return snapshot;
+}
+
+PlayerState ClientProtocol::recvPlayerState() {
+    PlayerState player{};
+    player.playerId = ensure(baseProtocol.recv_u32());
+    player.areaId = ensure(baseProtocol.recv_string());
+    player.x = ensure(baseProtocol.recv_u16());
+    player.y = ensure(baseProtocol.recv_u16());
+    player.dirX = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+    player.dirY = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+    player.progress = ensure(baseProtocol.recv_u16());
+    player.health = ensure(baseProtocol.recv_u16());
+    player.energy = ensure(baseProtocol.recv_u16());
+    player.gold = ensure(baseProtocol.recv_u32());
+    return player;
 }

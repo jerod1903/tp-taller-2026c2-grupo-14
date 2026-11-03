@@ -17,7 +17,6 @@ target_sources(taller_common
     appearance_catalog.h
     base_protocol.h
     game_dto.h
-    estado_personaje.h
     lobby_dto.h
     logger.h
     lib/queue.h
