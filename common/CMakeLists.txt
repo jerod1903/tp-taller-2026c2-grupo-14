@@ -16,6 +16,7 @@ target_sources(taller_common
     # .h files
     appearance_catalog.h
     base_protocol.h
+    estado_personaje.h
     lobby_dto.h
     logger.h
     lib/queue.h

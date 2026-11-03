@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "interfaz_juego.h"
+#include "cliente.h"
 
 int main() {
     try {
-        InterfazJuego interfaz;
-        interfaz.ejecutar();
+        Cliente cliente;
+        cliente.ejecutar();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;

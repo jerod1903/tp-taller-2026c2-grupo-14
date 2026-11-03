@@ -7,16 +7,20 @@ target_sources(taller_client
     main.cpp
     network/ClientProtocol.cpp
     gui/prueba.cpp
-    gui/interfaz_juego.cpp
-    gui/caverna.cpp
+    gui/cliente.cpp
+    gui/interfaz.cpp
     gui/personaje.cpp
     gui/calculador_camara.cpp
+    network/enviador.cpp
+    network/recibidor.cpp
     PUBLIC
     # .h files
     network/ClientProtocol.h
-    gui/interfaz_juego.h
-    gui/caverna.h
+    gui/cliente.h
+    gui/interfaz.h
     gui/personaje.h
     gui/calculador_camara.h
     gui/constants.h
+    network/enviador.h
+    network/recibidor.h
     )
