@@ -4,6 +4,21 @@ target_sources(taller_server
     main.cpp
     server.cpp
     game/game_registry.cpp
+    game/characters/creature.cpp
+    game/characters/enemies/enemy.cpp
+    game/characters/enemies/skeleton.cpp
+    game/characters/entity.cpp
+    game/characters/player.cpp
+    game/world/direction.cpp
+    game/world/dungeon/dungeon.cpp
+    game/world/dungeon/dungeon_level.cpp
+    game/world/farm/cabin.cpp
+    game/world/farm/farm.cpp
+    game/world/grid.cpp
+    game/world/location.cpp
+    game/world/tile.cpp
+    game/world/town/town.cpp
+    game/world/world.cpp
     lobby/lobby_session.cpp
     net/acceptor.cpp
     net/receiver.cpp
@@ -16,6 +31,23 @@ target_sources(taller_server
     server.h
     game/game_event.h
     game/game_registry.h
+    game/characters/creature.h
+    game/characters/enemies/enemy.h
+    game/characters/enemies/skeleton.h
+    game/characters/entity.h
+    game/characters/player.h
+    game/world/direction.h
+    game/world/dungeon/dungeon.h
+    game/world/dungeon/dungeon_level.h
+    game/world/farm/cabin.h
+    game/world/farm/farm.h
+    game/world/grid.h
+    game/world/location.h
+    game/world/portal.h
+    game/world/position.h
+    game/world/tile.h
+    game/world/town/town.h
+    game/world/world.h
     lobby/lobby_session.h
     net/acceptor.h
     net/receiver.h
