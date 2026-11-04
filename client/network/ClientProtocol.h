@@ -2,22 +2,20 @@
 
 #include <cstdint>
 #include <string>
-#include <variant>
 #include <vector>
 
 #include "client/menu/backend/ILobbyProtocol.h"
+#include "client/network/IGameProtocol.h"
 #include "common/base_protocol.h"
 #include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
-#include "common/requests.h"
+#include "common/operations.h"
 
-// Lo que manda el servidor durante la partida.
-using ServerGameMessage = std::variant<LocationData, Snapshot, GameEnded>;
-
-// Lado cliente del protocolo del lobby: cada metodo manda una operacion y espera su respuesta.
-// Si el servidor corta la conexion a mitad de una respuesta, tira LobbyConnectionError.
-class ClientProtocol: public ILobbyProtocol {
+// Lado cliente del protocolo: el del lobby (cada metodo manda una operacion y espera su respuesta)
+// y el de la partida. Si el servidor corta la conexion a mitad de un mensaje, tira
+// LobbyConnectionError.
+class ClientProtocol: public ILobbyProtocol, public IGameProtocol {
 public:
     explicit ClientProtocol(Socket&& socket);
 
@@ -32,17 +30,18 @@ public:
     GameEnteredResponse joinGame(const JoinGameRequest& request) override;
     GameEnteredResponse loadGame(uint32_t gameId) override;
 
-    // Durante la partida. No son parte de ILobbyProtocol: el menu no los usa.
-    void sendRequest(const Request& request);
-    // Bloquea hasta que llega un mensaje. Si el tag no se conoce tira std::runtime_error.
-    ServerGameMessage recvGameMessage();
+    void sendMove(int8_t dir_x, int8_t dir_y) override;
+    void sendLeaveGame() override;
+    ServerGameMessage recvGameMessage() override;
 
-    void shutdown();
+    void shutdown() override;
 
 private:
     // False si no se pudo mandar.
     bool sendOperation(LobbyOp op);
     bool sendAppearance(const CharacterAppearance& appearance);
+    // Todas las acciones de la partida van con tag y direccion, aunque no la usen (en 0)
+    void sendGameOperation(Operation op, int8_t dir_x, int8_t dir_y);
 
     LobbyStatus recvStatus();
     GameEnteredResponse recvGameEntered();

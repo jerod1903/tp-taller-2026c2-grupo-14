@@ -3,7 +3,8 @@
 
 #include <optional>
 
-#include "client/network/ClientProtocol.h"
+#include "client/menu/backend/ILobbyProtocol.h"
+#include "client/network/IGameProtocol.h"
 #include "common/lib/queue.h"
 #include "common/lib/thread.h"
 
@@ -12,7 +13,7 @@
 // cuando llega GameEnded o se corta la conexion.
 class Recibidor: public Thread {
 public:
-    explicit Recibidor(ClientProtocol& protocolo);
+    explicit Recibidor(IGameProtocol& protocolo);
     void run() override;
     // No bloquea: nullopt si no llego nada nuevo
     std::optional<ServerGameMessage> recibir();
@@ -20,7 +21,7 @@ public:
     ~Recibidor() override;
 
 private:
-    ClientProtocol& protocolo;
+    IGameProtocol& protocolo;
     Queue<ServerGameMessage> mensajes;
 };
 

@@ -1,18 +1,20 @@
 #ifndef ENVIADOR_H
 #define ENVIADOR_H
 
-#include "client/network/ClientProtocol.h"
-#include "common/requests.h"
+#include <cstdint>
+
+#include "client/network/IGameProtocol.h"
 
 // Se encarga de mandarle al servidor las acciones del usuario.
+// Si se corto la conexion, cualquier metodo tira LobbyConnectionError
 class Enviador {
 public:
-    explicit Enviador(ClientProtocol& protocolo);
-    // Si se corto la conexion tira LobbyConnectionError
-    void enviar(const Request& request);
+    explicit Enviador(IGameProtocol& protocolo);
+    void mover(int8_t dir_x, int8_t dir_y);
+    void salir();
 
 private:
-    ClientProtocol& protocolo;
+    IGameProtocol& protocolo;
 };
 
 #endif

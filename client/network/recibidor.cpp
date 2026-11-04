@@ -4,7 +4,7 @@
 
 #include "common/net/liberror.h"
 
-Recibidor::Recibidor(ClientProtocol& protocolo): protocolo(protocolo) { start(); }
+Recibidor::Recibidor(IGameProtocol& protocolo): protocolo(protocolo) { start(); }
 
 void Recibidor::run() {
     try {
