@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -14,6 +16,15 @@
 
 #include "liberror.h"
 #include "resolver.h"
+
+/*
+ * Apaga el algoritmo de Nagle: el juego manda mensajes chicos que tienen que
+ * llegar en el momento, no quedar esperando a juntarse con los siguientes.
+ * */
+static void disable_nagle(int skt) {
+    int enabled = 1;
+    setsockopt(skt, IPPROTO_TCP, TCP_NODELAY, &enabled, sizeof(enabled));
+}
 
 #define STREAM_SEND_CLOSED 0x01
 #define STREAM_RECV_CLOSED 0x02
@@ -72,6 +83,7 @@ Socket::Socket(const char* hostname, const char* servname) {
         this->closed = false;
         this->stream_status = STREAM_BOTH_OPEN;
         this->skt = skt;
+        disable_nagle(skt);
         return;
     }
 
@@ -398,6 +410,7 @@ Socket Socket::accept() {
     int peer_skt = ::accept(this->skt, nullptr, nullptr);
     if (peer_skt == -1)
         throw LibError(errno, "socket accept failed");
+    disable_nagle(peer_skt);
 
     /*
      * `peer_skt` es un file descriptor crudo y no queremos
