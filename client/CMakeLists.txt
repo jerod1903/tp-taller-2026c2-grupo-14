@@ -6,8 +6,9 @@ target_sources(taller_client
     # .cpp files
     main.cpp
     network/ClientProtocol.cpp
-    gui/prueba.cpp
-    gui/cliente.cpp
+    main_juego.cpp
+    client.cpp
+    game/game_loop.cpp
     gui/interfaz.cpp
     gui/personaje.cpp
     gui/calculador_camara.cpp
@@ -17,12 +18,17 @@ target_sources(taller_client
     PUBLIC
     # .h files
     network/ClientProtocol.h
-    gui/cliente.h
+    client.h
+    constants.h
+    game/entrada.h
+    game/estado_juego.h
+    game/game_loop.h
     gui/interfaz.h
     gui/personaje.h
     gui/calculador_camara.h
     gui/mapa.h
-    gui/constants.h
+    gui/rutas.h
+    gui/sprite.h
     network/enviador.h
     network/recibidor.h
     )

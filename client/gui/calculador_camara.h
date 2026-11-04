@@ -5,13 +5,14 @@
 
 class CalculadorCamara {
 public:
-    CalculadorCamara(int ancho_vista, int alto_vista);
+    // Lo que entra en la pantalla, en pixeles del mundo. Cambia al redimensionar la ventana
+    void ajustar_vista(int ancho, int alto);
     SDL2pp::Rect calcular(const SDL2pp::Point& centro, int ancho_mapa, int alto_mapa) const;
 
 private:
     int limitar(int valor, int maximo) const;  // entre 0 y maximo
-    int ancho_vista;
-    int alto_vista;
+    int ancho_vista = 0;
+    int alto_vista = 0;
 };
 
 #endif

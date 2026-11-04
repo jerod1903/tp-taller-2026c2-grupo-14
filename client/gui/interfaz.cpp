@@ -1,54 +1,40 @@
 #include "interfaz.h"
 
+#include <algorithm>
 #include <map>
-#include <optional>
 #include <set>
+#include <string>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include <SDL2/SDL_image.h>
 
-#include "constants.h"
+#include "client/constants.h"
+#include "rutas.h"
 
-Interfaz::Interfaz(Enviador& enviador, Recibidor& recibidor, uint32_t id_propio):
-        enviador(enviador),
-        recibidor(recibidor),
-        id_propio(id_propio),
+Interfaz::Interfaz():
         sdl(SDL_INIT_VIDEO),
         sdl_image(IMG_INIT_PNG),
         ventana("Jueguito", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, ANCHO_VENTANA,
-                ALTO_VENTANA, SDL_WINDOW_SHOWN),
-        renderer(ventana, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        sprite_personaje(renderer, RUTA_SPRITE_PERSONAJE),
-        calculador_camara(ANCHO_VENTANA, ALTO_VENTANA) {}
+                ALTO_VENTANA, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
+        renderer(ventana, -1,
+                 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
+                         SDL_RENDERER_TARGETTEXTURE),
+        sprite_personaje(renderer, RUTA_SPRITE_PERSONAJE) {}
 
-void Interfaz::ejecutar() {
-    while (corriendo) {
-        Uint32 inicio = SDL_GetTicks();
-        procesar_eventos();
-        actualizar();
-        dibujar();
-        Uint32 duracion = SDL_GetTicks() - inicio;
-        if (duracion < MS_POR_FRAME) {
-            SDL_Delay(MS_POR_FRAME - duracion);
-        }
-    }
-}
-
-void Interfaz::procesar_eventos() {
+Entrada Interfaz::leer_entrada() {
+    Entrada entrada;
     SDL_Event evento;
     while (SDL_PollEvent(&evento)) {
         if (evento.type == SDL_QUIT ||
             (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_ESCAPE)) {
-            // Se avisa al servidor que el jugador sale de la partida
-            enviador.enviar(Request{Operation::LeaveGame, 0, 0});
-            corriendo = false;
+            entrada.salir = true;
+        }
+        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_F11 &&
+            !evento.key.repeat) {
+            alternar_pantalla_completa();
         }
     }
-}
-
-void Interfaz::actualizar() {
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
             {{1, 0}, {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D}},
@@ -63,73 +49,91 @@ void Interfaz::actualizar() {
             dir_y += direccion.second;
         }
     }
-    // El servidor sigue moviendo al jugador en la ultima direccion que recibio: solo se avisa
-    // cuando cambia, incluido el (0, 0) al soltar las teclas para que frene
-    SDL2pp::Point direccion(dir_x, dir_y);
-    if (direccion != ultima_direccion) {
-        Request request{};
-        request.tipo = Operation::Move;
-        request.dir_x = static_cast<int8_t>(dir_x);
-        request.dir_y = static_cast<int8_t>(dir_y);
-        enviador.enviar(request);
-        ultima_direccion = direccion;
-    }
-    // Se procesa todo lo que llego desde el frame anterior
-    std::optional<ServerGameMessage> mensaje;
-    while ((mensaje = recibidor.recibir())) {
-        procesar_mensaje(*mensaje);
-    }
-    // El hilo termina si se corto la conexion
-    if (!recibidor.is_alive()) {
-        corriendo = false;
-    }
-    // Se dibuja el area en la que esta este jugador
-    auto propio = personajes.find(id_propio);
-    if (mapa && propio != personajes.end()) {
-        mapa->mostrar_area(propio->second.area());
+    entrada.dir_x = static_cast<int8_t>(dir_x);
+    entrada.dir_y = static_cast<int8_t>(dir_y);
+    return entrada;
+}
+
+void Interfaz::alternar_pantalla_completa() {
+    pantalla_completa = !pantalla_completa;
+    ventana.SetFullscreen(pantalla_completa ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+}
+
+void Interfaz::actualizar_mapa(const EstadoJuego& estado) {
+    if (estado.mundo && (!mapa || *estado.mundo != mundo_del_mapa)) {
+        mapa.emplace(renderer, *estado.mundo);
+        mundo_del_mapa = *estado.mundo;
     }
 }
 
-void Interfaz::procesar_mensaje(const ServerGameMessage& mensaje) {
-    if (const auto* ubicacion = std::get_if<LocationData>(&mensaje)) {
-        mapa.emplace(renderer, ubicacion->worldId, ESCALA);
-    } else if (const auto* snapshot = std::get_if<Snapshot>(&mensaje)) {
-        actualizar_personajes(snapshot->players);
-    } else {
-        corriendo = false;  // GameEnded: termino la partida
-    }
-}
-
-void Interfaz::actualizar_personajes(const std::vector<PlayerState>& jugadores) {
+void Interfaz::actualizar_personajes(const EstadoJuego& estado,
+                                     std::chrono::steady_clock::time_point ahora) {
     std::set<uint32_t> presentes;
-    for (const PlayerState& jugador: jugadores) {
+    for (const PlayerState& jugador: estado.jugadores) {
         presentes.insert(jugador.playerId);
-        auto it = personajes.try_emplace(jugador.playerId, sprite_personaje, ESCALA).first;
-        it->second.actualizar(jugador);
+        auto it = personajes.try_emplace(jugador.playerId, sprite_personaje).first;
+        it->second.actualizar(jugador, estado.tick, ahora);
     }
     std::erase_if(personajes,
                   [&presentes](const auto& par) { return !presentes.contains(par.first); });
 }
 
-void Interfaz::dibujar() {
+void Interfaz::ajustar_lienzo() {
+    SDL2pp::Point salida = renderer.GetOutputSize();
+    // Escala entera, para que todos los pixeles midan lo mismo, y elegida para que se vea mas o
+    // menos la misma porcion del mundo en cualquier tamaño de ventana
+    escala = std::max(1, salida.y / ALTO_MUNDO_VISIBLE);
+    int ancho = std::max(1, (salida.x + escala - 1) / escala);
+    int alto = std::max(1, (salida.y + escala - 1) / escala);
+    if (!lienzo || lienzo->GetWidth() != ancho || lienzo->GetHeight() != alto) {
+        // ARGB8888 es un formato nativo del renderer; con RGBA8888 cada frame tardaba un 60% mas
+        lienzo.emplace(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, ancho, alto);
+        calculador_camara.ajustar_vista(ancho, alto);
+    }
+}
+
+void Interfaz::dibujar(const EstadoJuego& estado) {
+    actualizar_mapa(estado);
+    actualizar_personajes(estado, std::chrono::steady_clock::now());
+    ajustar_lienzo();
+    renderer.SetTarget(*lienzo);
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
     // Sin personaje propio no se sabe que area mostrar
-    auto propio = personajes.find(id_propio);
+    auto propio = personajes.find(estado.id_propio);
     if (propio != personajes.end()) {
-        int ancho_mapa = mapa ? mapa->ancho_px() : 0;
-        int alto_mapa = mapa ? mapa->alto_px() : 0;
-        SDL2pp::Rect camara =
-                calculador_camara.calcular(propio->second.centro(), ancho_mapa, alto_mapa);
-        if (mapa) {
-            mapa->dibujar(renderer, camara);
-        }
-        // Solo los que estan en la misma area que este jugador
-        for (const auto& [id, personaje]: personajes) {
-            if (personaje.area() == propio->second.area()) {
-                personaje.dibujar(renderer, camara);
-            }
+        dibujar_area(propio->second);
+    }
+    renderer.SetTarget();
+    renderer.Clear();
+    renderer.Copy(*lienzo, SDL2pp::NullOpt,
+                  SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    renderer.Present();
+}
+
+void Interfaz::dibujar_area(const Personaje& propio) {
+    const std::string& area = propio.area();
+    if (mapa) {
+        mapa->mostrar_area(area);
+    }
+    int ancho_mapa = mapa ? mapa->ancho_px() : 0;
+    int alto_mapa = mapa ? mapa->alto_px() : 0;
+    SDL2pp::Rect camara = calculador_camara.calcular(propio.centro(), ancho_mapa, alto_mapa);
+    std::vector<Sprite> sprites;
+    if (mapa) {
+        mapa->dibujar_suelo(renderer, camara);
+        sprites = mapa->elementos();
+    }
+    // Solo los que estan en la misma area que este jugador
+    for (const auto& [id, personaje]: personajes) {
+        if (personaje.area() == area) {
+            sprites.push_back(personaje.sprite());
         }
     }
-    renderer.Present();
+    // Lo que apoya mas abajo esta mas adelante: se dibuja despues y tapa a lo de atras
+    std::stable_sort(sprites.begin(), sprites.end(),
+                     [](const Sprite& a, const Sprite& b) { return a.base() < b.base(); });
+    for (const Sprite& sprite: sprites) {
+        sprite.dibujar(renderer, camara);
+    }
 }

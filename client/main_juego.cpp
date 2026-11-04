@@ -1,14 +1,14 @@
 #include <iostream>
 
+#include "client/client.h"
+#include "client/constants.h"
 #include "client/network/ClientProtocol.h"
 #include "common/net/socket.h"
 
-#include "cliente.h"
-
 // Provisorio, hasta que el menu Qt le pase la conexion al juego: entra directo a una partida nueva
-// en el mundo "valle". Uso: ./juego <host> <puerto> <usuario>
+// en MUNDO_PRUEBA. Uso: ./juego <host> <puerto> <usuario>
 int main(int argc, char* argv[]) {
-    if (argc != 4) {
+    if (argc != CANTIDAD_ARGUMENTOS) {
         std::cerr << "Uso: " << argv[0] << " <host> <puerto> <usuario>" << std::endl;
         return 1;
     }
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
             std::cerr << "El servidor rechazo el login" << std::endl;
             return 1;
         }
-        CreateGameRequest pedido{"valle", "prueba", argv[3], {0, 0, 0, 0, 0}};
+        CreateGameRequest pedido{MUNDO_PRUEBA, NOMBRE_PARTIDA_PRUEBA, argv[3], APARIENCIA_PRUEBA};
         GameEnteredResponse partida = protocolo.createGame(pedido);
         if (partida.status != LobbyStatus::Ok) {
             std::cerr << "No se pudo crear la partida" << std::endl;
