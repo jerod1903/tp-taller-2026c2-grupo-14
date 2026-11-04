@@ -1,6 +1,8 @@
 #include "server/game/game.h"
 
 #include <chrono>
+#include <cmath>
+#include <map>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -17,27 +19,31 @@ constexpr std::chrono::nanoseconds TICK_DURATION =
         ServerConstants::TICK_RATE;
 const float TICK_SECONDS = std::chrono::duration<float>(TICK_DURATION).count();
 
-// Un solo eje por vez: con una diagonal camina en horizontal.
+// (signo de dir_x, signo de dir_y) -> dirección
+const std::map<std::pair<int, int>, Direction> DIRECTIONS = {
+        {{0, 0}, Direction::NONE},        {{0, -1}, Direction::UP},
+        {{0, 1}, Direction::DOWN},        {{-1, 0}, Direction::LEFT},
+        {{1, 0}, Direction::RIGHT},       {{-1, -1}, Direction::UP_LEFT},
+        {{1, -1}, Direction::UP_RIGHT},   {{-1, 1}, Direction::DOWN_LEFT},
+        {{1, 1}, Direction::DOWN_RIGHT},
+};
+
+int sign(int8_t value) { return (value > 0) - (value < 0); }
+
 Direction direction_of(const Request& request) {
-    if (request.dir_x != 0) {
-        return request.dir_x > 0 ? Direction::RIGHT : Direction::LEFT;
-    }
-    if (request.dir_y != 0) {
-        return request.dir_y > 0 ? Direction::DOWN : Direction::UP;
-    }
-    return Direction::NONE;
+    return DIRECTIONS.at({sign(request.dir_x), sign(request.dir_y)});
 }
 
+uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
+
 PlayerState state_of(uint32_t player_id, const Player& player) {
-    Position pos = player.get_position();
-    Position next = step(pos, player.get_direction());
+    Position delta = step(Position{0, 0}, player.get_direction());
     return PlayerState{player_id,
                        player.get_location().get_name(),
-                       static_cast<uint16_t>(pos.x),
-                       static_cast<uint16_t>(pos.y),
-                       static_cast<int8_t>(next.x - pos.x),
-                       static_cast<int8_t>(next.y - pos.y),
-                       static_cast<uint16_t>(player.get_progress() * PROGRESS_SCALE),
+                       to_wire(player.get_x()),
+                       to_wire(player.get_y()),
+                       static_cast<int8_t>(delta.x),
+                       static_cast<int8_t>(delta.y),
                        static_cast<uint16_t>(player.get_health()),
                        static_cast<uint16_t>(player.get_energy()),
                        static_cast<uint32_t>(player.get_gold())};

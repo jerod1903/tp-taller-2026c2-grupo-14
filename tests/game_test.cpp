@@ -87,8 +87,8 @@ TEST_F(GameTest, JoinedPlayerStartsStillOnTheSpawnOfTheFarm) {
     outbox->pop();
     PlayerState player = next_snapshot(*outbox).players.at(0);
     EXPECT_EQ(player.areaId, "granja");
-    EXPECT_EQ(player.x, 14);
-    EXPECT_EQ(player.y, 6);
+    EXPECT_EQ(player.x, 14 * POSITION_SCALE + POSITION_SCALE / 2);  // centro de la celda
+    EXPECT_EQ(player.y, 6 * POSITION_SCALE + POSITION_SCALE / 2);
     EXPECT_EQ(player.dirX, 0);
     EXPECT_EQ(player.dirY, 0);
     EXPECT_EQ(player.health, ServerConstants::INITIAL_HEALTH);
@@ -99,17 +99,29 @@ TEST_F(GameTest, MoveMakesThePlayerWalkThatWay) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
     move(0, 1, 0);
-    Snapshot snapshot =
-            wait_snapshot(*outbox, [](const Snapshot& s) { return s.players.at(0).x == 15; });
+    Snapshot snapshot = wait_snapshot(
+            *outbox, [](const Snapshot& s) { return s.players.at(0).x / POSITION_SCALE == 15; });
     EXPECT_EQ(snapshot.players.at(0).dirX, 1);
-    EXPECT_EQ(snapshot.players.at(0).y, 6);
+    EXPECT_EQ(snapshot.players.at(0).y, 6 * POSITION_SCALE + POSITION_SCALE / 2);
+}
+
+TEST_F(GameTest, MoveCanGoDiagonally) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    outbox->pop();
+    move(0, 1, 1);
+    PlayerState player = wait_snapshot(*outbox, [](const Snapshot& s) {
+                             return s.players.at(0).dirX != 0;
+                         }).players.at(0);
+    EXPECT_EQ(player.dirX, 1);
+    EXPECT_EQ(player.dirY, 1);
 }
 
 TEST_F(GameTest, MoveZeroStopsThePlayer) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
     move(0, 1, 0);
-    wait_snapshot(*outbox, [](const Snapshot& s) { return s.players.at(0).x == 15; });
+    wait_snapshot(*outbox,
+                  [](const Snapshot& s) { return s.players.at(0).x / POSITION_SCALE == 15; });
     move(0, 0, 0);
     PlayerState stopped = wait_snapshot(*outbox, [](const Snapshot& s) {
                               return s.players.at(0).dirX == 0;

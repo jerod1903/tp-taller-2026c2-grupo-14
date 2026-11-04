@@ -1,7 +1,10 @@
 #include "server/game/characters/creature.h"
 
+#include <cmath>
+
 #include <gtest/gtest.h>
 
+#include "common/game_dto.h"
 #include "tests/world_helpers.h"
 
 namespace {
@@ -13,77 +16,106 @@ protected:
     TestCreature creature{location};
 };
 
+TEST_F(CreatureTest, StartsOnTheCenterOfItsCell) {
+    EXPECT_FLOAT_EQ(creature.get_x(), 0.5f);
+    EXPECT_FLOAT_EQ(creature.get_y(), 0.5f);
+}
+
 TEST_F(CreatureTest, WithoutDirectionItStaysStill) {
     creature.update(1.0f);
     EXPECT_EQ(creature.get_position(), (Position{0, 0}));
+    EXPECT_FLOAT_EQ(creature.get_y(), 0.5f);
     EXPECT_FALSE(creature.has_stepped());
 }
 
-TEST_F(CreatureTest, MovesOnceItAccumulatesACell) {
+TEST_F(CreatureTest, MovesSpeedTimesDtCells) {
     creature.set_direction(Direction::DOWN);
-    creature.update(0.5f);
+    creature.update(0.25f);
+    EXPECT_FLOAT_EQ(creature.get_y(), 0.75f);
     EXPECT_EQ(creature.get_position(), (Position{0, 0}));
-    creature.update(0.5f);
+}
+
+TEST_F(CreatureTest, ItsCellIsTheOneUnderItsCenter) {
+    creature.set_direction(Direction::DOWN);
+    creature.update(0.75f);
     EXPECT_EQ(creature.get_position(), (Position{0, 1}));
 }
 
-TEST_F(CreatureTest, SpeedScalesTheProgress) {
+TEST_F(CreatureTest, SpeedScalesTheMovement) {
     TestCreature fast(location, Position{0, 0}, 2.0f);
     fast.set_direction(Direction::DOWN);
     fast.update(0.5f);
-    EXPECT_EQ(fast.get_position(), (Position{0, 1}));
+    EXPECT_FLOAT_EQ(fast.get_y(), 1.5f);
 }
 
-TEST_F(CreatureTest, ProgressIsTheFractionTowardsTheNextCell) {
+TEST_F(CreatureTest, StopsAtOnce) {
     creature.set_direction(Direction::DOWN);
     creature.update(0.25f);
-    EXPECT_FLOAT_EQ(creature.get_progress(), 0.25f);
-    creature.set_direction(Direction::RIGHT);
-    EXPECT_FLOAT_EQ(creature.get_progress(), 0.0f);
+    creature.set_direction(Direction::NONE);
+    creature.update(1.0f);
+    EXPECT_FLOAT_EQ(creature.get_y(), 0.75f);
 }
 
-TEST_F(CreatureTest, KeepsTheLeftoverProgress) {
+TEST_F(CreatureTest, TurnsAtOnce) {
     creature.set_direction(Direction::DOWN);
-    creature.update(1.5f);
-    creature.update(0.5f);
-    EXPECT_EQ(creature.get_position(), (Position{0, 2}));
+    creature.update(0.25f);
+    creature.set_direction(Direction::RIGHT);
+    creature.update(0.25f);
+    EXPECT_FLOAT_EQ(creature.get_x(), 0.75f);
+    EXPECT_FLOAT_EQ(creature.get_y(), 0.75f);
 }
 
-TEST_F(CreatureTest, BordersStopIt) {
+TEST_F(CreatureTest, DiagonalsGoAtTheSameSpeed) {
+    TestCreature creature_in_the_middle(location, Position{2, 2});
+    creature_in_the_middle.set_direction(Direction::DOWN_RIGHT);
+    creature_in_the_middle.update(1.0f);
+    float dx = creature_in_the_middle.get_x() - 2.5f;
+    float dy = creature_in_the_middle.get_y() - 2.5f;
+    EXPECT_FLOAT_EQ(dx, dy);
+    EXPECT_NEAR(std::sqrt(dx * dx + dy * dy), 1.0f, 1e-5f);
+}
+
+TEST_F(CreatureTest, BordersStopItAgainstThem) {
     creature.set_direction(Direction::UP);
     creature.update(1.0f);
     EXPECT_EQ(creature.get_position(), (Position{0, 0}));
+    EXPECT_FLOAT_EQ(creature.get_y(), CHARACTER_HALF_HEIGHT);
 }
 
-TEST_F(CreatureTest, WallsStopIt) {
+TEST_F(CreatureTest, WallsStopItAgainstThem) {
     creature.set_direction(Direction::RIGHT);
-    creature.update(1.0f);
-    creature.update(1.0f);
+    creature.update(2.0f);
     EXPECT_EQ(creature.get_position(), (Position{1, 0}));
-    EXPECT_FALSE(creature.has_stepped());
+    EXPECT_FLOAT_EQ(creature.get_x(), 2.0f - CHARACTER_HALF_WIDTH);
 }
 
-TEST_F(CreatureTest, ChangingDirectionResetsTheProgress) {
-    creature.set_direction(Direction::DOWN);
+TEST_F(CreatureTest, FastCreaturesDoNotGoThroughWalls) {
+    TestCreature fast(location, Position{0, 0}, 10.0f);
+    fast.set_direction(Direction::RIGHT);
+    fast.update(1.0f);
+    EXPECT_EQ(fast.get_position(), (Position{1, 0}));
+}
+
+TEST_F(CreatureTest, SlidesAlongWhatStopsIt) {
+    creature.set_direction(Direction::UP_RIGHT);
     creature.update(0.5f);
+    EXPECT_FLOAT_EQ(creature.get_y(), CHARACTER_HALF_HEIGHT);
+    EXPECT_GT(creature.get_x(), 0.5f);
+}
+
+TEST_F(CreatureTest, AgainstAWallItCanStillTurn) {
     creature.set_direction(Direction::RIGHT);
-    creature.update(0.5f);
-    EXPECT_EQ(creature.get_position(), (Position{0, 0}));
-}
-
-TEST_F(CreatureTest, KeepingTheDirectionKeepsTheProgress) {
+    creature.update(2.0f);
     creature.set_direction(Direction::DOWN);
-    creature.update(0.5f);
-    creature.set_direction(Direction::DOWN);
-    creature.update(0.5f);
-    EXPECT_EQ(creature.get_position(), (Position{0, 1}));
+    creature.update(1.0f);
+    EXPECT_EQ(creature.get_position(), (Position{1, 1}));
 }
 
 TEST_F(CreatureTest, HasSteppedOnlyOnTheTickItEntersACell) {
     creature.set_direction(Direction::DOWN);
-    creature.update(1.0f);
+    creature.update(0.75f);
     EXPECT_TRUE(creature.has_stepped());
-    creature.update(0.5f);
+    creature.update(0.25f);
     EXPECT_FALSE(creature.has_stepped());
 }
 
@@ -102,6 +134,8 @@ TEST_F(CreatureTest, RelocateMovesItToTheOtherLocation) {
     creature.relocate(other, Position{3, 3});
     EXPECT_EQ(&creature.get_location(), &other);
     EXPECT_EQ(creature.get_position(), (Position{3, 3}));
+    EXPECT_FLOAT_EQ(creature.get_x(), 3.5f);
+    EXPECT_FLOAT_EQ(creature.get_y(), 3.5f);
     EXPECT_TRUE(location.get_entities().empty());
     EXPECT_EQ(other.get_entities().size(), 1u);
 }

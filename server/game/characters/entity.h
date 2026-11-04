@@ -24,7 +24,7 @@ public:
     Location& get_location() const;
 
     // Se da de baja en la Location actual y de alta en `target`, en `arrival`.
-    void relocate(Location& target, const Position& arrival);
+    virtual void relocate(Location& target, const Position& arrival);
 
     virtual void update(float dt) = 0;
 

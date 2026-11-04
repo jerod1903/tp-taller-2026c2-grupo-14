@@ -188,11 +188,10 @@ protected:
             PlayerState player{};
             player.playerId = client->recv_u32().value_or(UINT32_MAX);
             player.areaId = client->recv_string().value_or("");
-            player.x = client->recv_u16().value_or(0);
-            player.y = client->recv_u16().value_or(0);
+            player.x = client->recv_u32().value_or(0);
+            player.y = client->recv_u32().value_or(0);
             player.dirX = static_cast<int8_t>(client->recv_u8().value_or(0));
             player.dirY = static_cast<int8_t>(client->recv_u8().value_or(0));
-            player.progress = client->recv_u16().value_or(0);
             player.health = client->recv_u16().value_or(0);
             player.energy = client->recv_u16().value_or(0);
             player.gold = client->recv_u32().value_or(0);

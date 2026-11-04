@@ -2,7 +2,6 @@
 #define REQUESTS_H
 
 #include <cstdint>
-
 #include "operations.h"
 
 struct Request {

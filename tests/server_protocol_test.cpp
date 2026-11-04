@@ -46,18 +46,17 @@ TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagAndWorldId) {
 }
 
 TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
-    PlayerState player{3, "granja", 14, 6, -1, 0, 250, 90, 80, 500};
+    PlayerState player{3, "granja", 14250, 6500, -1, 0, 90, 80, 500};
     ASSERT_TRUE(server->send_snapshot(Snapshot{42, {player}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(42));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(3));
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
-    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(14));
-    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(6));
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(14250));
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(6500));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(-1)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
-    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(250));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(90));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(80));
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(500));
