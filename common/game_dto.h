@@ -7,6 +7,19 @@
 
 // Mensajes del servidor durante la partida: cada uno va precedido por su tag. Lo que manda el
 // cliente es un Request (common/requests.h).
+enum class GameOp : uint8_t {
+    Move = 0x01,
+    LeaveGame = 0x02,  // sin payload
+};
+
+// -1, 0 o 1 en cada eje; (0, 0) frena.
+struct MoveRequest {
+    int8_t dirX;
+    int8_t dirY;
+
+    bool operator==(const MoveRequest&) const = default;
+};
+
 enum class GameMsg : uint8_t {
     LocationData,
     Snapshot,
