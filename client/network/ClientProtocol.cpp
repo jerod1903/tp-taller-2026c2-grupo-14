@@ -22,8 +22,8 @@
 //   Request:         op u8, dirX u8, dirY u8 (-1 viaja como 0xFF)
 //   Mensajes del servidor, con su tag GameMsg u8 adelante:
 //     LocationData:  worldId
-//     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u16, y u16, dirX u8, dirY u8,
-//                    progress u16, health u16, energy u16, gold u32)*
+//     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
+//                    health u16, energy u16, gold u32)*
 //     GameEnded:     reason u8
 //   
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
@@ -170,11 +170,10 @@ PlayerState ClientProtocol::recvPlayerState() {
     PlayerState player{};
     player.playerId = ensure(baseProtocol.recv_u32());
     player.areaId = ensure(baseProtocol.recv_string());
-    player.x = ensure(baseProtocol.recv_u16());
-    player.y = ensure(baseProtocol.recv_u16());
+    player.x = ensure(baseProtocol.recv_u32());
+    player.y = ensure(baseProtocol.recv_u32());
     player.dirX = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
     player.dirY = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
-    player.progress = ensure(baseProtocol.recv_u16());
     player.health = ensure(baseProtocol.recv_u16());
     player.energy = ensure(baseProtocol.recv_u16());
     player.gold = ensure(baseProtocol.recv_u32());

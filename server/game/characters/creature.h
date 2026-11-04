@@ -6,8 +6,8 @@
 #include "server/game/characters/entity.h"
 #include "server/game/world/direction.h"
 
-// Una entidad con vida que se mueve de a una celda. La posición lógica es siempre entera: el
-// avance parcial hacia la celda siguiente se acumula en `progress`.
+// Una entidad con vida que camina libremente, no de a una celda: (x, y) es su centro, en celdas y
+// con decimales. `pos` es la celda en la que está ese centro, la que usan portales y herramientas.
 class Creature: public Entity {
 public:
     Creature(uint32_t id, const Position& pos, Location& location, int health, float base_speed);
@@ -20,27 +20,39 @@ public:
     // Celdas por segundo. Por defecto base_speed; las subclases pueden modificarla.
     virtual float speed() const;
 
-    // Hacia dónde camina; NONE frena. Cambiar de dirección reinicia `progress`.
+    // Hacia dónde camina; NONE frena en el acto. En diagonal va a la misma velocidad.
     void set_direction(Direction dir);
     Direction get_direction() const;
-    // Fracción en [0, 1) del camino hacia la celda siguiente, para que el cliente interpole.
-    float get_progress() const;
+    // El centro, en celdas, para que el cliente lo dibuje donde está.
+    float get_x() const;
+    float get_y() const;
 
     // true si en el último advance() entró a una celda nueva. Los portales se disparan al entrar,
     // no por estar parado encima: si no, quien llega sobre un portal de vuelta rebota.
     bool has_stepped() const;
 
+    // Llega parado en el centro de `arrival`.
+    void relocate(Location& target, const Position& arrival) override;
+
 protected:
     int health;
     float base_speed;
     Direction direction = Direction::NONE;
-    float progress = 0.0f;  // 0..1 hacia step(pos, direction)
+    float x;
+    float y;
     bool stepped = false;
 
-    // Suma speed() * dt a `progress`. Al llegar a 1 pasa a la celda siguiente si la Location
-    // dice que es caminable; si no, frena. La llama el update() de cada subclase.
+    // Mueve el centro speed() * dt hacia `direction`. Contra una pared se queda pegado a ella y
+    // sigue por el eje que esté libre. La llama el update() de cada subclase.
     // true si cambió de celda en este tick.
     bool advance(float dt);
+
+private:
+    // Mueve sobre un eje hasta donde lo dejen las paredes
+    void move_x(float dx);
+    void move_y(float dy);
+    // Si la caja de colisión centrada en (cx, cy) solo pisa celdas caminables
+    bool fits(float cx, float cy) const;
 };
 
 #endif  // CREATURE_H

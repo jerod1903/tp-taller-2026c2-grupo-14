@@ -18,19 +18,24 @@ struct LocationData {
     std::string worldId;
 };
 
-// En milésimas de celda: progress = PROGRESS_SCALE es haber llegado a la celda vecina.
-constexpr uint16_t PROGRESS_SCALE = 1000;
+// Las posiciones van en milésimas de celda: x = 14500 es el centro de la columna 14.
+constexpr uint32_t POSITION_SCALE = 1000;
 
-// Un jugador en un tick. Está en la celda (x, y) del área areaId; si camina, avanzó `progress`
-// hacia la celda vecina en (dirX, dirY), que van en -1, 0 o 1 como en un Request.
+// Caja de colisión de un personaje, centrada en (x, y), en celdas. Tiene el ancho del sprite (10 de
+// sus 16 píxeles) y el cliente dibuja los pies en su borde de abajo, así lo que se ve choca justo
+// con las paredes. Son exactas en float: quedar pegado a una pared no la hace pisar por redondeo.
+constexpr float CHARACTER_HALF_WIDTH = 0.3125f;
+constexpr float CHARACTER_HALF_HEIGHT = 0.25f;
+
+// Un jugador en un tick. (x, y) es su centro dentro del área areaId; (dirX, dirY) es hacia dónde
+// camina, en -1, 0 o 1 como en un Request: (0, 0) si está quieto.
 struct PlayerState {
     uint32_t playerId;
     std::string areaId;
-    uint16_t x;
-    uint16_t y;
+    uint32_t x;
+    uint32_t y;
     int8_t dirX;
     int8_t dirY;
-    uint16_t progress;
     uint16_t health;
     uint16_t energy;
     uint32_t gold;
