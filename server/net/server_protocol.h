@@ -34,6 +34,8 @@ public:
     bool send_game_entered(const GameEnteredResponse& response);
 
     // Durante la partida.
+    std::optional<GameOp> recv_game_op();
+    std::optional<MoveRequest> recv_move();
     std::optional<Request> recv_request();
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);

@@ -114,6 +114,21 @@ bool ServerProtocol::send_enable_multiplayer(const EnableMultiplayerResponse& re
 }
 
 // La operación no se valida acá: el protocolo no conoce las reglas del juego.
+std::optional<GameOp> ServerProtocol::recv_game_op() {
+    std::optional<uint8_t> op = baseProtocol.recv_u8();
+    if (!op)
+        return std::nullopt;
+    return static_cast<GameOp>(*op);
+}
+
+std::optional<MoveRequest> ServerProtocol::recv_move() {
+    std::optional<uint8_t> dir_x = baseProtocol.recv_u8();
+    std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
+    if (!dir_y)
+        return std::nullopt;
+    return MoveRequest{static_cast<int8_t>(*dir_x), static_cast<int8_t>(*dir_y)};
+}
+
 std::optional<Request> ServerProtocol::recv_request() {
     std::optional<uint8_t> operation = baseProtocol.recv_u8();
     std::optional<uint8_t> dir_x = operation ? baseProtocol.recv_u8() : std::nullopt;
@@ -140,8 +155,8 @@ bool ServerProtocol::send_player_state(const PlayerState& player) {
            baseProtocol.send_u32(player.x) && baseProtocol.send_u32(player.y) &&
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirX)) &&
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirY)) &&
-           baseProtocol.send_u16(player.health) &&
-           baseProtocol.send_u16(player.energy) && baseProtocol.send_u32(player.gold);
+           baseProtocol.send_u16(player.health) && baseProtocol.send_u16(player.energy) &&
+           baseProtocol.send_u32(player.gold);
 }
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
