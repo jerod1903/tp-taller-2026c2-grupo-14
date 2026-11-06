@@ -1,5 +1,6 @@
 #include "recibidor.h"
 
+#include <stdexcept>
 #include <variant>
 
 #include "common/net/liberror.h"
@@ -17,6 +18,8 @@ void Recibidor::run() {
         }
     } catch (const LobbyConnectionError&) {
         // El servidor cerro la conexion, o se corto al cerrar el juego
+    } catch (const std::runtime_error&) {
+        // Tag desconocido: lo que sigue ya no se puede leer, se termina como en un corte
     } catch (const LibError&) {
         // Error del socket al cortar la conexion
     }

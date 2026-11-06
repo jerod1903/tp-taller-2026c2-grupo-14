@@ -2,6 +2,8 @@
 
 Enviador::Enviador(IGameProtocol& protocolo): protocolo(protocolo) {}
 
-void Enviador::mover(int8_t dir_x, int8_t dir_y) { protocolo.sendMove(dir_x, dir_y); }
+void Enviador::enviar(const MoveRequest& movimiento) {
+    protocolo.sendMove(movimiento.dirX, movimiento.dirY);
+}
 
 void Enviador::salir() { protocolo.sendLeaveGame(); }

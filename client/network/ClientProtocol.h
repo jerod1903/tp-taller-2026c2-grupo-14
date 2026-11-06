@@ -10,7 +10,6 @@
 #include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
-#include "common/operations.h"
 
 // Lado cliente del protocolo: el del lobby (cada metodo manda una operacion y espera su respuesta)
 // y el de la partida. Si el servidor corta la conexion a mitad de un mensaje, tira
@@ -40,8 +39,7 @@ private:
     // False si no se pudo mandar.
     bool sendOperation(LobbyOp op);
     bool sendAppearance(const CharacterAppearance& appearance);
-    // Todas las acciones de la partida van con tag y direccion, aunque no la usen (en 0)
-    void sendGameOperation(Operation op, int8_t dir_x, int8_t dir_y);
+    bool sendGameOp(GameOp op);
 
     LobbyStatus recvStatus();
     GameEnteredResponse recvGameEntered();
