@@ -17,6 +17,11 @@ inline constexpr CharacterAppearance APARIENCIA_PRUEBA{0, 0, 0, 0, 0};
 // game_loop.cpp
 inline const std::chrono::milliseconds DURACION_FRAME(16);  // 60 fps aprox
 
+// reproductor_sonidos.cpp
+inline constexpr int CANALES_AUDIO = 16;  // cuantos efectos pueden sonar a la vez
+// Muestras por bloque: mas chico suena antes (1024 a 44100 Hz son 23 ms), mas grande corta menos
+inline constexpr int TAMANO_BUFFER_AUDIO = 1024;
+
 // interfaz.cpp
 inline const int ANCHO_VENTANA = 800;
 inline const int ALTO_VENTANA = 600;
