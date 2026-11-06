@@ -24,14 +24,14 @@ void GameLoop::ejecutar() {
 void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.salir) {
         // Se avisa al servidor que el jugador sale de la partida
-        enviador.enviar(Request{Operation::LeaveGame, 0, 0});
+        enviador.salir();
         corriendo = false;
         return;
     }
     // El servidor sigue moviendo al jugador en la ultima direccion que recibio: solo se avisa
     // cuando cambia, incluido el (0, 0) al soltar las teclas para que frene
     if (entrada.dir_x != ultima_dir_x || entrada.dir_y != ultima_dir_y) {
-        enviador.enviar(Request{Operation::Move, entrada.dir_x, entrada.dir_y});
+        enviador.enviar(MoveRequest{entrada.dir_x, entrada.dir_y});
         ultima_dir_x = entrada.dir_x;
         ultima_dir_y = entrada.dir_y;
     }

@@ -17,7 +17,7 @@ public:
     void ejecutar();
 
 private:
-    // Manda un Request solo si cambio la direccion, y LeaveGame si el usuario sale
+    // Manda Move solo si cambio la direccion, y LeaveGame si el usuario sale
     void procesar_entrada(const Entrada& entrada);
     // Vacia lo que dejo el Recibidor y actualiza el estado
     void procesar_mensajes();

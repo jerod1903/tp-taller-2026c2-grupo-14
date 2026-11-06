@@ -1,17 +1,23 @@
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "client/network/ClientProtocol.h"
+#include "common/base_protocol.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/logger.h"
 #include "common/net/socket.h"
 #include "server/game/game_registry.h"
 #include "server/lobby/lobby_session.h"
+#include "server/net/server_protocol.h"
 #include "server/persistence/in_memory_game_store.h"
 #include "tests/test_worlds.h"
 
@@ -128,4 +134,77 @@ TEST_F(ClientProtocolTest, JoinGameByCodeReturnsItsGameId) {
 TEST_F(ClientProtocolTest, LoadOwnGameIsOk) {
     ASSERT_EQ(client->login(OWNER), LobbyStatus::Ok);
     EXPECT_EQ(client->loadGame(MULTI_ID).status, LobbyStatus::Ok);
+}
+
+namespace {
+
+// Durante la partida, del otro lado queda el socket ya aceptado. Cada test lo usa como necesita:
+// con BaseProtocol para ver los bytes que manda el cliente, o con ServerProtocol para probar que
+// el cliente lee lo que manda el servidor de verdad. Cada mensaje entra en el buffer del socket.
+class ClientGameProtocolTest: public ::testing::Test {
+protected:
+    void SetUp() override {
+        Socket listener(PORT);
+        Socket client_socket(HOST, PORT);
+        server_socket.emplace(listener.accept());
+        client = std::make_unique<ClientProtocol>(std::move(client_socket));
+    }
+
+    std::optional<Socket> server_socket;
+    std::unique_ptr<ClientProtocol> client;
+};
+
+}  // namespace
+
+TEST_F(ClientGameProtocolTest, SendMoveSendsTagAndDirection) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendMove(1, -1);
+    EXPECT_EQ(server.recv_u8(), 0x01);
+    EXPECT_EQ(server.recv_u8(), 0x01);
+    EXPECT_EQ(server.recv_u8(), 0xFF);
+}
+
+TEST_F(ClientGameProtocolTest, SendLeaveGameSendsOnlyTheTag) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendLeaveGame();
+    client->shutdown();
+    EXPECT_EQ(server.recv_u8(), 0x02);
+    // Despues del tag se corta la conexion: no mando nada mas
+    EXPECT_EQ(server.recv_u8(), std::nullopt);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsLocationData) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_location_data(LocationData{"granja"}));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<LocationData>(message));
+    EXPECT_EQ(std::get<LocationData>(message).worldId, "granja");
+}
+
+TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
+    ServerProtocol server(std::move(*server_socket));
+    const PlayerState walking{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
+    const PlayerState still{9, "pueblo", 0, 0, 0, 0, 1, 2, 3};
+    ASSERT_TRUE(server.send_snapshot(Snapshot{42, {walking, still}}));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
+    const Snapshot& snapshot = std::get<Snapshot>(message);
+    EXPECT_EQ(snapshot.tick, 42u);
+    ASSERT_EQ(snapshot.players.size(), 2u);
+    EXPECT_EQ(snapshot.players[0], walking);
+    EXPECT_EQ(snapshot.players[1], still);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsGameEnded) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<GameEnded>(message));
+    EXPECT_EQ(std::get<GameEnded>(message).reason, EndReason::Left);
+}
+
+TEST_F(ClientGameProtocolTest, UnknownTagThrows) {
+    BaseProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_u8(0x7F));
+    EXPECT_THROW(client->recvGameMessage(), std::runtime_error);
 }

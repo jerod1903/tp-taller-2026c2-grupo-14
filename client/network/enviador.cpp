@@ -1,5 +1,9 @@
 #include "enviador.h"
 
-Enviador::Enviador(ClientProtocol& protocolo): protocolo(protocolo) {}
+Enviador::Enviador(IGameProtocol& protocolo): protocolo(protocolo) {}
 
-void Enviador::enviar(const Request& request) { protocolo.sendRequest(request); }
+void Enviador::enviar(const MoveRequest& movimiento) {
+    protocolo.sendMove(movimiento.dirX, movimiento.dirY);
+}
+
+void Enviador::salir() { protocolo.sendLeaveGame(); }

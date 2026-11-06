@@ -18,6 +18,7 @@ target_sources(taller_client
     PUBLIC
     # .h files
     network/ClientProtocol.h
+    network/IGameProtocol.h
     client.h
     constants.h
     game/entrada.h
