@@ -113,14 +113,6 @@ inline std::vector<TileType> allTileTypes() {
     };
 }
 
-inline std::vector<AreaType> allAreaTypes() {
-    return {
-            AreaType::Farm,
-            AreaType::Village,
-            AreaType::DungeonFloor,
-    };
-}
-
 inline std::optional<AreaType> areaTypeFromString(std::string_view value) {
     if (value == "farm")
         return AreaType::Farm;
@@ -279,6 +271,31 @@ inline ElementLayer elementLayerFor(ElementType type) {
     return ElementLayer::Object;
 }
 
+// Edificios a los que se entra: la puerta es la celda de abajo al centro. Sin default, para que
+// el compilador avise si se agrega un tipo y no se decide aca.
+inline bool hasDoor(ElementType type) {
+    switch (type) {
+        case ElementType::Cabin:
+        case ElementType::Market:
+        case ElementType::CommunityCenter:
+            return true;
+        case ElementType::DungeonEntrance:
+        case ElementType::MerchantMarnie:
+        case ElementType::MerchantClint:
+        case ElementType::MerchantPierre:
+        case ElementType::MerchantRobin:
+        case ElementType::Rock:
+        case ElementType::OreNode:
+        case ElementType::Chest:
+        case ElementType::Decoration:
+        case ElementType::Door:
+        case ElementType::Stairs:
+        case ElementType::SpawnPoint:
+            return false;
+    }
+    return false;
+}
+
 struct MapArea {
     std::string id;
     std::optional<AreaType> type;
@@ -306,6 +323,21 @@ struct MapElement {
 
     bool operator==(const MapElement&) const = default;
 };
+
+struct MapCell {
+    int x;
+    int y;
+};
+
+// La celda de abajo al centro del edificio (solo tiene sentido si hasDoor de su tipo)
+inline MapCell doorCell(const MapElement& building) {
+    return {building.x + building.width / 2, building.y + building.height - 1};
+}
+
+// Las estructuras y los NPCs tapan sus celdas; los objetos (rocas, cofres) no
+inline bool isSolid(const MapElement& element) {
+    return element.layer == ElementLayer::Structure || element.layer == ElementLayer::Npc;
+}
 
 struct MapTransition {
     // Una transicion dirigida conecta un elemento activador con una celda de otra area.

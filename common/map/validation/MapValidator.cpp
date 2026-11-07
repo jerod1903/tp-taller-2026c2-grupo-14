@@ -22,16 +22,9 @@ bool rectanglesOverlap(const MapElement& first, const MapElement& second) {
            first.y < second.y + second.height && second.y < first.y + first.height;
 }
 
-bool hasDoor(const MapElement& element) {
-    return element.type == ElementType::Cabin || element.type == ElementType::Market ||
-           element.type == ElementType::CommunityCenter;
-}
-
 // Las estructuras y los NPCs tapan sus celdas, salvo los que llevan a otra area.
 bool blocksCell(const MapElement& element, const std::set<std::string>& triggerIds, int x, int y) {
-    const bool solid =
-            element.layer == ElementLayer::Structure || element.layer == ElementLayer::Npc;
-    return solid && triggerIds.find(element.id) == triggerIds.end() && x >= element.x &&
+    return isSolid(element) && triggerIds.find(element.id) == triggerIds.end() && x >= element.x &&
            x < element.x + element.width && y >= element.y && y < element.y + element.height;
 }
 
@@ -369,8 +362,7 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
         }
     }
 
-    // La puerta es la celda de abajo al centro del edificio (como en el servidor): la de enfrente
-    // tiene que poder pisarse para entrar.
+    // La celda de enfrente de la puerta tiene que poder pisarse para entrar.
     std::set<std::string> triggerIds;
     for (const auto& transition: map.transitions) {
         triggerIds.insert(transition.triggerElementId);
@@ -378,11 +370,12 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
     for (const auto& [areaId, elements]: elementsByArea) {
         const MapArea& area = *areasById.at(areaId);
         for (const auto* building: elements) {
-            if (!hasDoor(*building)) {
+            if (!building->type || !hasDoor(*building->type)) {
                 continue;
             }
-            const int frontX = building->x + building->width / 2;
-            const int frontY = building->y + building->height;
+            const MapCell door = doorCell(*building);
+            const int frontX = door.x;
+            const int frontY = door.y + 1;
             const bool inside = frontY < area.height &&
                                 frontY < static_cast<int>(area.tiles.size()) &&
                                 frontX < static_cast<int>(area.tiles[frontY].size());
