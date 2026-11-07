@@ -4,6 +4,7 @@
 #include <QPixmap>
 #include <string>
 
+#include "client/app/GameSession.h"
 #include "client/menu/navigation/ScreenManager.h"
 #include "common/lobby_dto.h"
 
@@ -19,6 +20,13 @@ class MainWindow: public QMainWindow {
 public:
     // lobby: acceso al servidor; MainWindow se lo pasa a las pantallas que lo necesitan.
     explicit MainWindow(ILobbyProtocol& lobby, QWidget* parent = nullptr);
+    // Avisa que se corto la conexion con el servidor y cierra la ventana: sin servidor el cliente
+    // no puede seguir (el enunciado pide que se cierre).
+    void showConnectionLost();
+
+signals:
+    // El servidor dejo entrar a la partida: el menu termina y empieza el juego.
+    void gameEntered(const GameSession& session);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -28,6 +36,8 @@ private:
     void setupScreens();
     // Con el personaje elegido manda al servidor el pedido del flujo en curso.
     void submitCharacter(const QString& name, const CharacterAppearance& appearance);
+    // Deja el menu principal listo para cuando termine la partida y avisa que se entro.
+    void enterGame(const GameEnteredResponse& response);
     // Ajusta el fondo elegido al tamano actual de la ventana.
     void updateBackground();
 

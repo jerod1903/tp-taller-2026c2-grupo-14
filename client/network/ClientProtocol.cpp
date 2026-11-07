@@ -19,7 +19,7 @@
 //   LoadGame:        op, gameId u32                              -> status u8
 //
 // Durante la partida:
-//   Request:         op u8, dirX u8, dirY u8 (-1 viaja como 0xFF)
+//   Acciones del jugador: tag GameOp u8 y su payload, ver la tabla de GameOp en common/game_dto.h
 //   Mensajes del servidor, con su tag GameMsg u8 adelante:
 //     LocationData:  worldId
 //     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
@@ -111,11 +111,12 @@ GameEnteredResponse ClientProtocol::recvGameEntered() {
     return response;
 }
 
-void ClientProtocol::sendRequest(const Request& request) {
-    ensure(baseProtocol.send_u8(static_cast<uint8_t>(request.tipo)) &&
-           baseProtocol.send_u8(static_cast<uint8_t>(request.dir_x)) &&
-           baseProtocol.send_u8(static_cast<uint8_t>(request.dir_y)));
+void ClientProtocol::sendMove(int8_t dir_x, int8_t dir_y) {
+    ensure(sendGameOp(GameOp::Move) && baseProtocol.send_u8(static_cast<uint8_t>(dir_x)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(dir_y)));
 }
+
+void ClientProtocol::sendLeaveGame() { ensure(sendGameOp(GameOp::LeaveGame)); }
 
 ServerGameMessage ClientProtocol::recvGameMessage() {
     auto msg = static_cast<GameMsg>(ensure(baseProtocol.recv_u8()));
@@ -133,6 +134,10 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
 void ClientProtocol::shutdown() { baseProtocol.shutdown(); }
 
 bool ClientProtocol::sendOperation(LobbyOp op) {
+    return baseProtocol.send_u8(static_cast<uint8_t>(op));
+}
+
+bool ClientProtocol::sendGameOp(GameOp op) {
     return baseProtocol.send_u8(static_cast<uint8_t>(op));
 }
 

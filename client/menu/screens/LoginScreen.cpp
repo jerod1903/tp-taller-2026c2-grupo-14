@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QShowEvent>
 #include <QVBoxLayout>
+#include <optional>
 
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/components/MenuButton.h"
@@ -67,11 +68,15 @@ void LoginScreen::submit() {
         return;
     }
 
-    LobbyStatus status = lobby.login(username.toStdString());
-    if (status == LobbyStatus::Ok) {
+    std::optional<LobbyStatus> status =
+            guarded([&]() { return lobby.login(username.toStdString()); });
+    if (!status) {
+        return;
+    }
+    if (*status == LobbyStatus::Ok) {
         emit loggedIn(username);
     } else {
-        showError(status);
+        showError(*status);
     }
 }
 

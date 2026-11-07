@@ -111,6 +111,8 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
 
+    # Como subproyecto, libSDL2pp solo envuelve SDL_image si el proyecto padre lo pide.
+    set(SDL2PP_WITH_IMAGE ON)
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
 endif()
 
@@ -143,7 +145,7 @@ if(TALLER_CLIENT)
 
     # Solo el menu en Qt, sin SDL: para ver las pantallas sin compilar el juego.
     include(client/menu/menu_sources.cmake)
-    add_executable(taller_menu client/main.cpp ${TALLER_MENU_SOURCES})
+    add_executable(taller_menu client/menu/main.cpp ${TALLER_MENU_SOURCES})
     set_target_properties(taller_menu PROPERTIES AUTOMOC ON AUTORCC ON)
     target_link_libraries(taller_menu taller_common Qt6::Widgets)
 

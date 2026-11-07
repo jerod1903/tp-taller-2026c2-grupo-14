@@ -1,0 +1,24 @@
+#pragma once
+
+#include <cstdint>
+#include <variant>
+
+#include "common/game_dto.h"
+
+// Lo que manda el servidor durante la partida.
+using ServerGameMessage = std::variant<LocationData, Snapshot, GameEnded>;
+
+// Lo que la partida necesita del servidor: un send por cada accion del jugador y el recv de lo que
+// manda el servidor. Los send tiran LobbyConnectionError si se corto la conexion.
+class IGameProtocol {
+public:
+    virtual ~IGameProtocol() = default;
+
+    // dir_x: -1 izq, 0 quieto, 1 der. dir_y: -1 arriba, 0 quieto, 1 abajo. (0, 0) frena
+    virtual void sendMove(int8_t dir_x, int8_t dir_y) = 0;
+    virtual void sendLeaveGame() = 0;
+    // Bloquea hasta que llega un mensaje. Si el tag no se conoce tira std::runtime_error.
+    virtual ServerGameMessage recvGameMessage() = 0;
+    // Corta la conexion: despierta a quien este bloqueado en recvGameMessage
+    virtual void shutdown() = 0;
+};

@@ -1,20 +1,21 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <cstdint>
+#include <optional>
 
-#include "client/network/ClientProtocol.h"
+#include "client/app/IGameView.h"
+#include "client/network/IGameProtocol.h"
 
-class Cliente {
+// La partida en SDL. Cada run() arma lo de una partida (ventana, hilo que recibe, loop) y lo
+// destruye al terminar; la conexion es la de ClientApp y sigue viva para el menu.
+class Cliente: public IGameView {
 public:
     // protocolo: la conexion ya dentro de la partida (despues de entrar desde el lobby)
-    // id_propio: el playerId que devolvio el servidor al entrar
-    Cliente(ClientProtocol& protocolo, uint32_t id_propio);
-    void ejecutar();
+    explicit Cliente(IGameProtocol& protocolo);
+    std::optional<EndReason> run(const GameSession& session) override;
 
 private:
-    ClientProtocol& protocolo;
-    uint32_t id_propio;
+    IGameProtocol& protocolo;
 };
 
 #endif

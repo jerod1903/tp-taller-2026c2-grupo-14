@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
             std::cerr << "No se pudo crear la partida" << std::endl;
             return 1;
         }
-        Cliente cliente(protocolo, partida.playerId);
-        cliente.ejecutar();
+        Cliente cliente(protocolo);
+        cliente.run({partida.gameId, partida.playerId});
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;

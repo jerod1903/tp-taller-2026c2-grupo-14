@@ -3,16 +3,17 @@
 
 #include <optional>
 
-#include "client/network/ClientProtocol.h"
+#include "client/menu/backend/ILobbyProtocol.h"
+#include "client/network/IGameProtocol.h"
 #include "common/lib/queue.h"
 #include "common/lib/thread.h"
 
 // Hilo que recibe lo que manda el servidor durante la partida y lo deja en una cola: el recv
 // bloquea, y si lo hiciera la interfaz se congelaria la ventana. Arranca al construirse y termina
-// cuando llega GameEnded o se corta la conexion.
+// cuando llega GameEnded, cuando se corta la conexion o cuando llega un tag desconocido.
 class Recibidor: public Thread {
 public:
-    explicit Recibidor(ClientProtocol& protocolo);
+    explicit Recibidor(IGameProtocol& protocolo);
     void run() override;
     // No bloquea: nullopt si no llego nada nuevo
     std::optional<ServerGameMessage> recibir();
@@ -20,7 +21,7 @@ public:
     ~Recibidor() override;
 
 private:
-    ClientProtocol& protocolo;
+    IGameProtocol& protocolo;
     Queue<ServerGameMessage> mensajes;
 };
 

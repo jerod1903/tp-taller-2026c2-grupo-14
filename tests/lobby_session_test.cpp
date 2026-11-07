@@ -601,7 +601,7 @@ TEST_F(LobbySessionTest, JoinGameWithAppearanceOutOfCatalogRespondsInvalidAppear
 }
 
 TEST_F(LobbySessionTest, EnableMultiplayerRespondsInviteCodeThatOthersCanUse) {
-    uint32_t game_id = *registry.create_game("Mi granja", "granja", {"jero", "Martu", APPEARANCE});
+    uint32_t game_id = *registry.create_game("Mi granja", "granja", {"jero", "martin", APPEARANCE});
     registry.leave_game(game_id, "jero");
     send_login("jero");
     expect_status(LobbyStatus::Ok);
@@ -643,7 +643,7 @@ TEST_F(LobbySessionTest, EnableMultiplayerBeforeLoginClosesConnection) {
 TEST_F(LobbySessionTest, EnteredGameSendsTheLocationThenSnapshots) {
     send_login("jero");
     expect_status(LobbyStatus::Ok);
-    send_create_game("pueblo", "Mi granja", "Martu");
+    send_create_game("pueblo", "Mi granja", "martin");
     expect_status(LobbyStatus::Ok);
     recv_created_game_id();
     expect_location("pueblo");
