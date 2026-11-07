@@ -6,6 +6,8 @@ id = "granja"
 type = "farm"
 width = 30
 height = 20
+offset_x = 0
+offset_y = 0
 tiles = [
     ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
     ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
@@ -34,6 +36,8 @@ id = "pueblo"
 type = "village"
 width = 30
 height = 20
+offset_x = 30
+offset_y = 0
 tiles = [
     ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
     ["grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass"],
@@ -63,6 +67,8 @@ type = "dungeon_floor"
 floor = 1
 width = 20
 height = 15
+offset_x = 0
+offset_y = 20
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -87,6 +93,8 @@ type = "dungeon_floor"
 floor = 2
 width = 20
 height = 15
+offset_x = 20
+offset_y = 20
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -111,6 +119,8 @@ type = "dungeon_floor"
 floor = 3
 width = 20
 height = 15
+offset_x = 40
+offset_y = 20
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -135,6 +145,8 @@ type = "dungeon_floor"
 floor = 4
 width = 20
 height = 15
+offset_x = 60
+offset_y = 20
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -159,6 +171,8 @@ type = "dungeon_floor"
 floor = 5
 width = 20
 height = 15
+offset_x = 80
+offset_y = 20
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -183,6 +197,8 @@ type = "dungeon_floor"
 floor = 6
 width = 20
 height = 15
+offset_x = 0
+offset_y = 35
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -207,6 +223,8 @@ type = "dungeon_floor"
 floor = 7
 width = 20
 height = 15
+offset_x = 20
+offset_y = 35
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -231,6 +249,8 @@ type = "dungeon_floor"
 floor = 8
 width = 20
 height = 15
+offset_x = 40
+offset_y = 35
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -255,6 +275,8 @@ type = "dungeon_floor"
 floor = 9
 width = 20
 height = 15
+offset_x = 60
+offset_y = 35
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -279,6 +301,8 @@ type = "dungeon_floor"
 floor = 10
 width = 20
 height = 15
+offset_x = 80
+offset_y = 35
 tiles = [
     ["cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall", "cave_wall"],
     ["cave_wall", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_floor", "cave_wall"],
@@ -342,9 +366,9 @@ id = "mercado"
 area = "pueblo"
 type = "market"
 layer = "structure"
-x = 4
-y = 3
-width = 4
+x = 1
+y = 6
+width = 10
 height = 3
 
 [[elements]]
@@ -353,8 +377,8 @@ area = "pueblo"
 type = "community_center"
 layer = "structure"
 x = 12
-y = 2
-width = 6
+y = 6
+width = 12
 height = 4
 
 [[elements]]
@@ -373,7 +397,7 @@ area = "pueblo"
 type = "merchant_marnie"
 layer = "npc"
 x = 5
-y = 7
+y = 12
 width = 1
 height = 1
 
@@ -383,7 +407,7 @@ area = "pueblo"
 type = "merchant_clint"
 layer = "npc"
 x = 9
-y = 7
+y = 12
 width = 1
 height = 1
 
@@ -393,7 +417,7 @@ area = "pueblo"
 type = "merchant_pierre"
 layer = "npc"
 x = 15
-y = 7
+y = 12
 width = 1
 height = 1
 
@@ -403,7 +427,7 @@ area = "pueblo"
 type = "merchant_robin"
 layer = "npc"
 x = 20
-y = 7
+y = 12
 width = 1
 height = 1
 

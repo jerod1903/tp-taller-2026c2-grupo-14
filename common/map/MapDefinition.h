@@ -100,6 +100,11 @@ inline std::string_view toString(TileType type) {
     return "unknown_tile";
 }
 
+// Agua, paredes de cueva y piedra no se pueden pisar. Lo usan el servidor y el validador.
+inline bool isWalkableTerrain(TileType type) {
+    return type != TileType::Water && type != TileType::CaveWall && type != TileType::Stone;
+}
+
 inline std::vector<TileType> allTileTypes() {
     return {
             TileType::Grass,     TileType::Dirt,  TileType::TilledSoil, TileType::Water,
@@ -281,6 +286,10 @@ struct MapArea {
     int height = 0;
     std::optional<int> floorNumber;
     std::vector<std::vector<TileType>> tiles;
+    // Posicion del area en el mapa general, en casillas. La usan el editor y el minimapa: el
+    // servidor la ignora.
+    int offsetX = 0;
+    int offsetY = 0;
 
     bool operator==(const MapArea&) const = default;
 };

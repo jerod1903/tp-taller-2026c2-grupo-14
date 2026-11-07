@@ -10,6 +10,7 @@ target_sources(taller_tests
     location_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
+    map_validator_test.cpp
     world_builder_test.cpp
     world_loader_test.cpp
     world_test.cpp

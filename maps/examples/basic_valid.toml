@@ -2,8 +2,8 @@ format_version = 1
 name = "Basic Valid World"
 
 areas = [
-    { id = "farm", type = "farm", width = 2, height = 1, tiles = [["grass", "path"]] },
-    { id = "village", type = "village", width = 4, height = 2, tiles = [["path", "path", "path", "path"], ["grass", "grass", "grass", "grass"]] },
+    { id = "farm", type = "farm", width = 2, height = 2, tiles = [["grass", "path"], ["grass", "grass"]] },
+    { id = "village", type = "village", width = 4, height = 3, tiles = [["path", "path", "path", "path"], ["grass", "grass", "grass", "grass"], ["grass", "grass", "grass", "grass"]] },
     { id = "dungeon-1", type = "dungeon_floor", floor = 1, width = 2, height = 1, tiles = [["stone", "stone"]] },
     { id = "dungeon-2", type = "dungeon_floor", floor = 2, width = 2, height = 1, tiles = [["stone", "stone"]] },
     { id = "dungeon-3", type = "dungeon_floor", floor = 3, width = 2, height = 1, tiles = [["stone", "stone"]] },
@@ -23,10 +23,10 @@ elements = [
     { id = "community-center", area = "village", type = "community_center", layer = "structure", x = 1, y = 0, width = 1, height = 1 },
     { id = "mine-entrance", area = "village", type = "dungeon_entrance", layer = "structure", x = 2, y = 0, width = 1, height = 1 },
     { id = "village-farm-gate", area = "village", type = "door", layer = "structure", x = 3, y = 0, width = 1, height = 1 },
-    { id = "merchant-marnie", area = "village", type = "merchant_marnie", layer = "npc", x = 0, y = 1, width = 1, height = 1 },
-    { id = "merchant-clint", area = "village", type = "merchant_clint", layer = "npc", x = 1, y = 1, width = 1, height = 1 },
-    { id = "merchant-pierre", area = "village", type = "merchant_pierre", layer = "npc", x = 2, y = 1, width = 1, height = 1 },
-    { id = "merchant-robin", area = "village", type = "merchant_robin", layer = "npc", x = 3, y = 1, width = 1, height = 1 },
+    { id = "merchant-marnie", area = "village", type = "merchant_marnie", layer = "npc", x = 0, y = 2, width = 1, height = 1 },
+    { id = "merchant-clint", area = "village", type = "merchant_clint", layer = "npc", x = 1, y = 2, width = 1, height = 1 },
+    { id = "merchant-pierre", area = "village", type = "merchant_pierre", layer = "npc", x = 2, y = 2, width = 1, height = 1 },
+    { id = "merchant-robin", area = "village", type = "merchant_robin", layer = "npc", x = 3, y = 2, width = 1, height = 1 },
     { id = "dungeon-exit-1", area = "dungeon-1", type = "door", layer = "structure", x = 0, y = 0, width = 1, height = 1 },
     { id = "dungeon-stairs-1", area = "dungeon-1", type = "stairs", layer = "structure", x = 1, y = 0, width = 1, height = 1 },
     { id = "dungeon-exit-2", area = "dungeon-2", type = "door", layer = "structure", x = 0, y = 0, width = 1, height = 1 },

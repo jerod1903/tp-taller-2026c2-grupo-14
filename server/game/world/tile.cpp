@@ -1,8 +1,6 @@
 #include "server/game/world/tile.h"
 
-bool is_walkable_terrain(TileType type) {
-    return type != TileType::Water && type != TileType::CaveWall && type != TileType::Stone;
-}
+bool is_walkable_terrain(TileType type) { return stardew::maps::isWalkableTerrain(type); }
 
 Tile::Tile(TileType type, bool walkable): type(type), walkable(walkable) {}
 

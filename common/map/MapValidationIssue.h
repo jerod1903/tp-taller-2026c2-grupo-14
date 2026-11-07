@@ -42,6 +42,7 @@ enum class MapIssueCode {
     StructureOverlap,
     MissingRequiredElement,
     RequiredElementWrongLayer,
+    BlockedDoor,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -114,6 +115,8 @@ inline std::string_view toString(MapIssueCode code) {
             return "MissingRequiredElement";
         case MapIssueCode::RequiredElementWrongLayer:
             return "RequiredElementWrongLayer";
+        case MapIssueCode::BlockedDoor:
+            return "BlockedDoor";
     }
     return "UnknownMapIssue";
 }
