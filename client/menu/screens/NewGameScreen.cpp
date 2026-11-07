@@ -6,6 +6,9 @@
 #include <QShowEvent>
 #include <QStackedWidget>
 #include <QVBoxLayout>
+#include <optional>
+#include <utility>
+#include <vector>
 
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/components/MenuButton.h"
@@ -74,7 +77,12 @@ void NewGameScreen::showEvent(QShowEvent* event) {
 }
 
 void NewGameScreen::reloadWorlds() {
-    worlds = lobby.listWorlds();
+    std::optional<std::vector<WorldInfo>> received =
+            guarded([this]() { return lobby.listWorlds(); });
+    if (!received) {
+        return;
+    }
+    worlds = std::move(*received);
     worldList->clear();
     for (const WorldInfo& world: worlds) {
         worldList->addItem(QString::fromStdString(world.name));

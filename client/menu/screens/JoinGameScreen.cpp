@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QShowEvent>
 #include <QVBoxLayout>
+#include <optional>
 
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/components/MenuButton.h"
@@ -64,11 +65,15 @@ void JoinGameScreen::submitCode() {
         return;
     }
 
-    LobbyStatus status = lobby.checkInviteCode(code.toStdString());
-    if (status == LobbyStatus::Ok) {
+    std::optional<LobbyStatus> status =
+            guarded([&]() { return lobby.checkInviteCode(code.toStdString()); });
+    if (!status) {
+        return;
+    }
+    if (*status == LobbyStatus::Ok) {
         emit inviteCodeAccepted(code);
     } else {
-        showError(status);
+        showError(*status);
     }
 }
 

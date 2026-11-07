@@ -1,6 +1,9 @@
 #pragma once
 
 #include <QWidget>
+#include <optional>
+
+#include "client/menu/backend/ILobbyProtocol.h"
 
 class QHBoxLayout;
 class QLabel;
@@ -16,8 +19,22 @@ public:
 
 signals:
     void backRequested();
+    // Se corto la conexion con el servidor: MainWindow avisa y cierra el cliente.
+    void connectionLost();
 
 protected:
+    // Hace una llamada al servidor. Si se corta la conexion emite connectionLost y devuelve
+    // nullopt: la excepcion no puede salir del slot, porque atravesaria el codigo de Qt.
+    template <typename Call>
+    auto guarded(Call&& call) -> std::optional<decltype(call())> {
+        try {
+            return call();
+        } catch (const LobbyConnectionError&) {
+            emit connectionLost();
+            return std::nullopt;
+        }
+    }
+
     QLabel* createTitle(const QString& text);
     // Agrega el boton "Volver" como primera fila; al tocarlo emite backRequested().
     void addBackButton();

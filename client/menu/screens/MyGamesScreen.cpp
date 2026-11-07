@@ -6,6 +6,9 @@
 #include <QShowEvent>
 #include <QStackedWidget>
 #include <QVBoxLayout>
+#include <optional>
+#include <utility>
+#include <vector>
 
 #include "client/menu/backend/ILobbyProtocol.h"
 #include "client/menu/components/CharacterPreview.h"
@@ -107,7 +110,12 @@ void MyGamesScreen::showEvent(QShowEvent* event) {
 }
 
 void MyGamesScreen::reloadGames() {
-    games = lobby.listMyGames();
+    std::optional<std::vector<SavedGameInfo>> received =
+            guarded([this]() { return lobby.listMyGames(); });
+    if (!received) {
+        return;
+    }
+    games = std::move(*received);
     errorLabel->clear();
 
     gameList->clear();
@@ -154,10 +162,14 @@ void MyGamesScreen::playSelected() {
     }
 
     const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
-    LobbyStatus status = lobby.loadGame(game.gameId).status;
-    if (status == LobbyStatus::Ok) {
-        emit gameEntered(game.gameId);
-    } else if (status == LobbyStatus::AlreadyConnected) {
+    std::optional<GameEnteredResponse> response =
+            guarded([&]() { return lobby.loadGame(game.gameId); });
+    if (!response) {
+        return;
+    }
+    if (response->status == LobbyStatus::Ok) {
+        emit gameEntered(*response);
+    } else if (response->status == LobbyStatus::AlreadyConnected) {
         errorLabel->setText("Ya estás conectado a esa partida.");
     } else {
         errorLabel->setText("No se pudo cargar la partida. Probá de nuevo.");

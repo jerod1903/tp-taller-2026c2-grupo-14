@@ -365,7 +365,7 @@ TEST(GameRegistryTest, ConcurrentJoinsNeverExceedMaxPlayers) {
 }
 // Partida multi de "granja" guardada, con un servidor que ya no carga ese mapa.
 GameRecord game_of_removed_world() {
-    return GameRecord{MULTI_ID, "Vieja", "granja", true, MAX_PLAYERS, {member("jero", "Martu")},
+    return GameRecord{MULTI_ID, "Vieja", "granja", true, MAX_PLAYERS, {member("jero", "martin")},
                       CODE};
 }
 
@@ -386,7 +386,7 @@ TEST(GameRegistryTest, JoinGameOfARemovedWorldRespondsWorldNotFound) {
 TEST(GameRegistryTest, GameRunsOnlyAfterAttach) {
     InMemoryGameStore store;
     GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
-    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "martin"));
     EXPECT_FALSE(registry.is_running(*id));
     registry.attach(*id);
     EXPECT_TRUE(registry.is_running(*id));
@@ -395,9 +395,9 @@ TEST(GameRegistryTest, GameRunsOnlyAfterAttach) {
 TEST(GameRegistryTest, AttachedGameSendsItsWorld) {
     InMemoryGameStore store;
     GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
-    std::optional<uint32_t> id = registry.create_game("Solo", "pueblo", member("jero", "Martu"));
+    std::optional<uint32_t> id = registry.create_game("Solo", "pueblo", member("jero", "martin"));
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
-    registry.attach(*id).push(PlayerJoined{0, member("jero", "Martu"), outbox});
+    registry.attach(*id).push(PlayerJoined{0, member("jero", "martin"), outbox});
     GameMessage message = outbox->pop();
     ASSERT_TRUE(std::holds_alternative<LocationData>(message));
     EXPECT_EQ(std::get<LocationData>(message).worldId, "pueblo");
@@ -406,7 +406,7 @@ TEST(GameRegistryTest, AttachedGameSendsItsWorld) {
 TEST(GameRegistryTest, PlayersOfAGameShareItsInbox) {
     InMemoryGameStore store;
     GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
-    std::optional<uint32_t> id = registry.create_game("Multi", "granja", member("jero", "Martu"));
+    std::optional<uint32_t> id = registry.create_game("Multi", "granja", member("jero", "martin"));
     std::string code = registry.enable_multiplayer(*id, "jero").inviteCode;
     ASSERT_EQ(registry.join_game(code, member("santi", "Santu")).status, LobbyStatus::Ok);
     EXPECT_EQ(&registry.attach(*id), &registry.attach(*id));
@@ -415,7 +415,7 @@ TEST(GameRegistryTest, PlayersOfAGameShareItsInbox) {
 TEST(GameRegistryTest, GameStopsWhenTheLastPlayerLeaves) {
     InMemoryGameStore store;
     GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
-    std::optional<uint32_t> id = registry.create_game("Multi", "granja", member("jero", "Martu"));
+    std::optional<uint32_t> id = registry.create_game("Multi", "granja", member("jero", "martin"));
     std::string code = registry.enable_multiplayer(*id, "jero").inviteCode;
     registry.join_game(code, member("santi", "Santu"));
     registry.attach(*id);
@@ -428,12 +428,12 @@ TEST(GameRegistryTest, GameStopsWhenTheLastPlayerLeaves) {
 TEST(GameRegistryTest, EmptiedGameRelaunchesOnLoad) {
     InMemoryGameStore store;
     GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
-    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "Martu"));
+    std::optional<uint32_t> id = registry.create_game("Solo", "granja", member("jero", "martin"));
     registry.attach(*id);
     registry.leave_game(*id, "jero");
     ASSERT_EQ(registry.load_game(*id, "jero").status, LobbyStatus::Ok);
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
-    registry.attach(*id).push(PlayerJoined{0, member("jero", "Martu"), outbox});
+    registry.attach(*id).push(PlayerJoined{0, member("jero", "martin"), outbox});
     EXPECT_TRUE(registry.is_running(*id));
     EXPECT_TRUE(std::holds_alternative<LocationData>(outbox->pop()));
 }
