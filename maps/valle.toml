@@ -327,7 +327,7 @@ area = "granja"
 type = "cabin"
 layer = "structure"
 x = 12
-y = 2
+y = 4
 width = 5
 height = 3
 
@@ -347,7 +347,7 @@ area = "granja"
 type = "spawn_point"
 layer = "object"
 x = 14
-y = 6
+y = 7
 width = 1
 height = 1
 

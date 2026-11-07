@@ -82,3 +82,13 @@ TEST(TomlMapFileTest, AreaOffsetsSurviveSavingAndLoading) {
 
     EXPECT_EQ(loaded, map);
 }
+
+TEST(MapValidatorSpriteTest, ARoofCutByTheTopEdgeIsRejected) {
+    maps::MapDefinition map = example_map();
+    element_by_id(map, "cabana").y = 0;
+
+    std::vector<maps::MapValidationIssue> issues = maps::validateMap(map, requirements());
+    EXPECT_TRUE(std::any_of(issues.begin(), issues.end(), [](const auto& issue) {
+        return issue.code == maps::MapIssueCode::SpriteOutsideArea && issue.elementId == "cabana";
+    }));
+}

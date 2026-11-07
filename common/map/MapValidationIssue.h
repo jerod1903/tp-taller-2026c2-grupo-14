@@ -43,6 +43,7 @@ enum class MapIssueCode {
     MissingRequiredElement,
     RequiredElementWrongLayer,
     BlockedDoor,
+    SpriteOutsideArea,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -117,6 +118,8 @@ inline std::string_view toString(MapIssueCode code) {
             return "RequiredElementWrongLayer";
         case MapIssueCode::BlockedDoor:
             return "BlockedDoor";
+        case MapIssueCode::SpriteOutsideArea:
+            return "SpriteOutsideArea";
     }
     return "UnknownMapIssue";
 }

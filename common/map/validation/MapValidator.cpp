@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "common/map/MapSprites.h"
+
 namespace stardew::maps {
 namespace {
 
@@ -434,6 +436,30 @@ void validateDoors(const MapDefinition& map, const AreaIndex& areas, const Eleme
     }
 }
 
+// El dibujo se estira al ancho del elemento y se apoya en su base, asi que lo alto sobresale hacia
+// arriba (como el techo de una casa). La camara no sale del area: si se pasa del borde, se corta.
+void validateSprites(const ElementIndex& elements, Issues& errors) {
+    for (const MapElement* element: elements.valid) {
+        if (!element->type) {
+            continue;
+        }
+        const auto sprite = ELEMENT_SPRITES.find(*element->type);
+        if (sprite == ELEMENT_SPRITES.end()) {
+            continue;
+        }
+        const SpriteRect& rect = sprite->second.rect;
+        const int drawnHeight = rect.height * element->width * TILE_SIZE / rect.width;
+        const int top = (element->y + element->height) * TILE_SIZE - drawnHeight;
+        if (top < 0) {
+            errors.push_back({
+                    .code = MapIssueCode::SpriteOutsideArea,
+                    .areaId = element->areaId,
+                    .elementId = element->id,
+            });
+        }
+    }
+}
+
 // Comprueba las entidades requeridas segun la configuracion, sin listas hardcodeadas aca.
 void validateRequiredElements(const MapDefinition& map, const MapRequirements& requirements,
                               const AreaIndex& areas, const ElementIndex& elements,
@@ -501,6 +527,7 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
         validateStructureOverlap(elements, errors);
     }
     validateDoors(map, areas, elements, errors);
+    validateSprites(elements, errors);
     validateRequiredElements(map, requirements, areas, elements, errors);
     return errors;
 }
