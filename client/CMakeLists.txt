@@ -7,7 +7,6 @@ target_sources(taller_client
     main.cpp
     app/ClientApp.cpp
     menu/QtMenu.cpp
-    game/SdlGame.cpp
     network/ClientProtocol.cpp
     client.cpp
     game/game_loop.cpp
@@ -24,7 +23,6 @@ target_sources(taller_client
     app/IGameView.h
     app/IMenu.h
     menu/QtMenu.h
-    game/SdlGame.h
     network/ClientProtocol.h
     network/IGameProtocol.h
     client.h

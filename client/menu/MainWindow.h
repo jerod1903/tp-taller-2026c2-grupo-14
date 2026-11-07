@@ -20,6 +20,9 @@ class MainWindow: public QMainWindow {
 public:
     // lobby: acceso al servidor; MainWindow se lo pasa a las pantallas que lo necesitan.
     explicit MainWindow(ILobbyProtocol& lobby, QWidget* parent = nullptr);
+    // Avisa que se corto la conexion con el servidor y cierra la ventana: sin servidor el cliente
+    // no puede seguir (el enunciado pide que se cierre).
+    void showConnectionLost();
 
 signals:
     // El servidor dejo entrar a la partida: el menu termina y empieza el juego.

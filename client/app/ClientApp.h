@@ -7,7 +7,7 @@ class IMenu;
 class ClientApp {
 public:
     ClientApp(IMenu& menu, IGameView& game);
-    // Vuelve cuando el jugador cierra el menu.
+    // Vuelve cuando el jugador cierra el menu o cuando se corta la conexion.
     void run();
 
 private:

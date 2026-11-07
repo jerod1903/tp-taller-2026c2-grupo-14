@@ -15,6 +15,7 @@ public:
     // argc tiene que vivir mientras viva el menu (lo pide QApplication).
     QtMenu(int& argc, char** argv, ILobbyProtocol& lobby);
     std::optional<GameSession> run() override;
+    void showConnectionLost() override;
 
 private:
     QApplication app;

@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "client/app/ClientApp.h"
-#include "client/game/SdlGame.h"
+#include "client/client.h"
 #include "client/menu/QtMenu.h"
 #include "client/network/ClientProtocol.h"
 #include "common/net/socket.h"
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         // Una sola conexion para el lobby y las partidas: el menu y el juego la comparten.
         ClientProtocol protocol(Socket(argv[ARG_HOST], argv[ARG_PORT]));
         QtMenu menu(argc, argv, protocol);
-        SdlGame game(protocol);
+        Cliente game(protocol);
         ClientApp(menu, game).run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

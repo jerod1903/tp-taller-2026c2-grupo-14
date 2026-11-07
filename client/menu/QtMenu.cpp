@@ -17,3 +17,5 @@ std::optional<GameSession> QtMenu::run() {
     QApplication::exec();
     return entered;
 }
+
+void QtMenu::showConnectionLost() { window.showConnectionLost(); }

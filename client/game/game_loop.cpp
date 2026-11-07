@@ -6,26 +6,43 @@
 #include <variant>
 
 #include "client/constants.h"
+#include "client/menu/backend/ILobbyProtocol.h"
+
+namespace {
+// Cuanto se espera el GameEnded despues de LeaveGame antes de dar la conexion por perdida
+constexpr std::chrono::seconds ESPERA_FIN_PARTIDA(3);
+}  // namespace
 
 GameLoop::GameLoop(Enviador& enviador, Recibidor& recibidor, Interfaz& interfaz,
                    uint32_t id_propio):
         enviador(enviador), recibidor(recibidor), interfaz(interfaz), estado{id_propio, {}, {}} {}
 
-void GameLoop::ejecutar() {
-    while (corriendo) {
-        auto inicio = std::chrono::steady_clock::now();
-        procesar_entrada(interfaz.leer_entrada());
-        procesar_mensajes();
-        interfaz.dibujar(estado);
-        std::this_thread::sleep_until(inicio + DURACION_FRAME);
+std::optional<EndReason> GameLoop::ejecutar() {
+    try {
+        while (corriendo) {
+            auto inicio = std::chrono::steady_clock::now();
+            if (limite_salida && inicio > *limite_salida) {
+                return std::nullopt;
+            }
+            procesar_entrada(interfaz.leer_entrada());
+            procesar_mensajes();
+            interfaz.dibujar(estado);
+            std::this_thread::sleep_until(inicio + DURACION_FRAME);
+        }
+    } catch (const LobbyConnectionError&) {
+        return std::nullopt;  // no se pudo mandar: se corto la conexion
     }
+    return fin;
 }
 
 void GameLoop::procesar_entrada(const Entrada& entrada) {
+    if (limite_salida) {
+        return;
+    }
     if (entrada.salir) {
         // Se avisa al servidor que el jugador sale de la partida
         enviador.salir();
-        corriendo = false;
+        limite_salida = std::chrono::steady_clock::now() + ESPERA_FIN_PARTIDA;
         return;
     }
     // El servidor sigue moviendo al jugador en la ultima direccion que recibio: solo se avisa
@@ -38,6 +55,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
 }
 
 void GameLoop::procesar_mensajes() {
+    // Se mira antes de vaciar la cola: si el hilo ya habia terminado, todo lo que mando ya esta
+    // en ella (incluido el GameEnded)
+    const bool recibidor_vivo = recibidor.is_alive();
     // Se procesa todo lo que llego desde el frame anterior
     std::optional<ServerGameMessage> mensaje;
     while ((mensaje = recibidor.recibir())) {
@@ -47,11 +67,12 @@ void GameLoop::procesar_mensajes() {
             estado.jugadores = snapshot->players;
             estado.tick = snapshot->tick;
         } else {
-            corriendo = false;  // GameEnded: termino la partida
+            fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida
+            corriendo = false;
         }
     }
-    // El hilo termina si se corto la conexion
-    if (!recibidor.is_alive()) {
+    // El hilo termina si se corto la conexion: fin queda vacio
+    if (!recibidor_vivo) {
         corriendo = false;
     }
 }

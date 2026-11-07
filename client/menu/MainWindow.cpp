@@ -1,5 +1,6 @@
 #include "client/menu/MainWindow.h"
 
+#include <QMessageBox>
 #include <QPalette>
 #include <QRandomGenerator>
 #include <QResizeEvent>
@@ -115,16 +116,33 @@ void MainWindow::setupScreens() {
         connect(screen, &BaseScreen::backRequested, this,
                 [this]() { screenManager.show(ScreenId::MainMenu); });
     }
+    for (BaseScreen* screen:
+         {static_cast<BaseScreen*>(login), static_cast<BaseScreen*>(joinGame),
+          static_cast<BaseScreen*>(newGame), static_cast<BaseScreen*>(myGames)}) {
+        connect(screen, &BaseScreen::connectionLost, this, &MainWindow::showConnectionLost);
+    }
+}
+
+void MainWindow::showConnectionLost() {
+    QMessageBox::critical(this, "Sin conexión",
+                          "Se perdió la conexión con el servidor. El juego se va a cerrar.");
+    close();
 }
 
 void MainWindow::submitCharacter(const QString& name, const CharacterAppearance& appearance) {
     GameEnteredResponse response{};
-    if (flow == CharacterFlow::Create) {
-        pendingCreate.characterName = name.toStdString();
-        pendingCreate.appearance = appearance;
-        response = lobby.createGame(pendingCreate);
-    } else {
-        response = lobby.joinGame({pendingInviteCode, name.toStdString(), appearance});
+    // Como en las pantallas (BaseScreen::guarded): la excepcion no puede salir del slot.
+    try {
+        if (flow == CharacterFlow::Create) {
+            pendingCreate.characterName = name.toStdString();
+            pendingCreate.appearance = appearance;
+            response = lobby.createGame(pendingCreate);
+        } else {
+            response = lobby.joinGame({pendingInviteCode, name.toStdString(), appearance});
+        }
+    } catch (const LobbyConnectionError&) {
+        showConnectionLost();
+        return;
     }
 
     if (response.status == LobbyStatus::Ok) {
