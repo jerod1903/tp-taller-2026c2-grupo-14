@@ -2,7 +2,7 @@ target_sources(taller_editor
     PRIVATE
     # .cpp files
     main.cpp
-    AreaCanvas.cpp
+    MapCanvas.cpp
     EditorWindow.cpp
     MapEditorScreen.cpp
     SpriteSheets.cpp
@@ -12,7 +12,7 @@ target_sources(taller_editor
     ${CMAKE_SOURCE_DIR}/client/menu/resources/menu.qrc
     PUBLIC
     # .h files
-    AreaCanvas.h
+    MapCanvas.h
     EditorWindow.h
     MapEditorScreen.h
     SpriteSheets.h

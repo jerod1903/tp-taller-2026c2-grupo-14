@@ -1,25 +1,51 @@
 #include "editor/MapEditorScreen.h"
 
 #include <QButtonGroup>
-#include <QComboBox>
 #include <QHBoxLayout>
 #include <QIcon>
-#include <QLabel>
 #include <QMessageBox>
 #include <QStringList>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <algorithm>
 #include <exception>
 #include <utility>
 
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/styles/StyleManager.h"
-#include "editor/AreaCanvas.h"
+#include "editor/MapCanvas.h"
 
 namespace maps = stardew::maps;
 
 namespace {
 constexpr int PALETTE_ICON_SIZE = 32;
+
+constexpr int AREA_GAP = 2;
+constexpr int MAX_ROW_WIDTH = 100;
+
+bool areasOverlap(const std::vector<maps::MapValidationIssue>& issues) {
+    return std::any_of(issues.begin(), issues.end(), [](const auto& issue) {
+        return issue.code == maps::MapIssueCode::AreasOverlap;
+    });
+}
+
+// Pone las areas en filas, en el orden del archivo, con un espacio entre cada una
+void arrangeAreas(maps::MapDefinition& map) {
+    int x = 0;
+    int y = 0;
+    int rowHeight = 0;
+    for (maps::MapArea& area: map.areas) {
+        if (x > 0 && x + area.width > MAX_ROW_WIDTH) {
+            x = 0;
+            y += rowHeight + AREA_GAP;
+            rowHeight = 0;
+        }
+        area.offsetX = x;
+        area.offsetY = y;
+        x += area.width + AREA_GAP;
+        rowHeight = std::max(rowHeight, area.height);
+    }
+}
 
 QString describe(const maps::MapValidationIssue& issue) {
     QString text = QString::fromStdString(std::string(maps::toString(issue.code)));
@@ -38,6 +64,9 @@ QString describe(const maps::MapValidationIssue& issue) {
     if (issue.areaId) {
         text += " · area " + QString::fromStdString(*issue.areaId);
     }
+    if (issue.relatedAreaId) {
+        text += " y " + QString::fromStdString(*issue.relatedAreaId);
+    }
     if (issue.elementId) {
         text += " · elemento " + QString::fromStdString(*issue.elementId);
     }
@@ -52,10 +81,7 @@ QString describe(const maps::MapValidationIssue& issue) {
 }  // namespace
 
 MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* parent):
-        QWidget(parent),
-        service(service),
-        areaSelector(new QComboBox(this)),
-        canvas(new AreaCanvas(this)) {
+        QWidget(parent), service(service), canvas(new MapCanvas(this)) {
     auto* backButton = new MenuButton("← Volver", this);
     backButton->setBack();
     auto* validateButton = new MenuButton("Validar", this);
@@ -65,8 +91,6 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
 
     auto* header = new QHBoxLayout();
     header->addWidget(backButton);
-    header->addWidget(new QLabel("Area:", this));
-    header->addWidget(areaSelector);
     header->addStretch();
     header->addWidget(validateButton);
     header->addWidget(saveButton);
@@ -81,8 +105,6 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     connect(backButton, &QPushButton::clicked, this, &MapEditorScreen::backRequested);
     connect(validateButton, &QPushButton::clicked, this, &MapEditorScreen::validate);
     connect(saveButton, &QPushButton::clicked, this, &MapEditorScreen::save);
-    connect(areaSelector, &QComboBox::currentIndexChanged, this,
-            &MapEditorScreen::showSelectedArea);
 }
 
 QHBoxLayout* MapEditorScreen::createPalette() {
@@ -107,23 +129,15 @@ void MapEditorScreen::open(const std::string& mapPath) {
     maps::MapLoadResult result = service.loadMap(mapPath);
     map = std::move(result.map);
     path = mapPath;
-    // Sin senales mientras se llena: showSelectedArea se llama una vez al final
-    areaSelector->blockSignals(true);
-    areaSelector->clear();
-    for (const maps::MapArea& area: map.areas) {
-        areaSelector->addItem(QString::fromStdString(area.id));
+    // Un mapa sin posiciones tiene todas las areas en (0, 0): se acomodan para poder verlas.
+    // Quedan asi cuando se guarde.
+    if (areasOverlap(result.issues)) {
+        arrangeAreas(map);
+        result.issues = service.validate(map);
     }
-    areaSelector->blockSignals(false);
-    showSelectedArea();
+    canvas->showMap(map);
     if (!result.issues.empty()) {
         showIssues("El mapa tiene errores", result.issues);
-    }
-}
-
-void MapEditorScreen::showSelectedArea() {
-    const int index = areaSelector->currentIndex();
-    if (index >= 0) {
-        canvas->showArea(map, map.areas[index]);
     }
 }
 

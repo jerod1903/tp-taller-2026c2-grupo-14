@@ -220,6 +220,26 @@ ElementIndex validateElements(const MapDefinition& map, const AreaIndex& areas, 
     return index;
 }
 
+// En el mapa general (editor y minimapa) cada area ocupa su lugar: no se pueden encimar.
+void validateAreaLayout(const MapDefinition& map, Issues& errors) {
+    for (std::size_t first = 0; first < map.areas.size(); ++first) {
+        const MapArea& a = map.areas[first];
+        for (std::size_t second = first + 1; second < map.areas.size(); ++second) {
+            const MapArea& b = map.areas[second];
+            const bool overlap =
+                    a.offsetX < b.offsetX + b.width && b.offsetX < a.offsetX + a.width &&
+                    a.offsetY < b.offsetY + b.height && b.offsetY < a.offsetY + a.height;
+            if (overlap) {
+                errors.push_back({
+                        .code = MapIssueCode::AreasOverlap,
+                        .areaId = a.id,
+                        .relatedAreaId = b.id,
+                });
+            }
+        }
+    }
+}
+
 // Revisa el elemento que dispara la transicion: que exista, este en el area de origen y sirva
 // para viajar.
 bool validateTrigger(const MapTransition& transition, const ElementIndex& elements,
@@ -520,6 +540,7 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
     Issues errors;
     validateHeader(map, requirements, errors);
     const AreaIndex areas = validateAreas(map, requirements, errors);
+    validateAreaLayout(map, errors);
     const ElementIndex elements = validateElements(map, areas, errors);
     const TransitionsByArea transitions = validateTransitions(map, areas, elements, errors);
     validateRoutes(requirements, areas, transitions, errors);

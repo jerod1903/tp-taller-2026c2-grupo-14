@@ -44,6 +44,7 @@ enum class MapIssueCode {
     RequiredElementWrongLayer,
     BlockedDoor,
     SpriteOutsideArea,
+    AreasOverlap,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -120,6 +121,8 @@ inline std::string_view toString(MapIssueCode code) {
             return "BlockedDoor";
         case MapIssueCode::SpriteOutsideArea:
             return "SpriteOutsideArea";
+        case MapIssueCode::AreasOverlap:
+            return "AreasOverlap";
     }
     return "UnknownMapIssue";
 }
@@ -141,6 +144,7 @@ struct MapValidationIssue {
     std::optional<int> actual = std::nullopt;
     std::optional<int> x = std::nullopt;
     std::optional<int> y = std::nullopt;
+    std::optional<std::string> relatedAreaId = std::nullopt;
 
     bool operator==(const MapValidationIssue&) const = default;
 };

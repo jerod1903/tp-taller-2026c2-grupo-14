@@ -9,11 +9,10 @@
 #include "common/map/service/MapService.h"
 #include "editor/SpriteSheets.h"
 
-class AreaCanvas;
-class QComboBox;
+class MapCanvas;
 class QHBoxLayout;
 
-// Pantalla de edicion: elegir area, pintar con el pincel, validar y guardar.
+// Pantalla de edicion: el mapa entero, pintar con el pincel, validar y guardar.
 class MapEditorScreen: public QWidget {
     Q_OBJECT
 
@@ -27,7 +26,6 @@ signals:
 
 private:
     QHBoxLayout* createPalette();
-    void showSelectedArea();
     void validate();
     void save();
     void showIssues(const QString& title,
@@ -37,6 +35,5 @@ private:
     stardew::maps::MapDefinition map;
     std::string path;
     SpriteSheets sprites;
-    QComboBox* areaSelector;
-    AreaCanvas* canvas;
+    MapCanvas* canvas;
 };
