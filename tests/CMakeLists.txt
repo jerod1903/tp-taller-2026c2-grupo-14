@@ -11,6 +11,7 @@ target_sources(taller_tests
     lobby_session_test.cpp
     logger_test.cpp
     map_validator_test.cpp
+    passages_test.cpp
     world_builder_test.cpp
     world_loader_test.cpp
     world_test.cpp
@@ -42,6 +43,8 @@ target_sources(taller_tests
     ../server/net/sender.cpp
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
+    # Lógica del editor sin Qt
+    ../editor/Passages.cpp
     # Código del cliente bajo test (sin Qt)
     ../client/network/ClientProtocol.cpp
     PUBLIC

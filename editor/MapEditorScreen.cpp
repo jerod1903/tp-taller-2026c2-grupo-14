@@ -19,6 +19,7 @@ namespace maps = stardew::maps;
 
 namespace {
 constexpr int PALETTE_ICON_SIZE = 32;
+constexpr int PALETTE_BUTTON_PADDING = 8;
 
 constexpr int AREA_GAP = 2;
 constexpr int MAX_ROW_WIDTH = 100;
@@ -121,6 +122,15 @@ QHBoxLayout* MapEditorScreen::createPalette() {
         palette->addWidget(button);
         connect(button, &QToolButton::clicked, this, [this, tile]() { canvas->setBrush(tile); });
     }
+    // Un click en el borde entre dos areas pone (o quita) un porton de cada lado
+    auto* passageButton = new QToolButton(this);
+    passageButton->setText("Pasaje");
+    passageButton->setToolTip("Click en el borde entre dos areas: pone o quita un pasaje");
+    passageButton->setCheckable(true);
+    passageButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
+    group->addButton(passageButton);
+    palette->addWidget(passageButton);
+    connect(passageButton, &QToolButton::clicked, this, [this]() { canvas->usePassageTool(); });
     palette->addStretch();
     return palette;
 }

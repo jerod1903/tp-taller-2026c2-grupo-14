@@ -14,6 +14,7 @@
 #include <optional>
 
 #include "common/map/MapSprites.h"
+#include "editor/Passages.h"
 
 namespace maps = stardew::maps;
 
@@ -25,10 +26,12 @@ constexpr double ZOOM_STEP = 1.25;
 const QColor UNDRAWN_ELEMENT(255, 235, 173, 120);
 // Encima del piso; entre elementos, el de mas abajo tapa al de mas arriba
 constexpr double ELEMENTS_Z = 1;
-// El borde de cada area va encima de todo
-constexpr double BORDER_Z = 1e9;
+// El borde y el nombre de cada area van encima de todo
+constexpr double LABELS_Z = 1e9;
+constexpr double NAME_PADDING = 2;
 constexpr int SCENE_MARGIN = 2 * TILE;
 const QColor AREA_NAME(255, 235, 173);
+const QColor NAME_BACKGROUND(45, 27, 16, 190);
 // El mismo marron del fondo del menu
 const QColor BACKGROUND(45, 27, 16);
 // Barras finas del color de los botones de madera, sin las flechas de los extremos
@@ -74,12 +77,13 @@ MapCanvas::MapCanvas(QWidget* parent): QGraphicsView(parent) {
     scale(INITIAL_ZOOM, INITIAL_ZOOM);
 }
 
-void MapCanvas::showMap(maps::MapDefinition& map) {
+void MapCanvas::showMap(maps::MapDefinition& shown) {
+    map = &shown;
     scene.clear();
     areas.clear();
-    for (maps::MapArea& area: map.areas) {
+    for (maps::MapArea& area: map->areas) {
         addArea(area);
-        for (const maps::MapElement& element: map.elements) {
+        for (const maps::MapElement& element: map->elements) {
             if (element.areaId == area.id) {
                 addElement(area, element);
             }
@@ -101,16 +105,26 @@ void MapCanvas::addArea(maps::MapArea& area) {
             row.push_back(item);
         }
     }
-    // El nombre arriba del area y un borde, para ver donde termina cada una
-    QGraphicsSimpleTextItem* name = scene.addSimpleText(QString::fromStdString(area.id));
-    name->setBrush(AREA_NAME);
-    name->setPos(origin - QPointF(0, name->boundingRect().height()));
+    // Un borde para ver donde termina cada area, y su nombre en la esquina de arriba a la
+    // izquierda, sobre un fondo oscuro para que se lea sobre cualquier terreno. Van encima de todo.
     QGraphicsRectItem* border = scene.addRect(origin.x(), origin.y(), area.width * TILE,
                                               area.height * TILE, QPen(AREA_BORDER));
-    border->setZValue(BORDER_Z);
+    border->setZValue(LABELS_Z);
+    QGraphicsSimpleTextItem* name = scene.addSimpleText(QString::fromStdString(area.id));
+    name->setBrush(AREA_NAME);
+    name->setPos(origin + QPointF(NAME_PADDING, NAME_PADDING));
+    name->setZValue(LABELS_Z + 1);
+    const QRectF nameBox = name->sceneBoundingRect().adjusted(-NAME_PADDING, -NAME_PADDING,
+                                                              NAME_PADDING, NAME_PADDING);
+    scene.addRect(nameBox, QPen(Qt::NoPen), QBrush(NAME_BACKGROUND))->setZValue(LABELS_Z);
 }
 
-void MapCanvas::setBrush(maps::TileType tile) { brush = tile; }
+void MapCanvas::setBrush(maps::TileType tile) {
+    brush = tile;
+    passageTool = false;
+}
+
+void MapCanvas::usePassageTool() { passageTool = true; }
 
 void MapCanvas::addElement(const maps::MapArea& area, const maps::MapElement& element) {
     const int left = (area.offsetX + element.x) * TILE;
@@ -145,14 +159,31 @@ void MapCanvas::wheelEvent(QWheelEvent* event) {
 }
 
 void MapCanvas::mousePressEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::MiddleButton) {
+        lastDragPosition = event->pos();
+        viewport()->setCursor(Qt::ClosedHandCursor);
+    } else if (event->button() == Qt::LeftButton && passageTool) {
+        togglePassageAt(event->pos());
+    } else if (event->button() == Qt::LeftButton) {
         paintAt(event->pos());
     }
 }
 
 void MapCanvas::mouseMoveEvent(QMouseEvent* event) {
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->buttons() & Qt::MiddleButton) {
+        // El mapa sigue al mouse: las barras se mueven al reves de lo que se arrastra
+        const QPoint delta = event->pos() - lastDragPosition;
+        lastDragPosition = event->pos();
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+    } else if ((event->buttons() & Qt::LeftButton) && !passageTool) {
         paintAt(event->pos());
+    }
+}
+
+void MapCanvas::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::MiddleButton) {
+        viewport()->unsetCursor();
     }
 }
 
@@ -172,4 +203,19 @@ void MapCanvas::paintAt(const QPoint& viewPosition) {
         }
         return;
     }
+}
+
+void MapCanvas::togglePassageAt(const QPoint& viewPosition) {
+    const QPointF position = mapToScene(viewPosition);
+    const int x = static_cast<int>(std::floor(position.x() / TILE));
+    const int y = static_cast<int>(std::floor(position.y() / TILE));
+    if (!map || !togglePassage(*map, x, y)) {
+        return;
+    }
+    // Se redibuja todo para mostrar los portones; la vista queda donde estaba
+    const int horizontal = horizontalScrollBar()->value();
+    const int vertical = verticalScrollBar()->value();
+    showMap(*map);
+    horizontalScrollBar()->setValue(horizontal);
+    verticalScrollBar()->setValue(vertical);
 }
