@@ -24,7 +24,7 @@ public:
 
 signals:
     // El servidor cargo la partida: el menu termina y empieza el juego.
-    void gameEntered(uint32_t gameId);
+    void gameEntered(const GameEnteredResponse& response);
 
 protected:
     // La lista se pide al servidor cada vez que se entra, para que este actualizada.

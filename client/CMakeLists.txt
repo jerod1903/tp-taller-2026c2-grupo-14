@@ -5,8 +5,10 @@ target_sources(taller_client
     ${TALLER_MENU_SOURCES}
     # .cpp files
     main.cpp
+    app/ClientApp.cpp
+    menu/QtMenu.cpp
+    game/SdlGame.cpp
     network/ClientProtocol.cpp
-    main_juego.cpp
     client.cpp
     game/game_loop.cpp
     gui/interfaz.cpp
@@ -17,6 +19,12 @@ target_sources(taller_client
     network/recibidor.cpp
     PUBLIC
     # .h files
+    app/ClientApp.h
+    app/GameSession.h
+    app/IGameView.h
+    app/IMenu.h
+    menu/QtMenu.h
+    game/SdlGame.h
     network/ClientProtocol.h
     network/IGameProtocol.h
     client.h

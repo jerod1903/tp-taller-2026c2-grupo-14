@@ -13,7 +13,6 @@
 #include "client/menu/screens/MainMenuScreen.h"
 #include "client/menu/screens/MyGamesScreen.h"
 #include "client/menu/screens/NewGameScreen.h"
-#include "client/menu/screens/PlaceholderScreen.h"
 #include "client/menu/styles/StyleManager.h"
 
 namespace {
@@ -66,8 +65,6 @@ void MainWindow::setupScreens() {
     auto* joinGame = new JoinGameScreen(lobby);
     auto* myGames = new MyGamesScreen(lobby);
     character = new CharacterScreen();
-    // Provisoria: representa "aca arranca SDL" hasta que exista ClientApp.
-    auto* inGame = new PlaceholderScreen("Partida (arranca SDL)");
 
     screenManager.add(ScreenId::Login, login);
     screenManager.add(ScreenId::MainMenu, mainMenu);
@@ -75,7 +72,6 @@ void MainWindow::setupScreens() {
     screenManager.add(ScreenId::JoinGame, joinGame);
     screenManager.add(ScreenId::MyGames, myGames);
     screenManager.add(ScreenId::Character, character);
-    screenManager.add(ScreenId::InGame, inGame);
 
     connect(login, &LoginScreen::loggedIn, this,
             [this]() { screenManager.show(ScreenId::MainMenu); });
@@ -111,32 +107,34 @@ void MainWindow::setupScreens() {
         screenManager.show(flow == CharacterFlow::Create ? ScreenId::NewGame : ScreenId::JoinGame);
     });
 
-    // Flujo retomar: partida cargada -> juego. Cuando exista ClientApp, aca se guarda la
-    // partida elegida y se cierra la ventana para que arranque SDL.
-    connect(myGames, &MyGamesScreen::gameEntered, this,
-            [this]() { screenManager.show(ScreenId::InGame); });
+    // Flujo retomar: partida cargada -> juego.
+    connect(myGames, &MyGamesScreen::gameEntered, this, &MainWindow::enterGame);
 
-    for (BaseScreen* screen:
-         {static_cast<BaseScreen*>(joinGame), static_cast<BaseScreen*>(newGame),
-          static_cast<BaseScreen*>(myGames), static_cast<BaseScreen*>(inGame)}) {
+    for (BaseScreen* screen: {static_cast<BaseScreen*>(joinGame), static_cast<BaseScreen*>(newGame),
+                              static_cast<BaseScreen*>(myGames)}) {
         connect(screen, &BaseScreen::backRequested, this,
                 [this]() { screenManager.show(ScreenId::MainMenu); });
     }
 }
 
 void MainWindow::submitCharacter(const QString& name, const CharacterAppearance& appearance) {
-    LobbyStatus status = LobbyStatus::Ok;
+    GameEnteredResponse response{};
     if (flow == CharacterFlow::Create) {
         pendingCreate.characterName = name.toStdString();
         pendingCreate.appearance = appearance;
-        status = lobby.createGame(pendingCreate).status;
+        response = lobby.createGame(pendingCreate);
     } else {
-        status = lobby.joinGame({pendingInviteCode, name.toStdString(), appearance}).status;
+        response = lobby.joinGame({pendingInviteCode, name.toStdString(), appearance});
     }
 
-    if (status == LobbyStatus::Ok) {
-        screenManager.show(ScreenId::InGame);
+    if (response.status == LobbyStatus::Ok) {
+        enterGame(response);
     } else {
-        character->showError(status);
+        character->showError(response.status);
     }
+}
+
+void MainWindow::enterGame(const GameEnteredResponse& response) {
+    screenManager.show(ScreenId::MainMenu);
+    emit gameEntered({response.gameId, response.playerId});
 }

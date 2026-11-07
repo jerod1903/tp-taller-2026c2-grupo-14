@@ -154,10 +154,10 @@ void MyGamesScreen::playSelected() {
     }
 
     const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
-    LobbyStatus status = lobby.loadGame(game.gameId).status;
-    if (status == LobbyStatus::Ok) {
-        emit gameEntered(game.gameId);
-    } else if (status == LobbyStatus::AlreadyConnected) {
+    GameEnteredResponse response = lobby.loadGame(game.gameId);
+    if (response.status == LobbyStatus::Ok) {
+        emit gameEntered(response);
+    } else if (response.status == LobbyStatus::AlreadyConnected) {
         errorLabel->setText("Ya estás conectado a esa partida.");
     } else {
         errorLabel->setText("No se pudo cargar la partida. Probá de nuevo.");

@@ -5,7 +5,7 @@
 #include "client/network/enviador.h"
 #include "client/network/recibidor.h"
 
-Cliente::Cliente(ClientProtocol& protocolo, uint32_t id_propio):
+Cliente::Cliente(IGameProtocol& protocolo, uint32_t id_propio):
         protocolo(protocolo), id_propio(id_propio) {}
 
 void Cliente::ejecutar() {
