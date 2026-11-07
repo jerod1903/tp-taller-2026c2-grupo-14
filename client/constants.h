@@ -1,11 +1,13 @@
 #ifndef CLIENT_CONSTANTS_H
 #define CLIENT_CONSTANTS_H
 
+#include <array>
 #include <chrono>
 #include <cstdint>
 
 #include <SDL2pp/SDL2pp.hh>
 
+#include "client/audio/sonido.h"
 #include "common/lobby_dto.h"
 
 // main_juego.cpp
@@ -21,6 +23,9 @@ inline const std::chrono::milliseconds DURACION_FRAME(16);  // 60 fps aprox
 inline constexpr int CANALES_AUDIO = 16;  // cuantos efectos pueden sonar a la vez
 // Muestras por bloque: mas chico suena antes (1024 a 44100 Hz son 23 ms), mas grande corta menos
 inline constexpr int TAMANO_BUFFER_AUDIO = 1024;
+inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
+// La funcion de SDL que fallo, para el mensaje de la excepcion
+inline const char* const FUNCION_INICIO_AUDIO = "SDL_InitSubSystem";
 
 // interfaz.cpp
 inline const int ANCHO_VENTANA = 800;
@@ -28,6 +33,10 @@ inline const int ALTO_VENTANA = 600;
 // En pixeles del tileset: la escala se elige para que entre mas o menos esto de alto (12 casillas
 // y media), sea cual sea el tamaño de la ventana
 inline const int ALTO_MUNDO_VISIBLE = 200;
+// Mientras el jugador camina suena un paso cada tanto, alternando entre estos
+inline const std::chrono::milliseconds INTERVALO_PASO(300);
+inline constexpr std::array<Sonido, 4> SONIDOS_PASO = {Sonido::Paso1, Sonido::Paso2,
+                                                       Sonido::Paso3, Sonido::Paso4};
 
 // personaje.cpp
 // Primer frame (arriba a la izquierda) del sheet, de 16x32

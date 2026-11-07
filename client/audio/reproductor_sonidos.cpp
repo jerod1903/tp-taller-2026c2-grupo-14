@@ -5,17 +5,12 @@
 #include "client/constants.h"
 #include "client/gui/rutas.h"
 
-IniciadorAudio::IniciadorAudio() {
-    if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
-        throw SDL2pp::Exception("SDL_InitSubSystem");
-    }
-}
-
-IniciadorAudio::~IniciadorAudio() { SDL_QuitSubSystem(SDL_INIT_AUDIO); }
-
 ReproductorSonidos::ReproductorSonidos() {
     try {
-        iniciador.emplace();
+        if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
+            throw SDL2pp::Exception(FUNCION_INICIO_AUDIO);
+        }
+        audio_iniciado = true;
         biblioteca.emplace(MIX_INIT_OGG);
         mixer.emplace(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,
                       TAMANO_BUFFER_AUDIO);
@@ -24,11 +19,20 @@ ReproductorSonidos::ReproductorSonidos() {
             sonidos.emplace(sonido, SDL2pp::Chunk(ruta));
         }
     } catch (const SDL2pp::Exception& e) {
-        std::cerr << "Sin sonido: " << e.what() << std::endl;
-        sonidos.clear();
-        mixer.reset();
-        biblioteca.reset();
-        iniciador.reset();
+        std::cerr << MENSAJE_SIN_SONIDO << e.what() << std::endl;
+        cerrar();
+    }
+}
+
+ReproductorSonidos::~ReproductorSonidos() { cerrar(); }
+
+void ReproductorSonidos::cerrar() {
+    sonidos.clear();
+    mixer.reset();
+    biblioteca.reset();
+    if (audio_iniciado) {
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        audio_iniciado = false;
     }
 }
 
@@ -40,6 +44,6 @@ void ReproductorSonidos::reproducir(Sonido sonido) {
     try {
         mixer->PlayChannel(-1, encontrado->second);
     } catch (const SDL2pp::Exception&) {
-        // Todos los canales ocupados: este sonido se pierde, no vale la pena cortar otro
+        // si llega aca es xq estan todos los canales ocupados
     }
 }
