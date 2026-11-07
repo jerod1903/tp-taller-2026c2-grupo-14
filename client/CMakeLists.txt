@@ -16,6 +16,7 @@ target_sources(taller_client
     gui/mapa.cpp
     network/enviador.cpp
     network/recibidor.cpp
+    audio/reproductor_sonidos.cpp
     PUBLIC
     # .h files
     app/ClientApp.h
@@ -38,4 +39,6 @@ target_sources(taller_client
     gui/sprite.h
     network/enviador.h
     network/recibidor.h
+    audio/sonido.h
+    audio/reproductor_sonidos.h
     )
