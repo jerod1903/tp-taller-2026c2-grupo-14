@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <SDL2/SDL.h>
+
 #include "client/constants.h"
 #include "client/gui/rutas.h"
 

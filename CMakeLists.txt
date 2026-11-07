@@ -111,8 +111,9 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
 
-    # Como subproyecto, libSDL2pp solo envuelve SDL_image si el proyecto padre lo pide.
+    # Como subproyecto, libSDL2pp solo envuelve SDL_image y SDL_mixer si el proyecto padre lo pide.
     set(SDL2PP_WITH_IMAGE ON)
+    set(SDL2PP_WITH_MIXER ON)
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
 endif()
 
