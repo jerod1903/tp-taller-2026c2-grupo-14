@@ -23,6 +23,7 @@ target_sources(taller_common
     lib/thread.h
     map/MapDefinition.h
     map/MapRequirements.h
+    map/MapSprites.h
     map/MapValidationIssue.h
     map/persistence/MapRepository.h
     map/persistence/MapRequirementsLoader.h
