@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#include "editor/ElementHelper.h"
 #include "editor/MapEditing.h"
-#include "editor/MapHelper.h"
 #include "editor/tools/PlaceTool.h"
 #include "tests/test_worlds.h"
 

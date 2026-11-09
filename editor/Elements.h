@@ -16,6 +16,11 @@ stardew::maps::MapElement elementFromRule(const stardew::maps::ElementRule& rule
 // ninguno con ese id.
 bool removeElement(stardew::maps::MapDefinition& map, const std::string& id);
 
+// Lleva el elemento a otra casilla, como placeElement (puede cambiar de area). Sus transiciones
+// salen desde la nueva area. Devuelve false si no hay elemento con ese id o no entra ahi.
+bool moveElement(stardew::maps::MapDefinition& map, const std::string& id,
+                 const stardew::maps::MapCell& bottomLeft);
+
 // Pone un elemento con el tamano y la capa de la regla, apoyado con la esquina de abajo a la
 // izquierda de su base en bottomLeft (mapa general). Su id es el tipo y el primer numero libre
 // (market-1). Devuelve el id, o vacio si la base no cae entera en una sola area o pisa otro

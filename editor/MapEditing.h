@@ -3,9 +3,11 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "common/map/MapDefinition.h"
 #include "common/map/MapRequirements.h"
+#include "editor/MapHelper.h"
 #include "editor/Mine.h"
 
 // Cuanto ocuparia un elemento apoyado en una casilla y si entra ahi
@@ -13,6 +15,14 @@ struct Placement {
     int width;
     int height;
     bool fits;
+};
+
+// Donde quedarian las areas que se mueven juntas, si entran sin pisar otra y cuantos pasajes
+// quedarian separados (se borran al mover)
+struct AreaMove {
+    std::vector<CellRect> areas;
+    bool fits;
+    int brokenPassages;
 };
 
 // El mapa que se esta editando y las operaciones que lo cambian. No sabe nada de Qt: quien lo
@@ -30,9 +40,23 @@ public:
     // Las operaciones reciben casillas del mapa general
     void paint(const stardew::maps::MapCell& cell, stardew::maps::TileType tile);
     void togglePassage(const stardew::maps::MapCell& cell);
-    // Quita el elemento y sus transiciones. Un porton se va con su par; la entrada a la mina y la
-    // salida y la escalera de los pisos no se borran.
+    // Quita el elemento y sus transiciones. Un porton se va con su par; la salida y la escalera de
+    // los pisos no se borran. Si se borra una entrada a la mina y queda otra, las salidas pasan a
+    // llevar frente a esa.
     void removeElement(const std::string& id);
+    // Lleva el elemento a otra casilla (esquina de abajo a la izquierda de su base). Los portones
+    // no se mueven. La salida y la escalera se mueven en todos los pisos, y si se mueve una
+    // entrada, las salidas pasan a llevar frente a ella. Devuelve false si no entra.
+    bool moveElement(const std::string& id, const stardew::maps::MapCell& bottomLeft);
+    // Lo que ocupa el elemento y si moveElement lo llevaria a esa casilla. Vacio si no se mueve
+    // (un porton o un id que no existe).
+    std::optional<Placement> movementOf(const std::string& id,
+                                        const stardew::maps::MapCell& bottomLeft) const;
+    // Corre (dx, dy) el area con sus elementos; los pisos de la mina se corren todos juntos. Los
+    // pasajes que quedan separados se borran. Devuelve false si pisaria otra area.
+    bool moveArea(const std::string& areaId, int dx, int dy);
+    // Donde quedarian las areas con ese corrimiento. Vacio si no hay area con ese id.
+    std::optional<AreaMove> areaMoveOf(const std::string& areaId, int dx, int dy) const;
     // Pone un elemento de ese tipo con la esquina de abajo a la izquierda de su base en la casilla.
     // Devuelve false si la base no cae entera en una sola area o pisa otro elemento.
     bool placeElement(stardew::maps::ElementType type, const stardew::maps::MapCell& bottomLeft);

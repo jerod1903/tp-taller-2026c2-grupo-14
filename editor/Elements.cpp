@@ -1,9 +1,11 @@
 #include "editor/Elements.h"
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <vector>
 
+#include "editor/ElementHelper.h"
 #include "editor/MapHelper.h"
 
 namespace maps = stardew::maps;
@@ -32,6 +34,28 @@ bool removeElement(maps::MapDefinition& map, const std::string& id) {
         return false;
     }
     std::erase_if(map.transitions, [&id](const auto& t) { return t.triggerElementId == id; });
+    return true;
+}
+
+bool moveElement(maps::MapDefinition& map, const std::string& id, const maps::MapCell& bottomLeft) {
+    auto element = std::find_if(map.elements.begin(), map.elements.end(),
+                                [&id](const auto& e) { return e.id == id; });
+    if (element == map.elements.end()) {
+        return false;
+    }
+    const std::optional<AreaCell> topLeft =
+            freeBaseAt(map, bottomLeft, element->width, element->height, id);
+    if (!topLeft) {
+        return false;
+    }
+    element->areaId = map.areas[topLeft->area].id;
+    element->x = topLeft->x;
+    element->y = topLeft->y;
+    for (maps::MapTransition& transition: map.transitions) {
+        if (transition.triggerElementId == id) {
+            transition.fromAreaId = element->areaId;
+        }
+    }
     return true;
 }
 

@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 
+#include "editor/ElementHelper.h"
 #include "editor/Elements.h"
 #include "editor/MapHelper.h"
+#include "editor/MineHelper.h"
 
 namespace maps = stardew::maps;
 
@@ -61,14 +63,46 @@ void addFloorElement(maps::MapDefinition& map, const maps::MapRequirements& requ
     }
 }
 
+// La casilla del piso donde aparece quien llega: al lado de su salida
+maps::MapCell arrivalIn(const maps::MapDefinition& map, const std::string& floor) {
+    const maps::MapElement* exit = elementOfType(map, floor, maps::ElementType::Exit);
+    const std::optional<AreaCell> beside = exit ? besideOf(map, *exit) : std::nullopt;
+    return beside ? maps::MapCell{beside->x, beside->y} : maps::MapCell{1, 1};
+}
+
 // La transicion que dispara triggerId (en el area from) y lleva al piso, al lado de su salida
 maps::MapTransition toFloor(const maps::MapDefinition& map, const std::string& id,
                             const std::string& from, const std::string& triggerId,
                             const std::string& floor) {
-    const maps::MapElement* exit = elementOfType(map, floor, maps::ElementType::Exit);
-    const int x = exit ? exit->x + exit->width : 1;
-    const int y = exit ? exit->y : 1;
-    return {id, from, triggerId, floor, x, y};
+    const maps::MapCell arrival = arrivalIn(map, floor);
+    return {id, from, triggerId, floor, arrival.x, arrival.y};
+}
+
+bool isFloor(const maps::MapArea& area) { return area.type == maps::AreaType::DungeonFloor; }
+
+// Donde quedaria, dentro de su piso, la esquina de arriba a la izquierda de un elemento de ese
+// tipo apoyado en bottomLeft, y cuanto mide. Vacio si no cae en un piso o no hay ninguno de ese
+// tipo.
+struct FloorSpot {
+    int x;
+    int y;
+    int width;
+    int height;
+};
+
+std::optional<FloorSpot> floorSpotOf(const maps::MapDefinition& map, maps::ElementType type,
+                                     const maps::MapCell& bottomLeft) {
+    auto sample = std::find_if(map.elements.begin(), map.elements.end(),
+                               [type](const auto& e) { return e.type == type; });
+    if (sample == map.elements.end()) {
+        return std::nullopt;
+    }
+    const std::optional<AreaCell> topLeft =
+            cellAt(map, bottomLeft.x, bottomLeft.y - sample->height + 1);
+    if (!topLeft || !isFloor(map.areas[topLeft->area])) {
+        return std::nullopt;
+    }
+    return FloorSpot{topLeft->x, topLeft->y, sample->width, sample->height};
 }
 }  // namespace
 
@@ -87,23 +121,82 @@ void createMine(maps::MapDefinition& map, const maps::MapRequirements& requireme
                             size.width - 2, size.height - 2);
         }
     }
-    // Las salidas llevan frente a la entrada
-    const maps::MapElement* entrance = elementById(map, entranceId);
-    const std::optional<AreaCell> front = entrance ? inFrontOf(map, *entrance) : std::nullopt;
-    const std::string entranceArea = entrance ? entrance->areaId : "";
     // Las transiciones despues de crear todos los pisos: la escalera lleva a la salida del
     // siguiente
-    for (int index = 0; index < count; ++index) {
+    for (int index = 0; index + 1 < count; ++index) {
         const std::string id = floorId(numbers[index]);
-        if (front) {
-            map.transitions.push_back(
-                    {id + "-salida-ruta", id, id + "-salida", entranceArea, front->x, front->y});
+        map.transitions.push_back(toFloor(map, id + "-escalera-ruta", id, id + "-escalera",
+                                          floorId(numbers[index + 1])));
+    }
+    linkExits(map, entranceId);
+}
+
+void linkExits(maps::MapDefinition& map, const std::string& entranceId) {
+    const maps::MapElement* entrance = elementById(map, entranceId);
+    const std::optional<AreaCell> front = entrance ? inFrontOf(map, *entrance) : std::nullopt;
+    if (!front) {
+        return;
+    }
+    const std::string entranceArea = entrance->areaId;
+    for (const maps::MapElement& exit: map.elements) {
+        if (exit.type != maps::ElementType::Exit) {
+            continue;
         }
-        if (index + 1 < count) {
-            map.transitions.push_back(toFloor(map, id + "-escalera-ruta", id, id + "-escalera",
-                                              floorId(numbers[index + 1])));
+        auto transition =
+                std::find_if(map.transitions.begin(), map.transitions.end(),
+                             [&exit](const auto& t) { return t.triggerElementId == exit.id; });
+        if (transition == map.transitions.end()) {
+            map.transitions.push_back({exit.id + "-ruta", exit.areaId, exit.id, "", 0, 0});
+            transition = map.transitions.end() - 1;
+        }
+        transition->toAreaId = entranceArea;
+        transition->targetX = front->x;
+        transition->targetY = front->y;
+    }
+}
+
+bool fitsInEveryFloor(const maps::MapDefinition& map, maps::ElementType type,
+                      const maps::MapCell& bottomLeft) {
+    const std::optional<FloorSpot> spot = floorSpotOf(map, type, bottomLeft);
+    if (!spot) {
+        return false;
+    }
+    for (const maps::MapArea& floor: map.areas) {
+        const maps::MapElement* own = isFloor(floor) ? elementOfType(map, floor.id, type) : nullptr;
+        if (!own) {
+            continue;
+        }
+        const maps::MapCell there{floor.offsetX + spot->x,
+                                  floor.offsetY + spot->y + spot->height - 1};
+        if (!freeBaseAt(map, there, spot->width, spot->height, own->id)) {
+            return false;
         }
     }
+    return true;
+}
+
+bool moveInEveryFloor(maps::MapDefinition& map, maps::ElementType type,
+                      const maps::MapCell& bottomLeft) {
+    if (!fitsInEveryFloor(map, type, bottomLeft)) {
+        return false;
+    }
+    const std::optional<FloorSpot> spot = floorSpotOf(map, type, bottomLeft);
+    for (maps::MapElement& element: map.elements) {
+        if (element.type == type) {
+            element.x = spot->x;
+            element.y = spot->y;
+        }
+    }
+    // Quien llega a un piso aparece al lado de la salida, que pudo haberse movido o quedar tapada
+    for (maps::MapTransition& transition: map.transitions) {
+        const maps::MapArea* to = areaById(map, transition.toAreaId);
+        if (to && isFloor(*to)) {
+            const maps::MapCell arrival = arrivalIn(map, to->id);
+            transition.targetX = arrival.x;
+            transition.targetY = arrival.y;
+        }
+    }
+    return true;
 }
 
 void linkEntrance(maps::MapDefinition& map, const std::string& entranceId) {

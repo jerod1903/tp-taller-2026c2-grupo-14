@@ -9,7 +9,7 @@
 
 #include "common/map/MapDefinition.h"
 #include "editor/SpriteSheets.h"
-#include "editor/tools/PlaceTool.h"
+#include "editor/tools/Ghost.h"
 
 class QGraphicsItem;
 class QGraphicsPixmapItem;
@@ -30,6 +30,9 @@ public:
     void showSelection(const std::optional<std::string>& elementId);
     // Muestra bajo el mouse el elemento que se va a colocar, en rojo si no entra. Vacio: ninguno.
     void showGhost(const std::optional<Ghost>& ghost);
+    // Muestra donde quedarian las areas que se estan moviendo, en rojo si pisan otra. Vacio:
+    // ninguna.
+    void showAreaGhost(const std::optional<AreaGhost>& ghost);
 
 protected:
     // Rueda: zoom centrado en el mouse
@@ -55,6 +58,7 @@ private:
     QGraphicsItem* addElementImage(std::optional<stardew::maps::ElementType> type, int left,
                                    int bottom, int width, int height);
     void drawGhost();
+    void drawAreaGhost();
     void setElementOpacity(const std::optional<std::string>& elementId, double opacity);
     stardew::maps::MapCell cellUnder(const QPoint& viewPosition) const;
 
@@ -69,6 +73,8 @@ private:
     std::optional<std::string> selection;
     std::optional<Ghost> ghost;
     QGraphicsItem* ghostItem = nullptr;
+    std::optional<AreaGhost> areaGhost;
+    std::vector<QGraphicsItem*> areaGhostItems;
     // Donde estaba el mouse en el ultimo paso del arrastre con la rueda
     QPoint lastDragPosition;
 };

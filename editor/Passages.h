@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "common/map/MapDefinition.h"
 
@@ -16,3 +17,8 @@ bool togglePassage(stardew::maps::MapDefinition& map, int x, int y);
 // Quita el porton con ese id, su par del otro lado del borde (si esta) y las transiciones de los
 // dos. Devuelve false si ese id no es un porton.
 bool removePassage(stardew::maps::MapDefinition& map, const std::string& doorId);
+
+// Los pasajes que quedarian separados si las areas con esos ids se corren (dx, dy) en el mapa
+// general: sus dos portones dejan de estar uno al lado del otro. Devuelve un porton de cada uno.
+std::vector<std::string> passagesBrokenBy(const stardew::maps::MapDefinition& map,
+                                          const std::vector<std::string>& areaIds, int dx, int dy);

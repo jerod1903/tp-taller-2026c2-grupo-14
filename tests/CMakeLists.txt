@@ -47,10 +47,13 @@ target_sources(taller_tests
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
     # Lógica del editor sin Qt
+    ../editor/Areas.cpp
+    ../editor/ElementHelper.cpp
     ../editor/Elements.cpp
     ../editor/MapEditing.cpp
     ../editor/MapHelper.cpp
     ../editor/Mine.cpp
+    ../editor/MineHelper.cpp
     ../editor/Passages.cpp
     ../editor/tools/PlaceTool.cpp
     ../editor/tools/SelectTool.cpp

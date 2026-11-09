@@ -10,6 +10,7 @@
 #include "editor/MapEditing.h"
 #include "editor/SpriteSheets.h"
 #include "editor/tools/EntranceTool.h"
+#include "editor/tools/MoveAreaTool.h"
 #include "editor/tools/PaintTool.h"
 #include "editor/tools/PassageTool.h"
 #include "editor/tools/PlaceTool.h"
@@ -22,7 +23,8 @@ class QToolButton;
 class Tool;
 
 // Pantalla de edicion: el mapa entero, pintar con el pincel, poner pasajes, colocar elementos (la
-// entrada a la mina crea los pisos), seleccionar y borrar elementos, validar y guardar.
+// entrada a la mina crea los pisos), seleccionar, mover y borrar elementos, mover areas, validar y
+// guardar.
 class MapEditorScreen: public QWidget {
     Q_OBJECT
 
@@ -58,6 +60,7 @@ private:
     PlaceTool placeTool{editing};
     EntranceTool entranceTool{editing};
     SelectTool selectTool{editing};
+    MoveAreaTool moveAreaTool{editing};
     std::string path;
     SpriteSheets sprites;
     MapCanvas* canvas;

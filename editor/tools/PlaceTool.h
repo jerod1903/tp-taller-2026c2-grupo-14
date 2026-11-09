@@ -4,19 +4,10 @@
 #include <optional>
 
 #include "common/map/MapDefinition.h"
+#include "editor/tools/Ghost.h"
 #include "editor/tools/Tool.h"
 
 class MapEditing;
-
-// Lo que se muestra bajo el mouse antes de colocar: el elemento apoyado con la esquina de abajo a
-// la izquierda de su base en la casilla, y si entra ahi
-struct Ghost {
-    stardew::maps::ElementType type;
-    stardew::maps::MapCell bottomLeft;
-    int width;
-    int height;
-    bool fits;
-};
 
 // Coloca un elemento del tipo elegido donde se hace click. Mientras se mueve el mouse avisa el
 // fantasma; al colocar o al cancelar avisa que termino. Un click donde no entra no hace nada.

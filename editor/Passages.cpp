@@ -1,22 +1,18 @@
 #include "editor/Passages.h"
 
-#include <array>
+#include <algorithm>
+#include <cstdlib>
 #include <optional>
 #include <string>
+#include <vector>
 
+#include "editor/ElementHelper.h"
 #include "editor/Elements.h"
 #include "editor/MapHelper.h"
 
 namespace maps = stardew::maps;
 
 namespace {
-
-struct Step {
-    int dx;
-    int dy;
-};
-
-constexpr std::array<Step, 4> NEIGHBOURS = {{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}};
 
 // La casilla vecina en otra area y para que lado esta
 struct Border {
@@ -90,6 +86,35 @@ bool togglePassage(maps::MapDefinition& map, int x, int y) {
     addDoor(map, *here, *thereArrival);
     addDoor(map, there, *hereArrival);
     return true;
+}
+
+std::vector<std::string> passagesBrokenBy(const maps::MapDefinition& map,
+                                          const std::vector<std::string>& areaIds, int dx, int dy) {
+    auto moves = [&areaIds](const std::string& areaId) {
+        return std::find(areaIds.begin(), areaIds.end(), areaId) != areaIds.end();
+    };
+    std::vector<std::string> broken;
+    for (const maps::MapElement& door: map.elements) {
+        if (!isPassageDoor(&door) || !moves(door.areaId)) {
+            continue;
+        }
+        const maps::MapCell cell = bottomLeftOf(map, door);
+        const std::optional<AreaCell> here = cellAt(map, cell.x, cell.y);
+        const std::optional<Border> border =
+                here ? otherSide(map, *here, cell.x, cell.y) : std::nullopt;
+        const maps::MapElement* pair = border ? elementAt(map, border->there) : nullptr;
+        // Si el par tambien se mueve siguen juntos; si se corre solo este porton, siguen al lado
+        // solo si el corrimiento los deja vecinos
+        if (!isPassageDoor(pair) || moves(pair->areaId)) {
+            continue;
+        }
+        const int stepX = border->step.dx - dx;
+        const int stepY = border->step.dy - dy;
+        if (std::abs(stepX) + std::abs(stepY) != 1) {
+            broken.push_back(door.id);
+        }
+    }
+    return broken;
 }
 
 bool removePassage(maps::MapDefinition& map, const std::string& doorId) {

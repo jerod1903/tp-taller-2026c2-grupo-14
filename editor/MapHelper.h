@@ -1,13 +1,15 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "common/map/MapDefinition.h"
-#include "common/map/MapRequirements.h"
 
-// Consultas al mapa que comparten el editor y sus herramientas. Ninguna cambia el mapa.
+// Consultas sobre las casillas y las areas del mapa que comparten el editor y sus herramientas.
+// Ninguna cambia el mapa. Las de elementos estan en ElementHelper y las de la mina en MineHelper.
 
 // Las casillas que se dejan entre las areas cuando el editor las acomoda
 constexpr int AREA_GAP = 2;
@@ -20,6 +22,23 @@ struct AreaCell {
     int y;
 };
 
+// Un rectangulo de casillas del mapa general
+struct CellRect {
+    int x;
+    int y;
+    int width;
+    int height;
+};
+
+// Un paso hacia una casilla vecina
+struct Step {
+    int dx;
+    int dy;
+};
+
+// Las cuatro casillas vecinas, en este orden: derecha, izquierda, abajo y arriba
+constexpr std::array<Step, 4> NEIGHBOURS = {{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}};
+
 // La casilla (x, y) del mapa general, con los offsets de las areas, dentro de su area. Vacio si no
 // cae en ninguna.
 std::optional<AreaCell> cellAt(const stardew::maps::MapDefinition& map, int x, int y);
@@ -28,13 +47,9 @@ std::optional<AreaCell> cellAt(const stardew::maps::MapDefinition& map, int x, i
 const stardew::maps::MapArea* areaById(const stardew::maps::MapDefinition& map,
                                        const std::string& id);
 
-// El elemento que ocupa la casilla, o nullptr si esta libre
-const stardew::maps::MapElement* elementAt(const stardew::maps::MapDefinition& map,
-                                           const AreaCell& cell);
-
-// El elemento con ese id, o nullptr si no hay
-const stardew::maps::MapElement* elementById(const stardew::maps::MapDefinition& map,
-                                             const std::string& id);
+// El indice en map.areas del area con ese id, o vacio si no hay
+std::optional<std::size_t> areaIndex(const stardew::maps::MapDefinition& map,
+                                     const std::string& id);
 
 // Si el terreno de la casilla se puede pisar
 bool walkable(const stardew::maps::MapDefinition& map, const AreaCell& cell);
@@ -43,35 +58,12 @@ bool walkable(const stardew::maps::MapDefinition& map, const AreaCell& cell);
 std::optional<AreaCell> inside(const stardew::maps::MapDefinition& map, const AreaCell& cell,
                                int dx, int dy);
 
-// Si algun elemento o transicion ya usa ese id
-bool idTaken(const stardew::maps::MapDefinition& map, const std::string& id);
+// El rectangulo que ocupa el area en el mapa general
+CellRect areaRect(const stardew::maps::MapArea& area);
 
-// La primera regla de ese tipo de elemento (de ahi salen su tamano y su capa), o nullptr si no
-// hay ninguna
-const stardew::maps::ElementRule* ruleFor(const stardew::maps::MapRequirements& requirements,
-                                          stardew::maps::ElementType type);
-
-// Donde quedaria la esquina de arriba a la izquierda de una base de width x height apoyada con su
-// esquina de abajo a la izquierda en bottomLeft (mapa general). Vacio si la base no cae entera en
-// una sola area o pisa otro elemento.
-std::optional<AreaCell> freeBaseAt(const stardew::maps::MapDefinition& map,
-                                   const stardew::maps::MapCell& bottomLeft, int width, int height);
-
-// El primer elemento de ese tipo en el area, o nullptr si no hay
-const stardew::maps::MapElement* elementOfType(const stardew::maps::MapDefinition& map,
-                                               const std::string& areaId,
-                                               stardew::maps::ElementType type);
+// Si los rectangulos pisan alguna area que no este en ignoredAreaIds (las que se estan moviendo)
+bool overlapsAreas(const stardew::maps::MapDefinition& map, const std::vector<CellRect>& rects,
+                   const std::vector<std::string>& ignoredAreaIds);
 
 // La primera fila del mapa general que queda libre debajo de todas las areas
 int bottomOfAreas(const stardew::maps::MapDefinition& map);
-
-// Si el mapa ya tiene algun piso de la mina
-bool hasDungeonFloors(const stardew::maps::MapDefinition& map);
-
-// El piso de la mina con el numero mas bajo, o nullptr si no hay pisos
-const stardew::maps::MapArea* firstDungeonFloor(const stardew::maps::MapDefinition& map);
-
-// Donde aparece quien llega a un elemento: la primera casilla que se puede pisar y esta libre,
-// bajando desde el centro de su base. Vacio si no hay ninguna.
-std::optional<AreaCell> inFrontOf(const stardew::maps::MapDefinition& map,
-                                  const stardew::maps::MapElement& element);

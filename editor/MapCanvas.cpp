@@ -35,11 +35,16 @@ constexpr double SELECTED_OPACITY = 0.5;
 // se tine de rojo
 constexpr double GHOST_OPACITY = 0.5;
 const QColor GHOST_BLOCKED(220, 30, 30);
+// Las areas que se mueven: un recuadro claro, rojo si pisan otra
+const QColor AREA_GHOST(255, 235, 173, 70);
+const QColor AREA_GHOST_BLOCKED(220, 30, 30, 90);
 // El borde y el nombre de cada area van encima de todo
 constexpr double LABELS_Z = 1e9;
 constexpr double GHOST_Z = LABELS_Z - 1;
 constexpr double NAME_PADDING = 2;
-constexpr int SCENE_MARGIN = 2 * TILE;
+// Lugar libre alrededor del mapa: para ver los bordes con zoom y para llevar areas afuera de lo
+// que ya hay
+constexpr int SCENE_MARGIN = 30 * TILE;
 const QColor AREA_NAME(255, 235, 173);
 const QColor NAME_BACKGROUND(45, 27, 16, 190);
 // El mismo marron del fondo del menu
@@ -80,11 +85,21 @@ void MapCanvas::showGhost(const std::optional<Ghost>& shown) {
     drawGhost();
 }
 
+void MapCanvas::showAreaGhost(const std::optional<AreaGhost>& shown) {
+    for (QGraphicsItem* item: areaGhostItems) {
+        delete item;
+    }
+    areaGhostItems.clear();
+    areaGhost = shown;
+    drawAreaGhost();
+}
+
 void MapCanvas::redraw() {
     const int horizontal = horizontalScrollBar()->value();
     const int vertical = verticalScrollBar()->value();
     scene.clear();
     ghostItem = nullptr;
+    areaGhostItems.clear();
     areaTiles.clear();
     elementItems.clear();
     const maps::MapDefinition& map = editing.map();
@@ -96,7 +111,7 @@ void MapCanvas::redraw() {
             }
         }
     }
-    // Un margen alrededor para poder ver los bordes con zoom
+    // Con lugar libre alrededor
     scene.setSceneRect(scene.itemsBoundingRect().adjusted(-SCENE_MARGIN, -SCENE_MARGIN,
                                                           SCENE_MARGIN, SCENE_MARGIN));
     horizontalScrollBar()->setValue(horizontal);
@@ -104,6 +119,7 @@ void MapCanvas::redraw() {
     // Las imagenes son nuevas: el seleccionado se vuelve a mostrar
     showSelection(selection);
     drawGhost();
+    drawAreaGhost();
 }
 
 void MapCanvas::updateTile(const maps::MapCell& cell) {
@@ -182,6 +198,20 @@ void MapCanvas::drawGhost() {
         tint->setColor(GHOST_BLOCKED);
         // El item se queda con el efecto y lo borra
         ghostItem->setGraphicsEffect(tint);
+    }
+}
+
+void MapCanvas::drawAreaGhost() {
+    if (!areaGhost) {
+        return;
+    }
+    const QColor fill = areaGhost->fits ? AREA_GHOST : AREA_GHOST_BLOCKED;
+    for (const CellRect& rect: areaGhost->areas) {
+        QGraphicsRectItem* item =
+                scene.addRect(rect.x * TILE, rect.y * TILE, rect.width * TILE, rect.height * TILE,
+                              QPen(AREA_BORDER), QBrush(fill));
+        item->setZValue(GHOST_Z);
+        areaGhostItems.push_back(item);
     }
 }
 

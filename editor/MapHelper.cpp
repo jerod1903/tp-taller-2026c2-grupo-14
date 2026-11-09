@@ -22,19 +22,13 @@ const maps::MapArea* areaById(const maps::MapDefinition& map, const std::string&
     return area == map.areas.end() ? nullptr : &*area;
 }
 
-const maps::MapElement* elementAt(const maps::MapDefinition& map, const AreaCell& cell) {
-    const std::string& areaId = map.areas[cell.area].id;
-    auto element = std::find_if(map.elements.begin(), map.elements.end(), [&](const auto& e) {
-        return e.areaId == areaId && cell.x >= e.x && cell.x < e.x + e.width && cell.y >= e.y &&
-               cell.y < e.y + e.height;
-    });
-    return element == map.elements.end() ? nullptr : &*element;
-}
-
-const maps::MapElement* elementById(const maps::MapDefinition& map, const std::string& id) {
-    auto element = std::find_if(map.elements.begin(), map.elements.end(),
-                                [&id](const auto& e) { return e.id == id; });
-    return element == map.elements.end() ? nullptr : &*element;
+std::optional<std::size_t> areaIndex(const maps::MapDefinition& map, const std::string& id) {
+    auto area = std::find_if(map.areas.begin(), map.areas.end(),
+                             [&id](const auto& a) { return a.id == id; });
+    if (area == map.areas.end()) {
+        return std::nullopt;
+    }
+    return static_cast<std::size_t>(area - map.areas.begin());
 }
 
 bool walkable(const maps::MapDefinition& map, const AreaCell& cell) {
@@ -55,46 +49,26 @@ std::optional<AreaCell> inside(const maps::MapDefinition& map, const AreaCell& c
     return AreaCell{cell.area, x, y};
 }
 
-bool idTaken(const maps::MapDefinition& map, const std::string& id) {
-    return std::any_of(map.elements.begin(), map.elements.end(),
-                       [&id](const auto& e) { return e.id == id; }) ||
-           std::any_of(map.transitions.begin(), map.transitions.end(),
-                       [&id](const auto& t) { return t.id == id; });
+CellRect areaRect(const maps::MapArea& area) {
+    return {area.offsetX, area.offsetY, area.width, area.height};
 }
 
-const maps::ElementRule* ruleFor(const maps::MapRequirements& requirements,
-                                 maps::ElementType type) {
-    auto rule = std::find_if(requirements.elements.begin(), requirements.elements.end(),
-                             [type](const auto& r) { return r.type == type; });
-    return rule == requirements.elements.end() ? nullptr : &*rule;
-}
-
-std::optional<AreaCell> freeBaseAt(const maps::MapDefinition& map, const maps::MapCell& bottomLeft,
-                                   int width, int height) {
-    const std::optional<AreaCell> topLeft = cellAt(map, bottomLeft.x, bottomLeft.y - height + 1);
-    if (!topLeft) {
-        return std::nullopt;
-    }
-    const maps::MapArea& area = map.areas[topLeft->area];
-    if (topLeft->x + width > area.width || topLeft->y + height > area.height) {
-        return std::nullopt;
-    }
-    for (int y = topLeft->y; y < topLeft->y + height; ++y) {
-        for (int x = topLeft->x; x < topLeft->x + width; ++x) {
-            if (elementAt(map, {topLeft->area, x, y})) {
-                return std::nullopt;
+bool overlapsAreas(const maps::MapDefinition& map, const std::vector<CellRect>& rects,
+                   const std::vector<std::string>& ignoredAreaIds) {
+    for (const maps::MapArea& area: map.areas) {
+        if (std::find(ignoredAreaIds.begin(), ignoredAreaIds.end(), area.id) !=
+            ignoredAreaIds.end()) {
+            continue;
+        }
+        const CellRect other = areaRect(area);
+        for (const CellRect& rect: rects) {
+            if (rect.x < other.x + other.width && other.x < rect.x + rect.width &&
+                rect.y < other.y + other.height && other.y < rect.y + rect.height) {
+                return true;
             }
         }
     }
-    return topLeft;
-}
-
-const maps::MapElement* elementOfType(const maps::MapDefinition& map, const std::string& areaId,
-                                      maps::ElementType type) {
-    auto element = std::find_if(map.elements.begin(), map.elements.end(), [&](const auto& e) {
-        return e.areaId == areaId && e.type == type;
-    });
-    return element == map.elements.end() ? nullptr : &*element;
+    return false;
 }
 
 int bottomOfAreas(const maps::MapDefinition& map) {
@@ -103,37 +77,4 @@ int bottomOfAreas(const maps::MapDefinition& map) {
         bottom = std::max(bottom, area.offsetY + area.height);
     }
     return bottom;
-}
-
-const maps::MapArea* firstDungeonFloor(const maps::MapDefinition& map) {
-    const maps::MapArea* first = nullptr;
-    for (const maps::MapArea& area: map.areas) {
-        if (area.type == maps::AreaType::DungeonFloor && area.floorNumber &&
-            (!first || *area.floorNumber < *first->floorNumber)) {
-            first = &area;
-        }
-    }
-    return first;
-}
-
-bool hasDungeonFloors(const maps::MapDefinition& map) {
-    return std::any_of(map.areas.begin(), map.areas.end(),
-                       [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; });
-}
-
-std::optional<AreaCell> inFrontOf(const maps::MapDefinition& map, const maps::MapElement& element) {
-    auto area = std::find_if(map.areas.begin(), map.areas.end(),
-                             [&element](const auto& a) { return a.id == element.areaId; });
-    if (area == map.areas.end()) {
-        return std::nullopt;
-    }
-    const std::size_t index = static_cast<std::size_t>(area - map.areas.begin());
-    const int x = element.x + element.width / 2;
-    for (int y = element.y + element.height; y < area->height; ++y) {
-        const AreaCell cell{index, x, y};
-        if (walkable(map, cell) && !elementAt(map, cell)) {
-            return cell;
-        }
-    }
-    return std::nullopt;
 }

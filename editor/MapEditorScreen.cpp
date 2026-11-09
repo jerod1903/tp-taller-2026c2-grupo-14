@@ -19,6 +19,7 @@
 #include "editor/FloorSizeDialog.h"
 #include "editor/MapCanvas.h"
 #include "editor/MapHelper.h"
+#include "editor/MineHelper.h"
 
 namespace maps = stardew::maps;
 
@@ -153,6 +154,19 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
         canvas->showSelection(elementId);
         removeButton->setEnabled(elementId.has_value());
     });
+    // Los fantasmas de lo que se arrastra (un elemento o un area) van al lienzo
+    selectTool.onGhostChanged(
+            [this](const std::optional<Ghost>& ghost) { canvas->showGhost(ghost); });
+    moveAreaTool.onGhostChanged(
+            [this](const std::optional<AreaGhost>& ghost) { canvas->showAreaGhost(ghost); });
+    moveAreaTool.onConfirmBrokenPassages([this](int brokenPassages) {
+        const QString passages =
+                brokenPassages == 1 ?
+                        QString("queda separado un pasaje, que se va") :
+                        QString("quedan separados %1 pasajes, que se van").arg(brokenPassages);
+        const QString text = "Al mover el area " + passages + " a borrar. ¿Mover igual?";
+        return QMessageBox::question(this, "Mover area", text) == QMessageBox::Yes;
+    });
     connectPlacing(placeTool);
     connectPlacing(entranceTool);
 
@@ -195,9 +209,19 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     palette->addWidget(passageButton);
     connect(passageButton, &QToolButton::clicked, this, [this]() { useTool(&passageTool); });
 
+    auto* moveAreaButton = new QToolButton(this);
+    moveAreaButton->setText("Mover área");
+    moveAreaButton->setToolTip("Arrastrar un area la mueve con todo; los pisos de la mina, juntos");
+    moveAreaButton->setCheckable(true);
+    moveAreaButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
+    group->addButton(moveAreaButton);
+    palette->addWidget(moveAreaButton);
+    connect(moveAreaButton, &QToolButton::clicked, this, [this]() { useTool(&moveAreaTool); });
+
     selectButton = new QToolButton(this);
     selectButton->setText("Seleccionar");
-    selectButton->setToolTip("Click en la base de un elemento para seleccionarlo");
+    selectButton->setToolTip(
+            "Click en la base de un elemento para seleccionarlo; arrastrarlo lo mueve");
     selectButton->setCheckable(true);
     selectButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     group->addButton(selectButton);
@@ -242,6 +266,7 @@ void MapEditorScreen::chooseEntrance() {
 void MapEditorScreen::useTool(Tool* tool) {
     selectTool.clear();
     canvas->showGhost(std::nullopt);
+    canvas->showAreaGhost(std::nullopt);
     canvas->setTool(tool);
 }
 

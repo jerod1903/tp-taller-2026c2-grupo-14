@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "common/map/validation/MapValidator.h"
+#include "editor/ElementHelper.h"
 #include "editor/MapEditing.h"
 #include "editor/MapHelper.h"
 #include "tests/test_worlds.h"
@@ -20,6 +21,14 @@ constexpr int VILLAGE_OFFSET_X = 30;
 bool triggers(const maps::MapDefinition& map, const std::string& elementId) {
     return std::any_of(map.transitions.begin(), map.transitions.end(),
                        [&elementId](const auto& t) { return t.triggerElementId == elementId; });
+}
+
+const maps::MapTransition* transitionOf(const maps::MapDefinition& map,
+                                        const std::string& elementId) {
+    auto transition =
+            std::find_if(map.transitions.begin(), map.transitions.end(),
+                         [&elementId](const auto& t) { return t.triggerElementId == elementId; });
+    return transition == map.transitions.end() ? nullptr : &*transition;
 }
 
 class MapEditingTest: public ::testing::Test {
@@ -102,11 +111,52 @@ TEST_F(MapEditingTest, RemovingADoorRemovesTheWholePassage) {
     EXPECT_FALSE(triggers(editing.map(), "pueblo-porton"));
 }
 
-TEST_F(MapEditingTest, TheDungeonEntranceIsNotRemoved) {
+TEST_F(MapEditingTest, RemovingAnEntranceTakesTheExitsToTheOtherOne) {
+    // Otra entrada en (20, 17) del pueblo: se llega frente a ella, una fila mas abajo
+    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 20, 17}, std::nullopt));
     editing.removeElement("entrada-mina");
 
-    EXPECT_NE(elementById(editing.map(), "entrada-mina"), nullptr);
+    EXPECT_EQ(elementById(editing.map(), "entrada-mina"), nullptr);
+    const maps::MapTransition* exit = transitionOf(editing.map(), "mina-1-salida");
+    ASSERT_NE(exit, nullptr);
+    EXPECT_EQ(exit->toAreaId, "pueblo");
+    EXPECT_EQ(exit->targetX, 21);
+    EXPECT_GT(exit->targetY, 17);
+}
+
+TEST_F(MapEditingTest, MovingTheExitOfAFloorMovesItInEveryFloor) {
+    // mina-1 empieza en la fila 20: (5, 3) del piso es (5, 23) del mapa general
+    ASSERT_TRUE(editing.moveElement("mina-1-salida", {5, 23}));
+
+    const maps::MapElement* lastExit = elementById(editing.map(), "mina-10-salida");
+    ASSERT_NE(lastExit, nullptr);
+    EXPECT_EQ(lastExit->x, 5);
+    EXPECT_EQ(lastExit->y, 3);
+    // La escalera del piso 1 deja al lado de la salida del piso 2
+    const maps::MapTransition* stairs = transitionOf(editing.map(), "mina-1-escalera");
+    ASSERT_NE(stairs, nullptr);
+    EXPECT_EQ(stairs->targetX, 6);
+    EXPECT_EQ(stairs->targetY, 3);
+}
+
+TEST_F(MapEditingTest, AnAreaDoesNotMoveOntoAnother) {
+    EXPECT_FALSE(editing.moveArea("granja", 1, 0));
     EXPECT_EQ(mapChanges, 1);
+}
+
+TEST_F(MapEditingTest, MovingAnAreaAwayRemovesThePassagesThatGetSeparated) {
+    ASSERT_TRUE(editing.moveArea("granja", 0, -25));
+
+    EXPECT_EQ(areaById(editing.map(), "granja")->offsetY, -25);
+    EXPECT_EQ(elementById(editing.map(), "granja-porton"), nullptr);
+    EXPECT_EQ(elementById(editing.map(), "pueblo-porton"), nullptr);
+}
+
+TEST_F(MapEditingTest, TheFloorsOfTheMineMoveTogether) {
+    ASSERT_TRUE(editing.moveArea("mina-3", 0, 40));
+
+    EXPECT_EQ(areaById(editing.map(), "mina-1")->offsetY, 60);
+    EXPECT_EQ(areaById(editing.map(), "mina-3")->offsetY, 60);
 }
 
 TEST_F(MapEditingTest, AnElementIsPlacedWithTheSizeOfItsRuleAndItsBaseCornerOnTheCell) {
