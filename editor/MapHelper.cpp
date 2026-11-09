@@ -88,3 +88,52 @@ std::optional<AreaCell> freeBaseAt(const maps::MapDefinition& map, const maps::M
     }
     return topLeft;
 }
+
+const maps::MapElement* elementOfType(const maps::MapDefinition& map, const std::string& areaId,
+                                      maps::ElementType type) {
+    auto element = std::find_if(map.elements.begin(), map.elements.end(), [&](const auto& e) {
+        return e.areaId == areaId && e.type == type;
+    });
+    return element == map.elements.end() ? nullptr : &*element;
+}
+
+int bottomOfAreas(const maps::MapDefinition& map) {
+    int bottom = 0;
+    for (const maps::MapArea& area: map.areas) {
+        bottom = std::max(bottom, area.offsetY + area.height);
+    }
+    return bottom;
+}
+
+const maps::MapArea* firstDungeonFloor(const maps::MapDefinition& map) {
+    const maps::MapArea* first = nullptr;
+    for (const maps::MapArea& area: map.areas) {
+        if (area.type == maps::AreaType::DungeonFloor && area.floorNumber &&
+            (!first || *area.floorNumber < *first->floorNumber)) {
+            first = &area;
+        }
+    }
+    return first;
+}
+
+bool hasDungeonFloors(const maps::MapDefinition& map) {
+    return std::any_of(map.areas.begin(), map.areas.end(),
+                       [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; });
+}
+
+std::optional<AreaCell> inFrontOf(const maps::MapDefinition& map, const maps::MapElement& element) {
+    auto area = std::find_if(map.areas.begin(), map.areas.end(),
+                             [&element](const auto& a) { return a.id == element.areaId; });
+    if (area == map.areas.end()) {
+        return std::nullopt;
+    }
+    const std::size_t index = static_cast<std::size_t>(area - map.areas.begin());
+    const int x = element.x + element.width / 2;
+    for (int y = element.y + element.height; y < area->height; ++y) {
+        const AreaCell cell{index, x, y};
+        if (walkable(map, cell) && !elementAt(map, cell)) {
+            return cell;
+        }
+    }
+    return std::nullopt;
+}

@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include "common/map/validation/MapValidator.h"
 #include "editor/MapEditing.h"
 #include "editor/MapHelper.h"
 #include "tests/test_worlds.h"
@@ -85,11 +86,10 @@ TEST_F(MapEditingTest, AClickThatDoesNotMakeAPassageDoesNotNotify) {
     EXPECT_EQ(mapChanges, 1);
 }
 
-TEST_F(MapEditingTest, RemovingAnElementAlsoRemovesItsTransitions) {
-    editing.removeElement("mina-1-escalera");
+TEST_F(MapEditingTest, RemovingAnElementTakesItOutOfTheMap) {
+    editing.removeElement("mercado");
 
-    EXPECT_EQ(elementById(editing.map(), "mina-1-escalera"), nullptr);
-    EXPECT_FALSE(triggers(editing.map(), "mina-1-escalera"));
+    EXPECT_EQ(elementById(editing.map(), "mercado"), nullptr);
     EXPECT_EQ(mapChanges, 2);
 }
 
@@ -142,4 +142,36 @@ TEST_F(MapEditingTest, AnElementIsNotPlacedIfItsBaseLeavesTheArea) {
     // El mercado mide 10 de ancho: desde la columna 25 del pueblo se sale por la derecha
     EXPECT_FALSE(editing.placeElement(maps::ElementType::Market, {VILLAGE_OFFSET_X + 25, 15}));
     EXPECT_EQ(mapChanges, 1);
+}
+
+TEST_F(MapEditingTest, TheEntranceCreatesTheFloorsOfTheMineWhenThereAreNone) {
+    editing.load(example_map_without_mine());
+    // Donde estaba la entrada en valle.toml: (24, 2) del pueblo
+    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 24, 2}, FloorSize{20, 15}));
+
+    const maps::MapDefinition& map = editing.map();
+    EXPECT_EQ(std::count_if(map.areas.begin(), map.areas.end(),
+                            [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; }),
+              10);
+    EXPECT_NE(elementById(map, "mina-10-salida"), nullptr);
+    EXPECT_EQ(elementById(map, "mina-10-escalera"), nullptr);
+    // Con las transiciones de la entrada, las salidas y las escaleras el mapa queda valido
+    for (const maps::MapValidationIssue& issue: maps::validateMap(map, example_requirements())) {
+        ADD_FAILURE() << maps::toString(issue.code);
+    }
+}
+
+TEST_F(MapEditingTest, AnotherEntranceOnlyLinksToTheFloorsThatAlreadyExist) {
+    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 20, 17}, FloorSize{20, 15}));
+
+    EXPECT_EQ(editing.map().areas.size(), example_map().areas.size());
+    EXPECT_TRUE(triggers(editing.map(), "dungeon_entrance-1"));
+}
+
+TEST_F(MapEditingTest, TheExitAndTheStairsOfAFloorAreNotRemoved) {
+    editing.removeElement("mina-1-salida");
+    editing.removeElement("mina-1-escalera");
+
+    EXPECT_NE(elementById(editing.map(), "mina-1-salida"), nullptr);
+    EXPECT_NE(elementById(editing.map(), "mina-1-escalera"), nullptr);
 }

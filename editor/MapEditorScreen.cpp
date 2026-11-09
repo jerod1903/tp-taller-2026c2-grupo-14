@@ -16,7 +16,9 @@
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/styles/StyleManager.h"
 #include "editor/BlockPalette.h"
+#include "editor/FloorSizeDialog.h"
 #include "editor/MapCanvas.h"
+#include "editor/MapHelper.h"
 
 namespace maps = stardew::maps;
 
@@ -56,7 +58,6 @@ const char* const SCROLLBARS_STYLE = R"(
     }
 )";
 
-constexpr int AREA_GAP = 2;
 constexpr int MAX_ROW_WIDTH = 100;
 
 bool areasOverlap(const std::vector<maps::MapValidationIssue>& issues) {
@@ -152,15 +153,14 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
         canvas->showSelection(elementId);
         removeButton->setEnabled(elementId.has_value());
     });
-    // Y el elemento por colocar con el lienzo; al colocarlo o cancelar se vuelve a Seleccionar
-    placeTool.onGhostChanged(
-            [this](const std::optional<Ghost>& ghost) { canvas->showGhost(ghost); });
-    placeTool.onDone([this]() {
-        selectButton->setChecked(true);
-        useTool(&selectTool);
-    });
+    connectPlacing(placeTool);
+    connectPlacing(entranceTool);
 
     connect(blocks, &BlockPalette::typeChosen, this, [this](maps::ElementType type) {
+        if (type == maps::ElementType::DungeonEntrance) {
+            chooseEntrance();
+            return;
+        }
         placeTool.setType(type);
         useTool(&placeTool);
     });
@@ -214,6 +214,29 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     connect(removeButton, &QToolButton::clicked, this, [this]() { selectTool.removeSelected(); });
     palette->addStretch();
     return palette;
+}
+
+void MapEditorScreen::connectPlacing(PlaceTool& tool) {
+    tool.onGhostChanged([this](const std::optional<Ghost>& ghost) { canvas->showGhost(ghost); });
+    tool.onDone([this]() {
+        selectButton->setChecked(true);
+        useTool(&selectTool);
+    });
+}
+
+void MapEditorScreen::chooseEntrance() {
+    std::optional<FloorSize> floorSize;
+    if (!hasDungeonFloors(editing.map())) {
+        FloorSizeDialog dialog(this);
+        if (dialog.exec() != QDialog::Accepted) {
+            selectButton->setChecked(true);
+            useTool(&selectTool);
+            return;
+        }
+        floorSize = dialog.size();
+    }
+    entranceTool.setFloorSize(floorSize);
+    useTool(&entranceTool);
 }
 
 void MapEditorScreen::useTool(Tool* tool) {

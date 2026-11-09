@@ -6,11 +6,14 @@ target_sources(taller_editor
     MapCanvas.cpp
     EditorWindow.cpp
     Elements.cpp
+    FloorSizeDialog.cpp
     MapEditing.cpp
     MapHelper.cpp
     MapEditorScreen.cpp
+    Mine.cpp
     Passages.cpp
     SpriteSheets.cpp
+    tools/EntranceTool.cpp
     tools/PaintTool.cpp
     tools/PassageTool.cpp
     tools/PlaceTool.cpp
@@ -25,11 +28,14 @@ target_sources(taller_editor
     MapCanvas.h
     EditorWindow.h
     Elements.h
+    FloorSizeDialog.h
     MapEditing.h
     MapHelper.h
     MapEditorScreen.h
+    Mine.h
     Passages.h
     SpriteSheets.h
+    tools/EntranceTool.h
     tools/PaintTool.h
     tools/PassageTool.h
     tools/PlaceTool.h

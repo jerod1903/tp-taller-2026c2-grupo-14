@@ -16,6 +16,13 @@ inline const stardew::maps::MapDefinition& example_map() {
     return map;
 }
 
+// El mapa de ejemplo sin la entrada ni los pisos de la mina: se lee una sola vez.
+inline const stardew::maps::MapDefinition& example_map_without_mine() {
+    static const stardew::maps::MapDefinition map =
+            stardew::maps::TomlMapRepository().loadMap(TALLER_MAPS_DIR "/examples/sin_mina.toml");
+    return map;
+}
+
 // Las reglas de los mapas del repo: se leen una sola vez.
 inline const stardew::maps::MapRequirements& example_requirements() {
     static const stardew::maps::MapRequirements requirements =

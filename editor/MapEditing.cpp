@@ -47,7 +47,8 @@ void MapEditing::togglePassage(const maps::MapCell& cell) {
 
 void MapEditing::removeElement(const std::string& id) {
     const maps::MapElement* element = elementById(definition, id);
-    if (!element || element->type == maps::ElementType::DungeonEntrance) {
+    if (!element || element->type == maps::ElementType::DungeonEntrance ||
+        element->type == maps::ElementType::Exit || element->type == maps::ElementType::Stairs) {
         return;
     }
     if (element->type == maps::ElementType::Door) {
@@ -65,6 +66,24 @@ bool MapEditing::placeElement(maps::ElementType type, const maps::MapCell& botto
     if (!rule || !::placeElement(definition, *rule, bottomLeft)) {
         return false;
     }
+    if (mapChanged) {
+        mapChanged();
+    }
+    return true;
+}
+
+bool MapEditing::placeEntrance(const maps::MapCell& bottomLeft,
+                               const std::optional<FloorSize>& floorSize) {
+    const maps::ElementRule* rule = ruleFor(requirements, maps::ElementType::DungeonEntrance);
+    const std::optional<std::string> id =
+            rule ? ::placeElement(definition, *rule, bottomLeft) : std::nullopt;
+    if (!id) {
+        return false;
+    }
+    if (!hasDungeonFloors(definition) && floorSize) {
+        createMine(definition, requirements, *floorSize, *id);
+    }
+    linkEntrance(definition, *id);
     if (mapChanged) {
         mapChanged();
     }

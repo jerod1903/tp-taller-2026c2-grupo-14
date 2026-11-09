@@ -32,11 +32,17 @@ public:
     // Se coloco el elemento o se cancelo
     void onDone(std::function<void()> callback);
 
+protected:
+    // Lo que hace el click; devuelve si se coloco. Una herramienta que coloca algo con mas pasos
+    // (la entrada a la mina) cambia solo esto.
+    virtual bool place(stardew::maps::ElementType type, const stardew::maps::MapCell& cell);
+
+    MapEditing& editing;
+
 private:
     void showGhost(const std::optional<Ghost>& ghost);
     void finish();
 
-    MapEditing& editing;
     std::optional<stardew::maps::ElementType> type;
     std::function<void(const std::optional<Ghost>&)> ghostChanged;
     std::function<void()> done;

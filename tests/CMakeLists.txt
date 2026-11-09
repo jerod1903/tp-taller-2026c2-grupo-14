@@ -50,6 +50,7 @@ target_sources(taller_tests
     ../editor/Elements.cpp
     ../editor/MapEditing.cpp
     ../editor/MapHelper.cpp
+    ../editor/Mine.cpp
     ../editor/Passages.cpp
     ../editor/tools/PlaceTool.cpp
     ../editor/tools/SelectTool.cpp

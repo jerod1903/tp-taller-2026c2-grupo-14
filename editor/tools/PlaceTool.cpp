@@ -12,9 +12,13 @@ PlaceTool::PlaceTool(MapEditing& editing): editing(editing) {}
 void PlaceTool::setType(maps::ElementType elementType) { type = elementType; }
 
 void PlaceTool::onPress(const maps::MapCell& cell) {
-    if (type && editing.placeElement(*type, cell)) {
+    if (type && place(*type, cell)) {
         finish();
     }
+}
+
+bool PlaceTool::place(maps::ElementType elementType, const maps::MapCell& cell) {
+    return editing.placeElement(elementType, cell);
 }
 
 void PlaceTool::onHover(const maps::MapCell& cell) {

@@ -22,6 +22,11 @@ std::string newElementId(const maps::MapDefinition& map, maps::ElementType type)
 
 }  // namespace
 
+maps::MapElement elementFromRule(const maps::ElementRule& rule, const std::string& id,
+                                 const std::string& areaId, int x, int y) {
+    return {id, areaId, rule.type, rule.layer, x, y, rule.width, rule.height};
+}
+
 bool removeElement(maps::MapDefinition& map, const std::string& id) {
     if (std::erase_if(map.elements, [&id](const auto& e) { return e.id == id; }) == 0) {
         return false;
@@ -30,13 +35,14 @@ bool removeElement(maps::MapDefinition& map, const std::string& id) {
     return true;
 }
 
-bool placeElement(maps::MapDefinition& map, const maps::ElementRule& rule,
-                  const maps::MapCell& bottomLeft) {
+std::optional<std::string> placeElement(maps::MapDefinition& map, const maps::ElementRule& rule,
+                                        const maps::MapCell& bottomLeft) {
     const std::optional<AreaCell> topLeft = freeBaseAt(map, bottomLeft, rule.width, rule.height);
     if (!topLeft) {
-        return false;
+        return std::nullopt;
     }
-    map.elements.push_back({newElementId(map, rule.type), map.areas[topLeft->area].id, rule.type,
-                            rule.layer, topLeft->x, topLeft->y, rule.width, rule.height});
-    return true;
+    std::string id = newElementId(map, rule.type);
+    map.elements.push_back(
+            elementFromRule(rule, id, map.areas[topLeft->area].id, topLeft->x, topLeft->y));
+    return id;
 }

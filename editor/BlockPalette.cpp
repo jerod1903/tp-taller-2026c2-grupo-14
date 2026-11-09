@@ -44,10 +44,11 @@ const Section SECTIONS[] = {
         {maps::AreaType::DungeonFloor, "Mina"},
 };
 
-// Los que pone el editor solo: los portones con la herramienta Pasaje y el resto al generar la mina
+// Los que pone el editor solo: los portones con la herramienta Pasaje y la salida y la escalera al
+// crear los pisos de la mina
 bool placedByEditor(maps::ElementType type) {
-    return type == maps::ElementType::Door || type == maps::ElementType::DungeonEntrance ||
-           type == maps::ElementType::Exit || type == maps::ElementType::Stairs;
+    return type == maps::ElementType::Door || type == maps::ElementType::Exit ||
+           type == maps::ElementType::Stairs;
 }
 
 // Los tipos que se pueden colocar en ese tipo de area, en el orden de las reglas y sin repetir

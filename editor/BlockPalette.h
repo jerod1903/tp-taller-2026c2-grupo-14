@@ -12,9 +12,9 @@ class SpriteSheets;
 
 // El panel de los elementos que se pueden colocar, armado desde las reglas: una fila por tipo de
 // area con una tarjeta (dibujo y nombre) por tipo de elemento; la fila que no entra en el ancho
-// del panel se scrollea. Los portones, la entrada a la mina, la salida y la escalera no estan: los
-// pone el editor. Las tarjetas entran al grupo de botones de la pantalla, asi queda marcada la
-// herramienta que se esta usando.
+// del panel se scrollea. Los portones, la salida y la escalera no estan: los pone el editor. Las
+// tarjetas entran al grupo de botones de la pantalla, asi queda marcada la herramienta que se esta
+// usando.
 class BlockPalette: public QWidget {
     Q_OBJECT
 
