@@ -82,7 +82,8 @@ QString describe(const maps::MapValidationIssue& issue) {
 }  // namespace
 
 MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* parent):
-        QWidget(parent), service(service), canvas(new MapCanvas(this)) {
+        QWidget(parent), service(service), canvas(new MapCanvas(editing, this)) {
+    canvas->setTool(&paintTool);
     auto* backButton = new MenuButton("← Volver", this);
     backButton->setBack();
     auto* validateButton = new MenuButton("Validar", this);
@@ -120,7 +121,10 @@ QHBoxLayout* MapEditorScreen::createPalette() {
         button->setChecked(tile == maps::TileType::Grass);
         group->addButton(button);
         palette->addWidget(button);
-        connect(button, &QToolButton::clicked, this, [this, tile]() { canvas->setBrush(tile); });
+        connect(button, &QToolButton::clicked, this, [this, tile]() {
+            paintTool.setTile(tile);
+            canvas->setTool(&paintTool);
+        });
     }
     // Un click en el borde entre dos areas pone (o quita) un porton de cada lado
     auto* passageButton = new QToolButton(this);
@@ -130,29 +134,29 @@ QHBoxLayout* MapEditorScreen::createPalette() {
     passageButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     group->addButton(passageButton);
     palette->addWidget(passageButton);
-    connect(passageButton, &QToolButton::clicked, this, [this]() { canvas->usePassageTool(); });
+    connect(passageButton, &QToolButton::clicked, this,
+            [this]() { canvas->setTool(&passageTool); });
     palette->addStretch();
     return palette;
 }
 
 void MapEditorScreen::open(const std::string& mapPath) {
     maps::MapLoadResult result = service.loadMap(mapPath);
-    map = std::move(result.map);
     path = mapPath;
     // Un mapa sin posiciones tiene todas las areas en (0, 0): se acomodan para poder verlas.
     // Quedan asi cuando se guarde.
     if (areasOverlap(result.issues)) {
-        arrangeAreas(map);
-        result.issues = service.validate(map);
+        arrangeAreas(result.map);
+        result.issues = service.validate(result.map);
     }
-    canvas->showMap(map);
+    editing.load(std::move(result.map));
     if (!result.issues.empty()) {
         showIssues("El mapa tiene errores", result.issues);
     }
 }
 
 void MapEditorScreen::validate() {
-    std::vector<maps::MapValidationIssue> issues = service.validate(map);
+    std::vector<maps::MapValidationIssue> issues = service.validate(editing.map());
     if (issues.empty()) {
         QMessageBox::information(this, "Validar", "El mapa es valido.");
     } else {
@@ -162,7 +166,7 @@ void MapEditorScreen::validate() {
 
 void MapEditorScreen::save() {
     try {
-        std::vector<maps::MapValidationIssue> issues = service.saveMap(path, map);
+        std::vector<maps::MapValidationIssue> issues = service.saveMap(path, editing.map());
         if (issues.empty()) {
             QMessageBox::information(this, "Guardar", "Mapa guardado.");
         } else {

@@ -9,45 +9,43 @@
 
 class QGraphicsPixmapItem;
 
-// Dibuja el mapa entero con los sprites del juego, cada area en su offset, y deja pintar con el
-// pincel. Las coordenadas de la escena son pixeles del tileset: una casilla mide TILE_SIZE.
+class MapEditing;
+class Tool;
+
+// Dibuja el mapa que se esta editando con los sprites del juego, cada area en su offset. No cambia
+// el mapa: convierte el mouse en una casilla del mapa general y se la pasa a la herramienta activa,
+// y se redibuja cuando MapEditing avisa que algo cambio. Las coordenadas de la escena son pixeles
+// del tileset: una casilla mide TILE_SIZE.
 class MapCanvas: public QGraphicsView {
 public:
-    explicit MapCanvas(QWidget* parent = nullptr);
-
-    // Edita el mapa en el lugar: tiene que vivir mientras se muestre
-    void showMap(stardew::maps::MapDefinition& map);
-    // Herramientas del click izquierdo: pintar con un tile, o poner y quitar pasajes
-    void setBrush(stardew::maps::TileType tile);
-    void usePassageTool();
+    explicit MapCanvas(MapEditing& editing, QWidget* parent = nullptr);
+    void setTool(Tool* tool);
 
 protected:
     // Rueda: zoom centrado en el mouse
     void wheelEvent(QWheelEvent* event) override;
-    // Click izquierdo (y arrastrar): pinta casillas con el pincel. Arrastrar con la rueda apretada
-    // mueve el mapa.
+    // Click izquierdo: la herramienta activa. Arrastrar con la rueda apretada mueve el mapa.
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-    // Un area con la imagen de cada casilla, para cambiar solo la que se pinta
-    struct DrawnArea {
-        stardew::maps::MapArea* area;
-        std::vector<std::vector<QGraphicsPixmapItem*>> tiles;
-    };
+    // La imagen de cada casilla de un area, para cambiar solo la que se pinta
+    using TileItems = std::vector<std::vector<QGraphicsPixmapItem*>>;
 
-    void addArea(stardew::maps::MapArea& area);
+    // Arma la escena de nuevo; la vista queda donde estaba
+    void redraw();
+    void updateTile(const stardew::maps::MapCell& cell);
+    void addArea(const stardew::maps::MapArea& area);
     void addElement(const stardew::maps::MapArea& area, const stardew::maps::MapElement& element);
-    void paintAt(const QPoint& viewPosition);
-    void togglePassageAt(const QPoint& viewPosition);
+    stardew::maps::MapCell cellUnder(const QPoint& viewPosition) const;
 
-    stardew::maps::MapDefinition* map = nullptr;
+    MapEditing& editing;
+    Tool* tool = nullptr;
     QGraphicsScene scene;
     SpriteSheets sprites;
-    std::vector<DrawnArea> areas;
-    stardew::maps::TileType brush = stardew::maps::TileType::Grass;
-    bool passageTool = false;
+    // En el mismo orden que map.areas
+    std::vector<TileItems> areaTiles;
     // Donde estaba el mouse en el ultimo paso del arrastre con la rueda
     QPoint lastDragPosition;
 };

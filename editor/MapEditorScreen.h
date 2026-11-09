@@ -7,7 +7,10 @@
 #include "common/map/MapDefinition.h"
 #include "common/map/MapValidationIssue.h"
 #include "common/map/service/MapService.h"
+#include "editor/MapEditing.h"
 #include "editor/SpriteSheets.h"
+#include "editor/tools/PaintTool.h"
+#include "editor/tools/PassageTool.h"
 
 class MapCanvas;
 class QHBoxLayout;
@@ -32,7 +35,10 @@ private:
                     const std::vector<stardew::maps::MapValidationIssue>& issues);
 
     const stardew::maps::MapService& service;
-    stardew::maps::MapDefinition map;
+    // El mapa vive en editing; las herramientas lo cambian a traves de el y el lienzo lo dibuja
+    MapEditing editing;
+    PaintTool paintTool{editing};
+    PassageTool passageTool{editing};
     std::string path;
     SpriteSheets sprites;
     MapCanvas* canvas;

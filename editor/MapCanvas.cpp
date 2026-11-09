@@ -14,7 +14,9 @@
 #include <optional>
 
 #include "common/map/MapSprites.h"
-#include "editor/Passages.h"
+#include "editor/MapEditing.h"
+#include "editor/MapHelper.h"
+#include "editor/tools/Tool.h"
 
 namespace maps = stardew::maps;
 
@@ -70,20 +72,27 @@ const char* const SCROLLBARS_STYLE = R"(
 const QColor AREA_BORDER(255, 235, 173, 160);
 }  // namespace
 
-MapCanvas::MapCanvas(QWidget* parent): QGraphicsView(parent) {
+MapCanvas::MapCanvas(MapEditing& editing, QWidget* parent):
+        QGraphicsView(parent), editing(editing) {
     setScene(&scene);
     setBackgroundBrush(BACKGROUND);
     setStyleSheet(SCROLLBARS_STYLE);
     scale(INITIAL_ZOOM, INITIAL_ZOOM);
+    editing.onTileChanged([this](const maps::MapCell& cell) { updateTile(cell); });
+    editing.onMapChanged([this]() { redraw(); });
 }
 
-void MapCanvas::showMap(maps::MapDefinition& shown) {
-    map = &shown;
+void MapCanvas::setTool(Tool* active) { tool = active; }
+
+void MapCanvas::redraw() {
+    const int horizontal = horizontalScrollBar()->value();
+    const int vertical = verticalScrollBar()->value();
     scene.clear();
-    areas.clear();
-    for (maps::MapArea& area: map->areas) {
+    areaTiles.clear();
+    const maps::MapDefinition& map = editing.map();
+    for (const maps::MapArea& area: map.areas) {
         addArea(area);
-        for (const maps::MapElement& element: map->elements) {
+        for (const maps::MapElement& element: map.elements) {
             if (element.areaId == area.id) {
                 addElement(area, element);
             }
@@ -92,13 +101,24 @@ void MapCanvas::showMap(maps::MapDefinition& shown) {
     // Un margen alrededor para poder ver los bordes con zoom
     scene.setSceneRect(scene.itemsBoundingRect().adjusted(-SCENE_MARGIN, -SCENE_MARGIN,
                                                           SCENE_MARGIN, SCENE_MARGIN));
+    horizontalScrollBar()->setValue(horizontal);
+    verticalScrollBar()->setValue(vertical);
 }
 
-void MapCanvas::addArea(maps::MapArea& area) {
+void MapCanvas::updateTile(const maps::MapCell& cell) {
+    const std::optional<AreaCell> changed = cellAt(editing.map(), cell.x, cell.y);
+    if (!changed) {
+        return;
+    }
+    const maps::TileType tile = editing.map().areas[changed->area].tiles[changed->y][changed->x];
+    areaTiles[changed->area][changed->y][changed->x]->setPixmap(sprites.tile(tile));
+}
+
+void MapCanvas::addArea(const maps::MapArea& area) {
     const QPointF origin(area.offsetX * TILE, area.offsetY * TILE);
-    DrawnArea& drawn = areas.emplace_back(DrawnArea{&area, {}});
+    TileItems& items = areaTiles.emplace_back();
     for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
-        std::vector<QGraphicsPixmapItem*>& row = drawn.tiles.emplace_back();
+        std::vector<QGraphicsPixmapItem*>& row = items.emplace_back();
         for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
             QGraphicsPixmapItem* item = scene.addPixmap(sprites.tile(area.tiles[y][x]));
             item->setPos(origin + QPointF(x * TILE, y * TILE));
@@ -118,13 +138,6 @@ void MapCanvas::addArea(maps::MapArea& area) {
                                                               NAME_PADDING, NAME_PADDING);
     scene.addRect(nameBox, QPen(Qt::NoPen), QBrush(NAME_BACKGROUND))->setZValue(LABELS_Z);
 }
-
-void MapCanvas::setBrush(maps::TileType tile) {
-    brush = tile;
-    passageTool = false;
-}
-
-void MapCanvas::usePassageTool() { passageTool = true; }
 
 void MapCanvas::addElement(const maps::MapArea& area, const maps::MapElement& element) {
     const int left = (area.offsetX + element.x) * TILE;
@@ -162,10 +175,8 @@ void MapCanvas::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::MiddleButton) {
         lastDragPosition = event->pos();
         viewport()->setCursor(Qt::ClosedHandCursor);
-    } else if (event->button() == Qt::LeftButton && passageTool) {
-        togglePassageAt(event->pos());
-    } else if (event->button() == Qt::LeftButton) {
-        paintAt(event->pos());
+    } else if (event->button() == Qt::LeftButton && tool) {
+        tool->onPress(cellUnder(event->pos()));
     }
 }
 
@@ -176,46 +187,22 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* event) {
         lastDragPosition = event->pos();
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
         verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
-    } else if ((event->buttons() & Qt::LeftButton) && !passageTool) {
-        paintAt(event->pos());
+    } else if ((event->buttons() & Qt::LeftButton) && tool) {
+        tool->onMove(cellUnder(event->pos()));
     }
 }
 
 void MapCanvas::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::MiddleButton) {
         viewport()->unsetCursor();
+    } else if (event->button() == Qt::LeftButton && tool) {
+        tool->onRelease(cellUnder(event->pos()));
     }
 }
 
-void MapCanvas::paintAt(const QPoint& viewPosition) {
+maps::MapCell MapCanvas::cellUnder(const QPoint& viewPosition) const {
+    // floor para que -0.5 caiga en la casilla -1 y no en la 0
     const QPointF position = mapToScene(viewPosition);
-    for (DrawnArea& drawn: areas) {
-        // Casilla relativa al area; floor para que -0.5 no caiga en la columna 0
-        const int x = static_cast<int>(std::floor(position.x() / TILE)) - drawn.area->offsetX;
-        const int y = static_cast<int>(std::floor(position.y() / TILE)) - drawn.area->offsetY;
-        if (x < 0 || y < 0 || y >= static_cast<int>(drawn.tiles.size()) ||
-            x >= static_cast<int>(drawn.tiles[y].size())) {
-            continue;
-        }
-        if (drawn.area->tiles[y][x] != brush) {
-            drawn.area->tiles[y][x] = brush;
-            drawn.tiles[y][x]->setPixmap(sprites.tile(brush));
-        }
-        return;
-    }
-}
-
-void MapCanvas::togglePassageAt(const QPoint& viewPosition) {
-    const QPointF position = mapToScene(viewPosition);
-    const int x = static_cast<int>(std::floor(position.x() / TILE));
-    const int y = static_cast<int>(std::floor(position.y() / TILE));
-    if (!map || !togglePassage(*map, x, y)) {
-        return;
-    }
-    // Se redibuja todo para mostrar los portones; la vista queda donde estaba
-    const int horizontal = horizontalScrollBar()->value();
-    const int vertical = verticalScrollBar()->value();
-    showMap(*map);
-    horizontalScrollBar()->setValue(horizontal);
-    verticalScrollBar()->setValue(vertical);
+    return {static_cast<int>(std::floor(position.x() / TILE)),
+            static_cast<int>(std::floor(position.y() / TILE))};
 }

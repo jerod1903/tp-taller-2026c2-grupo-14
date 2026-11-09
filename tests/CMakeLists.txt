@@ -10,6 +10,7 @@ target_sources(taller_tests
     location_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
+    map_editing_test.cpp
     map_validator_test.cpp
     passages_test.cpp
     world_builder_test.cpp
@@ -44,6 +45,8 @@ target_sources(taller_tests
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
     # Lógica del editor sin Qt
+    ../editor/MapEditing.cpp
+    ../editor/MapHelper.cpp
     ../editor/Passages.cpp
     # Código del cliente bajo test (sin Qt)
     ../client/network/ClientProtocol.cpp
