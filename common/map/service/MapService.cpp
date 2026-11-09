@@ -31,4 +31,6 @@ std::vector<MapValidationIssue> MapService::saveMap(const std::string& path,
     return {};
 }
 
+const MapRequirements& MapService::requirements() const { return requirements_; }
+
 }  // namespace stardew::maps

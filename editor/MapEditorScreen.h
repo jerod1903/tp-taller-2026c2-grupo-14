@@ -11,15 +11,17 @@
 #include "editor/SpriteSheets.h"
 #include "editor/tools/PaintTool.h"
 #include "editor/tools/PassageTool.h"
+#include "editor/tools/PlaceTool.h"
 #include "editor/tools/SelectTool.h"
 
 class MapCanvas;
+class QButtonGroup;
 class QHBoxLayout;
 class QToolButton;
 class Tool;
 
-// Pantalla de edicion: el mapa entero, pintar con el pincel, poner pasajes, seleccionar y borrar
-// elementos, validar y guardar.
+// Pantalla de edicion: el mapa entero, pintar con el pincel, poner pasajes, colocar, seleccionar y
+// borrar elementos, validar y guardar.
 class MapEditorScreen: public QWidget {
     Q_OBJECT
 
@@ -32,8 +34,10 @@ signals:
     void backRequested();
 
 private:
-    QHBoxLayout* createPalette();
-    // Cambia la herramienta del lienzo; lo que estaba seleccionado deja de estarlo
+    // Las herramientas de arriba; sus botones entran al grupo junto con las tarjetas del panel
+    QHBoxLayout* createPalette(QButtonGroup* group);
+    // Cambia la herramienta del lienzo; lo que estaba seleccionado deja de estarlo y el fantasma
+    // del elemento por colocar se saca
     void useTool(Tool* tool);
     void validate();
     void save();
@@ -42,12 +46,14 @@ private:
 
     const stardew::maps::MapService& service;
     // El mapa vive en editing; las herramientas lo cambian a traves de el y el lienzo lo dibuja
-    MapEditing editing;
+    MapEditing editing{service.requirements()};
     PaintTool paintTool{editing};
     PassageTool passageTool{editing};
+    PlaceTool placeTool{editing};
     SelectTool selectTool{editing};
     std::string path;
     SpriteSheets sprites;
     MapCanvas* canvas;
+    QToolButton* selectButton = nullptr;
     QToolButton* removeButton = nullptr;
 };

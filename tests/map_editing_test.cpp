@@ -29,7 +29,7 @@ protected:
         editing.load(example_map());
     }
 
-    MapEditing editing;
+    MapEditing editing{example_requirements()};
     std::vector<maps::MapCell> changedTiles;
     int mapChanges = 0;
 };
@@ -106,5 +106,40 @@ TEST_F(MapEditingTest, TheDungeonEntranceIsNotRemoved) {
     editing.removeElement("entrada-mina");
 
     EXPECT_NE(elementById(editing.map(), "entrada-mina"), nullptr);
+    EXPECT_EQ(mapChanges, 1);
+}
+
+TEST_F(MapEditingTest, AnElementIsPlacedWithTheSizeOfItsRuleAndItsBaseCornerOnTheCell) {
+    // La cabana mide 5 x 3: con la esquina de abajo a la izquierda en (2, 18) la base arranca en
+    // (2, 16)
+    ASSERT_TRUE(editing.placeElement(maps::ElementType::Cabin, {2, 18}));
+
+    const maps::MapElement* cabin = elementById(editing.map(), "cabin-1");
+    ASSERT_NE(cabin, nullptr);
+    EXPECT_EQ(cabin->areaId, "granja");
+    EXPECT_EQ(cabin->x, 2);
+    EXPECT_EQ(cabin->y, 16);
+    EXPECT_EQ(cabin->width, 5);
+    EXPECT_EQ(cabin->height, 3);
+    EXPECT_EQ(mapChanges, 2);
+}
+
+TEST_F(MapEditingTest, TheIdTakesTheFirstFreeNumber) {
+    ASSERT_TRUE(editing.placeElement(maps::ElementType::OreNode, {5, 25}));
+    ASSERT_TRUE(editing.placeElement(maps::ElementType::OreNode, {6, 25}));
+
+    EXPECT_NE(elementById(editing.map(), "ore_node-1"), nullptr);
+    EXPECT_NE(elementById(editing.map(), "ore_node-2"), nullptr);
+}
+
+TEST_F(MapEditingTest, AnElementIsNotPlacedOverAnotherOne) {
+    // mina-1 empieza en la fila 20: su mineral de (4, 11) esta en (4, 31) del mapa general
+    EXPECT_FALSE(editing.placeElement(maps::ElementType::OreNode, {4, 31}));
+    EXPECT_EQ(mapChanges, 1);
+}
+
+TEST_F(MapEditingTest, AnElementIsNotPlacedIfItsBaseLeavesTheArea) {
+    // El mercado mide 10 de ancho: desde la columna 25 del pueblo se sale por la derecha
+    EXPECT_FALSE(editing.placeElement(maps::ElementType::Market, {VILLAGE_OFFSET_X + 25, 15}));
     EXPECT_EQ(mapChanges, 1);
 }

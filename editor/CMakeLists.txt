@@ -2,6 +2,7 @@ target_sources(taller_editor
     PRIVATE
     # .cpp files
     main.cpp
+    BlockPalette.cpp
     MapCanvas.cpp
     EditorWindow.cpp
     Elements.cpp
@@ -12,6 +13,7 @@ target_sources(taller_editor
     SpriteSheets.cpp
     tools/PaintTool.cpp
     tools/PassageTool.cpp
+    tools/PlaceTool.cpp
     tools/SelectTool.cpp
     # El estilo de madera del menu del juego, tal como esta en client/menu
     ${CMAKE_SOURCE_DIR}/client/menu/components/MenuButton.cpp
@@ -19,6 +21,7 @@ target_sources(taller_editor
     ${CMAKE_SOURCE_DIR}/client/menu/resources/menu.qrc
     PUBLIC
     # .h files
+    BlockPalette.h
     MapCanvas.h
     EditorWindow.h
     Elements.h
@@ -29,6 +32,7 @@ target_sources(taller_editor
     SpriteSheets.h
     tools/PaintTool.h
     tools/PassageTool.h
+    tools/PlaceTool.h
     tools/SelectTool.h
     tools/Tool.h
     )

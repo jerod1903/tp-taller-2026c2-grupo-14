@@ -26,7 +26,7 @@ protected:
                 [this](const std::optional<std::string>& id) { notified.push_back(id); });
     }
 
-    MapEditing editing;
+    MapEditing editing{example_requirements()};
     SelectTool tool{editing};
     std::vector<std::optional<std::string>> notified;
 };

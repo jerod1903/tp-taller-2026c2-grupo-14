@@ -9,6 +9,7 @@
 
 #include "common/map/MapDefinition.h"
 #include "editor/SpriteSheets.h"
+#include "editor/tools/PlaceTool.h"
 
 class QGraphicsItem;
 class QGraphicsPixmapItem;
@@ -27,6 +28,8 @@ public:
     // Muestra semitransparente el elemento con ese id (y el anterior vuelve a verse normal).
     // Vacio: ninguno.
     void showSelection(const std::optional<std::string>& elementId);
+    // Muestra bajo el mouse el elemento que se va a colocar, en rojo si no entra. Vacio: ninguno.
+    void showGhost(const std::optional<Ghost>& ghost);
 
 protected:
     // Rueda: zoom centrado en el mouse
@@ -35,6 +38,8 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
+    // El fantasma no se ve si el mouse no esta sobre el lienzo
+    void leaveEvent(QEvent* event) override;
 
 private:
     // La imagen de cada casilla de un area, para cambiar solo la que se pinta
@@ -45,6 +50,11 @@ private:
     void updateTile(const stardew::maps::MapCell& cell);
     void addArea(const stardew::maps::MapArea& area);
     void addElement(const stardew::maps::MapArea& area, const stardew::maps::MapElement& element);
+    // La imagen de un elemento con la base desde (left, bottom) hacia arriba, en casillas del mapa
+    // general: el sprite de su tipo o, si no tiene, un recuadro
+    QGraphicsItem* addElementImage(std::optional<stardew::maps::ElementType> type, int left,
+                                   int bottom, int width, int height);
+    void drawGhost();
     void setElementOpacity(const std::optional<std::string>& elementId, double opacity);
     stardew::maps::MapCell cellUnder(const QPoint& viewPosition) const;
 
@@ -57,6 +67,8 @@ private:
     // La imagen de cada elemento por su id, para mostrar el seleccionado
     std::map<std::string, QGraphicsItem*> elementItems;
     std::optional<std::string> selection;
+    std::optional<Ghost> ghost;
+    QGraphicsItem* ghostItem = nullptr;
     // Donde estaba el mouse en el ultimo paso del arrastre con la rueda
     QPoint lastDragPosition;
 };

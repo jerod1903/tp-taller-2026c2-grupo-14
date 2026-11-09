@@ -12,6 +12,12 @@
 #include "common/map/persistence/MapRequirementsLoader.h"
 #include "editor/MapEditorScreen.h"
 
+namespace {
+// Mas grande que la ventana del juego: entran el mapa y el panel de elementos
+constexpr int WINDOW_WIDTH = 1440;
+constexpr int WINDOW_HEIGHT = 900;
+}  // namespace
+
 EditorWindow::EditorWindow(QWidget* parent):
         QMainWindow(parent),
         service(repository, stardew::maps::loadMapRequirements(TALLER_MAPS_DIR
@@ -20,7 +26,7 @@ EditorWindow::EditorWindow(QWidget* parent):
         menu(createMenu()),
         editor(new MapEditorScreen(service, stack)) {
     setWindowTitle("Stardew Valley - Editor de mapas");
-    setFixedSize(Theme::WINDOW_WIDTH, Theme::WINDOW_HEIGHT);
+    setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     setStyleSheet(StyleManager::globalStyleSheet());
     stack->addWidget(menu);
     stack->addWidget(editor);

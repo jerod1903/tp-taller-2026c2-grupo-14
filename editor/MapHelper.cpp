@@ -61,3 +61,30 @@ bool idTaken(const maps::MapDefinition& map, const std::string& id) {
            std::any_of(map.transitions.begin(), map.transitions.end(),
                        [&id](const auto& t) { return t.id == id; });
 }
+
+const maps::ElementRule* ruleFor(const maps::MapRequirements& requirements,
+                                 maps::ElementType type) {
+    auto rule = std::find_if(requirements.elements.begin(), requirements.elements.end(),
+                             [type](const auto& r) { return r.type == type; });
+    return rule == requirements.elements.end() ? nullptr : &*rule;
+}
+
+std::optional<AreaCell> freeBaseAt(const maps::MapDefinition& map, const maps::MapCell& bottomLeft,
+                                   int width, int height) {
+    const std::optional<AreaCell> topLeft = cellAt(map, bottomLeft.x, bottomLeft.y - height + 1);
+    if (!topLeft) {
+        return std::nullopt;
+    }
+    const maps::MapArea& area = map.areas[topLeft->area];
+    if (topLeft->x + width > area.width || topLeft->y + height > area.height) {
+        return std::nullopt;
+    }
+    for (int y = topLeft->y; y < topLeft->y + height; ++y) {
+        for (int x = topLeft->x; x < topLeft->x + width; ++x) {
+            if (elementAt(map, {topLeft->area, x, y})) {
+                return std::nullopt;
+            }
+        }
+    }
+    return topLeft;
+}

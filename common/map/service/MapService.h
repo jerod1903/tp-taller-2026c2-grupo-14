@@ -24,6 +24,7 @@ public:
     std::vector<MapValidationIssue> validate(const MapDefinition& map) const;
     std::vector<MapValidationIssue> saveMap(const std::string& path,
                                             const MapDefinition& map) const;
+    const MapRequirements& requirements() const;
 
 private:
     const MapRepository& repository_;

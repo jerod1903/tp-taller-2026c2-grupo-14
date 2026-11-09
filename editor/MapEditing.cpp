@@ -10,6 +10,8 @@
 
 namespace maps = stardew::maps;
 
+MapEditing::MapEditing(const maps::MapRequirements& requirements): requirements(requirements) {}
+
 void MapEditing::load(maps::MapDefinition map) {
     definition = std::move(map);
     if (mapChanged) {
@@ -56,6 +58,27 @@ void MapEditing::removeElement(const std::string& id) {
     if (mapChanged) {
         mapChanged();
     }
+}
+
+bool MapEditing::placeElement(maps::ElementType type, const maps::MapCell& bottomLeft) {
+    const maps::ElementRule* rule = ruleFor(requirements, type);
+    if (!rule || !::placeElement(definition, *rule, bottomLeft)) {
+        return false;
+    }
+    if (mapChanged) {
+        mapChanged();
+    }
+    return true;
+}
+
+std::optional<Placement> MapEditing::placementOf(maps::ElementType type,
+                                                 const maps::MapCell& bottomLeft) const {
+    const maps::ElementRule* rule = ruleFor(requirements, type);
+    if (!rule) {
+        return std::nullopt;
+    }
+    const bool fits = freeBaseAt(definition, bottomLeft, rule->width, rule->height).has_value();
+    return Placement{rule->width, rule->height, fits};
 }
 
 void MapEditing::onTileChanged(std::function<void(const maps::MapCell&)> callback) {

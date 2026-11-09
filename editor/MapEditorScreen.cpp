@@ -15,6 +15,7 @@
 
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/styles/StyleManager.h"
+#include "editor/BlockPalette.h"
 #include "editor/MapCanvas.h"
 
 namespace maps = stardew::maps;
@@ -22,6 +23,38 @@ namespace maps = stardew::maps;
 namespace {
 constexpr int PALETTE_ICON_SIZE = 32;
 constexpr int PALETTE_BUTTON_PADDING = 8;
+
+// Barras finas del color de los botones de madera, sin las flechas de los extremos. Se ponen en la
+// pantalla para que valgan en el lienzo y en el panel de elementos.
+const char* const SCROLLBARS_STYLE = R"(
+    QScrollBar:horizontal {
+        height: 12px;
+        background: #2D1B10;
+    }
+    QScrollBar:vertical {
+        width: 12px;
+        background: #2D1B10;
+    }
+    QScrollBar::handle {
+        background: #8E4E46;
+        border-radius: 5px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+    QScrollBar::handle:hover {
+        background: #A65D52;
+    }
+    QScrollBar::add-line, QScrollBar::sub-line {
+        width: 0;
+        height: 0;
+    }
+    QScrollBar::add-page, QScrollBar::sub-page {
+        background: none;
+    }
+    QAbstractScrollArea::corner {
+        background: #2D1B10;
+    }
+)";
 
 constexpr int AREA_GAP = 2;
 constexpr int MAX_ROW_WIDTH = 100;
@@ -85,6 +118,7 @@ QString describe(const maps::MapValidationIssue& issue) {
 
 MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* parent):
         QWidget(parent), service(service), canvas(new MapCanvas(editing, this)) {
+    setStyleSheet(SCROLLBARS_STYLE);
     canvas->setTool(&paintTool);
     auto* backButton = new MenuButton("← Volver", this);
     backButton->setBack();
@@ -99,27 +133,44 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     header->addWidget(validateButton);
     header->addWidget(saveButton);
 
+    // Una sola herramienta marcada entre los botones de arriba y las tarjetas del panel
+    auto* group = new QButtonGroup(this);
+    auto* blocks = new BlockPalette(service.requirements(), sprites, group, this);
+    auto* body = new QHBoxLayout();
+    body->addWidget(canvas, 1);
+    body->addWidget(blocks);
+
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(Theme::SCREEN_MARGIN_V, Theme::SCREEN_MARGIN_V,
                                Theme::SCREEN_MARGIN_V, Theme::SCREEN_MARGIN_V);
     layout->addLayout(header);
-    layout->addLayout(createPalette());
-    layout->addWidget(canvas, 1);
+    layout->addLayout(createPalette(group));
+    layout->addLayout(body, 1);
 
     // La pantalla une la seleccion con el lienzo y con el boton Borrar
     selectTool.onSelectionChanged([this](const std::optional<std::string>& elementId) {
         canvas->showSelection(elementId);
         removeButton->setEnabled(elementId.has_value());
     });
+    // Y el elemento por colocar con el lienzo; al colocarlo o cancelar se vuelve a Seleccionar
+    placeTool.onGhostChanged(
+            [this](const std::optional<Ghost>& ghost) { canvas->showGhost(ghost); });
+    placeTool.onDone([this]() {
+        selectButton->setChecked(true);
+        useTool(&selectTool);
+    });
 
+    connect(blocks, &BlockPalette::typeChosen, this, [this](maps::ElementType type) {
+        placeTool.setType(type);
+        useTool(&placeTool);
+    });
     connect(backButton, &QPushButton::clicked, this, &MapEditorScreen::backRequested);
     connect(validateButton, &QPushButton::clicked, this, &MapEditorScreen::validate);
     connect(saveButton, &QPushButton::clicked, this, &MapEditorScreen::save);
 }
 
-QHBoxLayout* MapEditorScreen::createPalette() {
+QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     auto* palette = new QHBoxLayout();
-    auto* group = new QButtonGroup(this);
     for (maps::TileType tile: maps::allTileTypes()) {
         auto* button = new QToolButton(this);
         button->setIcon(QIcon(sprites.tile(tile)));
@@ -144,7 +195,7 @@ QHBoxLayout* MapEditorScreen::createPalette() {
     palette->addWidget(passageButton);
     connect(passageButton, &QToolButton::clicked, this, [this]() { useTool(&passageTool); });
 
-    auto* selectButton = new QToolButton(this);
+    selectButton = new QToolButton(this);
     selectButton->setText("Seleccionar");
     selectButton->setToolTip("Click en la base de un elemento para seleccionarlo");
     selectButton->setCheckable(true);
@@ -167,6 +218,7 @@ QHBoxLayout* MapEditorScreen::createPalette() {
 
 void MapEditorScreen::useTool(Tool* tool) {
     selectTool.clear();
+    canvas->showGhost(std::nullopt);
     canvas->setTool(tool);
 }
 
