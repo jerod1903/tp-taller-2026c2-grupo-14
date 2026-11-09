@@ -45,6 +45,9 @@ enum class MapIssueCode {
     BlockedDoor,
     SpriteOutsideArea,
     AreasOverlap,
+    ElementInWrongArea,
+    WrongElementSize,
+    TooManyElements,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -123,6 +126,12 @@ inline std::string_view toString(MapIssueCode code) {
             return "SpriteOutsideArea";
         case MapIssueCode::AreasOverlap:
             return "AreasOverlap";
+        case MapIssueCode::ElementInWrongArea:
+            return "ElementInWrongArea";
+        case MapIssueCode::WrongElementSize:
+            return "WrongElementSize";
+        case MapIssueCode::TooManyElements:
+            return "TooManyElements";
     }
     return "UnknownMapIssue";
 }

@@ -388,8 +388,8 @@ type = "dungeon_entrance"
 layer = "structure"
 x = 24
 y = 2
-width = 3
-height = 2
+width = 2
+height = 1
 
 [[elements]]
 id = "marnie"
@@ -434,7 +434,7 @@ height = 1
 [[elements]]
 id = "mina-1-salida"
 area = "mina-1"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -474,7 +474,7 @@ height = 1
 [[elements]]
 id = "mina-2-salida"
 area = "mina-2"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -514,7 +514,7 @@ height = 1
 [[elements]]
 id = "mina-3-salida"
 area = "mina-3"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -554,7 +554,7 @@ height = 1
 [[elements]]
 id = "mina-4-salida"
 area = "mina-4"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -594,7 +594,7 @@ height = 1
 [[elements]]
 id = "mina-5-salida"
 area = "mina-5"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -634,7 +634,7 @@ height = 1
 [[elements]]
 id = "mina-6-salida"
 area = "mina-6"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -674,7 +674,7 @@ height = 1
 [[elements]]
 id = "mina-7-salida"
 area = "mina-7"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -714,7 +714,7 @@ height = 1
 [[elements]]
 id = "mina-8-salida"
 area = "mina-8"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -754,7 +754,7 @@ height = 1
 [[elements]]
 id = "mina-9-salida"
 area = "mina-9"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1
@@ -794,7 +794,7 @@ height = 1
 [[elements]]
 id = "mina-10-salida"
 area = "mina-10"
-type = "door"
+type = "exit"
 layer = "structure"
 x = 1
 y = 1

@@ -264,9 +264,7 @@ bool validateTrigger(const MapTransition& transition, const ElementIndex& elemen
         });
         valid = false;
     }
-    const bool isTravelElement = trigger.type == ElementType::Door ||
-                                 trigger.type == ElementType::Stairs ||
-                                 trigger.type == ElementType::DungeonEntrance;
+    const bool isTravelElement = trigger.type && elementTraits(*trigger.type).travel;
     if (!isTravelElement || trigger.layer != ElementLayer::Structure) {
         errors.push_back({
                 .code = MapIssueCode::InvalidTransitionTrigger,
@@ -429,7 +427,7 @@ void validateDoors(const MapDefinition& map, const AreaIndex& areas, const Eleme
     for (const auto& [areaId, inArea]: elements.byArea) {
         const MapArea& area = *areas.byId.at(areaId);
         for (const auto* building: inArea) {
-            if (!building->type || !hasDoor(*building->type)) {
+            if (!building->type || !elementTraits(*building->type).hasDoor) {
                 continue;
             }
             const MapCell door = doorCell(*building);
@@ -480,11 +478,70 @@ void validateSprites(const ElementIndex& elements, Issues& errors) {
     }
 }
 
+const ElementRule* findRule(const MapRequirements& requirements, AreaType areaType,
+                            ElementType type) {
+    const auto rule =
+            std::find_if(requirements.elements.begin(), requirements.elements.end(),
+                         [areaType, type](const ElementRule& candidate) {
+                             return candidate.areaType == areaType && candidate.type == type;
+                         });
+    return rule == requirements.elements.end() ? nullptr : &*rule;
+}
+
+// Cada elemento tiene que ir en un tipo de area que lo permita, medir lo que dice su regla y no
+// pasarse de la cantidad maxima por area.
+void validateElementRules(const MapRequirements& requirements, const AreaIndex& areas,
+                          const ElementIndex& elements, Issues& errors) {
+    for (const auto& [areaId, inArea]: elements.byArea) {
+        const auto areaType = areas.typeById.find(areaId);
+        if (areaType == areas.typeById.end()) {
+            continue;  // el area sin tipo ya se reporto
+        }
+        std::map<ElementType, int> counts;
+        for (const MapElement* element: inArea) {
+            if (!element->type) {
+                continue;
+            }
+            const ElementRule* rule = findRule(requirements, areaType->second, *element->type);
+            if (rule == nullptr) {
+                errors.push_back({
+                        .code = MapIssueCode::ElementInWrongArea,
+                        .areaId = areaId,
+                        .elementId = element->id,
+                        .areaType = areaType->second,
+                        .elementType = element->type,
+                });
+                continue;
+            }
+            if (element->width != rule->width || element->height != rule->height) {
+                errors.push_back({
+                        .code = MapIssueCode::WrongElementSize,
+                        .areaId = areaId,
+                        .elementId = element->id,
+                        .elementType = element->type,
+                });
+            }
+            // Se reporta una vez, al pasarse
+            if (rule->maxPerArea && ++counts[*element->type] == *rule->maxPerArea + 1) {
+                errors.push_back({
+                        .code = MapIssueCode::TooManyElements,
+                        .areaId = areaId,
+                        .elementType = element->type,
+                        .expected = rule->maxPerArea,
+                });
+            }
+        }
+    }
+}
+
 // Comprueba las entidades requeridas segun la configuracion, sin listas hardcodeadas aca.
 void validateRequiredElements(const MapDefinition& map, const MapRequirements& requirements,
                               const AreaIndex& areas, const ElementIndex& elements,
                               Issues& errors) {
     for (const auto& requirement: requirements.elements) {
+        if (!requirement.required) {
+            continue;
+        }
         bool hasTargetArea = false;
         bool hasCorrectElement = false;
         const MapElement* wrongLayerElement = nullptr;
@@ -549,6 +606,7 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
     }
     validateDoors(map, areas, elements, errors);
     validateSprites(elements, errors);
+    validateElementRules(requirements, areas, elements, errors);
     validateRequiredElements(map, requirements, areas, elements, errors);
     return errors;
 }

@@ -13,10 +13,18 @@ struct AreaRequirement {
     std::vector<int> floorNumbers;
 };
 
-struct ElementRequirement {
+// Donde puede ir un tipo de elemento, cuanto mide y cuantos puede haber. Un tipo que puede ir en
+// varios tipos de area tiene una regla por cada uno.
+struct ElementRule {
     AreaType areaType{};
     ElementType type{};
     ElementLayer layer{};
+    int width = 1;
+    int height = 1;
+    // Sin valor: no hay limite
+    std::optional<int> maxPerArea;
+    // Tiene que haber al menos uno en alguna area de ese tipo
+    bool required = false;
 };
 
 struct TransitionRequirement {
@@ -33,7 +41,7 @@ struct MapRequirements {
     // Exige al menos una ruta valida de salida en cada area.
     bool requireOutgoingTransitionForEachArea = false;
     std::vector<AreaRequirement> areas;
-    std::vector<ElementRequirement> elements;
+    std::vector<ElementRule> elements;
     std::vector<TransitionRequirement> transitions;
 };
 

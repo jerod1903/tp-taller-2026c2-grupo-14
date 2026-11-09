@@ -92,3 +92,52 @@ TEST(MapValidatorSpriteTest, ARoofCutByTheTopEdgeIsRejected) {
         return issue.code == maps::MapIssueCode::SpriteOutsideArea && issue.elementId == "cabana";
     }));
 }
+
+namespace {
+
+bool has_issue(const std::vector<maps::MapValidationIssue>& issues, maps::MapIssueCode code) {
+    return std::any_of(issues.begin(), issues.end(),
+                       [code](const auto& issue) { return issue.code == code; });
+}
+
+}  // namespace
+
+TEST(MapValidatorRulesTest, ACabinInTheVillageIsRejected) {
+    maps::MapDefinition map = example_map();
+    maps::MapElement& cabin = element_by_id(map, "cabana");
+    cabin.areaId = "pueblo";
+    cabin.x = 1;
+    cabin.y = 15;
+
+    EXPECT_TRUE(has_issue(maps::validateMap(map, requirements()),
+                          maps::MapIssueCode::ElementInWrongArea));
+}
+
+TEST(MapValidatorRulesTest, ABuildingWithAnotherSizeIsRejected) {
+    maps::MapDefinition map = example_map();
+    element_by_id(map, "mercado").width = 4;
+
+    EXPECT_TRUE(has_issue(maps::validateMap(map, requirements()),
+                          maps::MapIssueCode::WrongElementSize));
+}
+
+TEST(MapValidatorRulesTest, ASecondMarnieIsRejected) {
+    maps::MapDefinition map = example_map();
+    maps::MapElement copy = element_by_id(map, "marnie");
+    copy.id = "otra-marnie";
+    copy.x += 2;
+    map.elements.push_back(copy);
+
+    EXPECT_TRUE(
+            has_issue(maps::validateMap(map, requirements()), maps::MapIssueCode::TooManyElements));
+}
+
+TEST(MapValidatorRulesTest, OresHaveNoLimit) {
+    maps::MapDefinition map = example_map();
+    maps::MapElement copy = element_by_id(map, "mina-1-mineral-1");
+    copy.id = "mina-1-mineral-3";
+    copy.x += 2;
+    map.elements.push_back(copy);
+
+    EXPECT_TRUE(maps::validateMap(map, requirements()).empty());
+}

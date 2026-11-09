@@ -22,11 +22,9 @@ enum class ElementType {
     MerchantClint,
     MerchantPierre,
     MerchantRobin,
-    Rock,
     OreNode,
-    Chest,
-    Decoration,
     Door,
+    Exit,
     Stairs,
     SpawnPoint,
 };
@@ -152,16 +150,12 @@ inline std::optional<ElementType> elementTypeFromString(std::string_view value) 
         return ElementType::MerchantPierre;
     if (value == "merchant_robin")
         return ElementType::MerchantRobin;
-    if (value == "rock")
-        return ElementType::Rock;
     if (value == "ore_node")
         return ElementType::OreNode;
-    if (value == "chest")
-        return ElementType::Chest;
-    if (value == "decoration")
-        return ElementType::Decoration;
     if (value == "door")
         return ElementType::Door;
+    if (value == "exit")
+        return ElementType::Exit;
     if (value == "stairs")
         return ElementType::Stairs;
     if (value == "spawn_point")
@@ -187,16 +181,12 @@ inline std::string_view toString(ElementType type) {
             return "merchant_pierre";
         case ElementType::MerchantRobin:
             return "merchant_robin";
-        case ElementType::Rock:
-            return "rock";
         case ElementType::OreNode:
             return "ore_node";
-        case ElementType::Chest:
-            return "chest";
-        case ElementType::Decoration:
-            return "decoration";
         case ElementType::Door:
             return "door";
+        case ElementType::Exit:
+            return "exit";
         case ElementType::Stairs:
             return "stairs";
         case ElementType::SpawnPoint:
@@ -215,11 +205,9 @@ inline std::vector<ElementType> allElementTypes() {
             ElementType::MerchantClint,
             ElementType::MerchantPierre,
             ElementType::MerchantRobin,
-            ElementType::Rock,
             ElementType::OreNode,
-            ElementType::Chest,
-            ElementType::Decoration,
             ElementType::Door,
+            ElementType::Exit,
             ElementType::Stairs,
             ElementType::SpawnPoint,
     };
@@ -247,53 +235,35 @@ inline std::string_view toString(ElementLayer layer) {
     return "unknown_layer";
 }
 
-inline ElementLayer elementLayerFor(ElementType type) {
-    switch (type) {
-        case ElementType::Cabin:
-        case ElementType::Market:
-        case ElementType::CommunityCenter:
-        case ElementType::DungeonEntrance:
-            return ElementLayer::Structure;
-        case ElementType::MerchantMarnie:
-        case ElementType::MerchantClint:
-        case ElementType::MerchantPierre:
-        case ElementType::MerchantRobin:
-            return ElementLayer::Npc;
-        case ElementType::Rock:
-        case ElementType::OreNode:
-        case ElementType::Chest:
-        case ElementType::Decoration:
-        case ElementType::Door:
-        case ElementType::Stairs:
-        case ElementType::SpawnPoint:
-            return ElementLayer::Object;
-    }
-    return ElementLayer::Object;
-}
+// Lo que el juego sabe de cada tipo de elemento, mas alla de las reglas del mapa
+struct ElementTraits {
+    // Edificio al que se entra: la puerta es la celda de abajo al centro
+    bool hasDoor;
+    // Se pisa para ir a otra area: dispara una transicion
+    bool travel;
+};
 
-// Edificios a los que se entra: la puerta es la celda de abajo al centro. Sin default, para que
-// el compilador avise si se agrega un tipo y no se decide aca.
-inline bool hasDoor(ElementType type) {
+// Sin default, para que el compilador avise si se agrega un tipo y no se decide aca.
+inline ElementTraits elementTraits(ElementType type) {
     switch (type) {
         case ElementType::Cabin:
         case ElementType::Market:
         case ElementType::CommunityCenter:
-            return true;
+            return {.hasDoor = true, .travel = false};
         case ElementType::DungeonEntrance:
+        case ElementType::Door:
+        case ElementType::Exit:
+        case ElementType::Stairs:
+            return {.hasDoor = false, .travel = true};
         case ElementType::MerchantMarnie:
         case ElementType::MerchantClint:
         case ElementType::MerchantPierre:
         case ElementType::MerchantRobin:
-        case ElementType::Rock:
         case ElementType::OreNode:
-        case ElementType::Chest:
-        case ElementType::Decoration:
-        case ElementType::Door:
-        case ElementType::Stairs:
         case ElementType::SpawnPoint:
-            return false;
+            return {.hasDoor = false, .travel = false};
     }
-    return false;
+    return {.hasDoor = false, .travel = false};
 }
 
 struct MapArea {
@@ -329,7 +299,7 @@ struct MapCell {
     int y;
 };
 
-// La celda de abajo al centro del edificio (solo tiene sentido si hasDoor de su tipo)
+// La celda de abajo al centro del edificio (solo tiene sentido si su tipo tiene puerta)
 inline MapCell doorCell(const MapElement& building) {
     return {building.x + building.width / 2, building.y + building.height - 1};
 }
