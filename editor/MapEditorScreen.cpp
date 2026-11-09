@@ -9,6 +9,8 @@
 #include <QVBoxLayout>
 #include <algorithm>
 #include <exception>
+#include <optional>
+#include <string>
 #include <utility>
 
 #include "client/menu/components/MenuButton.h"
@@ -104,6 +106,12 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     layout->addLayout(createPalette());
     layout->addWidget(canvas, 1);
 
+    // La pantalla une la seleccion con el lienzo y con el boton Borrar
+    selectTool.onSelectionChanged([this](const std::optional<std::string>& elementId) {
+        canvas->showSelection(elementId);
+        removeButton->setEnabled(elementId.has_value());
+    });
+
     connect(backButton, &QPushButton::clicked, this, &MapEditorScreen::backRequested);
     connect(validateButton, &QPushButton::clicked, this, &MapEditorScreen::validate);
     connect(saveButton, &QPushButton::clicked, this, &MapEditorScreen::save);
@@ -123,7 +131,7 @@ QHBoxLayout* MapEditorScreen::createPalette() {
         palette->addWidget(button);
         connect(button, &QToolButton::clicked, this, [this, tile]() {
             paintTool.setTile(tile);
-            canvas->setTool(&paintTool);
+            useTool(&paintTool);
         });
     }
     // Un click en el borde entre dos areas pone (o quita) un porton de cada lado
@@ -134,10 +142,32 @@ QHBoxLayout* MapEditorScreen::createPalette() {
     passageButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     group->addButton(passageButton);
     palette->addWidget(passageButton);
-    connect(passageButton, &QToolButton::clicked, this,
-            [this]() { canvas->setTool(&passageTool); });
+    connect(passageButton, &QToolButton::clicked, this, [this]() { useTool(&passageTool); });
+
+    auto* selectButton = new QToolButton(this);
+    selectButton->setText("Seleccionar");
+    selectButton->setToolTip("Click en la base de un elemento para seleccionarlo");
+    selectButton->setCheckable(true);
+    selectButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
+    group->addButton(selectButton);
+    palette->addWidget(selectButton);
+    connect(selectButton, &QToolButton::clicked, this, [this]() { useTool(&selectTool); });
+
+    // No es una herramienta: borra lo seleccionado. Sin seleccion no se puede apretar.
+    removeButton = new QToolButton(this);
+    removeButton->setText("Borrar");
+    removeButton->setToolTip("Borra el elemento seleccionado");
+    removeButton->setEnabled(false);
+    removeButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
+    palette->addWidget(removeButton);
+    connect(removeButton, &QToolButton::clicked, this, [this]() { selectTool.removeSelected(); });
     palette->addStretch();
     return palette;
+}
+
+void MapEditorScreen::useTool(Tool* tool) {
+    selectTool.clear();
+    canvas->setTool(tool);
 }
 
 void MapEditorScreen::open(const std::string& mapPath) {
@@ -149,6 +179,7 @@ void MapEditorScreen::open(const std::string& mapPath) {
         arrangeAreas(result.map);
         result.issues = service.validate(result.map);
     }
+    selectTool.clear();
     editing.load(std::move(result.map));
     if (!result.issues.empty()) {
         showIssues("El mapa tiene errores", result.issues);

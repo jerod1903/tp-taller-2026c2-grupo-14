@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 #include "common/map/MapDefinition.h"
 
@@ -15,6 +16,9 @@ public:
     // Las operaciones reciben casillas del mapa general
     void paint(const stardew::maps::MapCell& cell, stardew::maps::TileType tile);
     void togglePassage(const stardew::maps::MapCell& cell);
+    // Quita el elemento y sus transiciones. Un porton se va con su par; la entrada a la mina no se
+    // borra.
+    void removeElement(const std::string& id);
 
     // Cambio el terreno de una casilla
     void onTileChanged(std::function<void(const stardew::maps::MapCell&)> callback);

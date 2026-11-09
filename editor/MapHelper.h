@@ -20,9 +20,17 @@ struct AreaCell {
 // cae en ninguna.
 std::optional<AreaCell> cellAt(const stardew::maps::MapDefinition& map, int x, int y);
 
+// El area con ese id, o nullptr si no hay
+const stardew::maps::MapArea* areaById(const stardew::maps::MapDefinition& map,
+                                       const std::string& id);
+
 // El elemento que ocupa la casilla, o nullptr si esta libre
 const stardew::maps::MapElement* elementAt(const stardew::maps::MapDefinition& map,
                                            const AreaCell& cell);
+
+// El elemento con ese id, o nullptr si no hay
+const stardew::maps::MapElement* elementById(const stardew::maps::MapDefinition& map,
+                                             const std::string& id);
 
 // Si el terreno de la casilla se puede pisar
 bool walkable(const stardew::maps::MapDefinition& map, const AreaCell& cell);

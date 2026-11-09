@@ -4,6 +4,7 @@ target_sources(taller_editor
     main.cpp
     MapCanvas.cpp
     EditorWindow.cpp
+    Elements.cpp
     MapEditing.cpp
     MapHelper.cpp
     MapEditorScreen.cpp
@@ -11,6 +12,7 @@ target_sources(taller_editor
     SpriteSheets.cpp
     tools/PaintTool.cpp
     tools/PassageTool.cpp
+    tools/SelectTool.cpp
     # El estilo de madera del menu del juego, tal como esta en client/menu
     ${CMAKE_SOURCE_DIR}/client/menu/components/MenuButton.cpp
     ${CMAKE_SOURCE_DIR}/client/menu/styles/StyleManager.cpp
@@ -19,6 +21,7 @@ target_sources(taller_editor
     # .h files
     MapCanvas.h
     EditorWindow.h
+    Elements.h
     MapEditing.h
     MapHelper.h
     MapEditorScreen.h
@@ -26,6 +29,7 @@ target_sources(taller_editor
     SpriteSheets.h
     tools/PaintTool.h
     tools/PassageTool.h
+    tools/SelectTool.h
     tools/Tool.h
     )
 

@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 
+#include "editor/Elements.h"
 #include "editor/MapHelper.h"
 #include "editor/Passages.h"
 
@@ -38,6 +39,21 @@ void MapEditing::paint(const maps::MapCell& cell, maps::TileType tile) {
 
 void MapEditing::togglePassage(const maps::MapCell& cell) {
     if (::togglePassage(definition, cell.x, cell.y) && mapChanged) {
+        mapChanged();
+    }
+}
+
+void MapEditing::removeElement(const std::string& id) {
+    const maps::MapElement* element = elementById(definition, id);
+    if (!element || element->type == maps::ElementType::DungeonEntrance) {
+        return;
+    }
+    if (element->type == maps::ElementType::Door) {
+        removePassage(definition, id);
+    } else {
+        ::removeElement(definition, id);
+    }
+    if (mapChanged) {
         mapChanged();
     }
 }

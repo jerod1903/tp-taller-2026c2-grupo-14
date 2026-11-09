@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -13,6 +15,11 @@ namespace maps = stardew::maps;
 
 // En valle.toml el pueblo empieza en la columna 30 del mapa general
 constexpr int VILLAGE_OFFSET_X = 30;
+
+bool triggers(const maps::MapDefinition& map, const std::string& elementId) {
+    return std::any_of(map.transitions.begin(), map.transitions.end(),
+                       [&elementId](const auto& t) { return t.triggerElementId == elementId; });
+}
 
 class MapEditingTest: public ::testing::Test {
 protected:
@@ -75,5 +82,29 @@ TEST_F(MapEditingTest, APassageNotifiesThatTheMapChanged) {
 TEST_F(MapEditingTest, AClickThatDoesNotMakeAPassageDoesNotNotify) {
     editing.togglePassage({10, 10});
 
+    EXPECT_EQ(mapChanges, 1);
+}
+
+TEST_F(MapEditingTest, RemovingAnElementAlsoRemovesItsTransitions) {
+    editing.removeElement("mina-1-escalera");
+
+    EXPECT_EQ(elementById(editing.map(), "mina-1-escalera"), nullptr);
+    EXPECT_FALSE(triggers(editing.map(), "mina-1-escalera"));
+    EXPECT_EQ(mapChanges, 2);
+}
+
+TEST_F(MapEditingTest, RemovingADoorRemovesTheWholePassage) {
+    editing.removeElement("granja-porton");
+
+    EXPECT_EQ(elementById(editing.map(), "granja-porton"), nullptr);
+    EXPECT_EQ(elementById(editing.map(), "pueblo-porton"), nullptr);
+    EXPECT_FALSE(triggers(editing.map(), "granja-porton"));
+    EXPECT_FALSE(triggers(editing.map(), "pueblo-porton"));
+}
+
+TEST_F(MapEditingTest, TheDungeonEntranceIsNotRemoved) {
+    editing.removeElement("entrada-mina");
+
+    EXPECT_NE(elementById(editing.map(), "entrada-mina"), nullptr);
     EXPECT_EQ(mapChanges, 1);
 }

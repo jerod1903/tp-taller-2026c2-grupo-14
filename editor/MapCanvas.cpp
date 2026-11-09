@@ -28,6 +28,8 @@ constexpr double ZOOM_STEP = 1.25;
 const QColor UNDRAWN_ELEMENT(255, 235, 173, 120);
 // Encima del piso; entre elementos, el de mas abajo tapa al de mas arriba
 constexpr double ELEMENTS_Z = 1;
+// El elemento seleccionado se ve semitransparente
+constexpr double SELECTED_OPACITY = 0.5;
 // El borde y el nombre de cada area van encima de todo
 constexpr double LABELS_Z = 1e9;
 constexpr double NAME_PADDING = 2;
@@ -84,11 +86,18 @@ MapCanvas::MapCanvas(MapEditing& editing, QWidget* parent):
 
 void MapCanvas::setTool(Tool* active) { tool = active; }
 
+void MapCanvas::showSelection(const std::optional<std::string>& elementId) {
+    setElementOpacity(selection, 1);
+    selection = elementId;
+    setElementOpacity(selection, SELECTED_OPACITY);
+}
+
 void MapCanvas::redraw() {
     const int horizontal = horizontalScrollBar()->value();
     const int vertical = verticalScrollBar()->value();
     scene.clear();
     areaTiles.clear();
+    elementItems.clear();
     const maps::MapDefinition& map = editing.map();
     for (const maps::MapArea& area: map.areas) {
         addArea(area);
@@ -103,6 +112,8 @@ void MapCanvas::redraw() {
                                                           SCENE_MARGIN, SCENE_MARGIN));
     horizontalScrollBar()->setValue(horizontal);
     verticalScrollBar()->setValue(vertical);
+    // Las imagenes son nuevas: el seleccionado se vuelve a mostrar
+    showSelection(selection);
 }
 
 void MapCanvas::updateTile(const maps::MapCell& cell) {
@@ -157,6 +168,7 @@ void MapCanvas::addElement(const maps::MapArea& area, const maps::MapElement& el
     }
     item->setZValue(ELEMENTS_Z + bottom);
     item->setToolTip(QString::fromStdString(element.id));
+    elementItems[element.id] = item;
 }
 
 void MapCanvas::wheelEvent(QWheelEvent* event) {
@@ -197,6 +209,17 @@ void MapCanvas::mouseReleaseEvent(QMouseEvent* event) {
         viewport()->unsetCursor();
     } else if (event->button() == Qt::LeftButton && tool) {
         tool->onRelease(cellUnder(event->pos()));
+    }
+}
+
+void MapCanvas::setElementOpacity(const std::optional<std::string>& elementId, double opacity) {
+    if (!elementId) {
+        return;
+    }
+    // Un elemento recien borrado ya no tiene imagen
+    auto item = elementItems.find(*elementId);
+    if (item != elementItems.end()) {
+        item->second->setOpacity(opacity);
     }
 }
 

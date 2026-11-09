@@ -11,11 +11,15 @@
 #include "editor/SpriteSheets.h"
 #include "editor/tools/PaintTool.h"
 #include "editor/tools/PassageTool.h"
+#include "editor/tools/SelectTool.h"
 
 class MapCanvas;
 class QHBoxLayout;
+class QToolButton;
+class Tool;
 
-// Pantalla de edicion: el mapa entero, pintar con el pincel, validar y guardar.
+// Pantalla de edicion: el mapa entero, pintar con el pincel, poner pasajes, seleccionar y borrar
+// elementos, validar y guardar.
 class MapEditorScreen: public QWidget {
     Q_OBJECT
 
@@ -29,6 +33,8 @@ signals:
 
 private:
     QHBoxLayout* createPalette();
+    // Cambia la herramienta del lienzo; lo que estaba seleccionado deja de estarlo
+    void useTool(Tool* tool);
     void validate();
     void save();
     void showIssues(const QString& title,
@@ -39,7 +45,9 @@ private:
     MapEditing editing;
     PaintTool paintTool{editing};
     PassageTool passageTool{editing};
+    SelectTool selectTool{editing};
     std::string path;
     SpriteSheets sprites;
     MapCanvas* canvas;
+    QToolButton* removeButton = nullptr;
 };

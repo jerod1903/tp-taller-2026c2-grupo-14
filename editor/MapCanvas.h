@@ -2,11 +2,15 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <map>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "common/map/MapDefinition.h"
 #include "editor/SpriteSheets.h"
 
+class QGraphicsItem;
 class QGraphicsPixmapItem;
 
 class MapEditing;
@@ -20,6 +24,9 @@ class MapCanvas: public QGraphicsView {
 public:
     explicit MapCanvas(MapEditing& editing, QWidget* parent = nullptr);
     void setTool(Tool* tool);
+    // Muestra semitransparente el elemento con ese id (y el anterior vuelve a verse normal).
+    // Vacio: ninguno.
+    void showSelection(const std::optional<std::string>& elementId);
 
 protected:
     // Rueda: zoom centrado en el mouse
@@ -38,6 +45,7 @@ private:
     void updateTile(const stardew::maps::MapCell& cell);
     void addArea(const stardew::maps::MapArea& area);
     void addElement(const stardew::maps::MapArea& area, const stardew::maps::MapElement& element);
+    void setElementOpacity(const std::optional<std::string>& elementId, double opacity);
     stardew::maps::MapCell cellUnder(const QPoint& viewPosition) const;
 
     MapEditing& editing;
@@ -46,6 +54,9 @@ private:
     SpriteSheets sprites;
     // En el mismo orden que map.areas
     std::vector<TileItems> areaTiles;
+    // La imagen de cada elemento por su id, para mostrar el seleccionado
+    std::map<std::string, QGraphicsItem*> elementItems;
+    std::optional<std::string> selection;
     // Donde estaba el mouse en el ultimo paso del arrastre con la rueda
     QPoint lastDragPosition;
 };

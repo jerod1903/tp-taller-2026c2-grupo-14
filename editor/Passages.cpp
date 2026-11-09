@@ -1,10 +1,10 @@
 #include "editor/Passages.h"
 
-#include <algorithm>
 #include <array>
 #include <optional>
 #include <string>
 
+#include "editor/Elements.h"
 #include "editor/MapHelper.h"
 
 namespace maps = stardew::maps;
@@ -37,11 +37,6 @@ std::optional<Border> otherSide(const maps::MapDefinition& map, const AreaCell& 
 
 bool isPassageDoor(const maps::MapElement* element) {
     return element && element->type == maps::ElementType::Door;
-}
-
-void removeDoor(maps::MapDefinition& map, const std::string& id) {
-    std::erase_if(map.elements, [&id](const auto& e) { return e.id == id; });
-    std::erase_if(map.transitions, [&id](const auto& t) { return t.triggerElementId == id; });
 }
 
 // "granja-pasaje-1", "granja-pasaje-2"... el primero libre, tambien para su transicion
@@ -80,8 +75,8 @@ bool togglePassage(maps::MapDefinition& map, int x, int y) {
     if (isPassageDoor(hereElement) && isPassageDoor(thereElement)) {
         const std::string hereId = hereElement->id;
         const std::string thereId = thereElement->id;
-        removeDoor(map, hereId);
-        removeDoor(map, thereId);
+        removeElement(map, hereId);
+        removeElement(map, thereId);
         return true;
     }
 
@@ -94,5 +89,25 @@ bool togglePassage(maps::MapDefinition& map, int x, int y) {
     }
     addDoor(map, *here, *thereArrival);
     addDoor(map, there, *hereArrival);
+    return true;
+}
+
+bool removePassage(maps::MapDefinition& map, const std::string& doorId) {
+    const maps::MapElement* door = elementById(map, doorId);
+    const maps::MapArea* area = door ? areaById(map, door->areaId) : nullptr;
+    if (!isPassageDoor(door) || !area) {
+        return false;
+    }
+    // El porton del otro lado del borde, si esta
+    const int x = area->offsetX + door->x;
+    const int y = area->offsetY + door->y;
+    const std::optional<AreaCell> here = cellAt(map, x, y);
+    const std::optional<Border> border = here ? otherSide(map, *here, x, y) : std::nullopt;
+    const maps::MapElement* pair = border ? elementAt(map, border->there) : nullptr;
+    const std::string pairId = isPassageDoor(pair) ? pair->id : "";
+    removeElement(map, doorId);
+    if (!pairId.empty()) {
+        removeElement(map, pairId);
+    }
     return true;
 }

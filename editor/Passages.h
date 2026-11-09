@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "common/map/MapDefinition.h"
 
 // Un pasaje une dos areas vecinas en el mapa general: un porton a cada lado del borde y una
@@ -10,3 +12,7 @@
 // otra area, crea el pasaje. Devuelve false si no cambio nada: la casilla no da a otra area, esta
 // ocupada o alguno de los lados no se puede pisar.
 bool togglePassage(stardew::maps::MapDefinition& map, int x, int y);
+
+// Quita el porton con ese id, su par del otro lado del borde (si esta) y las transiciones de los
+// dos. Devuelve false si ese id no es un porton.
+bool removePassage(stardew::maps::MapDefinition& map, const std::string& doorId);

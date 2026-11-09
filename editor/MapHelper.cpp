@@ -16,12 +16,24 @@ std::optional<AreaCell> cellAt(const maps::MapDefinition& map, int x, int y) {
     return std::nullopt;
 }
 
+const maps::MapArea* areaById(const maps::MapDefinition& map, const std::string& id) {
+    auto area = std::find_if(map.areas.begin(), map.areas.end(),
+                             [&id](const auto& a) { return a.id == id; });
+    return area == map.areas.end() ? nullptr : &*area;
+}
+
 const maps::MapElement* elementAt(const maps::MapDefinition& map, const AreaCell& cell) {
     const std::string& areaId = map.areas[cell.area].id;
     auto element = std::find_if(map.elements.begin(), map.elements.end(), [&](const auto& e) {
         return e.areaId == areaId && cell.x >= e.x && cell.x < e.x + e.width && cell.y >= e.y &&
                cell.y < e.y + e.height;
     });
+    return element == map.elements.end() ? nullptr : &*element;
+}
+
+const maps::MapElement* elementById(const maps::MapDefinition& map, const std::string& id) {
+    auto element = std::find_if(map.elements.begin(), map.elements.end(),
+                                [&id](const auto& e) { return e.id == id; });
     return element == map.elements.end() ? nullptr : &*element;
 }
 
