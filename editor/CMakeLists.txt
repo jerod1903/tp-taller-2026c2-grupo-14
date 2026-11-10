@@ -8,18 +8,19 @@ target_sources(taller_editor
     EditorWindow.cpp
     ElementHelper.cpp
     Elements.cpp
-    FloorSizeDialog.cpp
     MapEditing.cpp
     MapHelper.cpp
     MapEditorScreen.cpp
     Mine.cpp
     MineHelper.cpp
     Passages.cpp
+    SizeDialog.cpp
     SpriteSheets.cpp
+    tools/AreaTool.cpp
     tools/EntranceTool.cpp
-    tools/MoveAreaTool.cpp
     tools/PaintTool.cpp
     tools/PassageTool.cpp
+    tools/PlaceAreaTool.cpp
     tools/PlaceTool.cpp
     tools/SelectTool.cpp
     # El estilo de madera del menu del juego, tal como esta en client/menu
@@ -34,19 +35,20 @@ target_sources(taller_editor
     EditorWindow.h
     ElementHelper.h
     Elements.h
-    FloorSizeDialog.h
     MapEditing.h
     MapHelper.h
     MapEditorScreen.h
     Mine.h
     MineHelper.h
     Passages.h
+    SizeDialog.h
     SpriteSheets.h
+    tools/AreaTool.h
     tools/EntranceTool.h
     tools/Ghost.h
-    tools/MoveAreaTool.h
     tools/PaintTool.h
     tools/PassageTool.h
+    tools/PlaceAreaTool.h
     tools/PlaceTool.h
     tools/SelectTool.h
     tools/Tool.h

@@ -197,7 +197,7 @@ TEST_F(MapEditingTest, AnElementIsNotPlacedIfItsBaseLeavesTheArea) {
 TEST_F(MapEditingTest, TheEntranceCreatesTheFloorsOfTheMineWhenThereAreNone) {
     editing.load(example_map_without_mine());
     // Donde estaba la entrada en valle.toml: (24, 2) del pueblo
-    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 24, 2}, FloorSize{20, 15}));
+    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 24, 2}, AreaSize{20, 15}));
 
     const maps::MapDefinition& map = editing.map();
     EXPECT_EQ(std::count_if(map.areas.begin(), map.areas.end(),
@@ -212,7 +212,7 @@ TEST_F(MapEditingTest, TheEntranceCreatesTheFloorsOfTheMineWhenThereAreNone) {
 }
 
 TEST_F(MapEditingTest, AnotherEntranceOnlyLinksToTheFloorsThatAlreadyExist) {
-    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 20, 17}, FloorSize{20, 15}));
+    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 20, 17}, AreaSize{20, 15}));
 
     EXPECT_EQ(editing.map().areas.size(), example_map().areas.size());
     EXPECT_TRUE(triggers(editing.map(), "dungeon_entrance-1"));
@@ -224,4 +224,52 @@ TEST_F(MapEditingTest, TheExitAndTheStairsOfAFloorAreNotRemoved) {
 
     EXPECT_NE(elementById(editing.map(), "mina-1-salida"), nullptr);
     EXPECT_NE(elementById(editing.map(), "mina-1-escalera"), nullptr);
+}
+
+TEST_F(MapEditingTest, ANewAreaIsAddedEmptyWhereItDoesNotStepOnAnother) {
+    EXPECT_FALSE(editing.placeArea(maps::AreaType::Farm, {10, 10}, {5, 5}));
+    ASSERT_TRUE(editing.placeArea(maps::AreaType::Farm, {10, 8}, {100, 0}));
+
+    // Ya hay una granja: la nueva es granja-2
+    const maps::MapArea* farm = areaById(editing.map(), "granja-2");
+    ASSERT_NE(farm, nullptr);
+    EXPECT_EQ(farm->offsetX, 100);
+    EXPECT_EQ(farm->width, 10);
+    EXPECT_EQ(farm->height, 8);
+    EXPECT_EQ(farm->tiles[7][9], maps::TileType::Grass);
+}
+
+TEST_F(MapEditingTest, RemovingAnAreaTakesItsElementsItsTransitionsAndItsPassages) {
+    editing.removeArea("granja");
+
+    const maps::MapDefinition& map = editing.map();
+    EXPECT_EQ(areaById(map, "granja"), nullptr);
+    EXPECT_EQ(elementById(map, "cabana"), nullptr);
+    // El porton del pueblo era del pasaje con la granja
+    EXPECT_EQ(elementById(map, "pueblo-porton"), nullptr);
+    EXPECT_TRUE(std::none_of(map.transitions.begin(), map.transitions.end(), [](const auto& t) {
+        return t.fromAreaId == "granja" || t.toAreaId == "granja";
+    }));
+}
+
+TEST_F(MapEditingTest, RemovingAFloorRemovesTheWholeMineButNotTheEntrance) {
+    editing.removeArea("mina-3");
+
+    const maps::MapDefinition& map = editing.map();
+    EXPECT_TRUE(std::none_of(map.areas.begin(), map.areas.end(),
+                             [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; }));
+    EXPECT_NE(elementById(map, "entrada-mina"), nullptr);
+    EXPECT_FALSE(triggers(map, "entrada-mina"));
+}
+
+TEST_F(MapEditingTest, TheEntranceOfANewVillageTakesTheExitsOfTheMine) {
+    editing.removeArea("pueblo");
+    ASSERT_TRUE(editing.placeArea(maps::AreaType::Village, {30, 20}, {VILLAGE_OFFSET_X, 0}));
+    ASSERT_TRUE(editing.placeEntrance({VILLAGE_OFFSET_X + 24, 2}, std::nullopt));
+
+    const maps::MapTransition* exit = transitionOf(editing.map(), "mina-1-salida");
+    ASSERT_NE(exit, nullptr);
+    EXPECT_EQ(exit->toAreaId, "pueblo");
+    EXPECT_GT(exit->targetY, 2);
+    EXPECT_TRUE(triggers(editing.map(), "dungeon_entrance-1"));
 }

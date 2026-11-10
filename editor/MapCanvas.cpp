@@ -17,6 +17,7 @@
 #include "common/map/MapSprites.h"
 #include "editor/MapEditing.h"
 #include "editor/MapHelper.h"
+#include "editor/MineHelper.h"
 #include "editor/tools/Tool.h"
 
 namespace maps = stardew::maps;
@@ -38,6 +39,10 @@ const QColor GHOST_BLOCKED(220, 30, 30);
 // Las areas que se mueven: un recuadro claro, rojo si pisan otra
 const QColor AREA_GHOST(255, 235, 173, 70);
 const QColor AREA_GHOST_BLOCKED(220, 30, 30, 90);
+// El borde del area seleccionada: grueso y del amarillo de los nombres, del mismo ancho con
+// cualquier zoom
+const QColor AREA_SELECTED(255, 214, 92);
+constexpr int AREA_SELECTED_WIDTH = 3;
 // El borde y el nombre de cada area van encima de todo
 constexpr double LABELS_Z = 1e9;
 constexpr double GHOST_Z = LABELS_Z - 1;
@@ -79,27 +84,36 @@ void MapCanvas::showSelection(const std::optional<std::string>& elementId) {
 }
 
 void MapCanvas::showGhost(const std::optional<Ghost>& shown) {
-    delete ghostItem;
-    ghostItem = nullptr;
     ghost = shown;
-    drawGhost();
+    redrawOverlays();
 }
 
 void MapCanvas::showAreaGhost(const std::optional<AreaGhost>& shown) {
-    for (QGraphicsItem* item: areaGhostItems) {
+    areaGhost = shown;
+    redrawOverlays();
+}
+
+void MapCanvas::showAreaSelection(const std::optional<std::string>& areaId) {
+    selectedArea = areaId;
+    redrawOverlays();
+}
+
+void MapCanvas::redrawOverlays() {
+    for (QGraphicsItem* item: overlayItems) {
         delete item;
     }
-    areaGhostItems.clear();
-    areaGhost = shown;
+    overlayItems.clear();
+    drawGhost();
     drawAreaGhost();
+    drawAreaSelection();
 }
 
 void MapCanvas::redraw() {
     const int horizontal = horizontalScrollBar()->value();
     const int vertical = verticalScrollBar()->value();
     scene.clear();
-    ghostItem = nullptr;
-    areaGhostItems.clear();
+    // La escena ya borro las superposiciones
+    overlayItems.clear();
     areaTiles.clear();
     elementItems.clear();
     const maps::MapDefinition& map = editing.map();
@@ -118,8 +132,7 @@ void MapCanvas::redraw() {
     verticalScrollBar()->setValue(vertical);
     // Las imagenes son nuevas: el seleccionado se vuelve a mostrar
     showSelection(selection);
-    drawGhost();
-    drawAreaGhost();
+    redrawOverlays();
 }
 
 void MapCanvas::updateTile(const maps::MapCell& cell) {
@@ -189,16 +202,17 @@ void MapCanvas::drawGhost() {
         return;
     }
     // La casilla del mouse es la de abajo a la izquierda de la base
-    ghostItem = addElementImage(ghost->type, ghost->bottomLeft.x, ghost->bottomLeft.y + 1,
-                                ghost->width, ghost->height);
-    ghostItem->setZValue(GHOST_Z);
-    ghostItem->setOpacity(GHOST_OPACITY);
+    QGraphicsItem* item = addElementImage(ghost->type, ghost->bottomLeft.x, ghost->bottomLeft.y + 1,
+                                          ghost->width, ghost->height);
+    item->setZValue(GHOST_Z);
+    item->setOpacity(GHOST_OPACITY);
     if (!ghost->fits) {
         auto* tint = new QGraphicsColorizeEffect();
         tint->setColor(GHOST_BLOCKED);
         // El item se queda con el efecto y lo borra
-        ghostItem->setGraphicsEffect(tint);
+        item->setGraphicsEffect(tint);
     }
+    overlayItems.push_back(item);
 }
 
 void MapCanvas::drawAreaGhost() {
@@ -211,7 +225,22 @@ void MapCanvas::drawAreaGhost() {
                 scene.addRect(rect.x * TILE, rect.y * TILE, rect.width * TILE, rect.height * TILE,
                               QPen(AREA_BORDER), QBrush(fill));
         item->setZValue(GHOST_Z);
-        areaGhostItems.push_back(item);
+        overlayItems.push_back(item);
+    }
+}
+
+void MapCanvas::drawAreaSelection() {
+    if (!selectedArea) {
+        return;
+    }
+    QPen pen(AREA_SELECTED, AREA_SELECTED_WIDTH);
+    pen.setCosmetic(true);
+    for (const std::string& id: areasMovingWith(editing.map(), *selectedArea)) {
+        const CellRect rect = areaRect(*areaById(editing.map(), id));
+        QGraphicsRectItem* item = scene.addRect(rect.x * TILE, rect.y * TILE, rect.width * TILE,
+                                                rect.height * TILE, pen, QBrush(Qt::NoBrush));
+        item->setZValue(GHOST_Z);
+        overlayItems.push_back(item);
     }
 }
 

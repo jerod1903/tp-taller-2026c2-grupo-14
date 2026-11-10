@@ -8,7 +8,7 @@ EntranceTool::EntranceTool(MapEditing& editing): PlaceTool(editing) {
     setType(maps::ElementType::DungeonEntrance);
 }
 
-void EntranceTool::setFloorSize(std::optional<FloorSize> size) { floorSize = size; }
+void EntranceTool::setFloorSize(std::optional<AreaSize> size) { floorSize = size; }
 
 bool EntranceTool::place(maps::ElementType, const maps::MapCell& cell) {
     return editing.placeEntrance(cell, floorSize);

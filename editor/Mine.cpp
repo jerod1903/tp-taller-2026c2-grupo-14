@@ -37,7 +37,7 @@ std::string floorId(int number) { return "mina-" + std::to_string(number); }
 
 // Un piso vacio: pared en el borde y piso adentro. index es su lugar en las filas de pisos, que
 // empiezan en la fila top del mapa general.
-maps::MapArea floorArea(int number, const FloorSize& size, int index, int top) {
+maps::MapArea floorArea(int number, const AreaSize& size, int index, int top) {
     maps::MapArea area;
     area.id = floorId(number);
     area.type = maps::AreaType::DungeonFloor;
@@ -107,7 +107,7 @@ std::optional<FloorSpot> floorSpotOf(const maps::MapDefinition& map, maps::Eleme
 }  // namespace
 
 void createMine(maps::MapDefinition& map, const maps::MapRequirements& requirements,
-                const FloorSize& size, const std::string& entranceId) {
+                const AreaSize& size, const std::string& entranceId) {
     const std::vector<int> numbers = floorNumbers(requirements);
     const int count = static_cast<int>(numbers.size());
     const int top = bottomOfAreas(map) + AREA_GAP;

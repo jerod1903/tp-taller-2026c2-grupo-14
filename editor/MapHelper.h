@@ -22,6 +22,12 @@ struct AreaCell {
     int y;
 };
 
+// El tamano de un area, en casillas
+struct AreaSize {
+    int width;
+    int height;
+};
+
 // Un rectangulo de casillas del mapa general
 struct CellRect {
     int x;

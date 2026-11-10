@@ -16,16 +16,24 @@
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/styles/StyleManager.h"
 #include "editor/BlockPalette.h"
-#include "editor/FloorSizeDialog.h"
 #include "editor/MapCanvas.h"
 #include "editor/MapHelper.h"
 #include "editor/MineHelper.h"
+#include "editor/SizeDialog.h"
 
 namespace maps = stardew::maps;
 
 namespace {
 constexpr int PALETTE_ICON_SIZE = 32;
 constexpr int PALETTE_BUTTON_PADDING = 8;
+
+// Los pisos de la mina: lo justo para la pared, la salida, la escalera y algo de piso, y mas de 30
+// es tedioso de editar. Por defecto, los de valle.toml.
+const SizeRequest FLOOR_SIZE{
+        "Pisos de la mina", "Todos los pisos miden lo mismo y despues no cambia.", 5, 30, {20, 15}};
+// La granja y el pueblo: por defecto, los de valle.toml. El titulo lo pone quien lo pide.
+const SizeRequest AREA_SIZE{
+        "", "Para cambiar el tamaño despues, se borra y se crea de nuevo.", 10, 60, {30, 20}};
 
 // Barras finas del color de los botones de madera, sin las flechas de los extremos. Se ponen en la
 // pantalla para que valgan en el lienzo y en el panel de elementos.
@@ -149,17 +157,22 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     layout->addLayout(createPalette(group));
     layout->addLayout(body, 1);
 
-    // La pantalla une la seleccion con el lienzo y con el boton Borrar
+    // La pantalla une la seleccion (de un elemento o de un area) con el lienzo y con el boton
+    // Borrar. Al cambiar de herramienta se limpia, asi que hay una sola a la vez.
     selectTool.onSelectionChanged([this](const std::optional<std::string>& elementId) {
         canvas->showSelection(elementId);
         removeButton->setEnabled(elementId.has_value());
     });
+    areaTool.onSelectionChanged([this](const std::optional<std::string>& areaId) {
+        canvas->showAreaSelection(areaId);
+        removeButton->setEnabled(areaId.has_value());
+    });
     // Los fantasmas de lo que se arrastra (un elemento o un area) van al lienzo
     selectTool.onGhostChanged(
             [this](const std::optional<Ghost>& ghost) { canvas->showGhost(ghost); });
-    moveAreaTool.onGhostChanged(
+    areaTool.onGhostChanged(
             [this](const std::optional<AreaGhost>& ghost) { canvas->showAreaGhost(ghost); });
-    moveAreaTool.onConfirmBrokenPassages([this](int brokenPassages) {
+    areaTool.onConfirmBrokenPassages([this](int brokenPassages) {
         const QString passages =
                 brokenPassages == 1 ?
                         QString("queda separado un pasaje, que se va") :
@@ -169,6 +182,11 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     });
     connectPlacing(placeTool);
     connectPlacing(entranceTool);
+    placeAreaTool.onGhostChanged(
+            [this](const std::optional<AreaGhost>& ghost) { canvas->showAreaGhost(ghost); });
+    placeAreaTool.onDone([this]() { backToSelect(); });
+
+    connect(blocks, &BlockPalette::areaChosen, this, &MapEditorScreen::chooseArea);
 
     connect(blocks, &BlockPalette::typeChosen, this, [this](maps::ElementType type) {
         if (type == maps::ElementType::DungeonEntrance) {
@@ -209,14 +227,15 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     palette->addWidget(passageButton);
     connect(passageButton, &QToolButton::clicked, this, [this]() { useTool(&passageTool); });
 
-    auto* moveAreaButton = new QToolButton(this);
-    moveAreaButton->setText("Mover área");
-    moveAreaButton->setToolTip("Arrastrar un area la mueve con todo; los pisos de la mina, juntos");
-    moveAreaButton->setCheckable(true);
-    moveAreaButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
-    group->addButton(moveAreaButton);
-    palette->addWidget(moveAreaButton);
-    connect(moveAreaButton, &QToolButton::clicked, this, [this]() { useTool(&moveAreaTool); });
+    auto* areaButton = new QToolButton(this);
+    areaButton->setText("Áreas");
+    areaButton->setToolTip("Click en un area la selecciona (Borrar la quita); arrastrarla la "
+                           "mueve con todo. Los pisos de la mina van juntos.");
+    areaButton->setCheckable(true);
+    areaButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
+    group->addButton(areaButton);
+    palette->addWidget(areaButton);
+    connect(areaButton, &QToolButton::clicked, this, [this]() { useTool(&areaTool); });
 
     selectButton = new QToolButton(this);
     selectButton->setText("Seleccionar");
@@ -231,30 +250,26 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     // No es una herramienta: borra lo seleccionado. Sin seleccion no se puede apretar.
     removeButton = new QToolButton(this);
     removeButton->setText("Borrar");
-    removeButton->setToolTip("Borra el elemento seleccionado");
+    removeButton->setToolTip("Borra el elemento o el area seleccionada");
     removeButton->setEnabled(false);
     removeButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     palette->addWidget(removeButton);
-    connect(removeButton, &QToolButton::clicked, this, [this]() { selectTool.removeSelected(); });
+    connect(removeButton, &QToolButton::clicked, this, &MapEditorScreen::removeSelected);
     palette->addStretch();
     return palette;
 }
 
 void MapEditorScreen::connectPlacing(PlaceTool& tool) {
     tool.onGhostChanged([this](const std::optional<Ghost>& ghost) { canvas->showGhost(ghost); });
-    tool.onDone([this]() {
-        selectButton->setChecked(true);
-        useTool(&selectTool);
-    });
+    tool.onDone([this]() { backToSelect(); });
 }
 
 void MapEditorScreen::chooseEntrance() {
-    std::optional<FloorSize> floorSize;
+    std::optional<AreaSize> floorSize;
     if (!hasDungeonFloors(editing.map())) {
-        FloorSizeDialog dialog(this);
+        SizeDialog dialog(FLOOR_SIZE, this);
         if (dialog.exec() != QDialog::Accepted) {
-            selectButton->setChecked(true);
-            useTool(&selectTool);
+            backToSelect();
             return;
         }
         floorSize = dialog.size();
@@ -263,11 +278,52 @@ void MapEditorScreen::chooseEntrance() {
     useTool(&entranceTool);
 }
 
+void MapEditorScreen::chooseArea(maps::AreaType type) {
+    SizeRequest request = AREA_SIZE;
+    request.title = type == maps::AreaType::Farm ? "Granja nueva" : "Pueblo nuevo";
+    SizeDialog dialog(request, this);
+    if (dialog.exec() != QDialog::Accepted) {
+        backToSelect();
+        return;
+    }
+    placeAreaTool.setArea(type, dialog.size());
+    useTool(&placeAreaTool);
+}
+
+void MapEditorScreen::backToSelect() {
+    selectButton->setChecked(true);
+    useTool(&selectTool);
+}
+
+void MapEditorScreen::removeSelected() {
+    if (activeTool != &areaTool) {
+        selectTool.removeSelected();
+        return;
+    }
+    const std::optional<AreaRemoval> removal =
+            areaTool.selected() ? editing.areaRemovalOf(*areaTool.selected()) : std::nullopt;
+    if (!removal) {
+        return;
+    }
+    const QString areas = removal->areaIds.size() == 1 ?
+                                  QString::fromStdString(removal->areaIds.front()) :
+                                  QString("los %1 pisos de la mina").arg(removal->areaIds.size());
+    const QString text = QString("¿Borrar %1 con sus %2 elementos? Tambien se borran los pasajes "
+                                 "y las transiciones que llegan.")
+                                 .arg(areas)
+                                 .arg(removal->elements);
+    if (QMessageBox::question(this, "Borrar area", text) == QMessageBox::Yes) {
+        areaTool.removeSelected();
+    }
+}
+
 void MapEditorScreen::useTool(Tool* tool) {
     selectTool.clear();
+    areaTool.clear();
     canvas->showGhost(std::nullopt);
     canvas->showAreaGhost(std::nullopt);
     canvas->setTool(tool);
+    activeTool = tool;
 }
 
 void MapEditorScreen::open(const std::string& mapPath) {
@@ -280,6 +336,7 @@ void MapEditorScreen::open(const std::string& mapPath) {
         result.issues = service.validate(result.map);
     }
     selectTool.clear();
+    areaTool.clear();
     editing.load(std::move(result.map));
     if (!result.issues.empty()) {
         showIssues("El mapa tiene errores", result.issues);

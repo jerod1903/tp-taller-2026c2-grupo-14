@@ -63,8 +63,9 @@ QWidget* EditorWindow::createMenu() {
 }
 
 void EditorWindow::openMap() {
+    // Sin padre: el selector no toma el estilo del juego de la ventana y queda el de siempre
     const QString path =
-            QFileDialog::getOpenFileName(this, "Abrir mapa", TALLER_MAPS_DIR, "Mapas (*.toml)");
+            QFileDialog::getOpenFileName(nullptr, "Abrir mapa", TALLER_MAPS_DIR, "Mapas (*.toml)");
     if (path.isEmpty()) {
         return;
     }

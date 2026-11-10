@@ -1,6 +1,8 @@
 #include "editor/MapEditing.h"
 
+#include <algorithm>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -140,6 +142,52 @@ std::optional<AreaMove> MapEditing::areaMoveOf(const std::string& areaId, int dx
     return move;
 }
 
+bool MapEditing::placeArea(maps::AreaType type, const AreaSize& size,
+                           const maps::MapCell& topLeft) {
+    if (!areaPlacementOf(size, topLeft).fits) {
+        return false;
+    }
+    addArea(definition, type, size, topLeft);
+    if (mapChanged) {
+        mapChanged();
+    }
+    return true;
+}
+
+AreaMove MapEditing::areaPlacementOf(const AreaSize& size, const maps::MapCell& topLeft) const {
+    const CellRect rect{topLeft.x, topLeft.y, size.width, size.height};
+    return AreaMove{{rect}, !overlapsAreas(definition, {rect}, {}), 0};
+}
+
+void MapEditing::removeArea(const std::string& areaId) {
+    const std::optional<AreaRemoval> removal = areaRemovalOf(areaId);
+    if (!removal) {
+        return;
+    }
+    const std::size_t entrancesBefore = dungeonEntrances(definition).size();
+    removeAreas(definition, removal->areaIds);
+    // Las salidas llevaban frente a una entrada que se fue con el area: pasan a la que quede
+    const std::vector<const maps::MapElement*> entrances = dungeonEntrances(definition);
+    if (entrances.size() < entrancesBefore && !entrances.empty()) {
+        linkExits(definition, entrances.front()->id);
+    }
+    if (mapChanged) {
+        mapChanged();
+    }
+}
+
+std::optional<AreaRemoval> MapEditing::areaRemovalOf(const std::string& areaId) const {
+    const std::vector<std::string> ids = areasMovingWith(definition, areaId);
+    if (ids.empty()) {
+        return std::nullopt;
+    }
+    const auto elements = std::count_if(
+            definition.elements.begin(), definition.elements.end(), [&ids](const auto& e) {
+                return std::find(ids.begin(), ids.end(), e.areaId) != ids.end();
+            });
+    return AreaRemoval{ids, static_cast<int>(elements)};
+}
+
 bool MapEditing::placeElement(maps::ElementType type, const maps::MapCell& bottomLeft) {
     const maps::ElementRule* rule = ruleFor(requirements, type);
     if (!rule || !::placeElement(definition, *rule, bottomLeft)) {
@@ -152,7 +200,7 @@ bool MapEditing::placeElement(maps::ElementType type, const maps::MapCell& botto
 }
 
 bool MapEditing::placeEntrance(const maps::MapCell& bottomLeft,
-                               const std::optional<FloorSize>& floorSize) {
+                               const std::optional<AreaSize>& floorSize) {
     const maps::ElementRule* rule = ruleFor(requirements, maps::ElementType::DungeonEntrance);
     const std::optional<std::string> id =
             rule ? ::placeElement(definition, *rule, bottomLeft) : std::nullopt;
@@ -163,6 +211,10 @@ bool MapEditing::placeEntrance(const maps::MapCell& bottomLeft,
         createMine(definition, requirements, *floorSize, *id);
     }
     linkEntrance(definition, *id);
+    // Si no habia otra entrada (se borro con su area), las salidas pasan a llevar frente a esta
+    if (dungeonEntrances(definition).size() == 1) {
+        linkExits(definition, *id);
+    }
     if (mapChanged) {
         mapChanged();
     }

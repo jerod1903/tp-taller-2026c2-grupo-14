@@ -15,11 +15,11 @@ class EntranceTool: public PlaceTool {
 public:
     explicit EntranceTool(MapEditing& editing);
     // El tamano de los pisos a crear; vacio si el mapa ya tiene pisos
-    void setFloorSize(std::optional<FloorSize> size);
+    void setFloorSize(std::optional<AreaSize> size);
 
 protected:
     bool place(stardew::maps::ElementType type, const stardew::maps::MapCell& cell) override;
 
 private:
-    std::optional<FloorSize> floorSize;
+    std::optional<AreaSize> floorSize;
 };

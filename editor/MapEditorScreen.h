@@ -9,10 +9,11 @@
 #include "common/map/service/MapService.h"
 #include "editor/MapEditing.h"
 #include "editor/SpriteSheets.h"
+#include "editor/tools/AreaTool.h"
 #include "editor/tools/EntranceTool.h"
-#include "editor/tools/MoveAreaTool.h"
 #include "editor/tools/PaintTool.h"
 #include "editor/tools/PassageTool.h"
+#include "editor/tools/PlaceAreaTool.h"
 #include "editor/tools/PlaceTool.h"
 #include "editor/tools/SelectTool.h"
 
@@ -23,8 +24,8 @@ class QToolButton;
 class Tool;
 
 // Pantalla de edicion: el mapa entero, pintar con el pincel, poner pasajes, colocar elementos (la
-// entrada a la mina crea los pisos), seleccionar, mover y borrar elementos, mover areas, validar y
-// guardar.
+// entrada a la mina crea los pisos), seleccionar, mover y borrar elementos, crear, mover y borrar
+// areas, validar y guardar.
 class MapEditorScreen: public QWidget {
     Q_OBJECT
 
@@ -47,6 +48,13 @@ private:
     void connectPlacing(PlaceTool& tool);
     // Si el mapa no tiene pisos pide su tamano; cancelar vuelve a Seleccionar
     void chooseEntrance();
+    // Pide el tamano de la granja o el pueblo nuevo; cancelar vuelve a Seleccionar
+    void chooseArea(stardew::maps::AreaType type);
+    // Marca Seleccionar y la usa
+    void backToSelect();
+    // Borra lo seleccionado en la herramienta activa: un elemento en Seleccionar, un area (despues
+    // de confirmar) en Areas
+    void removeSelected();
     void validate();
     void save();
     void showIssues(const QString& title,
@@ -60,7 +68,9 @@ private:
     PlaceTool placeTool{editing};
     EntranceTool entranceTool{editing};
     SelectTool selectTool{editing};
-    MoveAreaTool moveAreaTool{editing};
+    AreaTool areaTool{editing};
+    PlaceAreaTool placeAreaTool{editing};
+    Tool* activeTool = nullptr;
     std::string path;
     SpriteSheets sprites;
     MapCanvas* canvas;

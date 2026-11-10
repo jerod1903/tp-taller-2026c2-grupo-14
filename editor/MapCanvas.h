@@ -33,6 +33,8 @@ public:
     // Muestra donde quedarian las areas que se estan moviendo, en rojo si pisan otra. Vacio:
     // ninguna.
     void showAreaGhost(const std::optional<AreaGhost>& ghost);
+    // Resalta el borde del area con ese id (un piso resalta todos los pisos). Vacio: ninguna.
+    void showAreaSelection(const std::optional<std::string>& areaId);
 
 protected:
     // Rueda: zoom centrado en el mouse
@@ -57,8 +59,12 @@ private:
     // general: el sprite de su tipo o, si no tiene, un recuadro
     QGraphicsItem* addElementImage(std::optional<stardew::maps::ElementType> type, int left,
                                    int bottom, int width, int height);
+    // Las superposiciones (los fantasmas y el area seleccionada) se borran y se dibujan de nuevo
+    // juntas cada vez que cambia alguna: son pocos items
+    void redrawOverlays();
     void drawGhost();
     void drawAreaGhost();
+    void drawAreaSelection();
     void setElementOpacity(const std::optional<std::string>& elementId, double opacity);
     stardew::maps::MapCell cellUnder(const QPoint& viewPosition) const;
 
@@ -72,9 +78,10 @@ private:
     std::map<std::string, QGraphicsItem*> elementItems;
     std::optional<std::string> selection;
     std::optional<Ghost> ghost;
-    QGraphicsItem* ghostItem = nullptr;
     std::optional<AreaGhost> areaGhost;
-    std::vector<QGraphicsItem*> areaGhostItems;
+    std::optional<std::string> selectedArea;
+    // Los items de las superposiciones, para borrarlos al dibujarlas de nuevo
+    std::vector<QGraphicsItem*> overlayItems;
     // Donde estaba el mouse en el ultimo paso del arrastre con la rueda
     QPoint lastDragPosition;
 };

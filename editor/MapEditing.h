@@ -25,6 +25,13 @@ struct AreaMove {
     int brokenPassages;
 };
 
+// Lo que se iria al borrar un area: las areas (un piso se lleva todos los pisos) y cuantos
+// elementos tienen
+struct AreaRemoval {
+    std::vector<std::string> areaIds;
+    int elements;
+};
+
 // El mapa que se esta editando y las operaciones que lo cambian. No sabe nada de Qt: quien lo
 // muestra se entera de los cambios con los callbacks.
 class MapEditing {
@@ -57,13 +64,25 @@ public:
     bool moveArea(const std::string& areaId, int dx, int dy);
     // Donde quedarian las areas con ese corrimiento. Vacio si no hay area con ese id.
     std::optional<AreaMove> areaMoveOf(const std::string& areaId, int dx, int dy) const;
+    // Agrega una granja o un pueblo vacio con su esquina de arriba a la izquierda en la casilla.
+    // Devuelve false si pisaria otra area.
+    bool placeArea(stardew::maps::AreaType type, const AreaSize& size,
+                   const stardew::maps::MapCell& topLeft);
+    // Donde quedaria un area de ese tamano y si entra sin pisar otra
+    AreaMove areaPlacementOf(const AreaSize& size, const stardew::maps::MapCell& topLeft) const;
+    // Quita el area con sus elementos y todas las transiciones que la tocan; un piso se lleva
+    // todos los pisos. Si se va una entrada a la mina y queda otra, las salidas pasan a esa.
+    void removeArea(const std::string& areaId);
+    // Lo que se iria con removeArea. Vacio si no hay area con ese id.
+    std::optional<AreaRemoval> areaRemovalOf(const std::string& areaId) const;
     // Pone un elemento de ese tipo con la esquina de abajo a la izquierda de su base en la casilla.
     // Devuelve false si la base no cae entera en una sola area o pisa otro elemento.
     bool placeElement(stardew::maps::ElementType type, const stardew::maps::MapCell& bottomLeft);
     // Pone una entrada a la mina como placeElement y la une con el primer piso. Si el mapa todavia
-    // no tiene pisos, los crea de ese tamano.
+    // no tiene pisos, los crea de ese tamano. Si es la unica entrada, las salidas de los pisos
+    // pasan a llevar frente a ella.
     bool placeEntrance(const stardew::maps::MapCell& bottomLeft,
-                       const std::optional<FloorSize>& floorSize);
+                       const std::optional<AreaSize>& floorSize);
     // Lo que ocuparia un elemento de ese tipo apoyado en la casilla y si placeElement lo pondria.
     // Vacio si no hay regla para ese tipo.
     std::optional<Placement> placementOf(stardew::maps::ElementType type,
