@@ -42,6 +42,12 @@ enum class MapIssueCode {
     StructureOverlap,
     MissingRequiredElement,
     RequiredElementWrongLayer,
+    BlockedDoor,
+    SpriteOutsideArea,
+    AreasOverlap,
+    ElementInWrongArea,
+    WrongElementSize,
+    TooManyElements,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -114,6 +120,18 @@ inline std::string_view toString(MapIssueCode code) {
             return "MissingRequiredElement";
         case MapIssueCode::RequiredElementWrongLayer:
             return "RequiredElementWrongLayer";
+        case MapIssueCode::BlockedDoor:
+            return "BlockedDoor";
+        case MapIssueCode::SpriteOutsideArea:
+            return "SpriteOutsideArea";
+        case MapIssueCode::AreasOverlap:
+            return "AreasOverlap";
+        case MapIssueCode::ElementInWrongArea:
+            return "ElementInWrongArea";
+        case MapIssueCode::WrongElementSize:
+            return "WrongElementSize";
+        case MapIssueCode::TooManyElements:
+            return "TooManyElements";
     }
     return "UnknownMapIssue";
 }
@@ -135,6 +153,7 @@ struct MapValidationIssue {
     std::optional<int> actual = std::nullopt;
     std::optional<int> x = std::nullopt;
     std::optional<int> y = std::nullopt;
+    std::optional<std::string> relatedAreaId = std::nullopt;
 
     bool operator==(const MapValidationIssue&) const = default;
 };

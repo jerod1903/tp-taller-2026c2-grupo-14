@@ -72,6 +72,8 @@ MapArea readArea(const toml::node& node) {
     area.type = areaReader.optionalEnum<AreaType>("type", areaTypeFromString);
     area.width = areaReader.requiredInt("width");
     area.height = areaReader.requiredInt("height");
+    area.offsetX = areaReader.optionalInt("offset_x").value_or(0);
+    area.offsetY = areaReader.optionalInt("offset_y").value_or(0);
     area.floorNumber = areaReader.optionalInt("floor");
     area.tiles = readTiles(table, area.id);
     return area;
@@ -115,6 +117,8 @@ toml::table serializeArea(const MapArea& area) {
     insertOptionalEnum(table, "type", area.type);
     table.insert_or_assign("width", area.width);
     table.insert_or_assign("height", area.height);
+    table.insert_or_assign("offset_x", area.offsetX);
+    table.insert_or_assign("offset_y", area.offsetY);
     insertOptionalInt(table, "floor", area.floorNumber);
 
     toml::array rows;

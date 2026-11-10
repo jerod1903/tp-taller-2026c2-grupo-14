@@ -12,19 +12,22 @@ MapService::MapService(const MapRepository& repository, MapRequirements requirem
 MapLoadResult MapService::loadMap(const std::string& path) const {
     // Se conserva el mapa aunque tenga errores semanticos para permitir corregirlo en el editor.
     auto map = repository_.loadMap(path);
-    auto issues = validateMap(map, requirements_);
+    auto issues = validate(map);
     return {std::move(map), std::move(issues)};
+}
+
+std::vector<MapValidationIssue> MapService::validate(const MapDefinition& map) const {
+    return validateMap(map, requirements_);
 }
 
 std::vector<MapValidationIssue> MapService::saveMap(const std::string& path,
                                                     const MapDefinition& map) const {
-    auto issues = validateMap(map, requirements_);
-    if (!issues.empty()) {
-        return issues;
-    }
-
+    // Se guarda aunque tenga errores, para poder seguir editandolo despues; el servidor ignora los
+    // mapas invalidos
     repository_.saveMap(path, map);
-    return {};
+    return validate(map);
 }
+
+const MapRequirements& MapService::requirements() const { return requirements_; }
 
 }  // namespace stardew::maps

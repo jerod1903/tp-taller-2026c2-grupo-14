@@ -15,45 +15,134 @@ type = "dungeon_floor"
 count = 10
 floor_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-[[required_elements]]
+# Reglas de cada tipo de elemento: en que tipo de area puede ir, cuanto mide en casillas, cuantos
+# puede haber por area (sin max_per_area no hay limite) y si es obligatorio. Un tipo que va en
+# varios tipos de area tiene una regla por cada uno (los portones de los pasajes).
+# width tiene que coincidir con el ancho del sprite (common/map/MapSprites.h) / 16, o el
+# dibujo se estira. height es la base que choca, el resto del dibujo sobresale hacia arriba.
+
+[[elements]]
 area_type = "farm"
 type = "cabin"
 layer = "structure"
+width = 5
+height = 3
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
+area_type = "farm"
+type = "spawn_point"
+layer = "object"
+width = 1
+height = 1
+max_per_area = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "door"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
 area_type = "village"
 type = "market"
 layer = "structure"
+width = 10
+height = 3
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
 area_type = "village"
 type = "community_center"
 layer = "structure"
+width = 12
+height = 4
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
 area_type = "village"
 type = "dungeon_entrance"
 layer = "structure"
+width = 2
+height = 1
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
 area_type = "village"
 type = "merchant_marnie"
 layer = "npc"
+width = 1
+height = 1
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
 area_type = "village"
 type = "merchant_clint"
 layer = "npc"
+width = 1
+height = 1
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
 area_type = "village"
 type = "merchant_pierre"
 layer = "npc"
+width = 1
+height = 1
+max_per_area = 1
+required = true
 
-[[required_elements]]
+[[elements]]
 area_type = "village"
 type = "merchant_robin"
 layer = "npc"
+width = 1
+height = 1
+max_per_area = 1
+required = true
+
+[[elements]]
+area_type = "village"
+type = "door"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "dungeon_floor"
+type = "exit"
+layer = "structure"
+width = 1
+height = 1
+max_per_area = 1
+required = false
+
+[[elements]]
+area_type = "dungeon_floor"
+type = "stairs"
+layer = "structure"
+width = 1
+height = 1
+max_per_area = 1
+required = false
+
+[[elements]]
+area_type = "dungeon_floor"
+type = "ore_node"
+layer = "object"
+width = 1
+height = 1
+required = false
 
 [[required_transitions]]
 from_area_type = "farm"

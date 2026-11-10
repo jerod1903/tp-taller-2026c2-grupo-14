@@ -81,14 +81,15 @@ TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
     EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{0, 1}));
 }
 
-// En el mapa de ejemplo el spawn_point de la granja está en (14, 6), con pasto a la derecha.
+// En el mapa de ejemplo el spawn_point de la granja está en (14, 7), frente a la puerta de la
+// cabaña, con pasto a la derecha.
 TEST_F(GameTest, JoinedPlayerStartsStillOnTheSpawnOfTheFarm) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
     PlayerState player = next_snapshot(*outbox).players.at(0);
     EXPECT_EQ(player.areaId, "granja");
     EXPECT_EQ(player.x, 14 * POSITION_SCALE + POSITION_SCALE / 2);  // centro de la celda
-    EXPECT_EQ(player.y, 6 * POSITION_SCALE + POSITION_SCALE / 2);
+    EXPECT_EQ(player.y, 7 * POSITION_SCALE + POSITION_SCALE / 2);
     EXPECT_EQ(player.dirX, 0);
     EXPECT_EQ(player.dirY, 0);
     EXPECT_EQ(player.health, ServerConstants::INITIAL_HEALTH);
@@ -102,7 +103,7 @@ TEST_F(GameTest, MoveMakesThePlayerWalkThatWay) {
     Snapshot snapshot = wait_snapshot(
             *outbox, [](const Snapshot& s) { return s.players.at(0).x / POSITION_SCALE == 15; });
     EXPECT_EQ(snapshot.players.at(0).dirX, 1);
-    EXPECT_EQ(snapshot.players.at(0).y, 6 * POSITION_SCALE + POSITION_SCALE / 2);
+    EXPECT_EQ(snapshot.players.at(0).y, 7 * POSITION_SCALE + POSITION_SCALE / 2);
 }
 
 TEST_F(GameTest, MoveCanGoDiagonally) {
