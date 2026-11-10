@@ -22,13 +22,10 @@ std::vector<MapValidationIssue> MapService::validate(const MapDefinition& map) c
 
 std::vector<MapValidationIssue> MapService::saveMap(const std::string& path,
                                                     const MapDefinition& map) const {
-    auto issues = validate(map);
-    if (!issues.empty()) {
-        return issues;
-    }
-
+    // Se guarda aunque tenga errores, para poder seguir editandolo despues; el servidor ignora los
+    // mapas invalidos
     repository_.saveMap(path, map);
-    return {};
+    return validate(map);
 }
 
 const MapRequirements& MapService::requirements() const { return requirements_; }

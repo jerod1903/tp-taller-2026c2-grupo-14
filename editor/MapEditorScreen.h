@@ -21,6 +21,7 @@ class MapCanvas;
 class QButtonGroup;
 class QHBoxLayout;
 class QToolButton;
+class QVBoxLayout;
 class Tool;
 
 // Pantalla de edicion: el mapa entero, pintar con el pincel, poner pasajes, colocar elementos (la
@@ -33,13 +34,21 @@ public:
     explicit MapEditorScreen(const stardew::maps::MapService& service, QWidget* parent = nullptr);
     // Lee el mapa y lo muestra. Si tiene errores igual se abre, para poder corregirlo.
     void open(const std::string& path);
+    // Arma un mapa nuevo con ese nombre desde la plantilla, lo guarda en path y lo muestra
+    void create(const std::string& name, const std::string& path);
 
 signals:
     void backRequested();
 
 private:
-    // Las herramientas de arriba; sus botones entran al grupo junto con las tarjetas del panel
-    QHBoxLayout* createPalette(QButtonGroup* group);
+    // Muestra ese mapa para editarlo, sin nada seleccionado
+    void show(stardew::maps::MapDefinition map);
+    // Vuelve al menu; si hay cambios sin guardar, pregunta antes
+    void goBack();
+    // Los tiles del pincel, en una columna a la izquierda del mapa, y las herramientas de arriba.
+    // Sus botones entran al grupo junto con las tarjetas del panel.
+    QVBoxLayout* createTiles(QButtonGroup* group);
+    QHBoxLayout* createTools(QButtonGroup* group);
     // Cambia la herramienta del lienzo; lo que estaba seleccionado deja de estarlo y el fantasma
     // del elemento por colocar se saca
     void useTool(Tool* tool);
@@ -56,7 +65,9 @@ private:
     // de confirmar) en Areas
     void removeSelected();
     void validate();
-    void save();
+    // Guarda aunque el mapa tenga errores. Con report avisa como quedo (guardado, o guardado con
+    // errores); sin report solo avisa si no se pudo escribir.
+    void save(bool report);
     void showIssues(const QString& title,
                     const std::vector<stardew::maps::MapValidationIssue>& issues);
 

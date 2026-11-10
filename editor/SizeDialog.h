@@ -1,11 +1,10 @@
 #pragma once
 
-#include <QDialog>
 #include <QString>
 
+#include "editor/GameDialog.h"
 #include "editor/MapHelper.h"
 
-class MenuButton;
 class QLineEdit;
 
 // Que tamano se pide: el titulo, una aclaracion, el rango de cada lado y el valor inicial
@@ -17,9 +16,8 @@ struct SizeRequest {
     AreaSize initial;
 };
 
-// Pide un ancho y un alto en casillas (los pisos de la mina, una granja o un pueblo nuevos), en un
-// cartel de madera como los del menu del juego
-class SizeDialog: public QDialog {
+// Pide un ancho y un alto en casillas: los pisos de la mina, una granja o un pueblo nuevos
+class SizeDialog: public GameDialog {
     Q_OBJECT
 
 public:
@@ -32,5 +30,4 @@ private:
 
     QLineEdit* widthInput;
     QLineEdit* heightInput;
-    MenuButton* acceptButton;
 };

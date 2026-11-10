@@ -8,11 +8,15 @@ target_sources(taller_editor
     EditorWindow.cpp
     ElementHelper.cpp
     Elements.cpp
+    GameDialog.cpp
     MapEditing.cpp
     MapHelper.cpp
     MapEditorScreen.cpp
+    Messages.cpp
     Mine.cpp
     MineHelper.cpp
+    NameDialog.cpp
+    NewMap.cpp
     Passages.cpp
     SizeDialog.cpp
     SpriteSheets.cpp
@@ -35,11 +39,15 @@ target_sources(taller_editor
     EditorWindow.h
     ElementHelper.h
     Elements.h
+    GameDialog.h
     MapEditing.h
     MapHelper.h
     MapEditorScreen.h
+    Messages.h
     Mine.h
     MineHelper.h
+    NameDialog.h
+    NewMap.h
     Passages.h
     SizeDialog.h
     SpriteSheets.h

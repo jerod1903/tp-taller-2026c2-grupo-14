@@ -40,9 +40,12 @@ public:
     // revisan al guardar
     explicit MapEditing(const stardew::maps::MapRequirements& requirements);
 
-    // Reemplaza el mapa (al abrir uno) y avisa que cambio todo
+    // Reemplaza el mapa (al abrir o crear uno) y avisa que cambio todo
     void load(stardew::maps::MapDefinition map);
     const stardew::maps::MapDefinition& map() const;
+    // Si cambio algo desde que se cargo o se guardo
+    bool hasUnsavedChanges() const;
+    void markSaved();
 
     // Las operaciones reciben casillas del mapa general
     void paint(const stardew::maps::MapCell& cell, stardew::maps::TileType tile);
@@ -94,8 +97,12 @@ public:
     void onMapChanged(std::function<void()> callback);
 
 private:
+    // Marca que hay cambios sin guardar y avisa que cambio el mapa
+    void notifyMapChanged();
+
     const stardew::maps::MapRequirements& requirements;
     stardew::maps::MapDefinition definition;
+    bool unsaved = false;
     std::function<void(const stardew::maps::MapCell&)> tileChanged;
     std::function<void()> mapChanged;
 };

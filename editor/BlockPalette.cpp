@@ -83,7 +83,7 @@ BlockPalette::BlockPalette(const maps::MapRequirements& requirements, SpriteShee
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    layout->addWidget(new QLabel("Areas", this));
+    layout->addWidget(new QLabel("Áreas", this));
     QHBoxLayout* areaCards = addRow(layout);
     for (const NewArea& area: NEW_AREAS) {
         const QString name = QString::fromStdString(std::string(maps::toString(area.type)));

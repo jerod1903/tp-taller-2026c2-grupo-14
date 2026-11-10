@@ -17,6 +17,9 @@ public:
 
 private:
     QWidget* createMenu();
+    // Pide el nombre y crea el mapa en maps/, con el archivo que sale del nombre. Si ese archivo ya
+    // existe, avisa y vuelve a pedir el nombre.
+    void newMap();
     void openMap();
 
     stardew::maps::TomlMapRepository repository;

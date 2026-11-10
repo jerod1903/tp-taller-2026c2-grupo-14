@@ -26,12 +26,17 @@ MapEditing::MapEditing(const maps::MapRequirements& requirements): requirements(
 
 void MapEditing::load(maps::MapDefinition map) {
     definition = std::move(map);
+    unsaved = false;
     if (mapChanged) {
         mapChanged();
     }
 }
 
 const maps::MapDefinition& MapEditing::map() const { return definition; }
+
+bool MapEditing::hasUnsavedChanges() const { return unsaved; }
+
+void MapEditing::markSaved() { unsaved = false; }
 
 void MapEditing::paint(const maps::MapCell& cell, maps::TileType tile) {
     const std::optional<AreaCell> target = cellAt(definition, cell.x, cell.y);
@@ -46,14 +51,15 @@ void MapEditing::paint(const maps::MapCell& cell, maps::TileType tile) {
         return;
     }
     tiles[target->y][target->x] = tile;
+    unsaved = true;
     if (tileChanged) {
         tileChanged(cell);
     }
 }
 
 void MapEditing::togglePassage(const maps::MapCell& cell) {
-    if (::togglePassage(definition, cell.x, cell.y) && mapChanged) {
-        mapChanged();
+    if (::togglePassage(definition, cell.x, cell.y)) {
+        notifyMapChanged();
     }
 }
 
@@ -73,9 +79,7 @@ void MapEditing::removeElement(const std::string& id) {
     if (entrance && !entrances.empty()) {
         linkExits(definition, entrances.front()->id);
     }
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
 }
 
 bool MapEditing::moveElement(const std::string& id, const maps::MapCell& bottomLeft) {
@@ -93,9 +97,7 @@ bool MapEditing::moveElement(const std::string& id, const maps::MapCell& bottomL
     if (type == maps::ElementType::DungeonEntrance) {
         linkExits(definition, id);
     }
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
     return true;
 }
 
@@ -119,9 +121,7 @@ bool MapEditing::moveArea(const std::string& areaId, int dx, int dy) {
         return false;
     }
     moveAreas(definition, areasMovingWith(definition, areaId), dx, dy);
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
     return true;
 }
 
@@ -148,9 +148,7 @@ bool MapEditing::placeArea(maps::AreaType type, const AreaSize& size,
         return false;
     }
     addArea(definition, type, size, topLeft);
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
     return true;
 }
 
@@ -171,9 +169,7 @@ void MapEditing::removeArea(const std::string& areaId) {
     if (entrances.size() < entrancesBefore && !entrances.empty()) {
         linkExits(definition, entrances.front()->id);
     }
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
 }
 
 std::optional<AreaRemoval> MapEditing::areaRemovalOf(const std::string& areaId) const {
@@ -193,9 +189,7 @@ bool MapEditing::placeElement(maps::ElementType type, const maps::MapCell& botto
     if (!rule || !::placeElement(definition, *rule, bottomLeft)) {
         return false;
     }
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
     return true;
 }
 
@@ -215,9 +209,7 @@ bool MapEditing::placeEntrance(const maps::MapCell& bottomLeft,
     if (dungeonEntrances(definition).size() == 1) {
         linkExits(definition, *id);
     }
-    if (mapChanged) {
-        mapChanged();
-    }
+    notifyMapChanged();
     return true;
 }
 
@@ -236,3 +228,10 @@ void MapEditing::onTileChanged(std::function<void(const maps::MapCell&)> callbac
 }
 
 void MapEditing::onMapChanged(std::function<void()> callback) { mapChanged = std::move(callback); }
+
+void MapEditing::notifyMapChanged() {
+    unsaved = true;
+    if (mapChanged) {
+        mapChanged();
+    }
+}

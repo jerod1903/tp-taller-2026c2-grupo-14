@@ -12,6 +12,7 @@ target_sources(taller_tests
     logger_test.cpp
     map_editing_test.cpp
     map_validator_test.cpp
+    new_map_test.cpp
     passages_test.cpp
     place_tool_test.cpp
     select_tool_test.cpp
@@ -54,6 +55,7 @@ target_sources(taller_tests
     ../editor/MapHelper.cpp
     ../editor/Mine.cpp
     ../editor/MineHelper.cpp
+    ../editor/NewMap.cpp
     ../editor/Passages.cpp
     ../editor/tools/PlaceTool.cpp
     ../editor/tools/SelectTool.cpp

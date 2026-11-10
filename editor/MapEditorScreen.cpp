@@ -18,7 +18,9 @@
 #include "editor/BlockPalette.h"
 #include "editor/MapCanvas.h"
 #include "editor/MapHelper.h"
+#include "editor/Messages.h"
 #include "editor/MineHelper.h"
+#include "editor/NewMap.h"
 #include "editor/SizeDialog.h"
 
 namespace maps = stardew::maps;
@@ -26,14 +28,23 @@ namespace maps = stardew::maps;
 namespace {
 constexpr int PALETTE_ICON_SIZE = 32;
 constexpr int PALETTE_BUTTON_PADDING = 8;
+// Los tiles, en una columna con su nombre al lado
+constexpr int TILE_ICON_SIZE = 40;
+constexpr int TILE_BUTTON_WIDTH = 160;
 
 // Los pisos de la mina: lo justo para la pared, la salida, la escalera y algo de piso, y mas de 30
 // es tedioso de editar. Por defecto, los de valle.toml.
-const SizeRequest FLOOR_SIZE{
-        "Pisos de la mina", "Todos los pisos miden lo mismo y despues no cambia.", 5, 30, {20, 15}};
+const SizeRequest FLOOR_SIZE{"Pisos de la mina",
+                             "Todos los pisos miden lo mismo y después no se puede cambiar.",
+                             5,
+                             30,
+                             {20, 15}};
 // La granja y el pueblo: por defecto, los de valle.toml. El titulo lo pone quien lo pide.
-const SizeRequest AREA_SIZE{
-        "", "Para cambiar el tamaño despues, se borra y se crea de nuevo.", 10, 60, {30, 20}};
+const SizeRequest AREA_SIZE{"",
+                            "Para cambiar el tamaño después, hay que borrarla y crearla de nuevo.",
+                            10,
+                            60,
+                            {30, 20}};
 
 // Barras finas del color de los botones de madera, sin las flechas de los extremos. Se ponen en la
 // pantalla para que valgan en el lienzo y en el panel de elementos.
@@ -93,36 +104,43 @@ void arrangeAreas(maps::MapDefinition& map) {
     }
 }
 
+// Un error del validador en una linea: el codigo y, con su nombre, cada dato que trae. Por ejemplo
+// "AreaCountMismatch: tipo de area farm, esperado 1, encontrado 2".
 QString describe(const maps::MapValidationIssue& issue) {
-    QString text = QString::fromStdString(std::string(maps::toString(issue.code)));
+    QStringList data;
     if (issue.areaType) {
-        text += " · " + QString::fromStdString(std::string(maps::toString(*issue.areaType)));
+        data << "tipo de área " +
+                        QString::fromStdString(std::string(maps::toString(*issue.areaType)));
     }
     if (issue.floorNumber) {
-        text += QString(" · piso %1").arg(*issue.floorNumber);
+        data << QString("piso %1").arg(*issue.floorNumber);
     }
     if (issue.elementType) {
-        text += " · " + QString::fromStdString(std::string(maps::toString(*issue.elementType)));
+        data << "tipo de elemento " +
+                        QString::fromStdString(std::string(maps::toString(*issue.elementType)));
     }
     if (issue.expected && issue.actual) {
-        text += QString(" · se esperaban %1, hay %2").arg(*issue.expected).arg(*issue.actual);
+        data << QString("esperado %1, encontrado %2").arg(*issue.expected).arg(*issue.actual);
     }
     if (issue.areaId) {
-        text += " · area " + QString::fromStdString(*issue.areaId);
-    }
-    if (issue.relatedAreaId) {
-        text += " y " + QString::fromStdString(*issue.relatedAreaId);
+        QString areas = "área " + QString::fromStdString(*issue.areaId);
+        if (issue.relatedAreaId) {
+            areas += " y " + QString::fromStdString(*issue.relatedAreaId);
+        }
+        data << areas;
     }
     if (issue.elementId) {
-        text += " · elemento " + QString::fromStdString(*issue.elementId);
-    }
-    if (issue.relatedElementId) {
-        text += " y " + QString::fromStdString(*issue.relatedElementId);
+        QString elements = "elemento " + QString::fromStdString(*issue.elementId);
+        if (issue.relatedElementId) {
+            elements += " y " + QString::fromStdString(*issue.relatedElementId);
+        }
+        data << elements;
     }
     if (issue.x && issue.y) {
-        text += QString(" · (%1, %2)").arg(*issue.x).arg(*issue.y);
+        data << QString("casilla (%1, %2)").arg(*issue.x).arg(*issue.y);
     }
-    return text;
+    const QString code = QString::fromStdString(std::string(maps::toString(issue.code)));
+    return data.isEmpty() ? code : code + ": " + data.join(", ");
 }
 }  // namespace
 
@@ -146,7 +164,9 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     // Una sola herramienta marcada entre los botones de arriba y las tarjetas del panel
     auto* group = new QButtonGroup(this);
     auto* blocks = new BlockPalette(service.requirements(), sprites, group, this);
+    // Los tiles a la izquierda del mapa y lo que se pone, a la derecha
     auto* body = new QHBoxLayout();
+    body->addLayout(createTiles(group));
     body->addWidget(canvas, 1);
     body->addWidget(blocks);
 
@@ -154,7 +174,7 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     layout->setContentsMargins(Theme::SCREEN_MARGIN_V, Theme::SCREEN_MARGIN_V,
                                Theme::SCREEN_MARGIN_V, Theme::SCREEN_MARGIN_V);
     layout->addLayout(header);
-    layout->addLayout(createPalette(group));
+    layout->addLayout(createTools(group));
     layout->addLayout(body, 1);
 
     // La pantalla une la seleccion (de un elemento o de un area) con el lienzo y con el boton
@@ -173,12 +193,14 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
     areaTool.onGhostChanged(
             [this](const std::optional<AreaGhost>& ghost) { canvas->showAreaGhost(ghost); });
     areaTool.onConfirmBrokenPassages([this](int brokenPassages) {
-        const QString passages =
+        const QString text =
                 brokenPassages == 1 ?
-                        QString("queda separado un pasaje, que se va") :
-                        QString("quedan separados %1 pasajes, que se van").arg(brokenPassages);
-        const QString text = "Al mover el area " + passages + " a borrar. ¿Mover igual?";
-        return QMessageBox::question(this, "Mover area", text) == QMessageBox::Yes;
+                        QString("Al mover el área, un pasaje queda separado y será borrado. "
+                                "¿Mover igual?") :
+                        QString("Al mover el área, %1 pasajes quedan separados y serán borrados. "
+                                "¿Mover igual?")
+                                .arg(brokenPassages);
+        return ask(this, "Mover área", text);
     });
     connectPlacing(placeTool);
     connectPlacing(entranceTool);
@@ -196,31 +218,42 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
         placeTool.setType(type);
         useTool(&placeTool);
     });
-    connect(backButton, &QPushButton::clicked, this, &MapEditorScreen::backRequested);
+    connect(backButton, &QPushButton::clicked, this, &MapEditorScreen::goBack);
     connect(validateButton, &QPushButton::clicked, this, &MapEditorScreen::validate);
-    connect(saveButton, &QPushButton::clicked, this, &MapEditorScreen::save);
+    connect(saveButton, &QPushButton::clicked, this, [this]() { save(true); });
 }
 
-QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
-    auto* palette = new QHBoxLayout();
+QVBoxLayout* MapEditorScreen::createTiles(QButtonGroup* group) {
+    auto* tiles = new QVBoxLayout();
     for (maps::TileType tile: maps::allTileTypes()) {
         auto* button = new QToolButton(this);
-        button->setIcon(QIcon(sprites.tile(tile)));
-        button->setIconSize(QSize(PALETTE_ICON_SIZE, PALETTE_ICON_SIZE));
-        button->setToolTip(QString::fromStdString(std::string(maps::toString(tile))));
+        // El tile mide una casilla: se agranda al tamano del icono (el icono no agranda solo)
+        button->setIcon(QIcon(sprites.tile(tile).scaled(TILE_ICON_SIZE, TILE_ICON_SIZE)));
+        button->setIconSize(QSize(TILE_ICON_SIZE, TILE_ICON_SIZE));
+        button->setText(QString::fromStdString(std::string(maps::toString(tile))));
+        button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        button->setFixedWidth(TILE_BUTTON_WIDTH);
         button->setCheckable(true);
         button->setChecked(tile == maps::TileType::Grass);
         group->addButton(button);
-        palette->addWidget(button);
+        tiles->addWidget(button);
         connect(button, &QToolButton::clicked, this, [this, tile]() {
             paintTool.setTile(tile);
             useTool(&paintTool);
         });
     }
+    tiles->addStretch();
+    return tiles;
+}
+
+QHBoxLayout* MapEditorScreen::createTools(QButtonGroup* group) {
+    auto* palette = new QHBoxLayout();
+    // Centradas: un estiramiento de cada lado
+    palette->addStretch();
     // Un click en el borde entre dos areas pone (o quita) un porton de cada lado
     auto* passageButton = new QToolButton(this);
-    passageButton->setText("Pasaje");
-    passageButton->setToolTip("Click en el borde entre dos areas: pone o quita un pasaje");
+    passageButton->setText("Editar pasajes");
+    passageButton->setToolTip("Click en el borde entre dos áreas: pone o quita un pasaje");
     passageButton->setCheckable(true);
     passageButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     group->addButton(passageButton);
@@ -228,9 +261,9 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     connect(passageButton, &QToolButton::clicked, this, [this]() { useTool(&passageTool); });
 
     auto* areaButton = new QToolButton(this);
-    areaButton->setText("Áreas");
-    areaButton->setToolTip("Click en un area la selecciona (Borrar la quita); arrastrarla la "
-                           "mueve con todo. Los pisos de la mina van juntos.");
+    areaButton->setText("Editar áreas");
+    areaButton->setToolTip("Click en un área para seleccionarla (Borrar la quita); arrastrarla la "
+                           "mueve con todo. Los pisos de la mina se mueven juntos.");
     areaButton->setCheckable(true);
     areaButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     group->addButton(areaButton);
@@ -238,7 +271,7 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     connect(areaButton, &QToolButton::clicked, this, [this]() { useTool(&areaTool); });
 
     selectButton = new QToolButton(this);
-    selectButton->setText("Seleccionar");
+    selectButton->setText("Seleccionar elemento");
     selectButton->setToolTip(
             "Click en la base de un elemento para seleccionarlo; arrastrarlo lo mueve");
     selectButton->setCheckable(true);
@@ -250,7 +283,7 @@ QHBoxLayout* MapEditorScreen::createPalette(QButtonGroup* group) {
     // No es una herramienta: borra lo seleccionado. Sin seleccion no se puede apretar.
     removeButton = new QToolButton(this);
     removeButton->setText("Borrar");
-    removeButton->setToolTip("Borra el elemento o el area seleccionada");
+    removeButton->setToolTip("Borra el elemento o el área seleccionada");
     removeButton->setEnabled(false);
     removeButton->setMinimumHeight(PALETTE_ICON_SIZE + PALETTE_BUTTON_PADDING);
     palette->addWidget(removeButton);
@@ -305,14 +338,19 @@ void MapEditorScreen::removeSelected() {
     if (!removal) {
         return;
     }
-    const QString areas = removal->areaIds.size() == 1 ?
-                                  QString::fromStdString(removal->areaIds.front()) :
-                                  QString("los %1 pisos de la mina").arg(removal->areaIds.size());
-    const QString text = QString("¿Borrar %1 con sus %2 elementos? Tambien se borran los pasajes "
-                                 "y las transiciones que llegan.")
-                                 .arg(areas)
-                                 .arg(removal->elements);
-    if (QMessageBox::question(this, "Borrar area", text) == QMessageBox::Yes) {
+    const bool floors = removal->areaIds.size() > 1;
+    const QString areas = floors ? QString("los %1 pisos de la mina").arg(removal->areaIds.size()) :
+                                   QString::fromStdString(removal->areaIds.front());
+    QString elements;
+    if (removal->elements == 1) {
+        elements = " y su elemento";
+    } else if (removal->elements > 1) {
+        elements = QString(" y sus %1 elementos").arg(removal->elements);
+    }
+    const QString text =
+            "¿Borrar " + areas + elements + "? También se borran sus pasajes y las " +
+            (floors ? "transiciones que llegan a ellos." : "transiciones que llegan a ella.");
+    if (ask(this, "Borrar área", text)) {
         areaTool.removeSelected();
     }
 }
@@ -335,34 +373,58 @@ void MapEditorScreen::open(const std::string& mapPath) {
         arrangeAreas(result.map);
         result.issues = service.validate(result.map);
     }
-    selectTool.clear();
-    areaTool.clear();
-    editing.load(std::move(result.map));
+    show(std::move(result.map));
     if (!result.issues.empty()) {
         showIssues("El mapa tiene errores", result.issues);
     }
 }
 
+void MapEditorScreen::create(const std::string& name, const std::string& mapPath) {
+    path = mapPath;
+    show(newMap(name, service.requirements().formatVersion));
+    // Se guarda ya, para que el archivo exista (todavia con errores: le falta la mina)
+    save(false);
+}
+
+void MapEditorScreen::show(maps::MapDefinition map) {
+    selectTool.clear();
+    areaTool.clear();
+    editing.load(std::move(map));
+}
+
+void MapEditorScreen::goBack() {
+    if (editing.hasUnsavedChanges() &&
+        !ask(this, "Volver", "Hay cambios sin guardar. ¿Salir igual?")) {
+        return;
+    }
+    emit backRequested();
+}
+
 void MapEditorScreen::validate() {
     std::vector<maps::MapValidationIssue> issues = service.validate(editing.map());
     if (issues.empty()) {
-        QMessageBox::information(this, "Validar", "El mapa es valido.");
+        tell(this, QMessageBox::Information, "Validar", "El mapa es válido.");
     } else {
         showIssues("El mapa tiene errores", issues);
     }
 }
 
-void MapEditorScreen::save() {
+void MapEditorScreen::save(bool report) {
     try {
         std::vector<maps::MapValidationIssue> issues = service.saveMap(path, editing.map());
+        editing.markSaved();
+        if (!report) {
+            return;
+        }
         if (issues.empty()) {
-            QMessageBox::information(this, "Guardar", "Mapa guardado.");
+            tell(this, QMessageBox::Information, "Guardar", "Mapa guardado.");
         } else {
-            showIssues("No se guardo: el mapa tiene errores", issues);
+            showIssues("El mapa se guardó, pero tiene errores: deben corregirse antes de jugarlo",
+                       issues);
         }
     } catch (const std::exception& e) {
         // La excepcion no puede salir del slot: atravesaria el codigo de Qt
-        QMessageBox::critical(this, "Guardar", e.what());
+        tell(this, QMessageBox::Critical, "Guardar", e.what());
     }
 }
 
@@ -372,5 +434,5 @@ void MapEditorScreen::showIssues(const QString& title,
     for (const maps::MapValidationIssue& issue: issues) {
         lines << describe(issue);
     }
-    QMessageBox::warning(this, title, lines.join("\n"));
+    tell(this, QMessageBox::Warning, title, lines.join("\n"), true);
 }
