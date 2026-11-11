@@ -7,6 +7,16 @@
 
 // Mensajes del servidor durante la partida: cada uno va precedido por su tag. Lo que manda el
 // cliente es un Request (common/requests.h).
+
+// Formato de lo que manda el cliente durante la partida.
+//
+//   Op          Tag   Payload
+//   Move        0x01  i8 dirX, i8 dirY
+//   LeaveGame   0x02  nada (1 byte en total)
+//
+// Una op desconocida no se puede leer: no se sabe cuántos bytes siguen.
+
+
 enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
@@ -16,7 +26,7 @@ enum class GameOp : uint8_t {
 struct MoveRequest {
     int8_t dirX;
     int8_t dirY;
-
+    
     bool operator==(const MoveRequest&) const = default;
 };
 
