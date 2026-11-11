@@ -92,4 +92,70 @@ TEST_F(ServerProtocolTest, RecvRequestCutInTheMiddleIsNullopt) {
     EXPECT_FALSE(server->recv_request().has_value());
 }
 
+TEST_F(ServerProtocolTest, RecvGameOpReadsMove) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
+    EXPECT_EQ(server->recv_game_op(), std::optional<GameOp>(GameOp::Move));
+}
+
+TEST_F(ServerProtocolTest, RecvGameOpReadsLeaveGame) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::LeaveGame)));
+    EXPECT_EQ(server->recv_game_op(), std::optional<GameOp>(GameOp::LeaveGame));
+}
+
+TEST_F(ServerProtocolTest, RecvGameOpClosedWithoutDataIsNullopt) {
+    client->shutdown();
+    EXPECT_FALSE(server->recv_game_op().has_value());
+}
+
+// El protocolo no valida el tag: detectar una op desconocida es trabajo de la CommandFactory.
+TEST_F(ServerProtocolTest, RecvGameOpDoesNotValidateUnknownTag) {
+    ASSERT_TRUE(client->send_u8(0xFF));
+    EXPECT_EQ(server->recv_game_op(), std::optional<GameOp>(static_cast<GameOp>(0xFF)));
+}
+
+TEST_F(ServerProtocolTest, RecvMoveReadsDirections) {
+    ASSERT_TRUE(client->send_u8(1));
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(-1)));
+    std::optional<MoveRequest> move = server->recv_move();
+    ASSERT_TRUE(move.has_value());
+    EXPECT_EQ(move->dirX, 1);
+    EXPECT_EQ(move->dirY, -1);
+}
+
+TEST_F(ServerProtocolTest, RecvMoveReadsStop) {
+    ASSERT_TRUE(client->send_u8(0));
+    ASSERT_TRUE(client->send_u8(0));
+    std::optional<MoveRequest> move = server->recv_move();
+    ASSERT_TRUE(move.has_value());
+    EXPECT_EQ(move->dirX, 0);
+    EXPECT_EQ(move->dirY, 0);
+}
+
+TEST_F(ServerProtocolTest, RecvMoveCutInTheMiddleIsNullopt) {
+    ASSERT_TRUE(client->send_u8(1));
+    client->shutdown();
+    EXPECT_FALSE(server->recv_move().has_value());
+}
+
+TEST_F(ServerProtocolTest, RecvMoveClosedWithoutDataIsNullopt) {
+    client->shutdown();
+    EXPECT_FALSE(server->recv_move().has_value());
+}
+
+// Si recv_move leyera de más o de menos, el mensaje siguiente quedaría desalineado.
+TEST_F(ServerProtocolTest, RecvMoveConsumesExactlyItsPayload) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
+    ASSERT_TRUE(client->send_u8(1));
+    ASSERT_TRUE(client->send_u8(0));
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::LeaveGame)));
+
+    EXPECT_EQ(server->recv_game_op(), std::optional<GameOp>(GameOp::Move));
+    std::optional<MoveRequest> move = server->recv_move();
+    ASSERT_TRUE(move.has_value());
+    EXPECT_EQ(move->dirX, 1);
+    EXPECT_EQ(move->dirY, 0);
+    EXPECT_EQ(server->recv_game_op(), std::optional<GameOp>(GameOp::LeaveGame));
+}
+
+
 }  // namespace
