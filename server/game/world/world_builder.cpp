@@ -30,14 +30,9 @@ std::vector<Position> cells_of(const maps::MapElement& element) {
     return cells;
 }
 
-// La puerta es la celda de abajo al centro de la estructura.
 Position cabin_door(const maps::MapElement& cabin) {
-    return Position{cabin.x + cabin.width / 2, cabin.y + cabin.height - 1};
-}
-
-bool is_solid(const maps::MapElement& element) {
-    return element.layer == maps::ElementLayer::Structure ||
-           element.layer == maps::ElementLayer::Npc;
+    maps::MapCell door = maps::doorCell(cabin);
+    return Position{door.x, door.y};
 }
 
 bool is_trigger(const maps::MapDefinition& map, const maps::MapElement& element) {
@@ -84,7 +79,7 @@ Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area) {
         }
     }
     for (const maps::MapElement& element: map.elements) {
-        if (element.areaId != area.id || !is_solid(element) || is_trigger(map, element)) {
+        if (element.areaId != area.id || !maps::isSolid(element) || is_trigger(map, element)) {
             continue;
         }
         for (const Position& cell: cells_of(element)) {

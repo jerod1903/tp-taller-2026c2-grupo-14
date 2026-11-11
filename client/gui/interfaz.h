@@ -8,11 +8,10 @@
 #include <string>
 
 #include <SDL2pp/SDL2pp.hh>
-
+#include "client/audio/reproductor_sonidos.h"
 #include "client/game/entrada.h"
 #include "client/game/estado_juego.h"
 #include "common/game_dto.h"
-
 #include "calculador_camara.h"
 #include "mapa.h"
 #include "personaje.h"
@@ -38,7 +37,11 @@ private:
     void alternar_pantalla_completa();
     // Dibuja el area donde esta `propio`, con la camara siguiendolo
     void dibujar_area(const Personaje& propio);
+    // Hace sonar lo que le paso al jugador propio: pasos mientras camina y la moneda si gano oro
+    void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
     SDL2pp::SDL sdl;
+    // Despues de sdl: se arma con SDL ya iniciado y se destruye antes de que se cierre
+    ReproductorSonidos reproductor;
     SDL2pp::SDLImage sdl_image;
     SDL2pp::Window ventana;
     SDL2pp::Renderer renderer;
@@ -52,6 +55,12 @@ private:
     std::string mundo_del_mapa;  // el worldId con el que se armo mapa
     // id del jugador -> su personaje
     std::map<uint32_t, Personaje> personajes;
+    // Para los sonidos: el jugador propio en el ultimo Snapshot, para compararlo con el siguiente
+    std::optional<uint32_t> tick_escuchado;
+    std::optional<PlayerState> propio_anterior;
+    bool caminando = false;  // tiene direccion y se movio (contra una pared no suenan pasos)
+    std::chrono::steady_clock::time_point proximo_paso;
+    size_t paso_actual = 0;  // cual de SONIDOS_PASO suena la proxima vez
 };
 
 #endif

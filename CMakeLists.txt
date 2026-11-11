@@ -65,9 +65,9 @@ target_compile_definitions(taller_common PUBLIC TALLER_MAPS_DIR="${CMAKE_CURRENT
 # sudo apt-get install libopus-dev libopusfile-dev libxmp-dev libfluidsynth-dev fluidsynth libwavpack1 libwavpack-dev libfreetype-dev wavpack
 #
 
-# Install libSDL2 and libSDL2pp (for client or editor)
+# Install libSDL2 and libSDL2pp (for the client: the editor is Qt only)
 # HEY!! TODO XXX: add more dependendies (either for client, server or editor)
-if(TALLER_CLIENT OR TALLER_EDITOR)
+if(TALLER_CLIENT)
     include(FetchContent)
     FetchContent_Declare(
         SDL2
@@ -111,6 +111,9 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
 
+    # Como subproyecto, libSDL2pp solo envuelve SDL_image y SDL_mixer si el proyecto padre lo pide.
+    set(SDL2PP_WITH_IMAGE ON)
+    set(SDL2PP_WITH_MIXER ON)
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
 endif()
 
@@ -143,7 +146,7 @@ if(TALLER_CLIENT)
 
     # Solo el menu en Qt, sin SDL: para ver las pantallas sin compilar el juego.
     include(client/menu/menu_sources.cmake)
-    add_executable(taller_menu client/main.cpp ${TALLER_MENU_SOURCES})
+    add_executable(taller_menu client/menu/main.cpp ${TALLER_MENU_SOURCES})
     set_target_properties(taller_menu PROPERTIES AUTOMOC ON AUTORCC ON)
     target_link_libraries(taller_menu taller_common Qt6::Widgets)
 
@@ -172,23 +175,21 @@ if(TALLER_SERVER)
 endif()
 
 if(TALLER_EDITOR)
-    # HEY!! TODO XXX: Change the name of the executable to the one you like!
+    find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
     add_executable(taller_editor)
+    set_target_properties(taller_editor PROPERTIES AUTOMOC ON AUTORCC ON)
 
     # Make them depend on taller_common lib
-    add_dependencies(taller_editor taller_common SDL2pp::SDL2pp)
+    add_dependencies(taller_editor taller_common)
 
     # Add source files and enable warnings
-    # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(editor)
 
     set_project_warnings(taller_editor ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 
-    # add libSDL2pp's headers
-    target_include_directories(taller_editor PRIVATE ${libSDL2pp_SOURCE_DIR})
-
     # Link the taller_common lib target
-    target_link_libraries(taller_editor taller_common SDL2pp::SDL2pp)
+    target_link_libraries(taller_editor taller_common Qt6::Widgets)
 endif()
 
 

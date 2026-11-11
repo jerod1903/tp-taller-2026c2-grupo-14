@@ -89,20 +89,27 @@ MapRequirements loadMapRequirements(const std::string& path) {
         requirements.areas.push_back({type, count, std::move(floorNumbers)});
     }
 
-    // Convierte las entidades requeridas a enums y rechaza reglas duplicadas o desconocidas.
-    std::set<std::tuple<AreaType, ElementType, ElementLayer>> elementRequirements;
-    const auto* requiredElements = reader.requiredArray("required_elements");
-    for (const auto& node: *requiredElements) {
-        const auto& table = detail::requiredTable(node, "each required_elements entry");
-        const detail::TomlTableReader elementReader(table, "required element");
-        const auto areaType = elementReader.requiredEnum<AreaType>("area_type", areaTypeFromString);
-        const auto type = elementReader.requiredEnum<ElementType>("type", elementTypeFromString);
-        const auto layer =
-                elementReader.requiredEnum<ElementLayer>("layer", elementLayerFromString);
-        if (!elementRequirements.emplace(areaType, type, layer).second) {
-            throw std::runtime_error("duplicate required element rule");
+    // Una regla por tipo de elemento y tipo de area: donde va, cuanto mide y cuantos puede haber.
+    std::set<std::tuple<AreaType, ElementType>> elementRules;
+    const auto* elements = reader.requiredArray("elements");
+    for (const auto& node: *elements) {
+        const auto& table = detail::requiredTable(node, "each elements entry");
+        const detail::TomlTableReader elementReader(table, "element rule");
+        ElementRule rule;
+        rule.areaType = elementReader.requiredEnum<AreaType>("area_type", areaTypeFromString);
+        rule.type = elementReader.requiredEnum<ElementType>("type", elementTypeFromString);
+        rule.layer = elementReader.requiredEnum<ElementLayer>("layer", elementLayerFromString);
+        rule.width = elementReader.requiredInt("width");
+        rule.height = elementReader.requiredInt("height");
+        rule.maxPerArea = elementReader.optionalInt("max_per_area");
+        rule.required = elementReader.requiredValue<bool>("required");
+        if (rule.width <= 0 || rule.height <= 0 || (rule.maxPerArea && *rule.maxPerArea <= 0)) {
+            throw std::runtime_error("element rule size and max_per_area must be positive");
         }
-        requirements.elements.push_back({areaType, type, layer});
+        if (!elementRules.emplace(rule.areaType, rule.type).second) {
+            throw std::runtime_error("duplicate element rule");
+        }
+        requirements.elements.push_back(rule);
     }
 
     // Carga las conexiones que cada tipo de area o piso debe ofrecer.

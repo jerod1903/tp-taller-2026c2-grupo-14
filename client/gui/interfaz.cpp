@@ -78,6 +78,34 @@ void Interfaz::actualizar_personajes(const EstadoJuego& estado,
                   [&presentes](const auto& par) { return !presentes.contains(par.first); });
 }
 
+void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
+                                  std::chrono::steady_clock::time_point ahora) {
+    auto propio = std::find_if(
+            estado.jugadores.begin(), estado.jugadores.end(),
+            [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
+    if (propio == estado.jugadores.end()) {
+        return;
+    }
+    // Hay varios frames por Snapshot: se compara solo cuando llega uno nuevo
+    if (estado.tick != tick_escuchado) {
+        if (propio_anterior) {
+            bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;
+            bool se_movio = propio->x != propio_anterior->x || propio->y != propio_anterior->y;
+            caminando = tiene_direccion && se_movio;
+            if (propio->gold > propio_anterior->gold) {
+                reproductor.reproducir(Sonido::Moneda);
+            }
+        }
+        propio_anterior = *propio;
+        tick_escuchado = estado.tick;
+    }
+    if (caminando && ahora >= proximo_paso) {
+        reproductor.reproducir(SONIDOS_PASO[paso_actual]);
+        paso_actual = (paso_actual + 1) % SONIDOS_PASO.size();
+        proximo_paso = ahora + INTERVALO_PASO;
+    }
+}
+
 void Interfaz::ajustar_lienzo() {
     SDL2pp::Point salida = renderer.GetOutputSize();
     // Escala entera, para que todos los pixeles midan lo mismo, y elegida para que se vea mas o
@@ -93,8 +121,10 @@ void Interfaz::ajustar_lienzo() {
 }
 
 void Interfaz::dibujar(const EstadoJuego& estado) {
+    auto ahora = std::chrono::steady_clock::now();
     actualizar_mapa(estado);
-    actualizar_personajes(estado, std::chrono::steady_clock::now());
+    actualizar_personajes(estado, ahora);
+    actualizar_sonidos(estado, ahora);
     ajustar_lienzo();
     renderer.SetTarget(*lienzo);
     renderer.SetDrawColor(0, 0, 0, 255);

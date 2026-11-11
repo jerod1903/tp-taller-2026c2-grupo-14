@@ -4,7 +4,7 @@ QString StyleManager::globalStyleSheet() {
     // Los sprites de madera (botones, inputs) vienen de los recursos Qt (menu.qrc). Los
     // widgets no pintan fondo propio: el fondo lo pone MainWindow detras de todas las pantallas.
     return R"(
-        QMainWindow {
+        QMainWindow, QMessageBox {
             background-color: #2D1B10;
         }
         #titleLabel {
