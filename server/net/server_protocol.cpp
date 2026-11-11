@@ -113,7 +113,7 @@ bool ServerProtocol::send_enable_multiplayer(const EnableMultiplayerResponse& re
     return send_status(response.status) && baseProtocol.send_string(response.inviteCode);
 }
 
-// La operación no se valida acá: el protocolo no conoce las reglas del juego.
+
 std::optional<GameOp> ServerProtocol::recv_game_op() {
     std::optional<uint8_t> op = baseProtocol.recv_u8();
     if (!op)
@@ -128,6 +128,8 @@ std::optional<MoveRequest> ServerProtocol::recv_move() {
         return std::nullopt;
     return MoveRequest{static_cast<int8_t>(*dir_x), static_cast<int8_t>(*dir_y)};
 }
+
+// La operación no se valida acá: el protocolo no conoce las reglas del juego.
 
 std::optional<Request> ServerProtocol::recv_request() {
     std::optional<uint8_t> operation = baseProtocol.recv_u8();
