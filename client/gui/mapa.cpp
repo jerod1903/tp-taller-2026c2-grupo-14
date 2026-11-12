@@ -7,56 +7,55 @@
 #include <utility>
 #include <vector>
 
+#include "common/map/MapSprites.h"
 #include "common/map/persistence/MapRepository.h"
 
 #include "client/constants.h"
 #include "rutas.h"
 
+using stardew::maps::ELEMENT_SPRITES;
 using stardew::maps::ElementType;
+using stardew::maps::TILE_SPRITES;
 using stardew::maps::TileType;
 
 Mapa::Mapa(SDL2pp::Renderer& renderer, const std::string& world_id):
-        tileset_caverna(renderer, RUTA_TILESET_CAVERNA),
-        tileset_exterior(renderer, RUTA_TILESET_EXTERIOR),
-        cabanas(renderer, RUTA_CABANAS),
-        edificios_pueblo(renderer, RUTA_EDIFICIOS_PUEBLO),
-        npc_marnie(renderer, RUTA_NPC_MARNIE),
-        npc_clint(renderer, RUTA_NPC_CLINT),
-        npc_pierre(renderer, RUTA_NPC_PIERRE),
-        npc_robin(renderer, RUTA_NPC_ROBIN),
+        hojas(cargar_hojas(renderer)),
         graficos(armar_graficos()),
         graficos_elementos(armar_graficos_elementos()),
         areas(cargar_areas(world_id)) {}
 
-std::map<TileType, TileGrafico> Mapa::armar_graficos() {
-    return {
-            {TileType::CaveWall, {tileset_caverna, TILE_PARED}},
-            {TileType::CaveFloor, {tileset_caverna, TILE_PISO}},
-            {TileType::Grass, {tileset_exterior, TILE_PASTO}},
-            {TileType::Dirt, {tileset_exterior, TILE_TIERRA}},
-            {TileType::Path, {tileset_exterior, TILE_CAMINO}},
-            {TileType::TilledSoil, {tileset_exterior, TILE_TIERRA_ARADA}},
-            {TileType::Water, {tileset_exterior, TILE_AGUA}},
-            {TileType::Sand, {tileset_exterior, TILE_ARENA}},
-            {TileType::Stone, {tileset_exterior, TILE_PIEDRA}},
-            {TileType::WoodFloor, {tileset_exterior, TILE_PISO_MADERA}},
+std::map<std::string, SDL2pp::Texture> Mapa::cargar_hojas(SDL2pp::Renderer& renderer) {
+    std::map<std::string, SDL2pp::Texture> cargadas;
+    auto cargar = [&](const char* hoja) {
+        if (!cargadas.contains(hoja)) {
+            cargadas.try_emplace(hoja, renderer, std::string(CARPETA_ASSETS) + hoja);
+        }
     };
+    for (const auto& [tipo, sprite]: TILE_SPRITES) {
+        cargar(sprite.sheet);
+    }
+    for (const auto& [tipo, sprite]: ELEMENT_SPRITES) {
+        cargar(sprite.sheet);
+    }
+    return cargadas;
+}
+
+std::map<TileType, TileGrafico> Mapa::armar_graficos() {
+    std::map<TileType, TileGrafico> armados;
+    for (const auto& [tipo, sprite]: TILE_SPRITES) {
+        SDL2pp::Point casilla(sprite.column, sprite.row);
+        armados.emplace(tipo, TileGrafico{hojas.at(sprite.sheet), casilla});
+    }
+    return armados;
 }
 
 std::map<ElementType, ElementoGrafico> Mapa::armar_graficos_elementos() {
-    // La entrada a la mina no tiene dibujo propio: se pinta el piso de la caverna
-    SDL2pp::Rect piso_caverna(TILE_PISO.x * TAMANO_TILE, TILE_PISO.y * TAMANO_TILE, TAMANO_TILE,
-                              TAMANO_TILE);
-    return {
-            {ElementType::Cabin, {cabanas, RECORTE_CABANA, false}},
-            {ElementType::Market, {edificios_pueblo, RECORTE_ALMACEN, false}},
-            {ElementType::CommunityCenter, {edificios_pueblo, RECORTE_CENTRO_COMUNITARIO, false}},
-            {ElementType::DungeonEntrance, {tileset_caverna, piso_caverna, true}},
-            {ElementType::MerchantMarnie, {npc_marnie, FRAME_NPC, false}},
-            {ElementType::MerchantClint, {npc_clint, FRAME_NPC, false}},
-            {ElementType::MerchantPierre, {npc_pierre, FRAME_NPC, false}},
-            {ElementType::MerchantRobin, {npc_robin, FRAME_NPC, false}},
-    };
+    std::map<ElementType, ElementoGrafico> armados;
+    for (const auto& [tipo, sprite]: ELEMENT_SPRITES) {
+        SDL2pp::Rect origen(sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height);
+        armados.emplace(tipo, ElementoGrafico{hojas.at(sprite.sheet), origen, sprite.ground});
+    }
+    return armados;
 }
 
 std::map<std::string, Mapa::Area> Mapa::cargar_areas(const std::string& world_id) const {
