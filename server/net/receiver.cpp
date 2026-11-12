@@ -7,10 +7,9 @@
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "server/game/commands/leave_command.h"
-#include "server/game/commands/move_command.h"
 
 Receiver::Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id):
-        protocol(protocol), inbox(inbox), player_id(player_id) {}
+        protocol(protocol), factory(protocol), inbox(inbox), player_id(player_id) {}
 
 void Receiver::start() {
     Thread::start();
@@ -28,15 +27,13 @@ void Receiver::run() {
                 left = true;
                 break;
             }
-            if (*op == GameOp::Move) {
-                std::optional<MoveRequest> move = protocol.recv_move();
-                if (!move) {
-                    break;
-                }
-                inbox.push(std::make_shared<MoveCommand>(player_id, *move));
-            } else {
-                break;  // Op desconocida: cortar la conexión
+            std::shared_ptr<GameCommand> command = factory.create(*op, player_id);
+            if (!command) {
+                // No se sabe dónde empieza la próxima op: se corta como si fuera una desconexión.
+                Logger::debug("op desconocida o payload cortado: {}", static_cast<int>(*op));
+                break;
             }
+            inbox.push(command);
         }
     } catch (const LibError& e) {
         Logger::debug("conexión cortada: {}", e.what());

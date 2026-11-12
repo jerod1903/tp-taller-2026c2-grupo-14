@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "common/lib/thread.h"
+#include "server/game/commands/command_factory.h"
 #include "server/game/game_event.h"
 #include "server/net/server_protocol.h"
 
@@ -25,6 +26,7 @@ public:
 private:
     bool started = false;
     ServerProtocol& protocol;
+    CommandFactory factory;
     Inbox& inbox;
     const uint32_t player_id;
     bool left = false;

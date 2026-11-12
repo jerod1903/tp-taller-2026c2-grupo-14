@@ -11,8 +11,6 @@
 #include "common/base_protocol.h"
 #include "common/game_dto.h"
 #include "common/net/socket.h"
-#include "common/operations.h"
-#include "common/requests.h"
 
 namespace {
 
@@ -73,23 +71,6 @@ TEST_F(ServerProtocolTest, EmptySnapshotHasNoPlayers) {
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
-}
-
-TEST_F(ServerProtocolTest, RecvRequestReadsOperationAndDirection) {
-    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
-    ASSERT_TRUE(client->send_u8(1));
-    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(-1)));
-    std::optional<Request> request = server->recv_request();
-    ASSERT_TRUE(request.has_value());
-    EXPECT_EQ(request->tipo, Operation::Move);
-    EXPECT_EQ(request->dir_x, 1);
-    EXPECT_EQ(request->dir_y, -1);
-}
-
-TEST_F(ServerProtocolTest, RecvRequestCutInTheMiddleIsNullopt) {
-    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
-    client->shutdown();
-    EXPECT_FALSE(server->recv_request().has_value());
 }
 
 TEST_F(ServerProtocolTest, RecvGameOpReadsMove) {

@@ -15,7 +15,7 @@ enum class GameOp : uint8_t {
 struct MoveRequest {
     int8_t dirX;
     int8_t dirY;
-    
+
     bool operator==(const MoveRequest&) const = default;
 };
 

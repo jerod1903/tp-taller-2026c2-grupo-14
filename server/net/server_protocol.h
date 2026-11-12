@@ -8,7 +8,6 @@
 #include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/net/socket.h"
-#include "common/requests.h"
 
 class ServerProtocol {
 public:
@@ -36,7 +35,6 @@ public:
     // Durante la partida.
     std::optional<GameOp> recv_game_op();
     std::optional<MoveRequest> recv_move();
-    std::optional<Request> recv_request();
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);
     bool send_game_ended(const GameEnded& ended);
