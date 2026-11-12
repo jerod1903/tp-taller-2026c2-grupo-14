@@ -27,6 +27,8 @@ enum class ElementType {
     Exit,
     Stairs,
     SpawnPoint,
+    Tree,
+    Bush,
 };
 
 enum class ElementLayer {
@@ -160,6 +162,10 @@ inline std::optional<ElementType> elementTypeFromString(std::string_view value) 
         return ElementType::Stairs;
     if (value == "spawn_point")
         return ElementType::SpawnPoint;
+    if (value == "tree")
+        return ElementType::Tree;
+    if (value == "bush")
+        return ElementType::Bush;
     return std::nullopt;
 }
 
@@ -191,6 +197,10 @@ inline std::string_view toString(ElementType type) {
             return "stairs";
         case ElementType::SpawnPoint:
             return "spawn_point";
+        case ElementType::Tree:
+            return "tree";
+        case ElementType::Bush:
+            return "bush";
     }
     return "unknown_element";
 }
@@ -210,6 +220,8 @@ inline std::vector<ElementType> allElementTypes() {
             ElementType::Exit,
             ElementType::Stairs,
             ElementType::SpawnPoint,
+            ElementType::Tree,
+            ElementType::Bush,
     };
 }
 
@@ -261,6 +273,8 @@ inline ElementTraits elementTraits(ElementType type) {
         case ElementType::MerchantRobin:
         case ElementType::OreNode:
         case ElementType::SpawnPoint:
+        case ElementType::Tree:
+        case ElementType::Bush:
             return {.hasDoor = false, .travel = false};
     }
     return {.hasDoor = false, .travel = false};

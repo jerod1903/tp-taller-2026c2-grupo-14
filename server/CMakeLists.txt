@@ -9,6 +9,7 @@ target_sources(taller_server
     game/commands/leave_command.cpp
     game/commands/move_command.cpp
     game/game_registry.cpp
+    game/characters/animals/animal.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
     game/characters/enemies/skeleton.cpp
@@ -46,6 +47,7 @@ target_sources(taller_server
     game/commands/leave_command.h
     game/commands/move_command.h
     game/game_registry.h
+    game/characters/animals/animal.h
     game/characters/creature.h
     game/characters/enemies/enemy.h
     game/characters/enemies/skeleton.h

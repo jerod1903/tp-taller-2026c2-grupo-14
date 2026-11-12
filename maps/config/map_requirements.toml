@@ -144,6 +144,38 @@ width = 1
 height = 1
 required = false
 
+[[elements]]
+area_type = "farm"
+type = "tree"
+layer = "structure"
+width = 2
+height = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "bush"
+layer = "structure"
+width = 2
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "tree"
+layer = "structure"
+width = 2
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "bush"
+layer = "structure"
+width = 2
+height = 1
+required = false
+
 [[required_transitions]]
 from_area_type = "farm"
 to_area_type = "village"

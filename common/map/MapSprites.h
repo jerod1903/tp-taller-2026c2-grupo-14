@@ -22,6 +22,8 @@ inline const char* const SHEET_CLINT = "Market/NPCs/NPC_Clint.png";
 inline const char* const SHEET_PIERRE = "Market/NPCs/NPC_Pierre.png";
 inline const char* const SHEET_ROBIN = "Market/NPCs/NPC_Robin.png";
 inline const char* const SHEET_ORE = "Caverns/Mining/ore.png";
+inline const char* const SHEET_TREE = "Misc/tree2/tree1.png";
+inline const char* const SHEET_BUSHES = "Misc/tree_01_16x16.png";
 
 struct SpriteRect {
     int x;
@@ -75,6 +77,10 @@ inline const std::map<ElementType, ElementSprite> ELEMENT_SPRITES = {
          {SHEET_CAVE, {8 * TILE_SIZE, 3 * TILE_SIZE, TILE_SIZE, TILE_SIZE}, true}},
         // La piedra chica, sin mineral a la vista: cual sale lo decide el servidor
         {ElementType::OreNode, {SHEET_ORE, {72, 11, 18, 16}, false}},
+        // El pino, hasta la sombra del tronco: la copa sobresale hacia arriba
+        {ElementType::Tree, {SHEET_TREE, {0, 0, 28, 40}, false}},
+        // El arbusto chico
+        {ElementType::Bush, {SHEET_BUSHES, {1, 32, 30, 32}, false}},
         // Mirando hacia abajo
         {ElementType::MerchantMarnie, {SHEET_MARNIE, {0, 0, 16, 32}, false}},
         {ElementType::MerchantClint, {SHEET_CLINT, {0, 0, 16, 32}, false}},
