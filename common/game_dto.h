@@ -5,43 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "common/lobby_dto.h"
-
-
-// PROTOCOLO DE PARTIDA 
-// 1. Cliente -> Servidor (Opcode GameOp u8 adelante):
-//    - Move (0x01):       i8 dirX, i8 dirY
-//    - LeaveGame (0x02):  sin payload (1 byte en total)
-//
-// 2. Servidor -> Cliente (Tag GameMsg u8 adelante):
-//    - LocationData (0x00):
-//        string worldId  (u16 length + bytes UTF-8)
-//    - Snapshot (0x01):
-//        u32 tick
-//        u16 players_count
-//        por cada jugador:
-//           (PlayerState):
-//                u32 playerId
-//                string areaId
-//                u32 x, u32 y
-//                i8 dirX, i8 dirY
-//                u16 health, u16 energy, u32 gold
-//                u16 entities_count
-//        por cada entidad 
-//           (EntityState):
-//              u32 entityId
-//              u8 type (EntityType)
-//              string areaId
-//              u32 x, u32 y
-//              i8 dirX, i8 dirY
-//    - GameEnded (0x02):
-//        u8 reason (EndReason)
-//    - PlayerInfo (0x03):
-//        u32 playerId
-//        string characterName
-//        CharacterAppearance (hairStyle u16, hairColor u8, shirt u16, pants u16, hat u16)
-
-
+// Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
@@ -55,6 +19,7 @@ struct MoveRequest {
     bool operator==(const MoveRequest&) const = default;
 };
 
+// Mensajes del servidor durante la partida: cada uno va precedido por su tag.
 enum class GameMsg : uint8_t {
     LocationData,
     Snapshot,
@@ -106,7 +71,7 @@ constexpr float CHARACTER_HALF_WIDTH = 0.3125f;
 constexpr float CHARACTER_HALF_HEIGHT = 0.25f;
 
 // Un jugador en un tick. (x, y) es su centro dentro del área areaId; (dirX, dirY) es hacia dónde
-// camina, en -1, 0 o 1 como en un Request: (0, 0) si está quieto.
+// camina, en -1, 0 o 1 como en un MoveRequest: (0, 0) si está quieto.
 struct PlayerState {
     uint32_t playerId;
     std::string areaId;

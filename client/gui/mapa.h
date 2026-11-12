@@ -31,7 +31,7 @@ struct ElementoGrafico {
 class Mapa {
 public:
     Mapa(SDL2pp::Renderer& renderer, const std::string& world_id);
-    // graficos guarda referencias a los tilesets de este mismo objeto: no se copia ni se mueve
+    // graficos guarda referencias a las hojas de este mismo objeto: no se copia ni se mueve
     Mapa(const Mapa&) = delete;
     Mapa& operator=(const Mapa&) = delete;
     Mapa(Mapa&&) = delete;
@@ -54,20 +54,16 @@ private:
         std::vector<Sprite> suelo;
         std::vector<Sprite> elementos;
     };
-    // Que textura y casilla usa cada tipo de tile. Se llama con los tilesets ya cargados
+    // Carga una sola vez cada imagen que nombra la tabla de common/map/MapSprites.h
+    static std::map<std::string, SDL2pp::Texture> cargar_hojas(SDL2pp::Renderer& renderer);
+    // Que textura y casilla usa cada tipo de tile, segun TILE_SPRITES. Con las hojas ya cargadas
     std::map<stardew::maps::TileType, TileGrafico> armar_graficos();
-    // Que textura y recorte usa cada tipo de elemento
+    // Que textura y recorte usa cada tipo de elemento, segun ELEMENT_SPRITES
     std::map<stardew::maps::ElementType, ElementoGrafico> armar_graficos_elementos();
     // Carga maps/<world_id>.toml y devuelve los tiles y elementos de cada area, por id
     std::map<std::string, Area> cargar_areas(const std::string& world_id) const;
-    SDL2pp::Texture tileset_caverna;
-    SDL2pp::Texture tileset_exterior;
-    SDL2pp::Texture cabanas;
-    SDL2pp::Texture edificios_pueblo;
-    SDL2pp::Texture npc_marnie;
-    SDL2pp::Texture npc_clint;
-    SDL2pp::Texture npc_pierre;
-    SDL2pp::Texture npc_robin;
+    // Ruta de la tabla (relativa a Assets/) -> su imagen
+    std::map<std::string, SDL2pp::Texture> hojas;
     std::map<stardew::maps::TileType, TileGrafico> graficos;
     std::map<stardew::maps::ElementType, ElementoGrafico> graficos_elementos;
     std::map<std::string, Area> areas;

@@ -10,6 +10,7 @@
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "server/consts.h"
+#include "server/game/commands/join_command.h"
 #include "server/net/receiver.h"
 #include "server/net/sender.h"
 
@@ -227,14 +228,14 @@ bool LobbySession::enter_game(const GameEnteredResponse& response, const GameMem
 bool LobbySession::play(uint32_t player_id, const GameMember& member) {
     Inbox& inbox = registry.attach(*current_game);
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(ServerConstants::OUTBOX_SIZE);
-    inbox.push(PlayerJoined{player_id, member, outbox});
+    inbox.push(std::make_shared<JoinCommand>(player_id, member, outbox));
     Sender sender(protocol, outbox);
     Receiver receiver(protocol, inbox, player_id);
     sender.start();
     receiver.start();
     receiver.join();
     if (receiver.has_left()) {
-        // El Game cierra la outbox al procesar el PlayerLeft; el Sender la vacía y termina.
+        // El Game cierra la outbox al ejecutar el LeaveCommand; el Sender la vacía y termina.
         sender.join();
         return true;
     }

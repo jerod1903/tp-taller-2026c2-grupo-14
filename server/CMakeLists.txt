@@ -4,6 +4,10 @@ target_sources(taller_server
     main.cpp
     server.cpp
     game/game.cpp
+    game/commands/command_factory.cpp
+    game/commands/join_command.cpp
+    game/commands/leave_command.cpp
+    game/commands/move_command.cpp
     game/game_registry.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
@@ -34,6 +38,13 @@ target_sources(taller_server
     server.h
     game/game_event.h
     game/game.h
+    game/outbox.h
+    game/commands/command_factory.h
+    game/commands/game_command.h
+    game/commands/game_context.h
+    game/commands/join_command.h
+    game/commands/leave_command.h
+    game/commands/move_command.h
     game/game_registry.h
     game/characters/creature.h
     game/characters/enemies/enemy.h
