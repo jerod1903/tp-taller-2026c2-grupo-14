@@ -66,9 +66,11 @@ void GameLoop::procesar_mensajes() {
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
             estado.tick = snapshot->tick;
-        } else {
-            fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida
+        } else if (const auto* fin_msg = std::get_if<GameEnded>(&*mensaje)) {
+            fin = fin_msg->reason;  // termino la partida
             corriendo = false;
+        } else if (std::holds_alternative<PlayerInfo>(*mensaje)) {
+            // PlayerInfo: la interfaz guardara la apariencia ...
         }
     }
     // El hilo termina si se corto la conexion: fin queda vacio

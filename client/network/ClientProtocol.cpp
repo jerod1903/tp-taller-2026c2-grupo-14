@@ -25,7 +25,7 @@
 //     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
 //                    health u16, energy u16, gold u32)*
 //     GameEnded:     reason u8
-//   
+//
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
 
@@ -127,6 +127,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvSnapshot();
         case GameMsg::GameEnded:
             return GameEnded{static_cast<EndReason>(ensure(baseProtocol.recv_u8()))};
+        case GameMsg::PlayerInfo:
+            return recvPlayerInfo();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -161,15 +163,34 @@ CharacterAppearance ClientProtocol::recvAppearance() {
     return appearance;
 }
 
+
 Snapshot ClientProtocol::recvSnapshot() {
     Snapshot snapshot{};
     snapshot.tick = ensure(baseProtocol.recv_u32());
-    uint16_t count = ensure(baseProtocol.recv_u16());
-    for (uint16_t i = 0; i < count; ++i) {
+    
+    // Lectura de jugadores
+    uint16_t players_count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < players_count; ++i) {
         snapshot.players.push_back(recvPlayerState());
     }
+
+    // Lectura de entidades
+    uint16_t entities_count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < entities_count; ++i) {
+        EntityState entity;
+        entity.entityId = ensure(baseProtocol.recv_u32());
+        entity.type = static_cast<EntityType>(ensure(baseProtocol.recv_u8()));
+        entity.areaId = ensure(baseProtocol.recv_string());
+        entity.x = ensure(baseProtocol.recv_u32());
+        entity.y = ensure(baseProtocol.recv_u32());
+        entity.dirX = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+        entity.dirY = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+        snapshot.entities.push_back(entity);
+    }
+
     return snapshot;
 }
+
 
 PlayerState ClientProtocol::recvPlayerState() {
     PlayerState player{};
@@ -183,4 +204,12 @@ PlayerState ClientProtocol::recvPlayerState() {
     player.energy = ensure(baseProtocol.recv_u16());
     player.gold = ensure(baseProtocol.recv_u32());
     return player;
+}
+
+PlayerInfo ClientProtocol::recvPlayerInfo() {
+    PlayerInfo info{};
+    info.playerId = ensure(baseProtocol.recv_u32());
+    info.characterName = ensure(baseProtocol.recv_string());
+    info.appearance = recvAppearance();
+    return info;
 }

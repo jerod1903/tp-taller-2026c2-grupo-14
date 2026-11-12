@@ -46,6 +46,7 @@ private:
     CharacterAppearance recvAppearance();
     Snapshot recvSnapshot();
     PlayerState recvPlayerState();
+    PlayerInfo recvPlayerInfo();
 
     BaseProtocol baseProtocol;
 };
