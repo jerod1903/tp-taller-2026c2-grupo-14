@@ -10,9 +10,6 @@
 
 #include "common/logger.h"
 #include "server/consts.h"
-#include "server/game/commands/join_command.h"
-#include "server/game/commands/leave_command.h"
-#include "server/game/commands/move_command.h"
 #include "server/game/world/world_builder.h"
 
 namespace {
@@ -67,24 +64,15 @@ void Game::run() {
 }
 
 void Game::process_events() {
-    GameEvent event;
-    while (inbox.try_pop(event)) {
-        std::visit([this](const auto& e) { handle(e); }, event);
+    std::shared_ptr<GameCommand> command;
+    while (inbox.try_pop(command)) {
+        try {
+            command->execute(*this);
+        } catch (const std::exception& e) {
+            Logger::error("Server error: {}", e.what());
+        }
     }
 }
-
-void Game::handle(const PlayerJoined& joined) {
-    JoinCommand(joined.playerId, joined.member, joined.outbox).execute(*this);
-}
-
-void Game::handle(const PlayerAction& action) {
-    if (action.request.tipo == Operation::Move) {
-        MoveCommand(action.playerId, MoveRequest{action.request.dir_x, action.request.dir_y})
-                .execute(*this);
-    }
-}
-
-void Game::handle(const PlayerLeft& left) { LeaveCommand(left.playerId).execute(*this); }
 
 Player* Game::find_player(uint32_t player_id) {
     auto player = players.find(player_id);

@@ -5,7 +5,7 @@
 #include <memory>
 #include <thread>
 #include <utility>
-#include <variant>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -14,15 +14,16 @@
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "common/net/socket.h"
-#include "common/operations.h"
 #include "server/game/game_event.h"
 #include "server/net/server_protocol.h"
+#include "tests/fake_game_context.h"
 
 namespace {
 
 constexpr const char* HOST = "localhost";
 constexpr const char* PORT = "18645";
-constexpr uint32_t PLAYER_ID = 3;
+// El que el FakeGameContext tiene conectado: así los comandos encolados tienen efecto.
+constexpr uint32_t PLAYER_ID = FakeGameContext::PLAYER_ID;
 
 constexpr std::chrono::milliseconds POLL_INTERVAL(10);
 constexpr int MAX_POLLS = 200;
@@ -53,35 +54,36 @@ protected:
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
 
+    // Saca el próximo comando de la inbox y lo ejecuta: el test mira el efecto, no el tipo.
+    void execute_next() {
+        std::shared_ptr<GameCommand> command = inbox.pop();
+        ASSERT_NE(command, nullptr);
+        command->execute(context);
+    }
+
+    FakeGameContext context;
     Inbox inbox;
     std::unique_ptr<ServerProtocol> server;
     std::unique_ptr<BaseProtocol> client;
     std::unique_ptr<Receiver> receiver;
 };
 
-TEST_F(ReceiverTest, ForwardsRequestsAsPlayerActions) {
+TEST_F(ReceiverTest, ForwardsMovesAsMoveCommands) {
     send_move(1, -1);
-    GameEvent event = inbox.pop();
-    const PlayerAction* action = std::get_if<PlayerAction>(&event);
-    ASSERT_NE(action, nullptr);
-    EXPECT_EQ(action->playerId, PLAYER_ID);
-    EXPECT_EQ(action->request.tipo, Operation::Move);
-    EXPECT_EQ(action->request.dir_x, 1);
-    EXPECT_EQ(action->request.dir_y, -1);
+    execute_next();
+    EXPECT_EQ(context.player.get_direction(), Direction::UP_RIGHT);
 }
 
-TEST_F(ReceiverTest, ClientDisconnectPostsPlayerLeft) {
+TEST_F(ReceiverTest, ClientDisconnectPostsLeaveCommand) {
     client.reset();
-    GameEvent event = inbox.pop();
-    const PlayerLeft* left = std::get_if<PlayerLeft>(&event);
-    ASSERT_NE(left, nullptr);
-    EXPECT_EQ(left->playerId, PLAYER_ID);
+    execute_next();
+    EXPECT_EQ(context.removed, std::vector<uint32_t>{PLAYER_ID});
 }
 
-TEST_F(ReceiverTest, LeaveGamePostsPlayerLeftAndEndsTheThread) {
+TEST_F(ReceiverTest, LeaveGamePostsLeaveCommandAndEndsTheThread) {
     ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::LeaveGame)));
-    GameEvent event = inbox.pop();
-    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
+    execute_next();
+    EXPECT_EQ(context.removed, std::vector<uint32_t>{PLAYER_ID});
     receiver->join();
     EXPECT_TRUE(receiver->has_left());
 }
@@ -95,8 +97,8 @@ TEST_F(ReceiverTest, ClientDisconnectIsNotALeave) {
 
 TEST_F(ReceiverTest, UnknownOpcodeEndsTheThreadWithoutLeave) {
     ASSERT_TRUE(client->send_u8(0xFF));
-    GameEvent event = inbox.pop();
-    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
+    execute_next();
+    EXPECT_EQ(context.removed, std::vector<uint32_t>{PLAYER_ID});
     receiver->join();
     EXPECT_FALSE(receiver->has_left());
 }
@@ -105,8 +107,9 @@ TEST_F(ReceiverTest, MoveCutInTheMiddleEndsTheThreadWithoutLeave) {
     ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
     ASSERT_TRUE(client->send_u8(1));
     client->shutdown();
-    GameEvent event = inbox.pop();
-    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
+    execute_next();
+    EXPECT_EQ(context.player.get_direction(), Direction::NONE);
+    EXPECT_EQ(context.removed, std::vector<uint32_t>{PLAYER_ID});
     receiver->join();
     EXPECT_FALSE(receiver->has_left());
 }

@@ -1,31 +1,14 @@
 #ifndef GAME_EVENT_H
 #define GAME_EVENT_H
 
-#include <cstdint>
 #include <memory>
-#include <variant>
 
 #include "common/lib/queue.h"
-#include "common/requests.h"
-#include "server/game/outbox.h"
-#include "server/persistence/game_store.h"
+#include "server/game/commands/game_command.h"
 
-struct PlayerJoined {
-    uint32_t playerId;
-    GameMember member;
-    std::shared_ptr<Outbox> outbox;
-};
-
-struct PlayerAction {
-    uint32_t playerId;
-    Request request;
-};
-
-struct PlayerLeft {
-    uint32_t playerId;
-};
-
-using GameEvent = std::variant<PlayerJoined, PlayerAction, PlayerLeft>;
-using Inbox = Queue<GameEvent>;
+// Todo lo que entra a la partida es un comando: los del cliente (Receiver) y los internos (lobby).
+// shared_ptr porque la Queue solo copia: cada comando se libera cuando se suelta el último puntero,
+// después de ejecutarlo o al destruirse la cola con comandos pendientes.
+using Inbox = Queue<std::shared_ptr<GameCommand>>;
 
 #endif  // GAME_EVENT_H

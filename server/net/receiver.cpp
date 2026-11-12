@@ -1,11 +1,13 @@
 #include "server/net/receiver.h"
 
+#include <memory>
 #include <optional>
 
 #include "common/game_dto.h"
 #include "common/logger.h"
 #include "common/net/liberror.h"
-#include "common/operations.h"
+#include "server/game/commands/leave_command.h"
+#include "server/game/commands/move_command.h"
 
 Receiver::Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id):
         protocol(protocol), inbox(inbox), player_id(player_id) {}
@@ -31,8 +33,7 @@ void Receiver::run() {
                 if (!move) {
                     break;
                 }
-                inbox.push(
-                        PlayerAction{player_id, Request{Operation::Move, move->dirX, move->dirY}});
+                inbox.push(std::make_shared<MoveCommand>(player_id, *move));
             } else {
                 break;  // Op desconocida: cortar la conexión
             }
@@ -43,7 +44,7 @@ void Receiver::run() {
         return;  // El Game se cerró: no hay a quién avisar.
     }
     try {
-        inbox.push(PlayerLeft{player_id});
+        inbox.push(std::make_shared<LeaveCommand>(player_id));
     } catch (const ClosedQueue&) {}
 }
 

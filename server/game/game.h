@@ -44,10 +44,8 @@ private:
     std::map<uint32_t, ConnectedPlayer> players;
     uint32_t tick = 0;
 
+    // Ejecuta los comandos pendientes de la inbox sin bloquearse.
     void process_events();
-    void handle(const PlayerJoined& joined);
-    void handle(const PlayerAction& action);
-    void handle(const PlayerLeft& left);
     // Saca su personaje del mundo sin cerrar la outbox.
     void remove(uint32_t player_id);
     void broadcast_snapshot();

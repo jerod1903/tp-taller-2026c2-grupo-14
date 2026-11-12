@@ -7,7 +7,7 @@
 #include "server/game/game_event.h"
 #include "server/net/server_protocol.h"
 
-// Al cortarse la conexión avisa PlayerLeft al Game.
+// Al terminar, por LeaveGame o por un corte de la conexión, encola un LeaveCommand.
 class Receiver: public Thread {
 public:
     Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id);
