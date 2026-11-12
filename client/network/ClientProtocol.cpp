@@ -147,7 +147,7 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
         case GameMsg::PlayerInfo:
             return recvPlayerInfo();
         case GameMsg::InventoryState:
-            return recvInventoryState();case GameMsg::InventoryState:            
+            return recvInventoryState();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
