@@ -185,7 +185,7 @@ TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
     ServerProtocol server(std::move(*server_socket));
     const PlayerState walking{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
     const PlayerState still{9, "pueblo", 0, 0, 0, 0, 1, 2, 3};
-    ASSERT_TRUE(server.send_snapshot(Snapshot{42, {walking, still}}));
+    ASSERT_TRUE(server.send_snapshot(Snapshot{42, {walking, still}, {}}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
     const Snapshot& snapshot = std::get<Snapshot>(message);
@@ -193,6 +193,29 @@ TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
     ASSERT_EQ(snapshot.players.size(), 2u);
     EXPECT_EQ(snapshot.players[0], walking);
     EXPECT_EQ(snapshot.players[1], still);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsSnapshotWithItsEntities) {
+    ServerProtocol server(std::move(*server_socket));
+    const PlayerState player{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
+    const EntityState as_entity{7, EntityType::Player, "granja", 14500, 3250, -1, 1};
+    const EntityState chicken{7, EntityType::Chicken, "granja", 2000, 1000, 0, 0};
+    ASSERT_TRUE(server.send_snapshot(Snapshot{3, {player}, {as_entity, chicken}}));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
+    const Snapshot& snapshot = std::get<Snapshot>(message);
+    ASSERT_EQ(snapshot.players.size(), 1u);
+    EXPECT_EQ(snapshot.players[0], player);
+    EXPECT_EQ(snapshot.entities, (std::vector<EntityState>{as_entity, chicken}));
+}
+
+TEST_F(ClientGameProtocolTest, RecvsPlayerInfo) {
+    ServerProtocol server(std::move(*server_socket));
+    const PlayerInfo info{9, "Martu", APPEARANCE};
+    ASSERT_TRUE(server.send_player_info(info));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<PlayerInfo>(message));
+    EXPECT_EQ(std::get<PlayerInfo>(message), info);
 }
 
 TEST_F(ClientGameProtocolTest, RecvsGameEnded) {

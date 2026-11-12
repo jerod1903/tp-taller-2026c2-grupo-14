@@ -15,7 +15,10 @@ constexpr std::chrono::seconds ESPERA_FIN_PARTIDA(3);
 
 GameLoop::GameLoop(Enviador& enviador, Recibidor& recibidor, Interfaz& interfaz,
                    uint32_t id_propio):
-        enviador(enviador), recibidor(recibidor), interfaz(interfaz), estado{id_propio, {}, {}} {}
+        enviador(enviador),
+        recibidor(recibidor),
+        interfaz(interfaz),
+        estado{id_propio, {}, {}, {}} {}
 
 std::optional<EndReason> GameLoop::ejecutar() {
     try {
@@ -66,6 +69,8 @@ void GameLoop::procesar_mensajes() {
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
             estado.tick = snapshot->tick;
+        } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
+            estado.info_jugadores.insert_or_assign(info->playerId, *info);
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida
             corriendo = false;

@@ -23,9 +23,11 @@
 //   Mensajes del servidor, con su tag GameMsg u8 adelante:
 //     LocationData:  worldId
 //     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
-//                    health u16, energy u16, gold u32)*
+//                    health u16, energy u16, gold u32)*,
+//                    count u16, (entityId u32, type u8, areaId, x u32, y u32, dirX u8, dirY u8)*
 //     GameEnded:     reason u8
-//   
+//     PlayerInfo:    playerId u32, characterName, apariencia
+//
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
 
@@ -127,6 +129,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvSnapshot();
         case GameMsg::GameEnded:
             return GameEnded{static_cast<EndReason>(ensure(baseProtocol.recv_u8()))};
+        case GameMsg::PlayerInfo:
+            return recvPlayerInfo();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -168,6 +172,10 @@ Snapshot ClientProtocol::recvSnapshot() {
     for (uint16_t i = 0; i < count; ++i) {
         snapshot.players.push_back(recvPlayerState());
     }
+    uint16_t entity_count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < entity_count; ++i) {
+        snapshot.entities.push_back(recvEntityState());
+    }
     return snapshot;
 }
 
@@ -183,4 +191,24 @@ PlayerState ClientProtocol::recvPlayerState() {
     player.energy = ensure(baseProtocol.recv_u16());
     player.gold = ensure(baseProtocol.recv_u32());
     return player;
+}
+
+EntityState ClientProtocol::recvEntityState() {
+    EntityState entity{};
+    entity.entityId = ensure(baseProtocol.recv_u32());
+    entity.type = static_cast<EntityType>(ensure(baseProtocol.recv_u8()));
+    entity.areaId = ensure(baseProtocol.recv_string());
+    entity.x = ensure(baseProtocol.recv_u32());
+    entity.y = ensure(baseProtocol.recv_u32());
+    entity.dirX = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+    entity.dirY = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+    return entity;
+}
+
+PlayerInfo ClientProtocol::recvPlayerInfo() {
+    PlayerInfo info{};
+    info.playerId = ensure(baseProtocol.recv_u32());
+    info.characterName = ensure(baseProtocol.recv_string());
+    info.appearance = recvAppearance();
+    return info;
 }

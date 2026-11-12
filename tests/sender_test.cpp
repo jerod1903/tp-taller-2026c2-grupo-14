@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 #include <thread>
 #include <utility>
 
@@ -45,7 +46,7 @@ protected:
     bool wait_sender_end(bool keep_pushing = false) {
         for (uint32_t i = 0; i < MAX_POLLS && sender->is_alive(); ++i) {
             if (keep_pushing) {
-                outbox->try_push(Snapshot{i, {}});
+                outbox->try_push(Snapshot{i, {}, {}});
             }
             std::this_thread::sleep_for(POLL_INTERVAL);
         }
@@ -60,11 +61,19 @@ protected:
 
 TEST_F(SenderTest, SendsMessagesInOrder) {
     outbox->push(LocationData{""});
-    outbox->push(Snapshot{0, {}});
+    outbox->push(Snapshot{0, {}, {}});
     EXPECT_EQ(client->recv_u8(),
               std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::LocationData)));
     EXPECT_TRUE(client->recv_string().has_value());
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
+}
+
+TEST_F(SenderTest, SendsPlayerInfo) {
+    outbox->push(PlayerInfo{4, "Martu", CharacterAppearance{1, 2, 3, 4, 0}});
+    EXPECT_EQ(client->recv_u8(),
+              std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::PlayerInfo)));
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(4));
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("Martu"));
 }
 
 TEST_F(SenderTest, ClosingTheOutboxEndsTheThread) {
