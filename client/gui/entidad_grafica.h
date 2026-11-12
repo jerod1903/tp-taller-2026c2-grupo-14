@@ -21,6 +21,8 @@ class EntidadGrafica {
 public:
     // Las hojas de las capas son compartidas entre todas las entidades del mismo tipo
     EntidadGrafica(const FormatoAnimacion& formato, std::vector<Capa> capas);
+    // Cambia el dibujo, por ejemplo cuando llega la apariencia de un jugador
+    void vestir(std::vector<Capa> capas);
     // Se llama en cada frame con el estado del ultimo Snapshot
     void actualizar(const EntityState& estado, uint32_t tick,
                     std::chrono::steady_clock::time_point ahora);

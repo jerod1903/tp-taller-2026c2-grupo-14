@@ -14,6 +14,7 @@ target_sources(taller_client
     gui/calculador_posicion.cpp
     gui/animador_sprites.cpp
     gui/entidad_grafica.cpp
+    gui/constructor_capas.cpp
     gui/calculador_camara.cpp
     gui/mapa.cpp
     network/enviador.cpp
@@ -38,6 +39,7 @@ target_sources(taller_client
     gui/animador_sprites.h
     gui/entidad_grafica.h
     gui/capa.h
+    gui/constructor_capas.h
     gui/calculador_camara.h
     gui/mapa.h
     gui/rutas.h

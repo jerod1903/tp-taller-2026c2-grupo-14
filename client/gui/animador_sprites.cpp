@@ -26,5 +26,8 @@ void AnimadorSprites::actualizar(int8_t dir_x, int8_t dir_y,
 
 Cuadro AnimadorSprites::cuadro() const {
     const auto& [fila, espejado] = formato.filas.at(mirando);
-    return Cuadro{formato.caminata[paso], fila, espejado};
+    int columna = formato.caminata[paso];
+    auto bajada = formato.bajada_cabeza.find(columna);
+    return Cuadro{columna, fila, espejado, mirando,
+                  bajada == formato.bajada_cabeza.end() ? 0 : bajada->second};
 }

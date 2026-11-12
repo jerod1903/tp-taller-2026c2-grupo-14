@@ -16,7 +16,8 @@ const FormatoAnimacion FORMATO{16,
                                 {Orientacion::Derecha, {1, false}},
                                 {Orientacion::Izquierda, {1, true}}},
                                {0, 1, 0, 2},
-                               milliseconds(100)};
+                               milliseconds(100),
+                               {{1, 1}, {2, 1}}};
 
 class AnimadorSpritesTest: public ::testing::Test {
 protected:
@@ -27,7 +28,7 @@ protected:
 }  // namespace
 
 TEST_F(AnimadorSpritesTest, EmpiezaQuietoMirandoHaciaAbajo) {
-    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 0, false}));
+    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 0, false, Orientacion::Abajo, 0}));
 }
 
 TEST_F(AnimadorSpritesTest, CaminandoSigueLaSecuenciaDeLaCaminata) {
@@ -51,14 +52,14 @@ TEST_F(AnimadorSpritesTest, DespuesDelUltimoCuadroVuelveAlPrimero) {
 
 TEST_F(AnimadorSpritesTest, CadaOrientacionUsaSuFila) {
     animador.actualizar(0, -1, inicio);
-    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 2, false}));
+    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 2, false, Orientacion::Arriba, 0}));
     animador.actualizar(1, 0, inicio);
-    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 1, false}));
+    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 1, false, Orientacion::Derecha, 0}));
 }
 
 TEST_F(AnimadorSpritesTest, HaciaLaIzquierdaEspejaElCostado) {
     animador.actualizar(-1, 0, inicio);
-    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 1, true}));
+    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 1, true, Orientacion::Izquierda, 0}));
 }
 
 TEST_F(AnimadorSpritesTest, EnDiagonalMiraDeCostado) {
@@ -72,7 +73,7 @@ TEST_F(AnimadorSpritesTest, QuietoSigueMirandoHaciaDondeIbaEnElPrimerCuadro) {
     animador.actualizar(0, -1, inicio);
     animador.actualizar(0, -1, inicio + milliseconds(150));
     animador.actualizar(0, 0, inicio + milliseconds(160));
-    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 2, false}));
+    EXPECT_EQ(animador.cuadro(), (Cuadro{0, 2, false, Orientacion::Arriba, 0}));
 }
 
 TEST_F(AnimadorSpritesTest, AlVolverACaminarEmpiezaDesdeElPrimerCuadro) {
@@ -82,4 +83,15 @@ TEST_F(AnimadorSpritesTest, AlVolverACaminarEmpiezaDesdeElPrimerCuadro) {
     EXPECT_EQ(animador.cuadro().columna, 0);
     animador.actualizar(1, 0, inicio + milliseconds(1100));
     EXPECT_EQ(animador.cuadro().columna, 1);
+}
+
+TEST_F(AnimadorSpritesTest, EnLosPasosBajaLaCabeza) {
+    animador.actualizar(0, 1, inicio);
+    EXPECT_EQ(animador.cuadro().bajada_cabeza, 0);
+    animador.actualizar(0, 1, inicio + milliseconds(150));
+    EXPECT_EQ(animador.cuadro().bajada_cabeza, 1);
+    animador.actualizar(0, 1, inicio + milliseconds(250));
+    EXPECT_EQ(animador.cuadro().bajada_cabeza, 0);
+    animador.actualizar(0, 1, inicio + milliseconds(350));
+    EXPECT_EQ(animador.cuadro().bajada_cabeza, 1);
 }

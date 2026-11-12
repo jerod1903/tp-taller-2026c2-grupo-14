@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "client/game/entrada.h"
 #include "client/game/estado_juego.h"
 #include "common/game_dto.h"
+#include "constructor_capas.h"
 #include "calculador_camara.h"
 #include "capa.h"
 #include "entidad_grafica.h"
@@ -34,6 +36,9 @@ private:
     // Crea las entidades nuevas, mueve las que ya estaban y borra las que no vinieron
     void actualizar_entidades(const EstadoJuego& estado,
                               std::chrono::steady_clock::time_point ahora);
+    // Lo dibuja con su apariencia apenas llega su PlayerInfo; mientras tanto, sin ropa
+    void vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
+                bool recien_creado);
     // El mundo se dibuja en pixeles del tileset sobre el lienzo, que despues se estira a la
     // ventana. Se rehace si cambia el tamaño de la ventana
     void ajustar_lienzo();
@@ -48,7 +53,7 @@ private:
     SDL2pp::SDLImage sdl_image;
     SDL2pp::Window ventana;
     SDL2pp::Renderer renderer;
-    SDL2pp::Texture sprite_personaje;
+    ConstructorCapas constructor_capas;
     // Como se dibuja cada tipo de entidad
     struct Aspecto {
         const FormatoAnimacion* formato;
@@ -64,6 +69,8 @@ private:
     std::string mundo_del_mapa;  // el worldId con el que se armo mapa
     // (tipo, id) -> su dibujo: los ids solo son unicos dentro de cada tipo
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
+    // Los jugadores que ya se dibujan con su apariencia
+    std::set<uint32_t> vestidos;
     // Para los sonidos: el jugador propio en el ultimo Snapshot, para compararlo con el siguiente
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;

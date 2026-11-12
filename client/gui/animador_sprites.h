@@ -15,6 +15,9 @@ struct Cuadro {
     int columna;
     int fila;
     bool espejado;
+    Orientacion orientacion;  // las capas por vista eligen su imagen con esto
+    // En pixeles: en los pasos la cabeza baja, y lo que lleva encima tambien
+    int bajada_cabeza;
 
     bool operator==(const Cuadro&) const = default;
 };
@@ -29,6 +32,8 @@ struct FormatoAnimacion {
     // Columnas de la caminata, en orden; quieto muestra la primera
     std::vector<int> caminata;
     std::chrono::duration<float> duracion_cuadro;
+    // columna -> cuantos pixeles baja la cabeza en ese cuadro; las que no estan, no baja
+    std::map<int, int> bajada_cabeza = {};
 };
 
 // Decide que cuadro mostrar segun hacia donde camina la entidad y cuanto hace que camina. No usa

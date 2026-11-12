@@ -5,6 +5,7 @@ target_sources(taller_tests
     dungeon_test.cpp
     client_protocol_test.cpp
     animador_sprites_test.cpp
+    character_sheets_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp

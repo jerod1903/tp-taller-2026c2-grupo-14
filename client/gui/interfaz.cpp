@@ -20,10 +20,9 @@ Interfaz::Interfaz():
         renderer(ventana, -1,
                  SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
                          SDL_RENDERER_TARGETTEXTURE),
-        sprite_personaje(renderer, RUTA_SPRITE_PERSONAJE),
-        aspectos{{EntityType::Player,
-                  {&FORMATO_PERSONAJE,
-                   {{&sprite_personaje, 0}, {&sprite_personaje, COLUMNAS_BRAZOS}}}}} {}
+        constructor_capas(renderer),
+        // Las capas de los jugadores dependen de su apariencia: las arma el ConstructorCapas
+        aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}}} {}
 
 Entrada Interfaz::leer_entrada() {
     Entrada entrada;
@@ -79,13 +78,39 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
         }
         std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
         presentes.insert(clave);
-        auto it = entidades
-                          .try_emplace(clave, *aspecto->second.formato, aspecto->second.capas)
-                          .first;
+        auto [it, nueva] =
+                entidades.try_emplace(clave, *aspecto->second.formato, aspecto->second.capas);
+        if (entidad.type == EntityType::Player) {
+            vestir(it->second, entidad.entityId, estado, nueva);
+        }
         it->second.actualizar(entidad, estado.tick, ahora);
     }
-    std::erase_if(entidades,
-                  [&presentes](const auto& par) { return !presentes.contains(par.first); });
+    for (auto it = entidades.begin(); it != entidades.end();) {
+        if (presentes.contains(it->first)) {
+            ++it;
+            continue;
+        }
+        if (it->first.first == EntityType::Player) {
+            vestidos.erase(it->first.second);
+            constructor_capas.olvidar(it->first.second);
+        }
+        it = entidades.erase(it);
+    }
+}
+
+void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
+                      bool recien_creado) {
+    auto info = estado.info_jugadores.find(player_id);
+    bool tiene_apariencia = info != estado.info_jugadores.end();
+    if (!recien_creado && (!tiene_apariencia || vestidos.contains(player_id))) {
+        return;
+    }
+    std::optional<CharacterAppearance> elegida;
+    if (tiene_apariencia) {
+        elegida = info->second.appearance;
+        vestidos.insert(player_id);
+    }
+    jugador.vestir(constructor_capas.capas(player_id, elegida));
 }
 
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,

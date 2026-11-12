@@ -7,12 +7,8 @@
 
 // Rutas de los assets, relativas a la raiz del repo (el juego se corre desde ahi)
 
-// interfaz.cpp
-inline const char* const RUTA_SPRITE_PERSONAJE =
-        "Assets/Characters/StardewValley/StardewValley_Character_Farmer Base.png";
-
-// mapa.cpp: las imagenes del mapa estan en la tabla de common/map/MapSprites.h, con rutas
-// relativas a esta carpeta
+// mapa.cpp y constructor_capas.cpp: las imagenes del mapa y del granjero estan en
+// common/map/MapSprites.h y common/character/CharacterSheets.h, con rutas relativas a esta carpeta
 inline const char* const CARPETA_ASSETS = "Assets/";
 
 // reproductor_sonidos.cpp
