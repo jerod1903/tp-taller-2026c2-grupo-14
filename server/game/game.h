@@ -40,6 +40,7 @@ private:
     struct ConnectedPlayer {
         std::shared_ptr<Outbox> outbox;
         std::unique_ptr<Player> character;
+        PlayerInfo info;
     };
     std::map<uint32_t, ConnectedPlayer> players;
     uint32_t tick = 0;

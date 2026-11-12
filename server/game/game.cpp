@@ -32,6 +32,17 @@ PlayerState state_of(uint32_t player_id, const Player& player) {
                        static_cast<uint16_t>(player.get_energy()),
                        static_cast<uint32_t>(player.get_gold())};
 }
+
+EntityState entity_of(uint32_t player_id, const Player& player) {
+    Position delta = step(Position{0, 0}, player.get_direction());
+    return EntityState{player_id,
+                       EntityType::Player,
+                       player.get_location().get_name(),
+                       to_wire(player.get_x()),
+                       to_wire(player.get_y()),
+                       static_cast<int8_t>(delta.x),
+                       static_cast<int8_t>(delta.y)};
+}
 }  // namespace
 
 Game::Game(std::string world_id, const stardew::maps::MapDefinition& map):
@@ -88,7 +99,14 @@ void Game::add_player(uint32_t player_id, const GameMember& member,
             ServerConstants::INITIAL_GOLD, ServerConstants::INITIAL_ENERGY);
     world->add_player(*character);
     send(*outbox, LocationData{world_id});
-    players.emplace(player_id, ConnectedPlayer{std::move(outbox), std::move(character)});
+    PlayerInfo info{player_id, member.characterName, member.appearance};
+    for (const auto& [other_id, other]: players) {
+        send(*outbox, other.info);
+        send(*other.outbox, info);
+    }
+    send(*outbox, info);
+    players.emplace(player_id,
+                    ConnectedPlayer{std::move(outbox), std::move(character), std::move(info)});
 }
 
 void Game::remove_player(uint32_t player_id) {
@@ -111,9 +129,10 @@ void Game::remove(uint32_t player_id) {
 }
 
 void Game::broadcast_snapshot() {
-    Snapshot snapshot{tick, {}};
+    Snapshot snapshot{tick, {}, {}};
     for (const auto& [player_id, player]: players) {
         snapshot.players.push_back(state_of(player_id, *player.character));
+        snapshot.entities.push_back(entity_of(player_id, *player.character));
     }
     for (const auto& [player_id, player]: players) {
         send(*player.outbox, snapshot);

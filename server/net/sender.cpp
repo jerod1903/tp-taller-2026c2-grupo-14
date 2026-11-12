@@ -29,6 +29,9 @@ bool Sender::send(const GameMessage& message) {
     if (const LocationData* location = std::get_if<LocationData>(&message)) {
         return protocol.send_location_data(*location);
     }
+    if (const PlayerInfo* info = std::get_if<PlayerInfo>(&message)) {
+        return protocol.send_player_info(*info);
+    }
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 

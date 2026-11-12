@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "common/lobby_dto.h"
+
 // Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
     Move = 0x01,
@@ -24,6 +26,7 @@ enum class GameMsg : uint8_t {
     LocationData,
     Snapshot,
     GameEnded,
+    PlayerInfo,
 };
 
 // El área en la que está el jugador. Se manda al entrar y cada vez que cambia.
@@ -56,10 +59,44 @@ struct PlayerState {
     bool operator==(const PlayerState&) const = default;
 };
 
-// Estado de la partida en un tick: todos los jugadores conectados, en cualquier área.
+enum class EntityType : uint8_t {
+    Player,
+    Cow,
+    Chicken,
+};
+
+// Algo que se dibuja y se mueve, en un tick. entityId es único dentro de su tipo (una vaca puede
+// tener el mismo id que un jugador); si es un Player, es su playerId. Posición y dirección como en
+// PlayerState.
+struct EntityState {
+    uint32_t entityId;
+    EntityType type;
+    std::string areaId;
+    uint32_t x;
+    uint32_t y;
+    int8_t dirX;
+    int8_t dirY;
+
+    bool operator==(const EntityState&) const = default;
+};
+
+// Estado de la partida en un tick: todos los jugadores conectados y todo lo que se mueve, en
+// cualquier área.
 struct Snapshot {
     uint32_t tick;
     std::vector<PlayerState> players;
+    std::vector<EntityState> entities;
+};
+
+// Lo que no cambia de un jugador mientras está en la partida. Al entrar recibe el de cada jugador
+// conectado, incluido él, y los demás reciben el suyo. Al salir no se avisa: deja de aparecer en
+// los snapshots.
+struct PlayerInfo {
+    uint32_t playerId;
+    std::string characterName;
+    CharacterAppearance appearance;
+
+    bool operator==(const PlayerInfo&) const = default;
 };
 
 enum class EndReason : uint8_t {

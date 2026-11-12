@@ -2,6 +2,7 @@
 #define ESTADO_JUEGO_H
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -12,6 +13,8 @@
 // se dibujan lo decide la Interfaz.
 struct EstadoJuego {
     uint32_t id_propio;                  // el playerId de este jugador
+    // Nombre y apariencia de cada jugador, por playerId. Llegan al entrar y cuando entra otro.
+    std::map<uint32_t, PlayerInfo> info_jugadores;
     std::optional<std::string> mundo;    // llega con LocationData; vacio hasta entonces
     std::vector<PlayerState> jugadores;  // los del ultimo Snapshot, en cualquier area
     uint32_t tick = 0;                   // el del ultimo Snapshot

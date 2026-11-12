@@ -45,7 +45,7 @@ TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagAndWorldId) {
 
 TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
     PlayerState player{3, "granja", 14250, 6500, -1, 0, 90, 80, 500};
-    ASSERT_TRUE(server->send_snapshot(Snapshot{42, {player}}));
+    ASSERT_TRUE(server->send_snapshot(Snapshot{42, {player}, {}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(42));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
@@ -58,6 +58,36 @@ TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(90));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(80));
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(500));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));  // sin entidades
+}
+
+TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
+    EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1};
+    ASSERT_TRUE(server->send_snapshot(Snapshot{7, {}, {cow}}));
+    expect_msg(GameMsg::Snapshot);
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(7));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(2));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(EntityType::Cow)));
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(3500));
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(4500));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(-1)));
+}
+
+TEST_F(ServerProtocolTest, PlayerInfoGoesWithIdNameAndAppearance) {
+    const PlayerInfo info{3, "Martu", CharacterAppearance{5, 2, 7, 1, 4}};
+    ASSERT_TRUE(server->send_player_info(info));
+    expect_msg(GameMsg::PlayerInfo);
+    EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(3));
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("Martu"));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(2));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(7));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(4));
 }
 
 TEST_F(ServerProtocolTest, GameEndedGoesWithItsTagAndReason) {
@@ -67,9 +97,10 @@ TEST_F(ServerProtocolTest, GameEndedGoesWithItsTagAndReason) {
 }
 
 TEST_F(ServerProtocolTest, EmptySnapshotHasNoPlayers) {
-    ASSERT_TRUE(server->send_snapshot(Snapshot{0, {}}));
+    ASSERT_TRUE(server->send_snapshot(Snapshot{0, {}, {}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(0));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
 }
 

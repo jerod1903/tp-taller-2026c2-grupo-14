@@ -79,6 +79,8 @@ struct CharacterAppearance {
     uint16_t shirt;
     uint16_t pants;
     uint16_t hat;  // 0 = sin sombrero
+
+    bool operator==(const CharacterAppearance&) const = default;
 };
 
 struct WorldInfo {
