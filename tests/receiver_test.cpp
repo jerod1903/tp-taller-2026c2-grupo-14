@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "common/base_protocol.h"
+#include "common/game_dto.h"
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "common/net/socket.h"
@@ -47,7 +48,7 @@ protected:
     }
 
     void send_move(int8_t dir_x, int8_t dir_y) {
-        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_x)));
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
@@ -78,9 +79,7 @@ TEST_F(ReceiverTest, ClientDisconnectPostsPlayerLeft) {
 }
 
 TEST_F(ReceiverTest, LeaveGamePostsPlayerLeftAndEndsTheThread) {
-    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::LeaveGame)));
-    ASSERT_TRUE(client->send_u8(0));
-    ASSERT_TRUE(client->send_u8(0));
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::LeaveGame)));
     GameEvent event = inbox.pop();
     ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
     receiver->join();
@@ -90,6 +89,24 @@ TEST_F(ReceiverTest, LeaveGamePostsPlayerLeftAndEndsTheThread) {
 TEST_F(ReceiverTest, ClientDisconnectIsNotALeave) {
     client.reset();
     inbox.pop();
+    receiver->join();
+    EXPECT_FALSE(receiver->has_left());
+}
+
+TEST_F(ReceiverTest, UnknownOpcodeEndsTheThreadWithoutLeave) {
+    ASSERT_TRUE(client->send_u8(0xFF));
+    GameEvent event = inbox.pop();
+    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
+    receiver->join();
+    EXPECT_FALSE(receiver->has_left());
+}
+
+TEST_F(ReceiverTest, MoveCutInTheMiddleEndsTheThreadWithoutLeave) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
+    ASSERT_TRUE(client->send_u8(1));
+    client->shutdown();
+    GameEvent event = inbox.pop();
+    ASSERT_TRUE(std::holds_alternative<PlayerLeft>(event));
     receiver->join();
     EXPECT_FALSE(receiver->has_left());
 }

@@ -209,15 +209,13 @@ protected:
     }
 
     void send_move(int8_t dir_x, int8_t dir_y) {
-        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_x)));
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
 
     void send_leave_game() {
-        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::LeaveGame)));
-        ASSERT_TRUE(client->send_u8(0));
-        ASSERT_TRUE(client->send_u8(0));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::LeaveGame)));
     }
 
     // Descarta los snapshots que estaban en camino hasta el GameEnded y devuelve su motivo.
