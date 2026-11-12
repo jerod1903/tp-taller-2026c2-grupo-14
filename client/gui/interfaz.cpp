@@ -21,8 +21,19 @@ Interfaz::Interfaz():
                  SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
                          SDL_RENDERER_TARGETTEXTURE),
         constructor_capas(renderer),
+        hoja_vaca(renderer, RUTA_HOJA_VACA),
+        hoja_gallina(renderer, RUTA_HOJA_GALLINA),
         // Las capas de los jugadores dependen de su apariencia: las arma el ConstructorCapas
-        aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}}} {}
+        aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
+                 {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
+                 {EntityType::Chicken,
+                  {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}} {}
+
+// Un animal es una sola capa: su hoja entera, cuadro por cuadro
+Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
+    SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
+    return Capa{&hoja, TipoCapa::PorCuadro, SDL2pp::Point(0, 0), cuadro, SDL2pp::Point(0, 0)};
+}
 
 Entrada Interfaz::leer_entrada() {
     Entrada entrada;
@@ -135,8 +146,7 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
         tick_escuchado = estado.tick;
     }
     if (caminando && ahora >= proximo_paso) {
-        reproductor.reproducir(SONIDOS_PASO[paso_actual]);
-        paso_actual = (paso_actual + 1) % SONIDOS_PASO.size();
+        reproductor.reproducir(Sonido::Paso);
         proximo_paso = ahora + INTERVALO_PASO;
     }
 }

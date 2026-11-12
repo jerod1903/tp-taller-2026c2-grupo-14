@@ -34,6 +34,18 @@ public:
     static constexpr int INITIAL_ENERGY = 100;
     static constexpr int INITIAL_GOLD = 500;
     static constexpr float PLAYER_SPEED = 4.0f;  // celdas por segundo
+
+    // Animales de la granja. Provisorio: hasta que se compren a Marnie, la granja arranca con estos.
+    static constexpr int INITIAL_COWS = 2;
+    static constexpr int INITIAL_CHICKENS = 3;
+    // Donde arranca la fila de animales, respecto de donde aparece el jugador
+    static constexpr int ANIMALS_OFFSET_X = -2;
+    static constexpr int ANIMALS_OFFSET_Y = 3;
+    static constexpr int ANIMAL_HEALTH = 100;
+    static constexpr float ANIMAL_SPEED = 1.0f;  // celdas por segundo
+    // Cuanto camina (o se queda quieto) antes de elegir otra direccion, en segundos.
+    static constexpr float ANIMAL_MIN_WALK = 1.0f;
+    static constexpr float ANIMAL_MAX_WALK = 3.0f;
     // Mensajes pendientes por jugador; con la outbox llena se descartan snapshots.
     static constexpr unsigned int OUTBOX_SIZE = 64;
 };

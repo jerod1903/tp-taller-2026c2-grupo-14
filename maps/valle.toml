@@ -821,6 +821,328 @@ y = 2
 width = 1
 height = 1
 
+# Arboles y arbustos: la base (2x1) choca, la copa sobresale hacia arriba
+
+[[elements]]
+id = "granja-arbol-1"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 1
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-2"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 4
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-3"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 8
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-4"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 27
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-5"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 1
+y = 7
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-6"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 12
+y = 18
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-7"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 26
+y = 15
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-8"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 22
+y = 18
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-9"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 17
+y = 18
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbol-10"
+area = "granja"
+type = "tree"
+layer = "structure"
+x = 27
+y = 18
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbusto-1"
+area = "granja"
+type = "bush"
+layer = "structure"
+x = 19
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbusto-2"
+area = "granja"
+type = "bush"
+layer = "structure"
+x = 9
+y = 7
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbusto-3"
+area = "granja"
+type = "bush"
+layer = "structure"
+x = 19
+y = 13
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbusto-4"
+area = "granja"
+type = "bush"
+layer = "structure"
+x = 1
+y = 10
+width = 2
+height = 1
+
+[[elements]]
+id = "granja-arbusto-5"
+area = "granja"
+type = "bush"
+layer = "structure"
+x = 10
+y = 18
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-1"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 1
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-2"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 5
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-3"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 10
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-4"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 15
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-5"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 20
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-6"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 28
+y = 2
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-7"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 27
+y = 6
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-8"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 27
+y = 14
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-9"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 12
+y = 17
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-10"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 24
+y = 17
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbol-11"
+area = "pueblo"
+type = "tree"
+layer = "structure"
+x = 26
+y = 18
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbusto-1"
+area = "pueblo"
+type = "bush"
+layer = "structure"
+x = 12
+y = 13
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbusto-2"
+area = "pueblo"
+type = "bush"
+layer = "structure"
+x = 17
+y = 13
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbusto-3"
+area = "pueblo"
+type = "bush"
+layer = "structure"
+x = 24
+y = 12
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbusto-4"
+area = "pueblo"
+type = "bush"
+layer = "structure"
+x = 8
+y = 16
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbusto-5"
+area = "pueblo"
+type = "bush"
+layer = "structure"
+x = 14
+y = 15
+width = 2
+height = 1
+
+[[elements]]
+id = "pueblo-arbusto-6"
+area = "pueblo"
+type = "bush"
+layer = "structure"
+x = 4
+y = 19
+width = 2
+height = 1
+
 [[transitions]]
 id = "granja-a-pueblo"
 from_area = "granja"

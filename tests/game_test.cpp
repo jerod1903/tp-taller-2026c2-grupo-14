@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <thread>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -124,10 +125,11 @@ TEST_F(GameTest, EachSnapshotHasAPlayerEntityPerPlayerWithItsDirection) {
     join(1);
     move(1, 1, 0);
     Snapshot snapshot = wait_snapshot(*outbox, [](const Snapshot& s) {
-        return s.entities.size() == 2 && s.entities.at(1).dirX != 0;
+        return s.players.size() == 2 && s.entities.at(1).dirX != 0;
     });
     ASSERT_EQ(snapshot.players.size(), 2u);
-    for (std::size_t i = 0; i < snapshot.entities.size(); ++i) {
+    // los jugadores van primero; despues vienen los animales
+    for (std::size_t i = 0; i < snapshot.players.size(); ++i) {
         const EntityState& entity = snapshot.entities[i];
         const PlayerState& player = snapshot.players[i];
         EXPECT_EQ(entity.type, EntityType::Player);
@@ -139,6 +141,22 @@ TEST_F(GameTest, EachSnapshotHasAPlayerEntityPerPlayerWithItsDirection) {
     EXPECT_EQ(snapshot.entities[0].dirX, 0);
     EXPECT_EQ(snapshot.entities[1].dirX, 1);
     EXPECT_EQ(snapshot.entities[1].dirY, 0);
+}
+
+TEST_F(GameTest, SnapshotsHaveTheAnimalsOfTheFarm) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    Snapshot snapshot = next_snapshot(*outbox);
+    int cows = 0;
+    int chickens = 0;
+    for (const EntityState& entity: snapshot.entities) {
+        cows += entity.type == EntityType::Cow ? 1 : 0;
+        chickens += entity.type == EntityType::Chicken ? 1 : 0;
+        if (entity.type != EntityType::Player) {
+            EXPECT_EQ(entity.areaId, "granja");
+        }
+    }
+    EXPECT_EQ(cows, ServerConstants::INITIAL_COWS);
+    EXPECT_EQ(chickens, ServerConstants::INITIAL_CHICKENS);
 }
 
 TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {

@@ -2,11 +2,13 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "server/consts.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/cabin.h"
 #include "server/game/world/farm/farm.h"
@@ -169,5 +171,19 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     // Los portales van al final: apuntan a Locations que tienen que existir.
     add_portals(map, locations);
     Position spawn = spawn_of(map, farm_area, *farm);
+    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo de donde aparece el
+    // jugador (o ahi mismo si esa celda no se puede pisar).
+    int next = 0;
+    auto add_animal = [&](AnimalKind kind) {
+        Position pos{spawn.x + ServerConstants::ANIMALS_OFFSET_X + next++,
+                     spawn.y + ServerConstants::ANIMALS_OFFSET_Y};
+        farm->add_animal(kind, farm->is_walkable(pos) ? pos : spawn);
+    };
+    for (int i = 0; i < ServerConstants::INITIAL_COWS; ++i) {
+        add_animal(AnimalKind::Cow);
+    }
+    for (int i = 0; i < ServerConstants::INITIAL_CHICKENS; ++i) {
+        add_animal(AnimalKind::Chicken);
+    }
     return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon), spawn);
 }

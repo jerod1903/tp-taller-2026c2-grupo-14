@@ -43,6 +43,7 @@ private:
     // ventana. Se rehace si cambia el tamaño de la ventana
     void ajustar_lienzo();
     void alternar_pantalla_completa();
+    static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     // Dibuja el area donde esta `propio`, con la camara siguiendolo
     void dibujar_area(const EntidadGrafica& propio);
     // Hace sonar lo que le paso al jugador propio: pasos mientras camina y la moneda si gano oro
@@ -54,6 +55,8 @@ private:
     SDL2pp::Window ventana;
     SDL2pp::Renderer renderer;
     ConstructorCapas constructor_capas;
+    SDL2pp::Texture hoja_vaca;
+    SDL2pp::Texture hoja_gallina;
     // Como se dibuja cada tipo de entidad
     struct Aspecto {
         const FormatoAnimacion* formato;
@@ -76,7 +79,6 @@ private:
     std::optional<PlayerState> propio_anterior;
     bool caminando = false;  // tiene direccion y se movio (contra una pared no suenan pasos)
     std::chrono::steady_clock::time_point proximo_paso;
-    size_t paso_actual = 0;  // cual de SONIDOS_PASO suena la proxima vez
 };
 
 #endif

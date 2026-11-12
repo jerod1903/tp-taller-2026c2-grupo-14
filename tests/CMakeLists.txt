@@ -5,6 +5,7 @@ target_sources(taller_tests
     dungeon_test.cpp
     client_protocol_test.cpp
     animador_sprites_test.cpp
+    animal_test.cpp
     character_sheets_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
@@ -27,6 +28,7 @@ target_sources(taller_tests
     sender_test.cpp
     server_protocol_test.cpp
     # Código del servidor bajo test (sin main.cpp)
+    ../server/game/characters/animals/animal.cpp
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
     ../server/game/characters/enemies/skeleton.cpp

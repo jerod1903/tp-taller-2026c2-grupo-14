@@ -2,7 +2,10 @@
 
 #include <chrono>
 #include <cmath>
+#include <map>
+#include <memory>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <utility>
 #include <variant>
@@ -10,6 +13,7 @@
 
 #include "common/logger.h"
 #include "server/consts.h"
+#include "server/game/characters/animals/animal.h"
 #include "server/game/world/world_builder.h"
 
 namespace {
@@ -40,6 +44,21 @@ EntityState entity_of(uint32_t player_id, const Player& player) {
                        player.get_location().get_name(),
                        to_wire(player.get_x()),
                        to_wire(player.get_y()),
+                       static_cast<int8_t>(delta.x),
+                       static_cast<int8_t>(delta.y)};
+}
+const std::map<AnimalKind, EntityType> ENTITY_TYPE_OF = {
+        {AnimalKind::Cow, EntityType::Cow},
+        {AnimalKind::Chicken, EntityType::Chicken},
+};
+
+EntityState entity_of(const Animal& animal) {
+    Position delta = step(Position{0, 0}, animal.get_direction());
+    return EntityState{animal.get_id(),
+                       ENTITY_TYPE_OF.at(animal.get_kind()),
+                       animal.get_location().get_name(),
+                       to_wire(animal.get_x()),
+                       to_wire(animal.get_y()),
                        static_cast<int8_t>(delta.x),
                        static_cast<int8_t>(delta.y)};
 }
@@ -133,6 +152,9 @@ void Game::broadcast_snapshot() {
     for (const auto& [player_id, player]: players) {
         snapshot.players.push_back(state_of(player_id, *player.character));
         snapshot.entities.push_back(entity_of(player_id, *player.character));
+    }
+    for (const std::unique_ptr<Animal>& animal: world->get_farm().get_animals()) {
+        snapshot.entities.push_back(entity_of(*animal));
     }
     for (const auto& [player_id, player]: players) {
         send(*player.outbox, snapshot);

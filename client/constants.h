@@ -1,7 +1,6 @@
 #ifndef CLIENT_CONSTANTS_H
 #define CLIENT_CONSTANTS_H
 
-#include <array>
 #include <chrono>
 #include <cstdint>
 #include <map>
@@ -39,10 +38,8 @@ inline const int ALTO_VENTANA = 600;
 // En pixeles del tileset: la escala se elige para que entre mas o menos esto de alto (12 casillas
 // y media), sea cual sea el tamaño de la ventana
 inline const int ALTO_MUNDO_VISIBLE = 200;
-// Mientras el jugador camina suena un paso cada tanto, alternando entre estos
+// Mientras el jugador camina suena un paso cada tanto
 inline const std::chrono::milliseconds INTERVALO_PASO(300);
-inline constexpr std::array<Sonido, 4> SONIDOS_PASO = {Sonido::Paso1, Sonido::Paso2,
-                                                       Sonido::Paso3, Sonido::Paso4};
 // La hoja del granjero: una fila por orientacion (el costado mira a la derecha) y la caminata va
 // quieto, pie izquierdo, quieto, pie derecho. En los pasos la cabeza baja un pixel
 inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x,
@@ -54,6 +51,25 @@ inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x
                                                 {0, 1, 0, 2},
                                                 std::chrono::duration<float>(0.15f),
                                                 {{1, 1}, {2, 1}}};
+
+// La vaca: cuadros de 32x32; costado (mirando a la izquierda), frente y espalda
+inline const FormatoAnimacion FORMATO_VACA{32,
+                                           32,
+                                           {{Orientacion::Izquierda, {0, false}},
+                                            {Orientacion::Derecha, {0, true}},
+                                            {Orientacion::Abajo, {1, false}},
+                                            {Orientacion::Arriba, {2, false}}},
+                                           {0, 1, 2, 3},
+                                           std::chrono::duration<float>(0.15f)};
+// La gallina: cuadros de 16x16; solo trae los dos costados (izquierda y derecha)
+inline const FormatoAnimacion FORMATO_GALLINA{16,
+                                              16,
+                                              {{Orientacion::Izquierda, {0, false}},
+                                               {Orientacion::Derecha, {1, false}},
+                                               {Orientacion::Abajo, {0, false}},
+                                               {Orientacion::Arriba, {1, false}}},
+                                              {0, 1, 2, 3},
+                                              std::chrono::duration<float>(0.15f)};
 
 // constructor_capas.cpp
 // Que vista de cada hoja va con cada orientacion: (numero de vista, si se espeja). El pelo trae un
