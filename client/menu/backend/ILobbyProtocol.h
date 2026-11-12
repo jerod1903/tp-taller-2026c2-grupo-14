@@ -33,4 +33,6 @@ public:
     virtual GameEnteredResponse joinGame(const JoinGameRequest& request) = 0;
     // Retomar una partida de la que ya es miembro, con el personaje guardado.
     virtual GameEnteredResponse loadGame(uint32_t gameId) = 0;
+    // abre la partida a otros y devuelve su codigo; solo el dueño (si no, NotOwner)
+    virtual EnableMultiplayerResponse enableMultiplayer(uint32_t gameId) = 0;
 };

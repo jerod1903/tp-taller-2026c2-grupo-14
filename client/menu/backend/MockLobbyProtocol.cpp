@@ -82,3 +82,13 @@ GameEnteredResponse MockLobbyProtocol::loadGame(uint32_t gameId) {
                                 [&](const SavedGameInfo& game) { return game.gameId == gameId; });
     return {isMember ? LobbyStatus::Ok : LobbyStatus::GameNotFound, isMember ? gameId : 0, 0};
 }
+
+EnableMultiplayerResponse MockLobbyProtocol::enableMultiplayer(uint32_t gameId) {
+    auto game = std::find_if(savedGames.begin(), savedGames.end(),
+                             [&](const SavedGameInfo& saved) { return saved.gameId == gameId; });
+    if (game == savedGames.end()) {
+        return {LobbyStatus::GameNotFound, ""};
+    }
+    game->isMultiplayer = true;
+    return {LobbyStatus::Ok, VALID_INVITE_CODE};
+}

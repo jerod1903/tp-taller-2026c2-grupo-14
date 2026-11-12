@@ -526,6 +526,102 @@ server/game/characters/player.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/characters/player.cpp.s
 .PHONY : server/game/characters/player.cpp.s
 
+server/game/commands/command_factory.o: server/game/commands/command_factory.cpp.o
+.PHONY : server/game/commands/command_factory.o
+
+# target to build an object file
+server/game/commands/command_factory.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/command_factory.cpp.o
+.PHONY : server/game/commands/command_factory.cpp.o
+
+server/game/commands/command_factory.i: server/game/commands/command_factory.cpp.i
+.PHONY : server/game/commands/command_factory.i
+
+# target to preprocess a source file
+server/game/commands/command_factory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/command_factory.cpp.i
+.PHONY : server/game/commands/command_factory.cpp.i
+
+server/game/commands/command_factory.s: server/game/commands/command_factory.cpp.s
+.PHONY : server/game/commands/command_factory.s
+
+# target to generate assembly for a file
+server/game/commands/command_factory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/command_factory.cpp.s
+.PHONY : server/game/commands/command_factory.cpp.s
+
+server/game/commands/join_command.o: server/game/commands/join_command.cpp.o
+.PHONY : server/game/commands/join_command.o
+
+# target to build an object file
+server/game/commands/join_command.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/join_command.cpp.o
+.PHONY : server/game/commands/join_command.cpp.o
+
+server/game/commands/join_command.i: server/game/commands/join_command.cpp.i
+.PHONY : server/game/commands/join_command.i
+
+# target to preprocess a source file
+server/game/commands/join_command.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/join_command.cpp.i
+.PHONY : server/game/commands/join_command.cpp.i
+
+server/game/commands/join_command.s: server/game/commands/join_command.cpp.s
+.PHONY : server/game/commands/join_command.s
+
+# target to generate assembly for a file
+server/game/commands/join_command.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/join_command.cpp.s
+.PHONY : server/game/commands/join_command.cpp.s
+
+server/game/commands/leave_command.o: server/game/commands/leave_command.cpp.o
+.PHONY : server/game/commands/leave_command.o
+
+# target to build an object file
+server/game/commands/leave_command.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/leave_command.cpp.o
+.PHONY : server/game/commands/leave_command.cpp.o
+
+server/game/commands/leave_command.i: server/game/commands/leave_command.cpp.i
+.PHONY : server/game/commands/leave_command.i
+
+# target to preprocess a source file
+server/game/commands/leave_command.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/leave_command.cpp.i
+.PHONY : server/game/commands/leave_command.cpp.i
+
+server/game/commands/leave_command.s: server/game/commands/leave_command.cpp.s
+.PHONY : server/game/commands/leave_command.s
+
+# target to generate assembly for a file
+server/game/commands/leave_command.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/leave_command.cpp.s
+.PHONY : server/game/commands/leave_command.cpp.s
+
+server/game/commands/move_command.o: server/game/commands/move_command.cpp.o
+.PHONY : server/game/commands/move_command.o
+
+# target to build an object file
+server/game/commands/move_command.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/move_command.cpp.o
+.PHONY : server/game/commands/move_command.cpp.o
+
+server/game/commands/move_command.i: server/game/commands/move_command.cpp.i
+.PHONY : server/game/commands/move_command.i
+
+# target to preprocess a source file
+server/game/commands/move_command.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/move_command.cpp.i
+.PHONY : server/game/commands/move_command.cpp.i
+
+server/game/commands/move_command.s: server/game/commands/move_command.cpp.s
+.PHONY : server/game/commands/move_command.s
+
+# target to generate assembly for a file
+server/game/commands/move_command.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/game/commands/move_command.cpp.s
+.PHONY : server/game/commands/move_command.cpp.s
+
 server/game/game.o: server/game/game.cpp.o
 .PHONY : server/game/game.o
 
@@ -1112,6 +1208,18 @@ help:
 	@echo "... server/game/characters/player.o"
 	@echo "... server/game/characters/player.i"
 	@echo "... server/game/characters/player.s"
+	@echo "... server/game/commands/command_factory.o"
+	@echo "... server/game/commands/command_factory.i"
+	@echo "... server/game/commands/command_factory.s"
+	@echo "... server/game/commands/join_command.o"
+	@echo "... server/game/commands/join_command.i"
+	@echo "... server/game/commands/join_command.s"
+	@echo "... server/game/commands/leave_command.o"
+	@echo "... server/game/commands/leave_command.i"
+	@echo "... server/game/commands/leave_command.s"
+	@echo "... server/game/commands/move_command.o"
+	@echo "... server/game/commands/move_command.i"
+	@echo "... server/game/commands/move_command.s"
 	@echo "... server/game/game.o"
 	@echo "... server/game/game.i"
 	@echo "... server/game/game.s"

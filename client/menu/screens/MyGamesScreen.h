@@ -35,6 +35,8 @@ private:
     void reloadGames();
     void showDetail(int row);
     void playSelected();
+    // pide el codigo de la partida elegida y lo muestra
+    void inviteSelected();
 
     ILobbyProtocol& lobby;
     std::vector<SavedGameInfo> games;
@@ -47,5 +49,7 @@ private:
     QLabel* detailGameName;
     QLabel* detailInfo;
     QLabel* errorLabel;
+    QLabel* inviteCodeLabel;
+    MenuButton* inviteButton;
     MenuButton* playButton;
 };
