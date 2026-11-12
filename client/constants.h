@@ -9,6 +9,7 @@
 
 #include "client/audio/sonido.h"
 #include "common/lobby_dto.h"
+#include "common/map/MapSprites.h"
 
 // main_juego.cpp
 inline constexpr int CANTIDAD_ARGUMENTOS = 4;  // programa, host, puerto y usuario
@@ -45,25 +46,9 @@ inline const SDL2pp::Rect FRAME(0, 0, 16, 32);
 inline const std::chrono::duration<float> DURACION_TICK_SERVIDOR(1.0f / 30);
 
 // mapa.cpp
-inline const int TAMANO_TILE = 16;  // en pixeles del tileset, sin escalar
+// En pixeles del tileset, sin escalar: el mismo de la tabla de sprites que comparte con el editor
+inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
 inline const char* const CARACTERES_WORLD_ID =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
-// Casillas (columna, fila) dentro del tileset de la caverna
-inline const SDL2pp::Point TILE_PARED(1, 0);
-inline const SDL2pp::Point TILE_PISO(6, 0);
-// Casillas (columna, fila) dentro del tileset del exterior
-inline const SDL2pp::Point TILE_PASTO(2, 2);
-inline const SDL2pp::Point TILE_TIERRA(9, 8);
-inline const SDL2pp::Point TILE_CAMINO(10, 7);
-inline const SDL2pp::Point TILE_TIERRA_ARADA(12, 7);
-inline const SDL2pp::Point TILE_AGUA(12, 19);
-inline const SDL2pp::Point TILE_ARENA(8, 1);
-inline const SDL2pp::Point TILE_PIEDRA(13, 16);
-inline const SDL2pp::Point TILE_PISO_MADERA(2, 9);
-// Recortes de los elementos del mapa dentro de su imagen
-inline const SDL2pp::Rect RECORTE_CABANA(0, 0, 80, 112);
-inline const SDL2pp::Rect RECORTE_ALMACEN(80, 176, 160, 144);  // el de Pierre
-inline const SDL2pp::Rect RECORTE_CENTRO_COMUNITARIO(0, 640, 192, 160);
-inline const SDL2pp::Rect FRAME_NPC(0, 0, 16, 32);  // mirando hacia abajo
 
 #endif
