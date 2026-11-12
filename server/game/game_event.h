@@ -1,34 +1,12 @@
 #ifndef GAME_EVENT_H
 #define GAME_EVENT_H
 
-#include <cstdint>
 #include <memory>
-#include <variant>
 
-#include "common/game_dto.h"
 #include "common/lib/queue.h"
-#include "common/requests.h"
-#include "server/persistence/game_store.h"
+#include "server/game/commands/game_command.h"
 
-using GameMessage = std::variant<LocationData, Snapshot>;
-using Outbox = Queue<GameMessage>;
-
-struct PlayerJoined {
-    uint32_t playerId;
-    GameMember member;
-    std::shared_ptr<Outbox> outbox;
-};
-
-struct PlayerAction {
-    uint32_t playerId;
-    Request request;
-};
-
-struct PlayerLeft {
-    uint32_t playerId;
-};
-
-using GameEvent = std::variant<PlayerJoined, PlayerAction, PlayerLeft>;
-using Inbox = Queue<GameEvent>;
+// shared_ptr porque la Queue solo copia: el comando se libera al soltar el último puntero.
+using Inbox = Queue<std::shared_ptr<GameCommand>>;
 
 #endif  // GAME_EVENT_H

@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include "common/lobby_dto.h"
+#include "server/game/commands/join_command.h"
 #include "server/game/game_event.h"
 #include "server/persistence/in_memory_game_store.h"
 #include "tests/test_worlds.h"
@@ -397,7 +398,7 @@ TEST(GameRegistryTest, AttachedGameSendsItsWorld) {
     GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
     std::optional<uint32_t> id = registry.create_game("Solo", "pueblo", member("jero", "martin"));
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
-    registry.attach(*id).push(PlayerJoined{0, member("jero", "martin"), outbox});
+    registry.attach(*id).push(std::make_shared<JoinCommand>(0, member("jero", "martin"), outbox));
     GameMessage message = outbox->pop();
     ASSERT_TRUE(std::holds_alternative<LocationData>(message));
     EXPECT_EQ(std::get<LocationData>(message).worldId, "pueblo");
@@ -433,7 +434,7 @@ TEST(GameRegistryTest, EmptiedGameRelaunchesOnLoad) {
     registry.leave_game(*id, "jero");
     ASSERT_EQ(registry.load_game(*id, "jero").status, LobbyStatus::Ok);
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
-    registry.attach(*id).push(PlayerJoined{0, member("jero", "martin"), outbox});
+    registry.attach(*id).push(std::make_shared<JoinCommand>(0, member("jero", "martin"), outbox));
     EXPECT_TRUE(registry.is_running(*id));
     EXPECT_TRUE(std::holds_alternative<LocationData>(outbox->pop()));
 }

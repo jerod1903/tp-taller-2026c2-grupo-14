@@ -1,14 +1,15 @@
 #include "server/net/receiver.h"
 
+#include <memory>
 #include <optional>
 
 #include "common/game_dto.h"
 #include "common/logger.h"
 #include "common/net/liberror.h"
-#include "common/operations.h"
+#include "server/game/commands/leave_command.h"
 
 Receiver::Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id):
-        protocol(protocol), inbox(inbox), player_id(player_id) {}
+        protocol(protocol), factory(protocol), inbox(inbox), player_id(player_id) {}
 
 void Receiver::start() {
     Thread::start();
@@ -26,16 +27,13 @@ void Receiver::run() {
                 left = true;
                 break;
             }
-            if (*op == GameOp::Move) {
-                std::optional<MoveRequest> move = protocol.recv_move();
-                if (!move) {
-                    break;
-                }
-                inbox.push(
-                        PlayerAction{player_id, Request{Operation::Move, move->dirX, move->dirY}});
-            } else {
-                break;  // Op desconocida: cortar la conexión
+            std::shared_ptr<GameCommand> command = factory.create(*op, player_id);
+            if (!command) {
+                // No se sabe dónde empieza la próxima op: se corta como si fuera una desconexión.
+                Logger::debug("op desconocida o payload cortado: {}", static_cast<int>(*op));
+                break;
             }
+            inbox.push(command);
         }
     } catch (const LibError& e) {
         Logger::debug("conexión cortada: {}", e.what());
@@ -43,7 +41,7 @@ void Receiver::run() {
         return;  // El Game se cerró: no hay a quién avisar.
     }
     try {
-        inbox.push(PlayerLeft{player_id});
+        inbox.push(std::make_shared<LeaveCommand>(player_id));
     } catch (const ClosedQueue&) {}
 }
 

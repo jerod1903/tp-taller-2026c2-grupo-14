@@ -17,7 +17,6 @@
 #include "common/lobby_dto.h"
 #include "common/logger.h"
 #include "common/net/socket.h"
-#include "common/operations.h"
 #include "server/consts.h"
 #include "server/game/game_registry.h"
 #include "server/persistence/in_memory_game_store.h"

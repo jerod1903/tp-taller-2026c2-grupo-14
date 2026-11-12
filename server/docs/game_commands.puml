@@ -1,0 +1,77 @@
+---
+config:
+  layout: elk
+  theme: dark
+---
+classDiagram
+direction TB
+
+%% Flujo: Receiver lee la GameOp -> CommandFactory lee el payload y arma el comando -> Inbox
+%% -> Game::process_events hace command->execute(*this). JoinCommand lo encola LobbySession y
+%% LeaveCommand el Receiver al terminar (LeaveGame o corte de conexión).
+
+class GameContext {
+    <<interface>>
+    +find_player(uint32_t) Player*
+    +add_player(uint32_t, GameMember, shared_ptr~Outbox~) void
+    +remove_player(uint32_t) void
+}
+
+class Game {
+    -Inbox inbox
+    -map~uint32_t, ConnectedPlayer~ players
+    -process_events() void
+}
+
+class GameCommand {
+    <<abstract>>
+    #uint32_t player_id
+    +execute(GameContext&) void*
+}
+
+class MoveCommand {
+    -MoveRequest request
+}
+
+class JoinCommand {
+    -GameMember member
+    -shared_ptr~Outbox~ outbox
+}
+
+class LeaveCommand
+
+class CommandFactory {
+    -ServerProtocol& protocol
+    -map~GameOp, Builder~ builders
+    +create(GameOp, uint32_t) shared_ptr~GameCommand~
+}
+
+class Receiver {
+    -ServerProtocol& protocol
+    -CommandFactory factory
+    -Inbox& inbox
+    +run() void
+    +has_left() bool
+}
+
+class LobbySession {
+    -play(uint32_t, GameMember) bool
+}
+
+class Inbox {
+    <<Queue~shared_ptr~GameCommand~~>>
+}
+
+GameContext <|.. Game
+GameCommand <|-- MoveCommand
+GameCommand <|-- JoinCommand
+GameCommand <|-- LeaveCommand
+GameCommand ..> GameContext : execute
+Game *-- Inbox
+Inbox o-- "0..*" GameCommand
+Receiver *-- CommandFactory
+CommandFactory ..> MoveCommand : crea
+Receiver ..> LeaveCommand : crea
+LobbySession ..> JoinCommand : crea
+Receiver --> Inbox : push
+LobbySession --> Inbox : push

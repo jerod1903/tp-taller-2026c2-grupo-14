@@ -10,8 +10,10 @@
 #include <gtest/gtest.h>
 
 #include "common/logger.h"
-#include "common/operations.h"
 #include "server/consts.h"
+#include "server/game/commands/join_command.h"
+#include "server/game/commands/leave_command.h"
+#include "server/game/commands/move_command.h"
 #include "tests/test_worlds.h"
 
 namespace {
@@ -30,7 +32,7 @@ protected:
 
     std::shared_ptr<Outbox> join(uint32_t player_id, unsigned int outbox_size = OUTBOX_SIZE) {
         auto outbox = std::make_shared<Outbox>(outbox_size);
-        game.get_inbox().push(PlayerJoined{player_id, GameMember{}, outbox});
+        game.get_inbox().push(std::make_shared<JoinCommand>(player_id, GameMember{}, outbox));
         return outbox;
     }
 
@@ -49,7 +51,7 @@ protected:
     }
 
     void move(uint32_t player_id, int8_t dir_x, int8_t dir_y) {
-        game.get_inbox().push(PlayerAction{player_id, Request{Operation::Move, dir_x, dir_y}});
+        game.get_inbox().push(std::make_shared<MoveCommand>(player_id, MoveRequest{dir_x, dir_y}));
     }
 
     // Saltea snapshots viejos hasta uno que cumpla la condición.
@@ -140,7 +142,7 @@ TEST_F(GameTest, TickIncreasesBetweenSnapshots) {
 TEST_F(GameTest, LeftPlayerIsNoLongerInTheSnapshots) {
     std::shared_ptr<Outbox> stays = join(0);
     join(1);
-    game.get_inbox().push(PlayerLeft{1});
+    game.get_inbox().push(std::make_shared<LeaveCommand>(1));
     stays->pop();
     Snapshot snapshot =
             wait_snapshot(*stays, [](const Snapshot& s) { return s.players.size() == 1; });
@@ -149,7 +151,7 @@ TEST_F(GameTest, LeftPlayerIsNoLongerInTheSnapshots) {
 
 TEST_F(GameTest, LeftPlayerOutboxIsClosedAfterItsPendingMessages) {
     std::shared_ptr<Outbox> outbox = join(0);
-    game.get_inbox().push(PlayerLeft{0});
+    game.get_inbox().push(std::make_shared<LeaveCommand>(0));
     EXPECT_TRUE(std::holds_alternative<LocationData>(outbox->pop()));
     try {
         for (int i = 0; i < 1000; ++i) {
@@ -162,7 +164,7 @@ TEST_F(GameTest, LeftPlayerOutboxIsClosedAfterItsPendingMessages) {
 TEST_F(GameTest, ActionsDoNotStopTheLoop) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
-    game.get_inbox().push(PlayerAction{0, Request{Operation::Move, 1, 0}});
+    move(0, 1, 0);
     uint32_t first = next_snapshot(*outbox).tick;
     EXPECT_GT(next_snapshot(*outbox).tick, first);
 }
