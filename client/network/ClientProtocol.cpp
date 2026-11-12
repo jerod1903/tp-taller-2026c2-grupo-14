@@ -17,6 +17,7 @@
 //   CreateGame:      op, worldId, gameName, characterName, apariencia -> status u8, gameId u32
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
 //   LoadGame:        op, gameId u32                              -> status u8
+//   EnableMultiplayer: op, gameId u32                            -> status u8, inviteCode
 //
 // Durante la partida:
 //   Acciones del jugador: tag GameOp u8 y su payload, ver la tabla de GameOp en common/game_dto.h
@@ -102,6 +103,14 @@ GameEnteredResponse ClientProtocol::joinGame(const JoinGameRequest& request) {
 GameEnteredResponse ClientProtocol::loadGame(uint32_t gameId) {
     ensure(sendOperation(LobbyOp::LoadGame) && baseProtocol.send_u32(gameId));
     return recvGameEntered();
+}
+
+EnableMultiplayerResponse ClientProtocol::enableMultiplayer(uint32_t gameId) {
+    ensure(sendOperation(LobbyOp::EnableMultiplayer) && baseProtocol.send_u32(gameId));
+    EnableMultiplayerResponse response{};
+    response.status = recvStatus();
+    response.inviteCode = ensure(baseProtocol.recv_string());
+    return response;
 }
 
 // Los ids van siempre, también con un status de error (en 0).

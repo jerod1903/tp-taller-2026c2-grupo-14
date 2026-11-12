@@ -136,6 +136,20 @@ TEST_F(ClientProtocolTest, LoadOwnGameIsOk) {
     EXPECT_EQ(client->loadGame(MULTI_ID).status, LobbyStatus::Ok);
 }
 
+TEST_F(ClientProtocolTest, EnableMultiplayerReturnsTheInviteCode) {
+    ASSERT_EQ(client->login(OWNER), LobbyStatus::Ok);
+    EnableMultiplayerResponse response = client->enableMultiplayer(MULTI_ID);
+    EXPECT_EQ(response.status, LobbyStatus::Ok);
+    EXPECT_EQ(response.inviteCode, CODE);
+}
+
+TEST_F(ClientProtocolTest, EnableMultiplayerOfAnotherGameIsNotFound) {
+    ASSERT_EQ(client->login("jugador"), LobbyStatus::Ok);
+    EnableMultiplayerResponse response = client->enableMultiplayer(MULTI_ID);
+    EXPECT_EQ(response.status, LobbyStatus::GameNotFound);
+    EXPECT_EQ(response.inviteCode, "");
+}
+
 namespace {
 
 // Durante la partida, del otro lado queda el socket ya aceptado. Cada test lo usa como necesita:
