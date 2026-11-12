@@ -33,6 +33,8 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
         detailGameName(new QLabel(this)),
         detailInfo(new QLabel(this)),
         errorLabel(new QLabel(this)),
+        inviteCodeLabel(new QLabel(this)),
+        inviteButton(new MenuButton("Invitar", this)),
         playButton(new MenuButton("Jugar", this)) {
     // Derecha: la lista, o un mensaje si todavia no hay partidas.
     auto* emptyMessage = new QLabel("Todavía no tenés partidas.\nCreá una nueva o unite a la de "
@@ -49,11 +51,14 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
     content->addWidget(listOrEmpty, 1);
 
     errorLabel->setObjectName("errorLabel");
+    inviteButton->setSmall();
+    inviteButton->setEnabled(false);
     playButton->setSmall();
     playButton->setEnabled(false);
 
     auto* bottomRow = new QHBoxLayout();
     bottomRow->addWidget(errorLabel, 1);
+    bottomRow->addWidget(inviteButton);
     bottomRow->addWidget(playButton);
 
     addBackButton();
@@ -66,6 +71,7 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
     // Doble click en una partida es lo mismo que seleccionarla y tocar "Jugar".
     connect(gameList, &QListWidget::itemDoubleClicked, this, &MyGamesScreen::playSelected);
     connect(playButton, &QPushButton::clicked, this, &MyGamesScreen::playSelected);
+    connect(inviteButton, &QPushButton::clicked, this, &MyGamesScreen::inviteSelected);
 }
 
 QWidget* MyGamesScreen::createDetailPanel() {
@@ -84,6 +90,8 @@ QWidget* MyGamesScreen::createDetailPanel() {
     auto* texts = new QVBoxLayout();
     texts->addWidget(detailGameName);
     texts->addWidget(detailInfo);
+    inviteCodeLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    texts->addWidget(inviteCodeLabel);
     texts->addStretch();
     characterRow->addLayout(texts, 1);
 
@@ -138,6 +146,8 @@ void MyGamesScreen::reloadGames() {
 void MyGamesScreen::showDetail(int row) {
     const bool hasSelection = row >= 0 && static_cast<std::size_t>(row) < games.size();
     playButton->setEnabled(hasSelection);
+    inviteButton->setEnabled(hasSelection);
+    inviteCodeLabel->clear();
     errorLabel->clear();
     if (!hasSelection) {
         detailOrHint->setCurrentIndex(0);
@@ -173,5 +183,29 @@ void MyGamesScreen::playSelected() {
         errorLabel->setText("Ya estás conectado a esa partida.");
     } else {
         errorLabel->setText("No se pudo cargar la partida. Probá de nuevo.");
+    }
+}
+
+void MyGamesScreen::inviteSelected() {
+    const int row = gameList->currentRow();
+    if (row < 0 || static_cast<std::size_t>(row) >= games.size()) {
+        return;
+    }
+
+    SavedGameInfo& game = games[static_cast<std::size_t>(row)];
+    std::optional<EnableMultiplayerResponse> response =
+            guarded([&]() { return lobby.enableMultiplayer(game.gameId); });
+    if (!response) {
+        return;
+    }
+    if (response->status == LobbyStatus::Ok) {
+        game.isMultiplayer = true;
+        showDetail(row);  // el detalle pasa a decir "multijugador"
+        inviteCodeLabel->setText("Código para invitar: " +
+                                 QString::fromStdString(response->inviteCode));
+    } else if (response->status == LobbyStatus::NotOwner) {
+        errorLabel->setText("Solo quien creó la partida puede invitar.");
+    } else {
+        errorLabel->setText("No se pudo abrir la partida. Probá de nuevo.");
     }
 }

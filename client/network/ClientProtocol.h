@@ -28,6 +28,7 @@ public:
     GameEnteredResponse createGame(const CreateGameRequest& request) override;
     GameEnteredResponse joinGame(const JoinGameRequest& request) override;
     GameEnteredResponse loadGame(uint32_t gameId) override;
+    EnableMultiplayerResponse enableMultiplayer(uint32_t gameId) override;
 
     void sendMove(int8_t dir_x, int8_t dir_y) override;
     void sendLeaveGame() override;

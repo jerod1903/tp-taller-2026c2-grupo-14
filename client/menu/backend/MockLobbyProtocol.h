@@ -22,6 +22,7 @@ public:
     GameEnteredResponse createGame(const CreateGameRequest& request) override;
     GameEnteredResponse joinGame(const JoinGameRequest& request) override;
     GameEnteredResponse loadGame(uint32_t gameId) override;
+    EnableMultiplayerResponse enableMultiplayer(uint32_t gameId) override;
 
 private:
     std::vector<WorldInfo> worlds;
