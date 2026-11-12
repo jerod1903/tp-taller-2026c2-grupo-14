@@ -20,6 +20,7 @@ struct EstadoJuego {
     uint32_t tick = 0;                   // el del ultimo Snapshot
     // Lo que se dibuja animado (jugadores y, cuando existan, animales), en cualquier area
     std::vector<EntityState> entidades = {};
+    InventoryState inventario{};
 };
 
 #endif

@@ -18,6 +18,10 @@ public:
     // Cierra su outbox: el Sender termina de vaciarla y ya no le llega nada más.
     virtual void remove_player(uint32_t player_id) = 0;
 
+       
+    // Enviar un mensaje directo a la outbox de un jugador específico.
+    virtual void send_to(uint32_t player_id, const GameMessage& message) = 0;
+    
     virtual ~GameContext() = default;
 };
 

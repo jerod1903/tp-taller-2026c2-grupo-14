@@ -24,6 +24,7 @@ public:
     void add_player(uint32_t player_id, const GameMember& member,
                     std::shared_ptr<Outbox> outbox) override;
     void remove_player(uint32_t player_id) override;
+    void send_to(uint32_t player_id, const GameMessage& message) override;
 
     void start() override;
     void run() override;

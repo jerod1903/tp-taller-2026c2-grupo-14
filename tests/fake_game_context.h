@@ -32,6 +32,13 @@ public:
 
     void remove_player(uint32_t player_id) override { removed.push_back(player_id); }
 
+    void send_to(uint32_t player_id, const GameMessage& message) override {
+        sent.emplace_back(player_id, message);
+    }
+
+    // Lo que los comandos le mandaron a cada jugador, en orden.
+    std::vector<std::pair<uint32_t, GameMessage>> sent;
+
     TestLocation location;
     Player player{PLAYER_ID, Position{0, 0}, location, "jero", 10, 1.0f, 0, 0};
     std::vector<Added> added;

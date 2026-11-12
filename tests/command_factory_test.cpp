@@ -37,6 +37,10 @@ protected:
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
 
+    void send_select_slot_payload(uint8_t slot) {
+        ASSERT_TRUE(client->send_u8(slot));
+    }
+
     FakeGameContext context;
     std::unique_ptr<ServerProtocol> server;
     std::unique_ptr<BaseProtocol> client;
@@ -86,5 +90,22 @@ TEST_F(CommandFactoryTest, UnknownOpIsNullptr) {
 TEST_F(CommandFactoryTest, LeaveGameIsNotRegistered) {
     EXPECT_EQ(factory->create(GameOp::LeaveGame, PLAYER_ID), nullptr);
 }
+
+TEST_F(CommandFactoryTest, SelectSlotReadsItsPayloadAndBuildsASelectSlotCommand) {
+    send_select_slot_payload(5);
+    std::shared_ptr<GameCommand> command = factory->create(GameOp::SelectSlot, PLAYER_ID);
+    ASSERT_NE(command, nullptr);
+    
+    command->execute(context);
+    
+    // Verificamos que el comando impactó en el jugador (el slot 5)
+    EXPECT_EQ(context.player.get_inventory_state().selectedSlot, 5);
+}
+
+TEST_F(CommandFactoryTest, SelectSlotClosedWithoutDataIsNullptr) {
+    client->shutdown();
+    EXPECT_EQ(factory->create(GameOp::SelectSlot, PLAYER_ID), nullptr);
+}
+
 
 }  // namespace

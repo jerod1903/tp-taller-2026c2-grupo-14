@@ -56,6 +56,10 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
         ultima_dir_x = entrada.dir_x;
         ultima_dir_y = entrada.dir_y;
     }
+
+    if (entrada.slot_seleccionado) {
+        enviador.seleccionar_slot(*entrada.slot_seleccionado);
+    }
 }
 
 void GameLoop::procesar_mensajes() {
@@ -73,6 +77,8 @@ void GameLoop::procesar_mensajes() {
             estado.tick = snapshot->tick;
         } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
             estado.info_jugadores.insert_or_assign(info->playerId, *info);
+        }else if (const auto* inv = std::get_if<InventoryState>(&*mensaje)) {
+            estado.inventario = *inv;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida
             corriendo = false;

@@ -28,6 +28,7 @@
 //                    count u16, (entityId u32, type u8, areaId, x u32, y u32, dirX u8, dirY u8)*
 //     GameEnded:     reason u8
 //     PlayerInfo:    playerId u32, characterName, apariencia
+//     InventoryState: selectedSlot u8, count u16, (item u8, quantity u8)*
 //
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
@@ -129,6 +130,11 @@ void ClientProtocol::sendMove(int8_t dir_x, int8_t dir_y) {
 
 void ClientProtocol::sendLeaveGame() { ensure(sendGameOp(GameOp::LeaveGame)); }
 
+void ClientProtocol::sendSelectSlot(uint8_t slot) {
+    ensure(sendGameOp(GameOp::SelectSlot) && baseProtocol.send_u8(slot));
+}
+
+
 ServerGameMessage ClientProtocol::recvGameMessage() {
     auto msg = static_cast<GameMsg>(ensure(baseProtocol.recv_u8()));
     switch (msg) {
@@ -140,6 +146,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return GameEnded{static_cast<EndReason>(ensure(baseProtocol.recv_u8()))};
         case GameMsg::PlayerInfo:
             return recvPlayerInfo();
+        case GameMsg::InventoryState:
+            return recvInventoryState();case GameMsg::InventoryState:            
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -220,4 +228,18 @@ PlayerInfo ClientProtocol::recvPlayerInfo() {
     info.characterName = ensure(baseProtocol.recv_string());
     info.appearance = recvAppearance();
     return info;
+}
+
+
+InventoryState ClientProtocol::recvInventoryState() {
+    InventoryState inventory{};
+    inventory.selectedSlot = ensure(baseProtocol.recv_u8());
+    uint16_t count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < count; ++i) {
+        InventorySlot slot{};
+        slot.item = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
+        slot.quantity = ensure(baseProtocol.recv_u8());
+        inventory.slots.push_back(slot);
+    }
+    return inventory;
 }

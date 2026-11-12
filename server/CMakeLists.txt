@@ -8,12 +8,15 @@ target_sources(taller_server
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/move_command.cpp
+    game/commands/select_slot_command.cpp
+    game/characters/inventory.cpp
     game/game_registry.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
     game/characters/enemies/skeleton.cpp
     game/characters/entity.cpp
     game/characters/player.cpp
+    game/characters/inventory.cpp
     game/world/direction.cpp
     game/world/dungeon/dungeon.cpp
     game/world/dungeon/dungeon_level.cpp

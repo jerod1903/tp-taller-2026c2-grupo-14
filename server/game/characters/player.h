@@ -3,7 +3,8 @@
 
 #include <cstdint>
 #include <string>
-
+#include "common/game_dto.h"
+#include "server/game/characters/inventory.h"
 #include "server/game/characters/creature.h"
 
 class Player: public Creature {
@@ -20,10 +21,14 @@ public:
 
     void update(float dt) override;
 
+    void select_inventory_slot(uint8_t slot);
+    InventoryState get_inventory_state() const;
+
 private:
     std::string name;
     int gold;
     int energy;
+    Inventory inventory;
 };
 
 #endif  // PLAYER_H

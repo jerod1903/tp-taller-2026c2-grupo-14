@@ -130,6 +130,15 @@ std::optional<MoveRequest> ServerProtocol::recv_move() {
     return MoveRequest{static_cast<int8_t>(*dir_x), static_cast<int8_t>(*dir_y)};
 }
 
+
+std::optional<SelectSlotRequest> ServerProtocol::recv_select_slot() {
+    std::optional<uint8_t> slot = baseProtocol.recv_u8();
+    if (!slot)
+        return std::nullopt;
+    return SelectSlotRequest{*slot};
+}
+
+
 bool ServerProtocol::send_location_data(const LocationData& location) {
     return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId);
 }
@@ -166,6 +175,17 @@ bool ServerProtocol::send_player_info(const PlayerInfo& info) {
     return send_game_msg(GameMsg::PlayerInfo) && baseProtocol.send_u32(info.playerId) &&
            baseProtocol.send_string(info.characterName) && send_appearance(info.appearance);
 }
+
+bool ServerProtocol::send_inventory_state(const InventoryState& inventory) {
+    return send_game_msg(GameMsg::InventoryState) && baseProtocol.send_u8(inventory.selectedSlot) &&
+           send_count(inventory.slots.size()) &&
+           std::all_of(inventory.slots.begin(), inventory.slots.end(),
+                       [this](const InventorySlot& slot) {
+                           return baseProtocol.send_u8(static_cast<uint8_t>(slot.item)) &&
+                                  baseProtocol.send_u8(slot.quantity);
+                       });
+}
+
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
     return send_game_msg(GameMsg::GameEnded) &&

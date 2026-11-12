@@ -36,6 +36,10 @@ Entrada Interfaz::leer_entrada() {
             !evento.key.repeat) {
             alternar_pantalla_completa();
         }
+        if (evento.type == SDL_KEYDOWN && !evento.key.repeat &&
+            evento.key.keysym.sym >= SDLK_1 && evento.key.keysym.sym <= SDLK_9) {
+            entrada.slot_seleccionado = static_cast<uint8_t>(evento.key.keysym.sym - SDLK_1);
+}
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
@@ -165,7 +169,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
     // Sin personaje propio no se sabe que area mostrar
-    auto propio = entidades.find({EntityType::Player, estado.id_propio});
+   auto propio = entidades.find({EntityType::Player, estado.id_propio});
     if (propio != entidades.end()) {
         dibujar_area(propio->second);
     }
