@@ -20,7 +20,10 @@ Interfaz::Interfaz():
         renderer(ventana, -1,
                  SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
                          SDL_RENDERER_TARGETTEXTURE),
-        sprite_personaje(renderer, RUTA_SPRITE_PERSONAJE) {}
+        sprite_personaje(renderer, RUTA_SPRITE_PERSONAJE),
+        aspectos{{EntityType::Player,
+                  {&FORMATO_PERSONAJE,
+                   {{&sprite_personaje, 0}, {&sprite_personaje, COLUMNAS_BRAZOS}}}}} {}
 
 Entrada Interfaz::leer_entrada() {
     Entrada entrada;
@@ -66,15 +69,22 @@ void Interfaz::actualizar_mapa(const EstadoJuego& estado) {
     }
 }
 
-void Interfaz::actualizar_personajes(const EstadoJuego& estado,
-                                     std::chrono::steady_clock::time_point ahora) {
-    std::set<uint32_t> presentes;
-    for (const PlayerState& jugador: estado.jugadores) {
-        presentes.insert(jugador.playerId);
-        auto it = personajes.try_emplace(jugador.playerId, sprite_personaje).first;
-        it->second.actualizar(jugador, estado.tick, ahora);
+void Interfaz::actualizar_entidades(const EstadoJuego& estado,
+                                    std::chrono::steady_clock::time_point ahora) {
+    std::set<std::pair<EntityType, uint32_t>> presentes;
+    for (const EntityState& entidad: estado.entidades) {
+        auto aspecto = aspectos.find(entidad.type);
+        if (aspecto == aspectos.end()) {
+            continue;  // todavia no hay dibujo para ese tipo
+        }
+        std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
+        presentes.insert(clave);
+        auto it = entidades
+                          .try_emplace(clave, *aspecto->second.formato, aspecto->second.capas)
+                          .first;
+        it->second.actualizar(entidad, estado.tick, ahora);
     }
-    std::erase_if(personajes,
+    std::erase_if(entidades,
                   [&presentes](const auto& par) { return !presentes.contains(par.first); });
 }
 
@@ -123,15 +133,15 @@ void Interfaz::ajustar_lienzo() {
 void Interfaz::dibujar(const EstadoJuego& estado) {
     auto ahora = std::chrono::steady_clock::now();
     actualizar_mapa(estado);
-    actualizar_personajes(estado, ahora);
+    actualizar_entidades(estado, ahora);
     actualizar_sonidos(estado, ahora);
     ajustar_lienzo();
     renderer.SetTarget(*lienzo);
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
     // Sin personaje propio no se sabe que area mostrar
-    auto propio = personajes.find(estado.id_propio);
-    if (propio != personajes.end()) {
+    auto propio = entidades.find({EntityType::Player, estado.id_propio});
+    if (propio != entidades.end()) {
         dibujar_area(propio->second);
     }
     renderer.SetTarget();
@@ -141,7 +151,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Present();
 }
 
-void Interfaz::dibujar_area(const Personaje& propio) {
+void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     const std::string& area = propio.area();
     if (mapa) {
         mapa->mostrar_area(area);
@@ -154,10 +164,12 @@ void Interfaz::dibujar_area(const Personaje& propio) {
         mapa->dibujar_suelo(renderer, camara);
         sprites = mapa->elementos();
     }
-    // Solo los que estan en la misma area que este jugador
-    for (const auto& [id, personaje]: personajes) {
-        if (personaje.area() == area) {
-            sprites.push_back(personaje.sprite());
+    // Solo los que estan en la misma area que este jugador. Las capas de cada uno van juntas y en
+    // orden: tienen la misma base, asi que el orden estable las deja una encima de la otra
+    for (const auto& [clave, entidad]: entidades) {
+        if (entidad.area() == area) {
+            std::vector<Sprite> capas = entidad.sprites();
+            sprites.insert(sprites.end(), capas.begin(), capas.end());
         }
     }
     // Lo que apoya mas abajo esta mas adelante: se dibuja despues y tapa a lo de atras

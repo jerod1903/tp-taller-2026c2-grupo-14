@@ -4,6 +4,7 @@ target_sources(taller_tests
     creature_test.cpp
     dungeon_test.cpp
     client_protocol_test.cpp
+    animador_sprites_test.cpp
     game_registry_test.cpp
     game_test.cpp
     grid_test.cpp
@@ -61,6 +62,7 @@ target_sources(taller_tests
     ../editor/tools/SelectTool.cpp
     # Código del cliente bajo test (sin Qt)
     ../client/network/ClientProtocol.cpp
+    ../client/gui/animador_sprites.cpp
     PUBLIC
     # .h files
     world_helpers.h

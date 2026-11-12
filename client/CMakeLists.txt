@@ -11,7 +11,9 @@ target_sources(taller_client
     client.cpp
     game/game_loop.cpp
     gui/interfaz.cpp
-    gui/personaje.cpp
+    gui/calculador_posicion.cpp
+    gui/animador_sprites.cpp
+    gui/entidad_grafica.cpp
     gui/calculador_camara.cpp
     gui/mapa.cpp
     network/enviador.cpp
@@ -32,7 +34,11 @@ target_sources(taller_client
     game/estado_juego.h
     game/game_loop.h
     gui/interfaz.h
-    gui/personaje.h
+    game/entity_state.h
+    gui/calculador_posicion.h
+    gui/animador_sprites.h
+    gui/entidad_grafica.h
+    gui/capa.h
     gui/calculador_camara.h
     gui/mapa.h
     gui/rutas.h

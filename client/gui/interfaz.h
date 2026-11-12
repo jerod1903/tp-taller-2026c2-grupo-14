@@ -6,6 +6,8 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <SDL2pp/SDL2pp.hh>
 #include "client/audio/reproductor_sonidos.h"
@@ -13,8 +15,9 @@
 #include "client/game/estado_juego.h"
 #include "common/game_dto.h"
 #include "calculador_camara.h"
+#include "capa.h"
+#include "entidad_grafica.h"
 #include "mapa.h"
-#include "personaje.h"
 
 // La parte de SDL del juego: la ventana, el teclado y el dibujo. No sabe de la red ni del loop:
 // el GameLoop le pide la entrada y le pasa el estado a dibujar.
@@ -28,15 +31,15 @@ public:
 private:
     // Crea el Mapa la primera vez y cada vez que cambia el mundo
     void actualizar_mapa(const EstadoJuego& estado);
-    // Crea los personajes nuevos, mueve los que ya estaban y borra los que no vinieron
-    void actualizar_personajes(const EstadoJuego& estado,
-                               std::chrono::steady_clock::time_point ahora);
+    // Crea las entidades nuevas, mueve las que ya estaban y borra las que no vinieron
+    void actualizar_entidades(const EstadoJuego& estado,
+                              std::chrono::steady_clock::time_point ahora);
     // El mundo se dibuja en pixeles del tileset sobre el lienzo, que despues se estira a la
     // ventana. Se rehace si cambia el tamaño de la ventana
     void ajustar_lienzo();
     void alternar_pantalla_completa();
     // Dibuja el area donde esta `propio`, con la camara siguiendolo
-    void dibujar_area(const Personaje& propio);
+    void dibujar_area(const EntidadGrafica& propio);
     // Hace sonar lo que le paso al jugador propio: pasos mientras camina y la moneda si gano oro
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
     SDL2pp::SDL sdl;
@@ -46,6 +49,12 @@ private:
     SDL2pp::Window ventana;
     SDL2pp::Renderer renderer;
     SDL2pp::Texture sprite_personaje;
+    // Como se dibuja cada tipo de entidad
+    struct Aspecto {
+        const FormatoAnimacion* formato;
+        std::vector<Capa> capas;
+    };
+    std::map<EntityType, Aspecto> aspectos;
     CalculadorCamara calculador_camara;
     std::optional<SDL2pp::Texture> lienzo;
     int escala = 1;  // cuantos pixeles de la ventana mide cada pixel del lienzo
@@ -53,8 +62,8 @@ private:
     // Vacio hasta que el servidor diga en que mundo esta el jugador
     std::optional<Mapa> mapa;
     std::string mundo_del_mapa;  // el worldId con el que se armo mapa
-    // id del jugador -> su personaje
-    std::map<uint32_t, Personaje> personajes;
+    // (tipo, id) -> su dibujo: los ids solo son unicos dentro de cada tipo
+    std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
     // Para los sonidos: el jugador propio en el ultimo Snapshot, para compararlo con el siguiente
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;

@@ -4,6 +4,7 @@
 #include <optional>
 #include <thread>
 #include <variant>
+#include <vector>
 
 #include "client/constants.h"
 #include "client/menu/backend/ILobbyProtocol.h"
@@ -11,6 +12,16 @@
 namespace {
 // Cuanto se espera el GameEnded despues de LeaveGame antes de dar la conexion por perdida
 constexpr std::chrono::seconds ESPERA_FIN_PARTIDA(3);
+
+// PROVISORIO, hasta que el Snapshot traiga las entidades: cada jugador es una entidad
+std::vector<EntityState> entidades_de(const std::vector<PlayerState>& jugadores) {
+    std::vector<EntityState> entidades;
+    for (const PlayerState& jugador: jugadores) {
+        entidades.push_back(EntityState{jugador.playerId, EntityType::Player, jugador.areaId,
+                                        jugador.x, jugador.y, jugador.dirX, jugador.dirY});
+    }
+    return entidades;
+}
 }  // namespace
 
 GameLoop::GameLoop(Enviador& enviador, Recibidor& recibidor, Interfaz& interfaz,
@@ -65,6 +76,7 @@ void GameLoop::procesar_mensajes() {
             estado.mundo = ubicacion->worldId;
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
+            estado.entidades = entidades_de(snapshot->players);
             estado.tick = snapshot->tick;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida

@@ -10,6 +10,7 @@ struct Sprite {
     SDL2pp::Texture* textura;
     SDL2pp::Rect origen;
     SDL2pp::Rect destino;
+    bool espejado = false;  // dado vuelta de izquierda a derecha
 
     // Donde apoya: el borde de abajo
     int base() const { return destino.y + destino.h; }
@@ -19,7 +20,8 @@ struct Sprite {
         if (destino.Intersects(camara)) {
             renderer.Copy(*textura, origen,
                           SDL2pp::Rect(destino.x - camara.x, destino.y - camara.y, destino.w,
-                                       destino.h));
+                                       destino.h),
+                          0.0, SDL2pp::NullOpt, espejado ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
         }
     }
 };

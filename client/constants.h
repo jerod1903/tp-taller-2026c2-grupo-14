@@ -8,6 +8,7 @@
 #include <SDL2pp/SDL2pp.hh>
 
 #include "client/audio/sonido.h"
+#include "client/gui/animador_sprites.h"
 #include "common/lobby_dto.h"
 
 // main_juego.cpp
@@ -37,10 +38,20 @@ inline const int ALTO_MUNDO_VISIBLE = 200;
 inline const std::chrono::milliseconds INTERVALO_PASO(300);
 inline constexpr std::array<Sonido, 4> SONIDOS_PASO = {Sonido::Paso1, Sonido::Paso2,
                                                        Sonido::Paso3, Sonido::Paso4};
+// La hoja del granjero: cuadros de 16x32, una fila por orientacion (el costado mira a la derecha) y
+// la caminata va quieto, pie izquierdo, quieto, pie derecho
+inline const FormatoAnimacion FORMATO_PERSONAJE{16,
+                                                32,
+                                                {{Orientacion::Abajo, {0, false}},
+                                                 {Orientacion::Arriba, {2, false}},
+                                                 {Orientacion::Derecha, {1, false}},
+                                                 {Orientacion::Izquierda, {1, true}}},
+                                                {0, 1, 0, 2},
+                                                std::chrono::duration<float>(0.15f)};
+// Los brazos del granjero estan en la misma hoja, 6 cuadros a la derecha del cuerpo
+inline constexpr int COLUMNAS_BRAZOS = 6;
 
-// personaje.cpp
-// Primer frame (arriba a la izquierda) del sheet, de 16x32
-inline const SDL2pp::Rect FRAME(0, 0, 16, 32);
+// calculador_posicion.cpp
 // Cada cuanto manda el servidor un Snapshot (ServerConstants::TICK_RATE = 30 por segundo)
 inline const std::chrono::duration<float> DURACION_TICK_SERVIDOR(1.0f / 30);
 
