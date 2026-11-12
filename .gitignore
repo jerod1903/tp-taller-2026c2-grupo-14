@@ -42,6 +42,7 @@
 build/
 Build/
 build-*/
+build_server/
 
 # CMake generated files
 CMakeFiles/

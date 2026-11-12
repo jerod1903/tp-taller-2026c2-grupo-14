@@ -4,10 +4,15 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <map>
+#include <utility>
 
 #include <SDL2pp/SDL2pp.hh>
 
 #include "client/audio/sonido.h"
+#include "client/gui/animador_sprites.h"
+#include "client/gui/capa.h"
+#include "common/character/CharacterSheets.h"
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
 
@@ -38,10 +43,37 @@ inline const int ALTO_MUNDO_VISIBLE = 200;
 inline const std::chrono::milliseconds INTERVALO_PASO(300);
 inline constexpr std::array<Sonido, 4> SONIDOS_PASO = {Sonido::Paso1, Sonido::Paso2,
                                                        Sonido::Paso3, Sonido::Paso4};
+// La hoja del granjero: una fila por orientacion (el costado mira a la derecha) y la caminata va
+// quieto, pie izquierdo, quieto, pie derecho. En los pasos la cabeza baja un pixel
+inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x,
+                                                stardew::character::FRAME_SIZE.y,
+                                                {{Orientacion::Abajo, {0, false}},
+                                                 {Orientacion::Arriba, {2, false}},
+                                                 {Orientacion::Derecha, {1, false}},
+                                                 {Orientacion::Izquierda, {1, true}}},
+                                                {0, 1, 0, 2},
+                                                std::chrono::duration<float>(0.15f),
+                                                {{1, 1}, {2, 1}}};
 
-// personaje.cpp
-// Primer frame (arriba a la izquierda) del sheet, de 16x32
-inline const SDL2pp::Rect FRAME(0, 0, 16, 32);
+// constructor_capas.cpp
+// Que vista de cada hoja va con cada orientacion: (numero de vista, si se espeja). El pelo trae un
+// solo costado; la camisa y el sombrero traen los dos
+inline const Vistas VISTAS_PELO = {
+        {Orientacion::Abajo, {0, false}},
+        {Orientacion::Derecha, {1, false}},
+        {Orientacion::Izquierda, {1, true}},
+        {Orientacion::Arriba, {2, false}}};
+inline const Vistas VISTAS_CUATRO = {
+        {Orientacion::Abajo, {0, false}},
+        {Orientacion::Derecha, {1, false}},
+        {Orientacion::Izquierda, {2, false}},
+        {Orientacion::Arriba, {3, false}}};
+inline constexpr int BASE_HEXADECIMAL = 16;
+// Partes de un pixel ARGB8888, para repintar las mangas sin tocar la transparencia
+inline constexpr uint32_t MASCARA_ALFA = 0xFF000000;
+inline constexpr uint32_t MASCARA_COLOR = 0x00FFFFFF;
+
+// calculador_posicion.cpp
 // Cada cuanto manda el servidor un Snapshot (ServerConstants::TICK_RATE = 30 por segundo)
 inline const std::chrono::duration<float> DURACION_TICK_SERVIDOR(1.0f / 30);
 

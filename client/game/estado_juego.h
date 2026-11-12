@@ -18,6 +18,8 @@ struct EstadoJuego {
     std::optional<std::string> mundo;    // llega con LocationData; vacio hasta entonces
     std::vector<PlayerState> jugadores;  // los del ultimo Snapshot, en cualquier area
     uint32_t tick = 0;                   // el del ultimo Snapshot
+    // Lo que se dibuja animado (jugadores y, cuando existan, animales), en cualquier area
+    std::vector<EntityState> entidades = {};
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <optional>
 #include <thread>
 #include <variant>
+#include <vector>
 
 #include "client/constants.h"
 #include "client/menu/backend/ILobbyProtocol.h"
@@ -68,6 +69,7 @@ void GameLoop::procesar_mensajes() {
             estado.mundo = ubicacion->worldId;
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
+            estado.entidades = snapshot->entities;
             estado.tick = snapshot->tick;
         } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
             estado.info_jugadores.insert_or_assign(info->playerId, *info);
