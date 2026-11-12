@@ -1,5 +1,7 @@
 #include "calculador_camara.h"
 
+#include <SDL2/SDL.h>
+
 void CalculadorCamara::ajustar_vista(int ancho, int alto) {
     ancho_vista = ancho;
     alto_vista = alto;

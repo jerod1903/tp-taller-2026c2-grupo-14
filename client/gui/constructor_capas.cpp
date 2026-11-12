@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <SDL2/SDL.h>
+
 #include "client/constants.h"
 #include "client/menu/styles/CharacterColors.h"
 #include "common/character/CharacterSheets.h"

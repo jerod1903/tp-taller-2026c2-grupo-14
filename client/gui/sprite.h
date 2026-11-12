@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
 
 // Algo para dibujar sobre el mapa (una cabaña, un NPC, un jugador): que parte de que textura va en
