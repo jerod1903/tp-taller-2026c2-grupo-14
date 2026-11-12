@@ -1,4 +1,4 @@
-#include "client/gui/animador_sprites.h"
+#include "client/gui/sprites/animador_sprites.h"
 
 #include <chrono>
 

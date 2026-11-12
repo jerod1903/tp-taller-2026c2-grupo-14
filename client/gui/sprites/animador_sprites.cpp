@@ -1,4 +1,4 @@
-#include "animador_sprites.h"
+#include "client/gui/sprites/animador_sprites.h"
 
 AnimadorSprites::AnimadorSprites(const FormatoAnimacion& formato): formato(formato) {}
 
@@ -9,12 +9,10 @@ void AnimadorSprites::actualizar(int8_t dir_x, int8_t dir_y,
         paso = 0;
         return;
     }
-    // Cada vez que arranca a caminar, desde el primer cuadro
     if (!caminando) {
         caminando = true;
         inicio = ahora;
     }
-    // En diagonal gana el costado
     if (dir_x != 0) {
         mirando = dir_x > 0 ? Orientacion::Derecha : Orientacion::Izquierda;
     } else {

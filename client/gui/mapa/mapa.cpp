@@ -1,4 +1,4 @@
-#include "mapa.h"
+#include "client/gui/mapa/mapa.h"
 
 #include <algorithm>
 #include <map>
@@ -11,7 +11,7 @@
 #include "common/map/persistence/MapRepository.h"
 
 #include "client/constants.h"
-#include "rutas.h"
+#include "client/gui/rutas.h"
 
 using stardew::maps::ELEMENT_SPRITES;
 using stardew::maps::ElementType;
@@ -59,7 +59,6 @@ std::map<ElementType, ElementoGrafico> Mapa::armar_graficos_elementos() {
 }
 
 std::map<std::string, Mapa::Area> Mapa::cargar_areas(const std::string& world_id) const {
-    // El id viene del servidor: se valida para que no pueda apuntar a un archivo fuera de maps/
     if (world_id.empty() || world_id.find_first_not_of(CARACTERES_WORLD_ID) != std::string::npos) {
         throw std::runtime_error("world id invalido: " + world_id);
     }
@@ -75,7 +74,7 @@ std::map<std::string, Mapa::Area> Mapa::cargar_areas(const std::string& world_id
         auto grafico = elemento.type ? graficos_elementos.find(*elemento.type)
                                      : graficos_elementos.end();
         if (area == cargadas.end() || grafico == graficos_elementos.end()) {
-            continue;  // los que no se ven (spawn, puertas) o todavia no tienen dibujo
+            continue;
         }
         const SDL2pp::Rect& origen = grafico->second.origen;
         int ancho = elemento.width * TAMANO_TILE;
@@ -102,7 +101,6 @@ void Mapa::dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara)
         return;
     }
     const Tiles& tiles = area_actual->tiles;
-    // Solo las casillas que entran en la camara
     int primera_fila = std::max(0, camara.y / TAMANO_TILE);
     int ultima_fila = std::min(static_cast<int>(tiles.size()) - 1,
                                (camara.y + camara.h - 1) / TAMANO_TILE);
@@ -113,7 +111,7 @@ void Mapa::dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara)
         for (int columna = primera_columna; columna <= ultima_columna; ++columna) {
             auto grafico = graficos.find(tiles[fila][columna]);
             if (grafico == graficos.end()) {
-                continue;  // todavia no hay grafico para ese tipo
+                continue;
             }
             const SDL2pp::Point& casilla = grafico->second.casilla;
             SDL2pp::Rect origen(casilla.x * TAMANO_TILE, casilla.y * TAMANO_TILE, TAMANO_TILE,

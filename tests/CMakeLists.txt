@@ -71,7 +71,7 @@ target_sources(taller_tests
     ../editor/tools/SelectTool.cpp
     # Código del cliente bajo test (sin Qt)
     ../client/network/ClientProtocol.cpp
-    ../client/gui/animador_sprites.cpp
+    ../client/gui/sprites/animador_sprites.cpp
     PUBLIC
     # .h files
     world_helpers.h

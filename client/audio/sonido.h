@@ -3,7 +3,6 @@
 
 #include <cstdint>
 
-// Los efectos de sonido del juego. Cada uno tiene su archivo en RUTAS_SONIDOS (gui/rutas.h)
 enum class Sonido : uint8_t {
     Plantar,
     Regar,
