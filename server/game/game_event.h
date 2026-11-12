@@ -5,13 +5,10 @@
 #include <memory>
 #include <variant>
 
-#include "common/game_dto.h"
 #include "common/lib/queue.h"
 #include "common/requests.h"
+#include "server/game/outbox.h"
 #include "server/persistence/game_store.h"
-
-using GameMessage = std::variant<LocationData, Snapshot>;
-using Outbox = Queue<GameMessage>;
 
 struct PlayerJoined {
     uint32_t playerId;

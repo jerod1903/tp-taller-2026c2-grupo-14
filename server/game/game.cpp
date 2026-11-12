@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <cmath>
-#include <map>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -11,6 +10,9 @@
 
 #include "common/logger.h"
 #include "server/consts.h"
+#include "server/game/commands/join_command.h"
+#include "server/game/commands/leave_command.h"
+#include "server/game/commands/move_command.h"
 #include "server/game/world/world_builder.h"
 
 namespace {
@@ -18,21 +20,6 @@ constexpr std::chrono::nanoseconds TICK_DURATION =
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
         ServerConstants::TICK_RATE;
 const float TICK_SECONDS = std::chrono::duration<float>(TICK_DURATION).count();
-
-// (signo de dir_x, signo de dir_y) -> dirección
-const std::map<std::pair<int, int>, Direction> DIRECTIONS = {
-        {{0, 0}, Direction::NONE},        {{0, -1}, Direction::UP},
-        {{0, 1}, Direction::DOWN},        {{-1, 0}, Direction::LEFT},
-        {{1, 0}, Direction::RIGHT},       {{-1, -1}, Direction::UP_LEFT},
-        {{1, -1}, Direction::UP_RIGHT},   {{-1, 1}, Direction::DOWN_LEFT},
-        {{1, 1}, Direction::DOWN_RIGHT},
-};
-
-int sign(int8_t value) { return (value > 0) - (value < 0); }
-
-Direction direction_of(const Request& request) {
-    return DIRECTIONS.at({sign(request.dir_x), sign(request.dir_y)});
-}
 
 uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
 
@@ -87,33 +74,44 @@ void Game::process_events() {
 }
 
 void Game::handle(const PlayerJoined& joined) {
-    remove(joined.playerId);
-    auto character = std::make_unique<Player>(
-            joined.playerId, world->get_spawn(), world->get_farm(), joined.member.characterName,
-            ServerConstants::INITIAL_HEALTH, ServerConstants::PLAYER_SPEED,
-            ServerConstants::INITIAL_GOLD, ServerConstants::INITIAL_ENERGY);
-    world->add_player(*character);
-    players.emplace(joined.playerId, ConnectedPlayer{joined.outbox, std::move(character)});
-    send(*joined.outbox, LocationData{world_id});
+    JoinCommand(joined.playerId, joined.member, joined.outbox).execute(*this);
 }
 
 void Game::handle(const PlayerAction& action) {
-    auto player = players.find(action.playerId);
-    if (player == players.end() || action.request.tipo != Operation::Move) {
-        return;
+    if (action.request.tipo == Operation::Move) {
+        MoveCommand(action.playerId, MoveRequest{action.request.dir_x, action.request.dir_y})
+                .execute(*this);
     }
-    player->second.character->set_direction(direction_of(action.request));
 }
 
-void Game::handle(const PlayerLeft& left) {
-    auto player = players.find(left.playerId);
+void Game::handle(const PlayerLeft& left) { LeaveCommand(left.playerId).execute(*this); }
+
+Player* Game::find_player(uint32_t player_id) {
+    auto player = players.find(player_id);
+    return player == players.end() ? nullptr : player->second.character.get();
+}
+
+void Game::add_player(uint32_t player_id, const GameMember& member,
+                      std::shared_ptr<Outbox> outbox) {
+    remove(player_id);
+    auto character = std::make_unique<Player>(
+            player_id, world->get_spawn(), world->get_farm(), member.characterName,
+            ServerConstants::INITIAL_HEALTH, ServerConstants::PLAYER_SPEED,
+            ServerConstants::INITIAL_GOLD, ServerConstants::INITIAL_ENERGY);
+    world->add_player(*character);
+    send(*outbox, LocationData{world_id});
+    players.emplace(player_id, ConnectedPlayer{std::move(outbox), std::move(character)});
+}
+
+void Game::remove_player(uint32_t player_id) {
+    auto player = players.find(player_id);
     if (player == players.end()) {
         return;
     }
     try {
         player->second.outbox->close();
     } catch (const std::runtime_error&) {}
-    remove(left.playerId);
+    remove(player_id);
 }
 
 void Game::remove(uint32_t player_id) {

@@ -4,6 +4,7 @@ target_sources(taller_tests
     creature_test.cpp
     dungeon_test.cpp
     client_protocol_test.cpp
+    game_commands_test.cpp
     game_registry_test.cpp
     game_test.cpp
     grid_test.cpp
@@ -42,6 +43,9 @@ target_sources(taller_tests
     ../server/game/world/world_loader.cpp
     ../server/game/game_registry.cpp
     ../server/game/game.cpp
+    ../server/game/commands/join_command.cpp
+    ../server/game/commands/leave_command.cpp
+    ../server/game/commands/move_command.cpp
     ../server/lobby/lobby_session.cpp
     ../server/net/receiver.cpp
     ../server/net/sender.cpp
@@ -64,4 +68,5 @@ target_sources(taller_tests
     PUBLIC
     # .h files
     world_helpers.h
+    fake_game_context.h
     )
