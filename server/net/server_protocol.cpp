@@ -121,6 +121,7 @@ std::optional<GameOp> ServerProtocol::recv_game_op() {
     return static_cast<GameOp>(*op);
 }
 
+// Cada eje viaja como u8: el -1 llega como 0xFF.
 std::optional<MoveRequest> ServerProtocol::recv_move() {
     std::optional<uint8_t> dir_x = baseProtocol.recv_u8();
     std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
@@ -129,8 +130,7 @@ std::optional<MoveRequest> ServerProtocol::recv_move() {
     return MoveRequest{static_cast<int8_t>(*dir_x), static_cast<int8_t>(*dir_y)};
 }
 
-// La operación no se valida acá: el protocolo no conoce las reglas del juego.
-
+// Formato viejo, hasta que el Receiver pase a recv_game_op: la operación tampoco se valida.
 std::optional<Request> ServerProtocol::recv_request() {
     std::optional<uint8_t> operation = baseProtocol.recv_u8();
     std::optional<uint8_t> dir_x = operation ? baseProtocol.recv_u8() : std::nullopt;

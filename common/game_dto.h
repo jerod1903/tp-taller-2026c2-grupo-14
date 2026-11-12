@@ -5,18 +5,7 @@
 #include <string>
 #include <vector>
 
-// Mensajes del servidor durante la partida: cada uno va precedido por su tag. Lo que manda el
-// cliente es un Request (common/requests.h).
-
-// Formato de lo que manda el cliente durante la partida.
-//
-//   Op          Tag   Payload
-//   Move        0x01  i8 dirX, i8 dirY
-//   LeaveGame   0x02  nada (1 byte en total)
-//
-// Una op desconocida no se puede leer: no se sabe cuántos bytes siguen.
-
-
+// Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
@@ -30,6 +19,7 @@ struct MoveRequest {
     bool operator==(const MoveRequest&) const = default;
 };
 
+// Mensajes del servidor durante la partida: cada uno va precedido por su tag.
 enum class GameMsg : uint8_t {
     LocationData,
     Snapshot,
@@ -51,7 +41,7 @@ constexpr float CHARACTER_HALF_WIDTH = 0.3125f;
 constexpr float CHARACTER_HALF_HEIGHT = 0.25f;
 
 // Un jugador en un tick. (x, y) es su centro dentro del área areaId; (dirX, dirY) es hacia dónde
-// camina, en -1, 0 o 1 como en un Request: (0, 0) si está quieto.
+// camina, en -1, 0 o 1 como en un MoveRequest: (0, 0) si está quieto.
 struct PlayerState {
     uint32_t playerId;
     std::string areaId;
