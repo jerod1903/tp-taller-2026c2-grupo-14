@@ -1,5 +1,6 @@
 #include "server/game/game.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -10,8 +11,10 @@
 #include <gtest/gtest.h>
 
 #include "common/logger.h"
-#include "common/operations.h"
 #include "server/consts.h"
+#include "server/game/commands/join_command.h"
+#include "server/game/commands/leave_command.h"
+#include "server/game/commands/move_command.h"
 #include "tests/test_worlds.h"
 
 namespace {
@@ -29,16 +32,27 @@ protected:
     void TearDown() override { Logger::set_level(LogLevel::Info); }
 
     std::shared_ptr<Outbox> join(uint32_t player_id, unsigned int outbox_size = OUTBOX_SIZE) {
+        return join_as(player_id, GameMember{}, outbox_size);
+    }
+
+    std::shared_ptr<Outbox> join_as(uint32_t player_id, const GameMember& member,
+                                    unsigned int outbox_size = OUTBOX_SIZE) {
         auto outbox = std::make_shared<Outbox>(outbox_size);
-        game.get_inbox().push(PlayerJoined{player_id, GameMember{}, outbox});
+        game.get_inbox().push(std::make_shared<JoinCommand>(player_id, member, outbox));
         return outbox;
     }
 
-    static Snapshot next_snapshot(Outbox& outbox) {
+    // Saltea los mensajes de otro tipo hasta el próximo T.
+    template <typename T>
+    static T next(Outbox& outbox) {
         GameMessage message = outbox.pop();
-        EXPECT_TRUE(std::holds_alternative<Snapshot>(message));
-        return std::get<Snapshot>(message);
+        while (!std::holds_alternative<T>(message)) {
+            message = outbox.pop();
+        }
+        return std::get<T>(message);
     }
+
+    static Snapshot next_snapshot(Outbox& outbox) { return next<Snapshot>(outbox); }
 
     static std::vector<uint32_t> ids_of(const Snapshot& snapshot) {
         std::vector<uint32_t> ids;
@@ -49,7 +63,7 @@ protected:
     }
 
     void move(uint32_t player_id, int8_t dir_x, int8_t dir_y) {
-        game.get_inbox().push(PlayerAction{player_id, Request{Operation::Move, dir_x, dir_y}});
+        game.get_inbox().push(std::make_shared<MoveCommand>(player_id, MoveRequest{dir_x, dir_y}));
     }
 
     // Saltea snapshots viejos hasta uno que cumpla la condición.
@@ -70,6 +84,61 @@ TEST_F(GameTest, JoinedPlayerReceivesTheLocationFirst) {
     GameMessage message = outbox->pop();
     ASSERT_TRUE(std::holds_alternative<LocationData>(message));
     EXPECT_EQ(std::get<LocationData>(message).worldId, WORLD_ID);
+}
+
+TEST_F(GameTest, JoinedPlayerReceivesItsOwnInfoAfterTheLocation) {
+    const GameMember member{"jero", "Martu", CharacterAppearance{5, 2, 7, 1, 4}};
+    std::shared_ptr<Outbox> outbox = join_as(0, member);
+    outbox->pop();
+    GameMessage message = outbox->pop();
+    ASSERT_TRUE(std::holds_alternative<PlayerInfo>(message));
+    EXPECT_EQ(std::get<PlayerInfo>(message), (PlayerInfo{0, "Martu", member.appearance}));
+}
+
+TEST_F(GameTest, SecondPlayerReceivesTheInfoOfBoth) {
+    const GameMember first{"jero", "Martu", CharacterAppearance{5, 2, 7, 1, 4}};
+    const GameMember second{"santi", "Santu", CharacterAppearance{1, 0, 2, 3, 0}};
+    join_as(0, first);
+    std::shared_ptr<Outbox> outbox = join_as(1, second);
+    outbox->pop();
+    // Llegan juntos, antes de cualquier snapshot: el orden entre ellos no está definido.
+    std::vector<PlayerInfo> infos{next<PlayerInfo>(*outbox), next<PlayerInfo>(*outbox)};
+    std::sort(infos.begin(), infos.end(), [](const PlayerInfo& a, const PlayerInfo& b) {
+        return a.playerId < b.playerId;
+    });
+    EXPECT_EQ(infos, (std::vector<PlayerInfo>{{0, "Martu", first.appearance},
+                                              {1, "Santu", second.appearance}}));
+}
+
+TEST_F(GameTest, FirstPlayerReceivesTheInfoOfTheSecond) {
+    const GameMember second{"santi", "Santu", CharacterAppearance{1, 0, 2, 3, 0}};
+    std::shared_ptr<Outbox> outbox = join(0);
+    outbox->pop();
+    ASSERT_EQ(next<PlayerInfo>(*outbox).playerId, 0u);  // el suyo
+    join_as(1, second);
+    EXPECT_EQ(next<PlayerInfo>(*outbox), (PlayerInfo{1, "Santu", second.appearance}));
+}
+
+TEST_F(GameTest, EachSnapshotHasAPlayerEntityPerPlayerWithItsDirection) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    join(1);
+    move(1, 1, 0);
+    Snapshot snapshot = wait_snapshot(*outbox, [](const Snapshot& s) {
+        return s.entities.size() == 2 && s.entities.at(1).dirX != 0;
+    });
+    ASSERT_EQ(snapshot.players.size(), 2u);
+    for (std::size_t i = 0; i < snapshot.entities.size(); ++i) {
+        const EntityState& entity = snapshot.entities[i];
+        const PlayerState& player = snapshot.players[i];
+        EXPECT_EQ(entity.type, EntityType::Player);
+        EXPECT_EQ(entity.entityId, player.playerId);
+        EXPECT_EQ(entity.areaId, player.areaId);
+        EXPECT_EQ(entity.x, player.x);
+        EXPECT_EQ(entity.y, player.y);
+    }
+    EXPECT_EQ(snapshot.entities[0].dirX, 0);
+    EXPECT_EQ(snapshot.entities[1].dirX, 1);
+    EXPECT_EQ(snapshot.entities[1].dirY, 0);
 }
 
 TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
@@ -140,7 +209,7 @@ TEST_F(GameTest, TickIncreasesBetweenSnapshots) {
 TEST_F(GameTest, LeftPlayerIsNoLongerInTheSnapshots) {
     std::shared_ptr<Outbox> stays = join(0);
     join(1);
-    game.get_inbox().push(PlayerLeft{1});
+    game.get_inbox().push(std::make_shared<LeaveCommand>(1));
     stays->pop();
     Snapshot snapshot =
             wait_snapshot(*stays, [](const Snapshot& s) { return s.players.size() == 1; });
@@ -149,7 +218,7 @@ TEST_F(GameTest, LeftPlayerIsNoLongerInTheSnapshots) {
 
 TEST_F(GameTest, LeftPlayerOutboxIsClosedAfterItsPendingMessages) {
     std::shared_ptr<Outbox> outbox = join(0);
-    game.get_inbox().push(PlayerLeft{0});
+    game.get_inbox().push(std::make_shared<LeaveCommand>(0));
     EXPECT_TRUE(std::holds_alternative<LocationData>(outbox->pop()));
     try {
         for (int i = 0; i < 1000; ++i) {
@@ -162,7 +231,7 @@ TEST_F(GameTest, LeftPlayerOutboxIsClosedAfterItsPendingMessages) {
 TEST_F(GameTest, ActionsDoNotStopTheLoop) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
-    game.get_inbox().push(PlayerAction{0, Request{Operation::Move, 1, 0}});
+    move(0, 1, 0);
     uint32_t first = next_snapshot(*outbox).tick;
     EXPECT_GT(next_snapshot(*outbox).tick, first);
 }

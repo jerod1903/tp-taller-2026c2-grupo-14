@@ -121,24 +121,13 @@ std::optional<GameOp> ServerProtocol::recv_game_op() {
     return static_cast<GameOp>(*op);
 }
 
+// Cada eje viaja como u8: el -1 llega como 0xFF.
 std::optional<MoveRequest> ServerProtocol::recv_move() {
     std::optional<uint8_t> dir_x = baseProtocol.recv_u8();
     std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
     if (!dir_y)
         return std::nullopt;
     return MoveRequest{static_cast<int8_t>(*dir_x), static_cast<int8_t>(*dir_y)};
-}
-
-// La operación no se valida acá: el protocolo no conoce las reglas del juego.
-
-std::optional<Request> ServerProtocol::recv_request() {
-    std::optional<uint8_t> operation = baseProtocol.recv_u8();
-    std::optional<uint8_t> dir_x = operation ? baseProtocol.recv_u8() : std::nullopt;
-    std::optional<uint8_t> dir_y = dir_x ? baseProtocol.recv_u8() : std::nullopt;
-    if (!dir_y)
-        return std::nullopt;
-    return Request{static_cast<Operation>(*operation), static_cast<int8_t>(*dir_x),
-                   static_cast<int8_t>(*dir_y)};
 }
 
 bool ServerProtocol::send_location_data(const LocationData& location) {
@@ -149,7 +138,10 @@ bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
     return send_game_msg(GameMsg::Snapshot) && baseProtocol.send_u32(snapshot.tick) &&
            send_count(snapshot.players.size()) &&
            std::all_of(snapshot.players.begin(), snapshot.players.end(),
-                       [this](const PlayerState& player) { return send_player_state(player); });
+                       [this](const PlayerState& player) { return send_player_state(player); }) &&
+           send_count(snapshot.entities.size()) &&
+           std::all_of(snapshot.entities.begin(), snapshot.entities.end(),
+                       [this](const EntityState& entity) { return send_entity_state(entity); });
 }
 
 bool ServerProtocol::send_player_state(const PlayerState& player) {
@@ -159,6 +151,20 @@ bool ServerProtocol::send_player_state(const PlayerState& player) {
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirY)) &&
            baseProtocol.send_u16(player.health) && baseProtocol.send_u16(player.energy) &&
            baseProtocol.send_u32(player.gold);
+}
+
+bool ServerProtocol::send_entity_state(const EntityState& entity) {
+    return baseProtocol.send_u32(entity.entityId) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.type)) &&
+           baseProtocol.send_string(entity.areaId) && baseProtocol.send_u32(entity.x) &&
+           baseProtocol.send_u32(entity.y) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.dirX)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.dirY));
+}
+
+bool ServerProtocol::send_player_info(const PlayerInfo& info) {
+    return send_game_msg(GameMsg::PlayerInfo) && baseProtocol.send_u32(info.playerId) &&
+           baseProtocol.send_string(info.characterName) && send_appearance(info.appearance);
 }
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {

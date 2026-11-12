@@ -34,7 +34,6 @@ target_sources(taller_client
     game/estado_juego.h
     game/game_loop.h
     gui/interfaz.h
-    game/entity_state.h
     gui/calculador_posicion.h
     gui/animador_sprites.h
     gui/entidad_grafica.h

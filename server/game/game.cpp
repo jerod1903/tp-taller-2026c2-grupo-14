@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <cmath>
-#include <map>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -19,21 +18,6 @@ constexpr std::chrono::nanoseconds TICK_DURATION =
         ServerConstants::TICK_RATE;
 const float TICK_SECONDS = std::chrono::duration<float>(TICK_DURATION).count();
 
-// (signo de dir_x, signo de dir_y) -> dirección
-const std::map<std::pair<int, int>, Direction> DIRECTIONS = {
-        {{0, 0}, Direction::NONE},        {{0, -1}, Direction::UP},
-        {{0, 1}, Direction::DOWN},        {{-1, 0}, Direction::LEFT},
-        {{1, 0}, Direction::RIGHT},       {{-1, -1}, Direction::UP_LEFT},
-        {{1, -1}, Direction::UP_RIGHT},   {{-1, 1}, Direction::DOWN_LEFT},
-        {{1, 1}, Direction::DOWN_RIGHT},
-};
-
-int sign(int8_t value) { return (value > 0) - (value < 0); }
-
-Direction direction_of(const Request& request) {
-    return DIRECTIONS.at({sign(request.dir_x), sign(request.dir_y)});
-}
-
 uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
 
 PlayerState state_of(uint32_t player_id, const Player& player) {
@@ -47,6 +31,17 @@ PlayerState state_of(uint32_t player_id, const Player& player) {
                        static_cast<uint16_t>(player.get_health()),
                        static_cast<uint16_t>(player.get_energy()),
                        static_cast<uint32_t>(player.get_gold())};
+}
+
+EntityState entity_of(uint32_t player_id, const Player& player) {
+    Position delta = step(Position{0, 0}, player.get_direction());
+    return EntityState{player_id,
+                       EntityType::Player,
+                       player.get_location().get_name(),
+                       to_wire(player.get_x()),
+                       to_wire(player.get_y()),
+                       static_cast<int8_t>(delta.x),
+                       static_cast<int8_t>(delta.y)};
 }
 }  // namespace
 
@@ -80,40 +75,49 @@ void Game::run() {
 }
 
 void Game::process_events() {
-    GameEvent event;
-    while (inbox.try_pop(event)) {
-        std::visit([this](const auto& e) { handle(e); }, event);
+    std::shared_ptr<GameCommand> command;
+    while (inbox.try_pop(command)) {
+        try {
+            command->execute(*this);
+        } catch (const std::exception& e) {
+            Logger::error("Server error: {}", e.what());
+        }
     }
 }
 
-void Game::handle(const PlayerJoined& joined) {
-    remove(joined.playerId);
+Player* Game::find_player(uint32_t player_id) {
+    auto player = players.find(player_id);
+    return player == players.end() ? nullptr : player->second.character.get();
+}
+
+void Game::add_player(uint32_t player_id, const GameMember& member,
+                      std::shared_ptr<Outbox> outbox) {
+    remove(player_id);
     auto character = std::make_unique<Player>(
-            joined.playerId, world->get_spawn(), world->get_farm(), joined.member.characterName,
+            player_id, world->get_spawn(), world->get_farm(), member.characterName,
             ServerConstants::INITIAL_HEALTH, ServerConstants::PLAYER_SPEED,
             ServerConstants::INITIAL_GOLD, ServerConstants::INITIAL_ENERGY);
     world->add_player(*character);
-    players.emplace(joined.playerId, ConnectedPlayer{joined.outbox, std::move(character)});
-    send(*joined.outbox, LocationData{world_id});
-}
-
-void Game::handle(const PlayerAction& action) {
-    auto player = players.find(action.playerId);
-    if (player == players.end() || action.request.tipo != Operation::Move) {
-        return;
+    send(*outbox, LocationData{world_id});
+    PlayerInfo info{player_id, member.characterName, member.appearance};
+    for (const auto& [other_id, other]: players) {
+        send(*outbox, other.info);
+        send(*other.outbox, info);
     }
-    player->second.character->set_direction(direction_of(action.request));
+    send(*outbox, info);
+    players.emplace(player_id,
+                    ConnectedPlayer{std::move(outbox), std::move(character), std::move(info)});
 }
 
-void Game::handle(const PlayerLeft& left) {
-    auto player = players.find(left.playerId);
+void Game::remove_player(uint32_t player_id) {
+    auto player = players.find(player_id);
     if (player == players.end()) {
         return;
     }
     try {
         player->second.outbox->close();
     } catch (const std::runtime_error&) {}
-    remove(left.playerId);
+    remove(player_id);
 }
 
 void Game::remove(uint32_t player_id) {
@@ -125,9 +129,10 @@ void Game::remove(uint32_t player_id) {
 }
 
 void Game::broadcast_snapshot() {
-    Snapshot snapshot{tick, {}};
+    Snapshot snapshot{tick, {}, {}};
     for (const auto& [player_id, player]: players) {
         snapshot.players.push_back(state_of(player_id, *player.character));
+        snapshot.entities.push_back(entity_of(player_id, *player.character));
     }
     for (const auto& [player_id, player]: players) {
         send(*player.outbox, snapshot);

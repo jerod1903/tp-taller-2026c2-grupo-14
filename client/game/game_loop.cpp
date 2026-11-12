@@ -12,21 +12,14 @@
 namespace {
 // Cuanto se espera el GameEnded despues de LeaveGame antes de dar la conexion por perdida
 constexpr std::chrono::seconds ESPERA_FIN_PARTIDA(3);
-
-// PROVISORIO, hasta que el Snapshot traiga las entidades: cada jugador es una entidad
-std::vector<EntityState> entidades_de(const std::vector<PlayerState>& jugadores) {
-    std::vector<EntityState> entidades;
-    for (const PlayerState& jugador: jugadores) {
-        entidades.push_back(EntityState{jugador.playerId, EntityType::Player, jugador.areaId,
-                                        jugador.x, jugador.y, jugador.dirX, jugador.dirY});
-    }
-    return entidades;
-}
 }  // namespace
 
 GameLoop::GameLoop(Enviador& enviador, Recibidor& recibidor, Interfaz& interfaz,
                    uint32_t id_propio):
-        enviador(enviador), recibidor(recibidor), interfaz(interfaz), estado{id_propio, {}, {}} {}
+        enviador(enviador),
+        recibidor(recibidor),
+        interfaz(interfaz),
+        estado{id_propio, {}, {}, {}} {}
 
 std::optional<EndReason> GameLoop::ejecutar() {
     try {
@@ -76,8 +69,10 @@ void GameLoop::procesar_mensajes() {
             estado.mundo = ubicacion->worldId;
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
-            estado.entidades = entidades_de(snapshot->players);
+            estado.entidades = snapshot->entities;
             estado.tick = snapshot->tick;
+        } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
+            estado.info_jugadores.insert_or_assign(info->playerId, *info);
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida
             corriendo = false;

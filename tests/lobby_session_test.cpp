@@ -17,7 +17,6 @@
 #include "common/lobby_dto.h"
 #include "common/logger.h"
 #include "common/net/socket.h"
-#include "common/operations.h"
 #include "server/consts.h"
 #include "server/game/game_registry.h"
 #include "server/persistence/in_memory_game_store.h"
@@ -182,7 +181,7 @@ protected:
 
     // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
     Snapshot recv_snapshot_body() {
-        Snapshot snapshot{client->recv_u32().value_or(0), {}};
+        Snapshot snapshot{client->recv_u32().value_or(0), {}, {}};
         uint16_t count = client->recv_u16().value_or(0);
         for (uint16_t i = 0; i < count; ++i) {
             PlayerState player{};
@@ -197,7 +196,41 @@ protected:
             player.gold = client->recv_u32().value_or(0);
             snapshot.players.push_back(player);
         }
+        uint16_t entity_count = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < entity_count; ++i) {
+            EntityState entity{};
+            entity.entityId = client->recv_u32().value_or(UINT32_MAX);
+            entity.type = static_cast<EntityType>(client->recv_u8().value_or(0));
+            entity.areaId = client->recv_string().value_or("");
+            entity.x = client->recv_u32().value_or(0);
+            entity.y = client->recv_u32().value_or(0);
+            entity.dirX = static_cast<int8_t>(client->recv_u8().value_or(0));
+            entity.dirY = static_cast<int8_t>(client->recv_u8().value_or(0));
+            snapshot.entities.push_back(entity);
+        }
         return snapshot;
+    }
+
+    // El que entra recibe su PlayerInfo después del LocationData.
+    void expect_player_info(uint32_t player_id, const std::string& character_name) {
+        EXPECT_EQ(client->recv_u8(),
+                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::PlayerInfo)));
+        PlayerInfo info = recv_player_info_body();
+        EXPECT_EQ(info.playerId, player_id);
+        EXPECT_EQ(info.characterName, character_name);
+        EXPECT_EQ(info.appearance, APPEARANCE);
+    }
+
+    PlayerInfo recv_player_info_body() {
+        PlayerInfo info{};
+        info.playerId = client->recv_u32().value_or(UINT32_MAX);
+        info.characterName = client->recv_string().value_or("");
+        info.appearance.hairStyle = client->recv_u16().value_or(0);
+        info.appearance.hairColor = client->recv_u8().value_or(0);
+        info.appearance.shirt = client->recv_u16().value_or(0);
+        info.appearance.pants = client->recv_u16().value_or(0);
+        info.appearance.hat = client->recv_u16().value_or(0);
+        return info;
     }
 
     static std::vector<uint32_t> ids_of(const Snapshot& snapshot) {
@@ -209,22 +242,26 @@ protected:
     }
 
     void send_move(int8_t dir_x, int8_t dir_y) {
-        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::Move)));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Move)));
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_x)));
         ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(dir_y)));
     }
 
     void send_leave_game() {
-        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(Operation::LeaveGame)));
-        ASSERT_TRUE(client->send_u8(0));
-        ASSERT_TRUE(client->send_u8(0));
+        ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::LeaveGame)));
     }
 
-    // Descarta los snapshots que estaban en camino hasta el GameEnded y devuelve su motivo.
+    // Descarta lo que estaba en camino hasta el GameEnded y devuelve su motivo.
     std::optional<EndReason> recv_game_ended() {
         std::optional<uint8_t> tag;
-        while ((tag = client->recv_u8()) && *tag == static_cast<uint8_t>(GameMsg::Snapshot)) {
-            recv_snapshot_body();
+        while ((tag = client->recv_u8())) {
+            if (*tag == static_cast<uint8_t>(GameMsg::Snapshot)) {
+                recv_snapshot_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::PlayerInfo)) {
+                recv_player_info_body();
+            } else {
+                break;
+            }
         }
         if (tag != std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::GameEnded))) {
             return std::nullopt;
@@ -647,6 +684,7 @@ TEST_F(LobbySessionTest, EnteredGameSendsTheLocationThenSnapshots) {
     expect_status(LobbyStatus::Ok);
     recv_created_game_id();
     expect_location("pueblo");
+    expect_player_info(GameRegistry::OWNER_PLAYER_ID, "martin");
     Snapshot snapshot = recv_snapshot();
     EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{GameRegistry::OWNER_PLAYER_ID}));
     EXPECT_GT(recv_snapshot().tick, snapshot.tick);
@@ -659,6 +697,7 @@ TEST_F(LobbySessionTest, JoinedPlayerAppearsInTheSnapshotsWithItsId) {
     expect_status(LobbyStatus::Ok);
     expect_entered_ids(MULTI_ID, 1);
     expect_location("granja");
+    expect_player_info(1, "Invitado");
     EXPECT_EQ(ids_of(recv_snapshot()), (std::vector<uint32_t>{1}));
 }
 
@@ -669,6 +708,7 @@ TEST_F(LobbySessionTest, MovesInGameKeepTheSnapshotsComing) {
     expect_status(LobbyStatus::Ok);
     expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
     expect_location("granja");
+    expect_player_info(GameRegistry::OWNER_PLAYER_ID, "Duenio");
     uint32_t tick = recv_snapshot().tick;
     send_move(1, 0);
     send_move(0, -1);

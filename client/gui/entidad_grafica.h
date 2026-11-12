@@ -8,7 +8,7 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
-#include "client/game/entity_state.h"
+#include "common/game_dto.h"
 
 #include "animador_sprites.h"
 #include "calculador_posicion.h"
