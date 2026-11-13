@@ -12,6 +12,8 @@ public:
     void enviar(const MoveRequest& movimiento);
     void salir();
 
+    void seleccionar_slot(uint8_t slot) { protocolo.sendSelectSlot(slot); }
+
 private:
     IGameProtocol& protocolo;
 };

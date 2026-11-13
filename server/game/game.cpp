@@ -124,10 +124,11 @@ void Game::add_player(uint32_t player_id, const GameMember& member,
         send(*other.outbox, info);
     }
     send(*outbox, info);
+    send(*outbox, character->get_inventory_state());
     players.emplace(player_id,
                     ConnectedPlayer{std::move(outbox), std::move(character), std::move(info)});
 }
-
+   
 void Game::remove_player(uint32_t player_id) {
     auto player = players.find(player_id);
     if (player == players.end()) {
@@ -138,6 +139,14 @@ void Game::remove_player(uint32_t player_id) {
     } catch (const std::runtime_error&) {}
     remove(player_id);
 }
+
+void Game::send_to(uint32_t player_id, const GameMessage& message) {
+    auto player = players.find(player_id);
+    if (player != players.end()) {
+        send(*player->second.outbox, message);
+    }
+}
+
 
 void Game::remove(uint32_t player_id) {
     auto player = players.find(player_id);

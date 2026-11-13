@@ -27,6 +27,8 @@ target_sources(taller_tests
     receiver_test.cpp
     sender_test.cpp
     server_protocol_test.cpp
+    inventory_test.cpp
+    select_slot_command_test.cpp
     # Código del servidor bajo test (sin main.cpp)
     ../server/game/characters/animals/animal.cpp
     ../server/game/characters/creature.cpp
@@ -72,6 +74,9 @@ target_sources(taller_tests
     # Código del cliente bajo test (sin Qt)
     ../client/network/ClientProtocol.cpp
     ../client/gui/sprites/animador_sprites.cpp
+    # Inventario
+    ../server/game/characters/inventory.cpp
+    ../server/game/commands/select_slot_command.cpp
     PUBLIC
     # .h files
     world_helpers.h

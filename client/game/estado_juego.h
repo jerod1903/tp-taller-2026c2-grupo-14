@@ -16,6 +16,7 @@ struct EstadoJuego {
     std::vector<PlayerState> jugadores;
     uint32_t tick = 0;
     std::vector<EntityState> entidades = {};
+    InventoryState inventario{};
 };
 
 #endif
