@@ -173,7 +173,7 @@ protected:
         EXPECT_EQ(client->recv_string(), std::optional<std::string>(world_id));
     }
 
- Snapshot recv_snapshot() {
+    Snapshot recv_snapshot() {
         EXPECT_EQ(client->recv_u8(),
                   std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
         return recv_snapshot_body();
@@ -221,6 +221,26 @@ protected:
         EXPECT_EQ(info.appearance, APPEARANCE);
     }
 
+    // Al entrar, despues de los PlayerInfo, llega el inventario del jugador.
+    void expect_inventory() {
+        EXPECT_EQ(client->recv_u8(),
+                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::InventoryState)));
+        recv_inventory_body();
+    }
+
+    // Decodifica lo que manda ServerProtocol::send_inventory_state, sin el tag.
+    InventoryState recv_inventory_body() {
+        InventoryState inventory{};
+        inventory.selectedSlot = client->recv_u8().value_or(0);
+        uint16_t count = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < count; ++i) {
+            ItemType item = static_cast<ItemType>(client->recv_u8().value_or(0));
+            uint8_t quantity = client->recv_u8().value_or(0);
+            inventory.slots.push_back(InventorySlot{item, quantity});
+        }
+        return inventory;
+    }
+
     PlayerInfo recv_player_info_body() {
         PlayerInfo info{};
         info.playerId = client->recv_u32().value_or(UINT32_MAX);
@@ -259,6 +279,8 @@ protected:
                 recv_snapshot_body();
             } else if (*tag == static_cast<uint8_t>(GameMsg::PlayerInfo)) {
                 recv_player_info_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::InventoryState)) {
+                recv_inventory_body();
             } else {
                 break;
             }
@@ -685,6 +707,7 @@ TEST_F(LobbySessionTest, EnteredGameSendsTheLocationThenSnapshots) {
     recv_created_game_id();
     expect_location("pueblo");
     expect_player_info(GameRegistry::OWNER_PLAYER_ID, "martin");
+    expect_inventory();
     Snapshot snapshot = recv_snapshot();
     EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{GameRegistry::OWNER_PLAYER_ID}));
     EXPECT_GT(recv_snapshot().tick, snapshot.tick);
@@ -698,6 +721,7 @@ TEST_F(LobbySessionTest, JoinedPlayerAppearsInTheSnapshotsWithItsId) {
     expect_entered_ids(MULTI_ID, 1);
     expect_location("granja");
     expect_player_info(1, "Invitado");
+    expect_inventory();
     EXPECT_EQ(ids_of(recv_snapshot()), (std::vector<uint32_t>{1}));
 }
 
@@ -709,6 +733,7 @@ TEST_F(LobbySessionTest, MovesInGameKeepTheSnapshotsComing) {
     expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
     expect_location("granja");
     expect_player_info(GameRegistry::OWNER_PLAYER_ID, "Duenio");
+    expect_inventory();
     uint32_t tick = recv_snapshot().tick;
     send_move(1, 0);
     send_move(0, -1);

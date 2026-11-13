@@ -4,20 +4,17 @@
 #include <map>
 
 #include "client/audio/sonido.h"
-#include "client/gui/inventario/objeto.h"
+#include "common/game_dto.h"
 
 inline const char* const CARPETA_ASSETS = "Assets/";
 
 inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
 
-inline const std::map<Objeto, const char*> RUTAS_ICONOS = {
-        {Objeto::Pico, "Assets/Misc/pickaxe.png"},
-        {Objeto::Pala, "Assets/Misc/shovel.png"},
-        {Objeto::Espada, "Assets/Misc/sword.png"},
-        {Objeto::Cama, "Assets/Farm/Environment/Tilesets_Furniture.png"},
-        {Objeto::Leche, "Assets/Farm/Animals/milk.png"},
-        {Objeto::Huevo, "Assets/Farm/Animals/egg.png"},
+inline const std::map<ItemType, const char*> RUTAS_ICONOS = {
+        {ItemType::Pickaxe, "Assets/Misc/pickaxe.png"},
+        {ItemType::Shovel, "Assets/Misc/shovel.png"},
+        {ItemType::Sword, "Assets/Misc/sword.png"},
 };
 
 inline const std::map<Sonido, const char*> RUTAS_SONIDOS = {

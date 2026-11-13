@@ -19,7 +19,6 @@
 #include "client/gui/calculadores/calculador_camara.h"
 #include "client/gui/sprites/capa.h"
 #include "client/gui/inventario/barra_inventario.h"
-#include "client/gui/inventario/casillero.h"
 #include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/mapa/mapa.h"
 
@@ -39,6 +38,7 @@ private:
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio);
+    void dibujar_inventario(const InventoryState& inventario);
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
     SDL2pp::SDL sdl;
     ReproductorSonidos reproductor;
@@ -61,8 +61,6 @@ private:
     std::string mundo_del_mapa;
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
     BarraInventario barra;
-    std::vector<std::optional<Casillero>> casilleros;
-    int casillero_seleccionado = 0;
     std::set<uint32_t> vestidos;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;

@@ -27,8 +27,7 @@ Interfaz::Interfaz():
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
                   {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
-        barra(renderer),
-        casilleros(CANTIDAD_CASILLEROS) {}
+        barra(renderer) {}
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
@@ -177,14 +176,17 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     auto propio = entidades.find({EntityType::Player, estado.id_propio});
     if (propio != entidades.end()) {
         dibujar_area(propio->second);
-        barra.dibujar(renderer, casilleros, casillero_seleccionado,
-                      SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
+        dibujar_inventario(estado.inventario);
     }
     renderer.SetTarget();
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     renderer.Present();
+}
+
+void Interfaz::dibujar_inventario(const InventoryState& inventario) {
+    barra.dibujar(renderer, inventario, SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
 }
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio) {

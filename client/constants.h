@@ -11,9 +11,9 @@
 
 #include "client/audio/sonido.h"
 #include "client/gui/sprites/animador_sprites.h"
-#include "client/gui/inventario/objeto.h"
 #include "client/gui/sprites/capa.h"
 #include "common/character/CharacterSheets.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
 
@@ -60,7 +60,6 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
                                               {0, 1, 2, 3},
                                               std::chrono::duration<float>(0.15f)};
 
-inline constexpr int CANTIDAD_CASILLEROS = 9;
 inline constexpr int TAMANO_CASILLERO = 18;
 inline constexpr int SEPARACION_CASILLEROS = 1;
 inline constexpr int MARGEN_BARRA = 3;
@@ -69,12 +68,8 @@ inline constexpr SDL_Color COLOR_BORDE_CASILLERO = {150, 110, 70, 255};
 inline constexpr SDL_Color COLOR_SELECCIONADO = {250, 210, 60, 255};
 inline constexpr SDL_Color COLOR_NUMERO = {255, 255, 255, 255};
 inline constexpr SDL_Color COLOR_SOMBRA_NUMERO = {0, 0, 0, 255};
-inline constexpr int ICONO_MAXIMO = 16;
-inline const std::map<Objeto, SDL2pp::Rect> RECORTES_ICONOS = {
-        {Objeto::Cama, SDL2pp::Rect(626, 152, 32, 56)},
-};
-inline const std::map<Objeto, SDL_Color> COLORES_SIN_ICONO = {
-        {Objeto::Regadera, {70, 130, 200, 255}},
+inline const std::map<ItemType, SDL_Color> COLORES_SIN_ICONO = {
+        {ItemType::WateringCan, {70, 130, 200, 255}},
 };
 inline constexpr int MARGEN_SIN_ICONO = 5;
 inline constexpr int ANCHO_DIGITO = 3;

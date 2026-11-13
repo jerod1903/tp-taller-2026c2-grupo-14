@@ -44,8 +44,6 @@ target_sources(taller_client
     gui/calculadores/calculador_camara.h
     gui/mapa/mapa.h
     gui/inventario/barra_inventario.h
-    gui/inventario/casillero.h
-    gui/inventario/objeto.h
     gui/rutas.h
     gui/sprites/sprite.h
     network/enviador.h
