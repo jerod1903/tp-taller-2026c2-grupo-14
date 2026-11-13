@@ -73,7 +73,7 @@ target_sources(taller_tests
     ../editor/tools/SelectTool.cpp
     # Código del cliente bajo test (sin Qt)
     ../client/network/ClientProtocol.cpp
-    ../client/gui/animador_sprites.cpp
+    ../client/gui/sprites/animador_sprites.cpp
     # Inventario
     ../server/game/characters/inventory.cpp
     ../server/game/commands/select_slot_command.cpp

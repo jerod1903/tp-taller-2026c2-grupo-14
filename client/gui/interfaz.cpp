@@ -10,7 +10,7 @@
 #include <SDL2/SDL_image.h>
 
 #include "client/constants.h"
-#include "rutas.h"
+#include "client/gui/rutas.h"
 
 Interfaz::Interfaz():
         sdl(SDL_INIT_VIDEO),
@@ -23,13 +23,12 @@ Interfaz::Interfaz():
         constructor_capas(renderer),
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
-        // Las capas de los jugadores dependen de su apariencia: las arma el ConstructorCapas
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
-                  {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}} {}
+                  {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
+        barra(renderer) {}
 
-// Un animal es una sola capa: su hoja entera, cuadro por cuadro
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
     return Capa{&hoja, TipoCapa::PorCuadro, SDL2pp::Point(0, 0), cuadro, SDL2pp::Point(0, 0)};
@@ -50,7 +49,7 @@ Entrada Interfaz::leer_entrada() {
         if (evento.type == SDL_KEYDOWN && !evento.key.repeat &&
             evento.key.keysym.sym >= SDLK_1 && evento.key.keysym.sym <= SDLK_9) {
             entrada.slot_seleccionado = static_cast<uint8_t>(evento.key.keysym.sym - SDLK_1);
-}
+        }
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
@@ -89,7 +88,7 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
     for (const EntityState& entidad: estado.entidades) {
         auto aspecto = aspectos.find(entidad.type);
         if (aspecto == aspectos.end()) {
-            continue;  // todavia no hay dibujo para ese tipo
+            continue;
         }
         std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
         presentes.insert(clave);
@@ -136,7 +135,6 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
     if (propio == estado.jugadores.end()) {
         return;
     }
-    // Hay varios frames por Snapshot: se compara solo cuando llega uno nuevo
     if (estado.tick != tick_escuchado) {
         if (propio_anterior) {
             bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;
@@ -157,13 +155,10 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
 
 void Interfaz::ajustar_lienzo() {
     SDL2pp::Point salida = renderer.GetOutputSize();
-    // Escala entera, para que todos los pixeles midan lo mismo, y elegida para que se vea mas o
-    // menos la misma porcion del mundo en cualquier tamaño de ventana
     escala = std::max(1, salida.y / ALTO_MUNDO_VISIBLE);
     int ancho = std::max(1, (salida.x + escala - 1) / escala);
     int alto = std::max(1, (salida.y + escala - 1) / escala);
     if (!lienzo || lienzo->GetWidth() != ancho || lienzo->GetHeight() != alto) {
-        // ARGB8888 es un formato nativo del renderer; con RGBA8888 cada frame tardaba un 60% mas
         lienzo.emplace(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, ancho, alto);
         calculador_camara.ajustar_vista(ancho, alto);
     }
@@ -178,16 +173,20 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.SetTarget(*lienzo);
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
-    // Sin personaje propio no se sabe que area mostrar
-   auto propio = entidades.find({EntityType::Player, estado.id_propio});
+    auto propio = entidades.find({EntityType::Player, estado.id_propio});
     if (propio != entidades.end()) {
         dibujar_area(propio->second);
+        dibujar_inventario(estado.inventario);
     }
     renderer.SetTarget();
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     renderer.Present();
+}
+
+void Interfaz::dibujar_inventario(const InventoryState& inventario) {
+    barra.dibujar(renderer, inventario, SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
 }
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio) {
@@ -203,15 +202,12 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
         mapa->dibujar_suelo(renderer, camara);
         sprites = mapa->elementos();
     }
-    // Solo los que estan en la misma area que este jugador. Las capas de cada uno van juntas y en
-    // orden: tienen la misma base, asi que el orden estable las deja una encima de la otra
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area) {
             std::vector<Sprite> capas = entidad.sprites();
             sprites.insert(sprites.end(), capas.begin(), capas.end());
         }
     }
-    // Lo que apoya mas abajo esta mas adelante: se dibuja despues y tapa a lo de atras
     std::stable_sort(sprites.begin(), sprites.end(),
                      [](const Sprite& a, const Sprite& b) { return a.base() < b.base(); });
     for (const Sprite& sprite: sprites) {

@@ -1,4 +1,4 @@
-#include "calculador_camara.h"
+#include "client/gui/calculadores/calculador_camara.h"
 
 #include <SDL2/SDL.h>
 
@@ -8,7 +8,7 @@ void CalculadorCamara::ajustar_vista(int ancho, int alto) {
 }
 
 int CalculadorCamara::limitar(int valor, int maximo) const {
-    maximo = SDL_max(0, maximo);  // por si el mapa es mas chico q la ventana
+    maximo = SDL_max(0, maximo);
     return SDL_max(0, SDL_min(valor, maximo));
 }
 

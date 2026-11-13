@@ -4,18 +4,19 @@
 #include <map>
 
 #include "client/audio/sonido.h"
+#include "common/game_dto.h"
 
-// Rutas de los assets, relativas a la raiz del repo (el juego se corre desde ahi)
-
-// mapa.cpp y constructor_capas.cpp: las imagenes del mapa y del granjero estan en
-// common/map/MapSprites.h y common/character/CharacterSheets.h, con rutas relativas a esta carpeta
 inline const char* const CARPETA_ASSETS = "Assets/";
 
-// interfaz.cpp: los animales de la granja
 inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
 
-// reproductor_sonidos.cpp
+inline const std::map<ItemType, const char*> RUTAS_ICONOS = {
+        {ItemType::Pickaxe, "Assets/Misc/pickaxe.png"},
+        {ItemType::Shovel, "Assets/Misc/shovel.png"},
+        {ItemType::Sword, "Assets/Misc/sword.png"},
+};
+
 inline const std::map<Sonido, const char*> RUTAS_SONIDOS = {
         {Sonido::Plantar, "Assets/Sounds/Farming/seed_plant_01.ogg"},
         {Sonido::Regar, "Assets/Sounds/Farming/water_pour_01.ogg"},

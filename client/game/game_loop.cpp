@@ -10,9 +10,8 @@
 #include "client/menu/backend/ILobbyProtocol.h"
 
 namespace {
-// Cuanto se espera el GameEnded despues de LeaveGame antes de dar la conexion por perdida
 constexpr std::chrono::seconds ESPERA_FIN_PARTIDA(3);
-}  // namespace
+}
 
 GameLoop::GameLoop(Enviador& enviador, Recibidor& recibidor, Interfaz& interfaz,
                    uint32_t id_propio):
@@ -34,7 +33,7 @@ std::optional<EndReason> GameLoop::ejecutar() {
             std::this_thread::sleep_until(inicio + DURACION_FRAME);
         }
     } catch (const LobbyConnectionError&) {
-        return std::nullopt;  // no se pudo mandar: se corto la conexion
+        return std::nullopt;
     }
     return fin;
 }
@@ -44,13 +43,10 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
         return;
     }
     if (entrada.salir) {
-        // Se avisa al servidor que el jugador sale de la partida
         enviador.salir();
         limite_salida = std::chrono::steady_clock::now() + ESPERA_FIN_PARTIDA;
         return;
     }
-    // El servidor sigue moviendo al jugador en la ultima direccion que recibio: solo se avisa
-    // cuando cambia, incluido el (0, 0) al soltar las teclas para que frene
     if (entrada.dir_x != ultima_dir_x || entrada.dir_y != ultima_dir_y) {
         enviador.enviar(MoveRequest{entrada.dir_x, entrada.dir_y});
         ultima_dir_x = entrada.dir_x;
@@ -63,10 +59,7 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
 }
 
 void GameLoop::procesar_mensajes() {
-    // Se mira antes de vaciar la cola: si el hilo ya habia terminado, todo lo que mando ya esta
-    // en ella (incluido el GameEnded)
     const bool recibidor_vivo = recibidor.is_alive();
-    // Se procesa todo lo que llego desde el frame anterior
     std::optional<ServerGameMessage> mensaje;
     while ((mensaje = recibidor.recibir())) {
         if (const auto* ubicacion = std::get_if<LocationData>(&*mensaje)) {
@@ -80,11 +73,10 @@ void GameLoop::procesar_mensajes() {
         }else if (const auto* inv = std::get_if<InventoryState>(&*mensaje)) {
             estado.inventario = *inv;
         } else {
-            fin = std::get<GameEnded>(*mensaje).reason;  // termino la partida
+            fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;
         }
     }
-    // El hilo termina si se corto la conexion: fin queda vacio
     if (!recibidor_vivo) {
         corriendo = false;
     }

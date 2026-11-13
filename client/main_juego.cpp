@@ -5,8 +5,6 @@
 #include "client/network/ClientProtocol.h"
 #include "common/net/socket.h"
 
-// Provisorio, hasta que el menu Qt le pase la conexion al juego: entra directo a una partida nueva
-// en MUNDO_PRUEBA. Uso: ./juego <host> <puerto> <usuario>
 int main(int argc, char* argv[]) {
     if (argc != CANTIDAD_ARGUMENTOS) {
         std::cerr << "Uso: " << argv[0] << " <host> <puerto> <usuario>" << std::endl;

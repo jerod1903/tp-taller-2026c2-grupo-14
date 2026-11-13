@@ -1,4 +1,4 @@
-#include "entidad_grafica.h"
+#include "client/gui/sprites/entidad_grafica.h"
 
 #include <string>
 #include <utility>
@@ -22,7 +22,6 @@ void EntidadGrafica::actualizar(const EntityState& estado, uint32_t tick,
 std::vector<Sprite> EntidadGrafica::sprites() const {
     Cuadro cuadro = animador.cuadro();
     const SDL2pp::Point& pies = posicion.pies();
-    // El cuadro del cuerpo, centrado en x y apoyado en los pies
     SDL2pp::Point esquina(pies.x - ancho_cuadro / 2, pies.y - alto_cuadro);
     std::vector<Sprite> resultado;
     for (const Capa& capa: capas) {
@@ -38,7 +37,6 @@ std::vector<Sprite> EntidadGrafica::sprites() const {
             espejado = espejada;
             bajada = cuadro.bajada_cabeza;
         }
-        // Si el cuerpo esta espejado, lo que lleva encima queda del otro lado del cuadro
         int x = cuadro.espejado ? ancho_cuadro - capa.desplazamiento.x - capa.tamano.x
                                 : capa.desplazamiento.x;
         SDL2pp::Rect destino(esquina.x + x, esquina.y + capa.desplazamiento.y + bajada,
