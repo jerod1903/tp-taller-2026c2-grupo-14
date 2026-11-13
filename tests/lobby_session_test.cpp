@@ -173,7 +173,7 @@ protected:
         EXPECT_EQ(client->recv_string(), std::optional<std::string>(world_id));
     }
 
-    Snapshot recv_snapshot() {
+ Snapshot recv_snapshot() {
         EXPECT_EQ(client->recv_u8(),
                   std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
         return recv_snapshot_body();

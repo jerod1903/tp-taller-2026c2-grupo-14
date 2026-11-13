@@ -1,5 +1,5 @@
 #include "server/game/commands/command_factory.h"
-
+#include "server/game/commands/select_slot_command.h"
 #include <optional>
 
 #include "server/game/commands/move_command.h"
@@ -32,6 +32,7 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
         protocol(protocol),
         builders{
                 {GameOp::Move, with_payload<MoveCommand>(&ServerProtocol::recv_move)},
+                {GameOp::SelectSlot, with_payload<SelectSlotCommand>(&ServerProtocol::recv_select_slot)},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

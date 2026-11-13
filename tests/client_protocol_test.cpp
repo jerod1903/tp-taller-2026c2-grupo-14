@@ -245,3 +245,20 @@ TEST_F(ClientGameProtocolTest, UnknownTagThrows) {
     ASSERT_TRUE(server.send_u8(0x7F));
     EXPECT_THROW(client->recvGameMessage(), std::runtime_error);
 }
+
+
+TEST_F(ClientGameProtocolTest, SendSelectSlotSendsTagAndSlot) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendSelectSlot(2);
+    EXPECT_EQ(server.recv_u8(), 0x03);
+    EXPECT_EQ(server.recv_u8(), 0x02);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
+    ServerProtocol server(std::move(*server_socket));
+    const InventoryState inventory{2, {{ItemType::Pickaxe, 1}, {ItemType::Empty, 0}}};
+    ASSERT_TRUE(server.send_inventory_state(inventory));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
+    EXPECT_EQ(std::get<InventoryState>(message), inventory);
+}

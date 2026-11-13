@@ -19,3 +19,7 @@ int Player::get_energy() const { return energy; }
 void Player::use_tool(const Position&) {}
 
 void Player::update(float dt) { advance(dt); }
+
+void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); }
+
+InventoryState Player::get_inventory_state() const { return inventory.get_state(); }

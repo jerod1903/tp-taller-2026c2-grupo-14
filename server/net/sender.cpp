@@ -32,6 +32,9 @@ bool Sender::send(const GameMessage& message) {
     if (const PlayerInfo* info = std::get_if<PlayerInfo>(&message)) {
         return protocol.send_player_info(*info);
     }
+        if (const InventoryState* inventory = std::get_if<InventoryState>(&message)) {
+        return protocol.send_inventory_state(*inventory);
+    }
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 

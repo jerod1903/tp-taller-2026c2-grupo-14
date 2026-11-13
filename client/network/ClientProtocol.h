@@ -32,6 +32,7 @@ public:
 
     void sendMove(int8_t dir_x, int8_t dir_y) override;
     void sendLeaveGame() override;
+    void sendSelectSlot(uint8_t slot) override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;
@@ -49,6 +50,7 @@ private:
     PlayerState recvPlayerState();
     EntityState recvEntityState();
     PlayerInfo recvPlayerInfo();
+    InventoryState recvInventoryState();
 
     BaseProtocol baseProtocol;
 };

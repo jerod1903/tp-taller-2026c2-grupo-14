@@ -11,6 +11,7 @@
 enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
+    SelectSlot = 0x03,
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -21,12 +22,16 @@ struct MoveRequest {
     bool operator==(const MoveRequest&) const = default;
 };
 
+
+
+
 // Mensajes del servidor durante la partida: cada uno va precedido por su tag.
 enum class GameMsg : uint8_t {
     LocationData,
     Snapshot,
     GameEnded,
     PlayerInfo,
+    InventoryState,
 };
 
 // El área en la que está el jugador. Se manda al entrar y cada vez que cambia.
@@ -107,5 +112,42 @@ enum class EndReason : uint8_t {
 struct GameEnded {
     EndReason reason;
 };
+
+// Slot del inventario que el jugador elige: 0 a INVENTORY_SIZE - 1. El servidor valida el rango.
+struct SelectSlotRequest {
+    uint8_t slot;
+
+    bool operator==(const SelectSlotRequest&) const = default;
+};
+
+
+// Cantidad de slots del inventario de un jugador.
+constexpr uint8_t INVENTORY_SIZE = 9;
+
+enum class ItemType : uint8_t {
+    Empty = 0,
+    Pickaxe,
+    WateringCan,
+    Shovel,
+    Sword,
+};
+
+struct InventorySlot {
+    ItemType item;
+    uint8_t quantity;
+
+    bool operator==(const InventorySlot&) const = default;
+};
+
+// Inventario de un jugador. Se manda al entrar y cada vez que cambia, no en cada tick.
+// En el cable: tag GameMsg::InventoryState, u8 selectedSlot, u16 cantidad de slots y, por cada
+// slot, u8 item y u8 quantity. Con selectedSlot de 0 a slots.size() - 1.
+struct InventoryState {
+    uint8_t selectedSlot = 0;
+    std::vector<InventorySlot> slots = {};
+
+    bool operator==(const InventoryState&) const = default;
+};
+
 
 #endif  // GAME_DTO_H
