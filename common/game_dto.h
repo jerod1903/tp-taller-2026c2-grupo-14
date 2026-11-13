@@ -22,9 +22,6 @@ struct MoveRequest {
     bool operator==(const MoveRequest&) const = default;
 };
 
-
-
-
 // Mensajes del servidor durante la partida: cada uno va precedido por su tag.
 enum class GameMsg : uint8_t {
     LocationData,

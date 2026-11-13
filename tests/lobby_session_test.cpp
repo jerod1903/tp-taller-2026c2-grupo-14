@@ -39,8 +39,10 @@ const CharacterAppearance APPEARANCE{3, 2, 5, 1, 4};
 constexpr uint32_t MULTI_ID = 7;
 constexpr const char* CODE = "ABC234";
 constexpr const char* OWNER = "duenio";
-const GameRecord MULTI_GAME{
-        MULTI_ID, "Multi", "granja", true, MAX_PLAYERS, {{OWNER, "Duenio", APPEARANCE}}, CODE};
+constexpr const char* OWNER_CHARACTER = "Duenio";
+const GameRecord MULTI_GAME{MULTI_ID, "Multi",     "granja",
+                            true,     MAX_PLAYERS, {{OWNER, OWNER_CHARACTER, APPEARANCE}},
+                            CODE};
 
 class LobbySessionTest: public ::testing::Test {
 protected:
@@ -173,11 +175,47 @@ protected:
         EXPECT_EQ(client->recv_string(), std::optional<std::string>(world_id));
     }
 
- Snapshot recv_snapshot() {
-        EXPECT_EQ(client->recv_u8(),
-                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
+    Snapshot recv_snapshot() {
+        constexpr int MAX_INITIAL_MESSAGES = ServerConstants::MAX_PLAYERS + 2;
+        std::optional<uint8_t> tag = client->recv_u8();
+        for (int skipped = 0; tag && *tag != static_cast<uint8_t>(GameMsg::Snapshot); ++skipped) {
+            if (skipped >= MAX_INITIAL_MESSAGES || !skip_initial_message(*tag)) {
+                ADD_FAILURE() << "mensaje inesperado antes del snapshot, tag "
+                              << static_cast<int>(*tag);
+                return Snapshot{0, {}, {}};
+            }
+            tag = client->recv_u8();
+        }
+        if (!tag) {
+            ADD_FAILURE() << "se cerró la conexión antes del snapshot";
+            return Snapshot{0, {}, {}};
+        }
         return recv_snapshot_body();
     }
+
+    void recv_inventory_state_body() {
+        client->recv_u8();  // selectedSlot
+        uint16_t count = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < count; ++i) {
+            client->recv_u8();  // item
+            client->recv_u8();  // quantity
+        }
+    }
+
+    // Lo que el servidor manda al entrar, antes del primer snapshot.
+    bool skip_initial_message(uint8_t tag) {
+        if (tag == static_cast<uint8_t>(GameMsg::LocationData)) {
+            client->recv_string();
+        } else if (tag == static_cast<uint8_t>(GameMsg::PlayerInfo)) {
+            recv_player_info_body();
+        } else if (tag == static_cast<uint8_t>(GameMsg::InventoryState)) {
+            recv_inventory_state_body();
+        } else {
+            return false;
+        }
+        return true;
+    }
+
 
     // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
     Snapshot recv_snapshot_body() {
@@ -259,6 +297,8 @@ protected:
                 recv_snapshot_body();
             } else if (*tag == static_cast<uint8_t>(GameMsg::PlayerInfo)) {
                 recv_player_info_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::InventoryState)) {
+                recv_inventory_state_body();
             } else {
                 break;
             }
@@ -268,6 +308,17 @@ protected:
         }
         std::optional<uint8_t> reason = client->recv_u8();
         return reason ? std::optional<EndReason>(static_cast<EndReason>(*reason)) : std::nullopt;
+    }
+
+    void expect_inventory_state() {
+        EXPECT_EQ(client->recv_u8(),
+                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::InventoryState)));
+        EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));  // slot seleccionado
+        EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(INVENTORY_SIZE));
+        for (uint16_t i = 0; i < INVENTORY_SIZE; ++i) {
+            client->recv_u8();  // item
+            client->recv_u8();  // quantity
+        }
     }
 
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
@@ -735,6 +786,9 @@ TEST_F(LobbySessionTest, LeaveGameEndsWithGameEndedAndReturnsToTheLobby) {
     expect_status(LobbyStatus::Ok);
     expect_entered_ids(MULTI_ID, GameRegistry::OWNER_PLAYER_ID);
     expect_location("granja");
+    expect_player_info(GameRegistry::OWNER_PLAYER_ID, OWNER_CHARACTER);
+    expect_inventory_state();
+
     send_leave_game();
     EXPECT_EQ(recv_game_ended(), std::optional<EndReason>(EndReason::Left));
     EXPECT_FALSE(registry.is_running(MULTI_ID));
