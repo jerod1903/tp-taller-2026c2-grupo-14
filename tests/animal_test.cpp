@@ -45,3 +45,29 @@ TEST(AnimalTest, NeverLeavesAWalledPen) {
         ASSERT_LE(cow.get_position().y, 3);
     }
 }
+
+TEST(AnimalTest, ACowIsReadyAfterCowReadySeconds) {
+    TestLocation location;
+    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
+    cow.update(ServerConstants::COW_READY_SECONDS - 1);
+    EXPECT_FALSE(cow.is_ready());
+    cow.update(1);
+    EXPECT_TRUE(cow.is_ready());
+}
+
+TEST(AnimalTest, MilkingStartsTheCountAgain) {
+    TestLocation location;
+    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
+    cow.update(ServerConstants::COW_READY_SECONDS);
+    cow.milk();
+    EXPECT_FALSE(cow.is_ready());
+    cow.update(ServerConstants::COW_READY_SECONDS);
+    EXPECT_TRUE(cow.is_ready());
+}
+
+TEST(AnimalTest, AChickenIsNeverReady) {
+    TestLocation location;
+    Animal chicken(0, AnimalKind::Chicken, Position{2, 2}, location, SEED);
+    chicken.update(ServerConstants::COW_READY_SECONDS * 10);
+    EXPECT_FALSE(chicken.is_ready());
+}

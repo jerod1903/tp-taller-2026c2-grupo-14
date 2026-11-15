@@ -8,6 +8,7 @@ target_sources(taller_tests
     animal_test.cpp
     character_sheets_test.cpp
     chat_command_test.cpp
+    interact_command_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp
@@ -53,6 +54,7 @@ target_sources(taller_tests
     ../server/game/game.cpp
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/command_factory.cpp
+    ../server/game/commands/interact_command.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
     ../server/game/commands/move_command.cpp

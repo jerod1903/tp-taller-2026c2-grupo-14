@@ -56,13 +56,6 @@ void BarraInventario::dibujar_icono(SDL2pp::Renderer& renderer, ItemType item,
                                     const SDL2pp::Rect& caja) {
     auto icono = iconos.find(item);
     if (icono == iconos.end()) {
-        auto color = COLORES_SIN_ICONO.find(item);
-        if (color != COLORES_SIN_ICONO.end()) {
-            pintar(renderer, color->second);
-            renderer.FillRect(SDL2pp::Rect(caja.x + MARGEN_SIN_ICONO, caja.y + MARGEN_SIN_ICONO,
-                                           caja.w - 2 * MARGEN_SIN_ICONO,
-                                           caja.h - 2 * MARGEN_SIN_ICONO));
-        }
         return;
     }
     SDL2pp::Point tamano = icono->second.GetSize();

@@ -23,6 +23,8 @@ public:
 
     void select_inventory_slot(uint8_t slot);
     InventoryState get_inventory_state() const;
+    // Agrega objetos a su inventario. Devuelve cuantos no entraron (0 si entraron todos).
+    uint8_t receive(ItemType item, uint8_t quantity);
 
 private:
     std::string name;

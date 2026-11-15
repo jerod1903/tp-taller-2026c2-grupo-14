@@ -59,6 +59,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.mensaje_chat) {
         enviador.enviar_chat(*entrada.mensaje_chat);
     }
+    if (entrada.interactuar) {
+        enviador.interactuar();
+    }
 }
 
 void GameLoop::procesar_mensajes() {

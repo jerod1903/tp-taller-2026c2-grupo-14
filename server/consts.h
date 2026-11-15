@@ -46,6 +46,13 @@ public:
     // Cuanto camina (o se queda quieto) antes de elegir otra direccion, en segundos.
     static constexpr float ANIMAL_MIN_WALK = 1.0f;
     static constexpr float ANIMAL_MAX_WALK = 3.0f;
+    // Provisorio, hasta que exista el ciclo de dias: el enunciado dice que la vaca da leche cada
+    // 2 dias. En segundos de juego.
+    static constexpr float COW_READY_SECONDS = 20.0f;
+    // Hasta donde llega el jugador para ordeñar: de su centro al de la vaca, en casillas.
+    static constexpr float MILKING_REACH = 1.5f;
+    // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
+    static constexpr uint8_t MAX_STACK = 50;
     // Mensajes pendientes por jugador; con la outbox llena se descartan snapshots.
     static constexpr unsigned int OUTBOX_SIZE = 64;
 

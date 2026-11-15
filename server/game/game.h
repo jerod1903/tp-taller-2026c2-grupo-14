@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "common/lib/thread.h"
 #include "common/map/MapDefinition.h"
@@ -27,6 +28,7 @@ public:
     void send_to(uint32_t player_id, const GameMessage& message) override;
     void broadcast(const GameMessage& message) override;
     std::optional<uint32_t> find_player_by_name(const std::string& character_name) override;
+    const std::vector<std::unique_ptr<Animal>>& farm_animals() override;
 
     void start() override;
     void run() override;

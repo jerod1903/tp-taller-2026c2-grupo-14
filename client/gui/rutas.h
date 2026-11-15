@@ -15,13 +15,16 @@ inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.pn
 
 inline const std::map<ItemType, const char*> RUTAS_ICONOS = {
         {ItemType::Pickaxe, "Assets/Misc/pickaxe.png"},
+        {ItemType::WateringCan, "Assets/Misc/watering_can.png"},
         {ItemType::Shovel, "Assets/Misc/shovel.png"},
         {ItemType::Sword, "Assets/Misc/sword.png"},
+        {ItemType::Milk, "Assets/Farm/Animals/milk.png"},
 };
 
 inline const std::map<Sonido, const char*> RUTAS_SONIDOS = {
         {Sonido::Plantar, "Assets/Sounds/Farming/seed_plant_01.ogg"},
         {Sonido::Regar, "Assets/Sounds/Farming/water_pour_01.ogg"},
+        {Sonido::Ordenar, "Assets/Sounds/Farming/milking_01.ogg"},
         {Sonido::Cosechar, "Assets/Sounds/Farming/harvest_pluck_01.ogg"},
         {Sonido::Azada, "Assets/Sounds/Farming/hoe_soil_01.ogg"},
         {Sonido::Recoger, "Assets/Sounds/Gathering/item_pickup.ogg"},

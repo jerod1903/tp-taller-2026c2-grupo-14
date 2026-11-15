@@ -34,6 +34,7 @@ public:
     void sendLeaveGame() override;
     void sendSelectSlot(uint8_t slot) override;
     void sendChat(const std::string& texto) override;
+    void sendInteract() override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;

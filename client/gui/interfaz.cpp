@@ -67,6 +67,8 @@ Entrada Interfaz::leer_entrada() {
             entrada.salir = true;
         } else if (tecla == SDLK_RETURN) {
             borrador = "";
+        } else if (tecla == SDLK_e) {
+            entrada.interactuar = true;
         } else if (tecla == SDLK_F11) {
             alternar_pantalla_completa();
         } else if (tecla >= SDLK_1 && tecla <= SDLK_9) {
@@ -175,6 +177,14 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
 
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
+    int leche = 0;
+    for (const InventorySlot& slot: estado.inventario.slots) {
+        leche += slot.item == ItemType::Milk ? slot.quantity : 0;
+    }
+    if (leche_anterior && leche > *leche_anterior) {
+        reproductor.reproducir(Sonido::Ordenar);
+    }
+    leche_anterior = leche;
     auto propio = std::find_if(
             estado.jugadores.begin(), estado.jugadores.end(),
             [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });

@@ -62,7 +62,7 @@ TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
 }
 
 TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
-    EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1};
+    EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1, Emote::Ready};
     ASSERT_TRUE(server->send_snapshot(Snapshot{7, {}, {cow}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(7));
@@ -75,6 +75,7 @@ TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(4500));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(-1)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(Emote::Ready)));
 }
 
 TEST_F(ServerProtocolTest, PlayerInfoGoesWithIdNameAndAppearance) {

@@ -72,6 +72,7 @@ private:
     std::optional<PlayerState> propio_anterior;
     bool caminando = false;
     std::chrono::steady_clock::time_point proximo_paso;
+    std::optional<int> leche_anterior;
 };
 
 #endif

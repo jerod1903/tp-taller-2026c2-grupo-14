@@ -14,6 +14,7 @@ enum class GameOp : uint8_t {
     LeaveGame = 0x02,  // sin payload
     SelectSlot = 0x03,
     Chat = 0x04,  // payload: string con el texto tal cual lo escribio el jugador
+    Interact = 0x05,  // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -73,6 +74,12 @@ enum class EntityType : uint8_t {
     Chicken,
 };
 
+// Lo que se muestra arriba de la cabeza de una entidad.
+enum class Emote : uint8_t {
+    None,
+    Ready,  // una vaca lista para ordeñar
+};
+
 // Algo que se dibuja y se mueve, en un tick. entityId es único dentro de su tipo (una vaca puede
 // tener el mismo id que un jugador); si es un Player, es su playerId. Posición y dirección como en
 // PlayerState.
@@ -84,6 +91,7 @@ struct EntityState {
     uint32_t y;
     int8_t dirX;
     int8_t dirY;
+    Emote emote = Emote::None;  // en el cable va al final, como u8
 
     bool operator==(const EntityState&) const = default;
 };
@@ -160,6 +168,7 @@ enum class ItemType : uint8_t {
     WateringCan,
     Shovel,
     Sword,
+    Milk,
 };
 
 struct InventorySlot {
