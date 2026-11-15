@@ -89,10 +89,6 @@ inline constexpr SDL_Color COLOR_BORDE_CASILLERO = {150, 110, 70, 255};
 inline constexpr SDL_Color COLOR_SELECCIONADO = {250, 210, 60, 255};
 inline constexpr SDL_Color COLOR_NUMERO = {255, 255, 255, 255};
 inline constexpr SDL_Color COLOR_SOMBRA_NUMERO = {0, 0, 0, 255};
-inline const std::map<ItemType, SDL_Color> COLORES_SIN_ICONO = {
-        {ItemType::WateringCan, {70, 130, 200, 255}},
-};
-inline constexpr int MARGEN_SIN_ICONO = 5;
 inline constexpr int ANCHO_DIGITO = 3;
 inline constexpr int ALTO_DIGITO = 5;
 inline constexpr std::array<std::array<const char*, 5>, 10> DIGITOS = {{

@@ -26,4 +26,5 @@ public:
 
     virtual void sendSelectSlot(uint8_t slot) = 0;
     virtual void sendChat(const std::string& texto) = 0;
+    virtual void sendInteract() = 0;
 };

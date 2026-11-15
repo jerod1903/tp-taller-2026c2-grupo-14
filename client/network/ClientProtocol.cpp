@@ -221,6 +221,7 @@ EntityState ClientProtocol::recvEntityState() {
     entity.y = ensure(baseProtocol.recv_u32());
     entity.dirX = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
     entity.dirY = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
+    entity.emote = static_cast<Emote>(ensure(baseProtocol.recv_u8()));
     return entity;
 }
 
@@ -232,6 +233,8 @@ PlayerInfo ClientProtocol::recvPlayerInfo() {
     return info;
 }
 
+
+void ClientProtocol::sendInteract() { ensure(sendGameOp(GameOp::Interact)); }
 
 void ClientProtocol::sendChat(const std::string& texto) {
     ensure(sendGameOp(GameOp::Chat) && baseProtocol.send_string(texto));

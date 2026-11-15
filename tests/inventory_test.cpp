@@ -36,3 +36,25 @@ TEST(InventoryTest, SelectSlotOutOfRangeIsIgnored) {
     inventory.select_slot(200);
     EXPECT_EQ(inventory.get_state().selectedSlot, 2);
 }
+TEST(InventoryTest, AddPutsANewItemInTheFirstEmptySlot) {
+    Inventory inventory;
+    EXPECT_EQ(inventory.add(ItemType::Milk, 3), 0);
+    InventoryState state = inventory.get_state();
+    EXPECT_EQ(state.slots[4], (InventorySlot{ItemType::Milk, 3}));
+}
+
+TEST(InventoryTest, AddStacksOnTheSameItemUpToMaxStack) {
+    Inventory inventory;
+    inventory.add(ItemType::Milk, 45);
+    EXPECT_EQ(inventory.add(ItemType::Milk, 10), 0);
+    InventoryState state = inventory.get_state();
+    EXPECT_EQ(state.slots[4], (InventorySlot{ItemType::Milk, 50}));
+    EXPECT_EQ(state.slots[5], (InventorySlot{ItemType::Milk, 5}));
+}
+
+TEST(InventoryTest, AddReturnsWhatDoesNotFit) {
+    Inventory inventory;
+    // 4 herramientas + 5 slots libres de 50 leches: entran 250
+    EXPECT_EQ(inventory.add(ItemType::Milk, 250), 0);
+    EXPECT_EQ(inventory.add(ItemType::Milk, 1), 1);
+}

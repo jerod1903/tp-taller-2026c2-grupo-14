@@ -206,6 +206,7 @@ protected:
             entity.y = client->recv_u32().value_or(0);
             entity.dirX = static_cast<int8_t>(client->recv_u8().value_or(0));
             entity.dirY = static_cast<int8_t>(client->recv_u8().value_or(0));
+            entity.emote = static_cast<Emote>(client->recv_u8().value_or(0));
             snapshot.entities.push_back(entity);
         }
         return snapshot;

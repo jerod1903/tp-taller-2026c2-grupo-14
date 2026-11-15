@@ -6,6 +6,7 @@
 enum class Sonido : uint8_t {
     Plantar,
     Regar,
+    Ordenar,
     Cosechar,
     Azada,
     Recoger,

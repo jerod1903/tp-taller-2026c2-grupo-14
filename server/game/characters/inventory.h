@@ -14,6 +14,10 @@ public:
     // Un slot fuera de rango se ignora.
     void select_slot(uint8_t slot);
 
+    // Apila primero sobre los slots que ya tienen ese objeto (hasta MAX_STACK) y despues usa los
+    // vacios. Devuelve cuantos NO entraron: 0 si entro todo.
+    uint8_t add(ItemType item, uint8_t quantity);
+
     InventoryState get_state() const;
 
 private:

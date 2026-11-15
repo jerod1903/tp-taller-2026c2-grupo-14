@@ -48,6 +48,11 @@ public:
         return found->second;
     }
 
+    const std::vector<std::unique_ptr<Animal>>& farm_animals() override { return animals; }
+
+    // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.
+    std::vector<std::unique_ptr<Animal>> animals;
+
     // Lo que los comandos le mandaron a todos, en orden.
     std::vector<GameMessage> broadcasted;
     // Nombre de personaje -> id de los jugadores conectados. El propio se llama "jero".

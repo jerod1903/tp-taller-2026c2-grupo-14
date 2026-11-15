@@ -5,7 +5,9 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
+#include "server/game/characters/animals/animal.h"
 #include "server/game/characters/player.h"
 #include "server/game/outbox.h"
 #include "server/persistence/game_store.h"
@@ -27,6 +29,8 @@ public:
     virtual void broadcast(const GameMessage& message) = 0;
     // El id del jugador conectado cuyo personaje se llama así; nullopt si no hay ninguno.
     virtual std::optional<uint32_t> find_player_by_name(const std::string& character_name) = 0;
+    // Los animales de la granja (para ordeñar).
+    virtual const std::vector<std::unique_ptr<Animal>>& farm_animals() = 0;
     
     virtual ~GameContext() = default;
 };

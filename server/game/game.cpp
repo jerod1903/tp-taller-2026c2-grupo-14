@@ -60,7 +60,8 @@ EntityState entity_of(const Animal& animal) {
                        to_wire(animal.get_x()),
                        to_wire(animal.get_y()),
                        static_cast<int8_t>(delta.x),
-                       static_cast<int8_t>(delta.y)};
+                       static_cast<int8_t>(delta.y),
+                       animal.is_ready() ? Emote::Ready : Emote::None};
 }
 }  // namespace
 
@@ -161,6 +162,10 @@ std::optional<uint32_t> Game::find_player_by_name(const std::string& character_n
         }
     }
     return std::nullopt;
+}
+
+const std::vector<std::unique_ptr<Animal>>& Game::farm_animals() {
+    return world->get_farm().get_animals();
 }
 
 void Game::remove(uint32_t player_id) {

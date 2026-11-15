@@ -175,7 +175,8 @@ bool ServerProtocol::send_entity_state(const EntityState& entity) {
            baseProtocol.send_string(entity.areaId) && baseProtocol.send_u32(entity.x) &&
            baseProtocol.send_u32(entity.y) &&
            baseProtocol.send_u8(static_cast<uint8_t>(entity.dirX)) &&
-           baseProtocol.send_u8(static_cast<uint8_t>(entity.dirY));
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.dirY)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.emote));
 }
 
 bool ServerProtocol::send_player_info(const PlayerInfo& info) {

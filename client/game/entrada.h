@@ -11,6 +11,7 @@ struct Entrada {
     int8_t dir_y = 0;
     std::optional<uint8_t> slot_seleccionado;
     std::optional<std::string> mensaje_chat;
+    bool interactuar = false;
 };
 
 #endif
