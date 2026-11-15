@@ -262,3 +262,18 @@ TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
     ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
     EXPECT_EQ(std::get<InventoryState>(message), inventory);
 }
+TEST_F(ClientGameProtocolTest, SendChatSendsTagAndText) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendChat("hola");
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Chat));
+    EXPECT_EQ(server.recv_string(), std::optional<std::string>("hola"));
+}
+
+TEST_F(ClientGameProtocolTest, RecvsChatMessage) {
+    ServerProtocol server(std::move(*server_socket));
+    const ChatMessage chat{ChatKind::Public, "Pandamos", "Hola, gente!"};
+    ASSERT_TRUE(server.send_chat_message(chat));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<ChatMessage>(message));
+    EXPECT_EQ(std::get<ChatMessage>(message), chat);
+}

@@ -1,6 +1,7 @@
 #ifndef GAME_DTO_H
 #define GAME_DTO_H
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@ enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
     SelectSlot = 0x03,
+    Chat = 0x04,  // payload: string con el texto tal cual lo escribio el jugador
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -32,6 +34,7 @@ enum class GameMsg : uint8_t {
     GameEnded,
     PlayerInfo,
     InventoryState,
+    ChatMessage,
 };
 
 // El área en la que está el jugador. Se manda al entrar y cada vez que cambia.
@@ -120,6 +123,33 @@ struct SelectSlotRequest {
     bool operator==(const SelectSlotRequest&) const = default;
 };
 
+
+// Largo maximo de un mensaje de chat, en bytes. El servidor corta lo que sobra.
+constexpr std::size_t MAX_CHAT_LENGTH = 80;
+
+// Lo que escribio el jugador en el chat. El servidor decide a quien le llega: "@nombre texto" es
+// privado para ese personaje; cualquier otro texto es publico.
+struct ChatRequest {
+    std::string text;
+
+    bool operator==(const ChatRequest&) const = default;
+};
+
+enum class ChatKind : uint8_t {
+    Public,   // a todos los jugadores de la partida
+    Private,  // solo al destinatario, con una copia para el que lo mando
+    System,   // un aviso del servidor (por ejemplo, que el destinatario no esta conectado)
+};
+
+// Un mensaje de chat. En el cable: tag GameMsg::ChatMessage, u8 kind, from y text como strings.
+// En System, from va vacio.
+struct ChatMessage {
+    ChatKind kind;
+    std::string from;  // nombre del personaje que lo escribio
+    std::string text;
+
+    bool operator==(const ChatMessage&) const = default;
+};
 
 // Cantidad de slots del inventario de un jugador.
 constexpr uint8_t INVENTORY_SIZE = 9;

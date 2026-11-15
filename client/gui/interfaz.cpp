@@ -1,6 +1,7 @@
 #include "interfaz.h"
 
 #include <algorithm>
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>
@@ -27,29 +28,53 @@ Interfaz::Interfaz():
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
                   {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
-        barra(renderer) {}
+        barra(renderer),
+        fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
+        panel_chat(fuente) {}
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
     return Capa{&hoja, TipoCapa::PorCuadro, SDL2pp::Point(0, 0), cuadro, SDL2pp::Point(0, 0)};
 }
 
+namespace {
+void borrar_ultima_letra(std::string& texto) {
+    while (!texto.empty() && (static_cast<unsigned char>(texto.back()) & 0xC0) == 0x80) {
+        texto.pop_back();
+    }
+    if (!texto.empty()) {
+        texto.pop_back();
+    }
+}
+}
+
 Entrada Interfaz::leer_entrada() {
     Entrada entrada;
     SDL_Event evento;
     while (SDL_PollEvent(&evento)) {
-        if (evento.type == SDL_QUIT ||
-            (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_ESCAPE)) {
+        if (evento.type == SDL_QUIT) {
             entrada.salir = true;
         }
-        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_F11 &&
-            !evento.key.repeat) {
+        if (borrador) {
+            leer_chat(evento, entrada);
+            continue;
+        }
+        if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
+            continue;
+        }
+        SDL_Keycode tecla = evento.key.keysym.sym;
+        if (tecla == SDLK_ESCAPE) {
+            entrada.salir = true;
+        } else if (tecla == SDLK_RETURN) {
+            borrador = "";
+        } else if (tecla == SDLK_F11) {
             alternar_pantalla_completa();
+        } else if (tecla >= SDLK_1 && tecla <= SDLK_9) {
+            entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
-        if (evento.type == SDL_KEYDOWN && !evento.key.repeat &&
-            evento.key.keysym.sym >= SDLK_1 && evento.key.keysym.sym <= SDLK_9) {
-            entrada.slot_seleccionado = static_cast<uint8_t>(evento.key.keysym.sym - SDLK_1);
-        }
+    }
+    if (borrador) {
+        return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
@@ -68,6 +93,27 @@ Entrada Interfaz::leer_entrada() {
     entrada.dir_x = static_cast<int8_t>(dir_x);
     entrada.dir_y = static_cast<int8_t>(dir_y);
     return entrada;
+}
+
+void Interfaz::leer_chat(const SDL_Event& evento, Entrada& entrada) {
+    if (evento.type == SDL_TEXTINPUT &&
+        borrador->size() + std::strlen(evento.text.text) <= MAX_CHAT_LENGTH) {
+        borrador->append(evento.text.text);
+    }
+    if (evento.type != SDL_KEYDOWN) {
+        return;
+    }
+    SDL_Keycode tecla = evento.key.keysym.sym;
+    if (tecla == SDLK_BACKSPACE) {
+        borrar_ultima_letra(*borrador);
+    } else if (tecla == SDLK_RETURN) {
+        if (!borrador->empty()) {
+            entrada.mensaje_chat = *borrador;
+        }
+        borrador.reset();
+    } else if (tecla == SDLK_ESCAPE) {
+        borrador.reset();
+    }
 }
 
 void Interfaz::alternar_pantalla_completa() {
@@ -182,6 +228,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
     renderer.Present();
 }
 

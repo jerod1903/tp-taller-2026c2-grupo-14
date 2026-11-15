@@ -148,6 +148,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvPlayerInfo();
         case GameMsg::InventoryState:
             return recvInventoryState();
+        case GameMsg::ChatMessage:
+            return recvChatMessage();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -230,6 +232,18 @@ PlayerInfo ClientProtocol::recvPlayerInfo() {
     return info;
 }
 
+
+void ClientProtocol::sendChat(const std::string& texto) {
+    ensure(sendGameOp(GameOp::Chat) && baseProtocol.send_string(texto));
+}
+
+ChatMessage ClientProtocol::recvChatMessage() {
+    ChatMessage mensaje{};
+    mensaje.kind = static_cast<ChatKind>(ensure(baseProtocol.recv_u8()));
+    mensaje.from = ensure(baseProtocol.recv_string());
+    mensaje.text = ensure(baseProtocol.recv_string());
+    return mensaje;
+}
 
 InventoryState ClientProtocol::recvInventoryState() {
     InventoryState inventory{};

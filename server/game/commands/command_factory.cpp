@@ -2,6 +2,7 @@
 #include "server/game/commands/select_slot_command.h"
 #include <optional>
 
+#include "server/game/commands/chat_command.h"
 #include "server/game/commands/move_command.h"
 
 namespace {
@@ -33,6 +34,7 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
         builders{
                 {GameOp::Move, with_payload<MoveCommand>(&ServerProtocol::recv_move)},
                 {GameOp::SelectSlot, with_payload<SelectSlotCommand>(&ServerProtocol::recv_select_slot)},
+                {GameOp::Chat, with_payload<ChatCommand>(&ServerProtocol::recv_chat)},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

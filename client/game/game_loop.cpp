@@ -56,6 +56,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.slot_seleccionado) {
         enviador.seleccionar_slot(*entrada.slot_seleccionado);
     }
+    if (entrada.mensaje_chat) {
+        enviador.enviar_chat(*entrada.mensaje_chat);
+    }
 }
 
 void GameLoop::procesar_mensajes() {
@@ -70,8 +73,13 @@ void GameLoop::procesar_mensajes() {
             estado.tick = snapshot->tick;
         } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
             estado.info_jugadores.insert_or_assign(info->playerId, *info);
-        }else if (const auto* inv = std::get_if<InventoryState>(&*mensaje)) {
+        } else if (const auto* inv = std::get_if<InventoryState>(&*mensaje)) {
             estado.inventario = *inv;
+        } else if (const auto* chat = std::get_if<ChatMessage>(&*mensaje)) {
+            estado.chat.push_back(MensajeChat{*chat, std::chrono::steady_clock::now()});
+            if (estado.chat.size() > MAX_MENSAJES_GUARDADOS) {
+                estado.chat.erase(estado.chat.begin());
+            }
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;

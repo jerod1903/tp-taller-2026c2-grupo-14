@@ -8,6 +8,8 @@
 
 inline const char* const CARPETA_ASSETS = "Assets/";
 
+inline const char* const RUTA_FUENTE = "Assets/Fonts/PixelifySans.ttf";
+
 inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
 

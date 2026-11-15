@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 
 #include "server/game/characters/player.h"
 #include "server/game/outbox.h"
@@ -21,6 +23,10 @@ public:
        
     // Enviar un mensaje directo a la outbox de un jugador específico.
     virtual void send_to(uint32_t player_id, const GameMessage& message) = 0;
+    // Manda el mensaje a todos los jugadores conectados a la partida.
+    virtual void broadcast(const GameMessage& message) = 0;
+    // El id del jugador conectado cuyo personaje se llama así; nullopt si no hay ninguno.
+    virtual std::optional<uint32_t> find_player_by_name(const std::string& character_name) = 0;
     
     virtual ~GameContext() = default;
 };

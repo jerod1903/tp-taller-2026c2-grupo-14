@@ -4,6 +4,7 @@ target_sources(taller_server
     main.cpp
     server.cpp
     game/game.cpp
+    game/commands/chat_command.cpp
     game/commands/command_factory.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
@@ -43,6 +44,7 @@ target_sources(taller_server
     game/game_event.h
     game/game.h
     game/outbox.h
+    game/commands/chat_command.h
     game/commands/command_factory.h
     game/commands/game_command.h
     game/commands/game_context.h
