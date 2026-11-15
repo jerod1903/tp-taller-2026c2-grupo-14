@@ -18,6 +18,8 @@
 #include "client/gui/sprites/constructor_capas.h"
 #include "client/gui/calculadores/calculador_camara.h"
 #include "client/gui/sprites/capa.h"
+#include "client/gui/chat/fuente.h"
+#include "client/gui/chat/panel_chat.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/mapa/mapa.h"
@@ -34,6 +36,7 @@ private:
                               std::chrono::steady_clock::time_point ahora);
     void vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
                 bool recien_creado);
+    void leer_chat(const SDL_Event& evento, Entrada& entrada);
     void ajustar_lienzo();
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
@@ -61,6 +64,9 @@ private:
     std::string mundo_del_mapa;
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
     BarraInventario barra;
+    Fuente fuente;
+    PanelChat panel_chat;
+    std::optional<std::string> borrador;
     std::set<uint32_t> vestidos;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;

@@ -2,7 +2,9 @@
 #define FAKE_GAME_CONTEXT_H
 
 #include <cstdint>
+#include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,6 +37,21 @@ public:
     void send_to(uint32_t player_id, const GameMessage& message) override {
         sent.emplace_back(player_id, message);
     }
+
+    void broadcast(const GameMessage& message) override { broadcasted.push_back(message); }
+
+    std::optional<uint32_t> find_player_by_name(const std::string& character_name) override {
+        auto found = connected.find(character_name);
+        if (found == connected.end()) {
+            return std::nullopt;
+        }
+        return found->second;
+    }
+
+    // Lo que los comandos le mandaron a todos, en orden.
+    std::vector<GameMessage> broadcasted;
+    // Nombre de personaje -> id de los jugadores conectados. El propio se llama "jero".
+    std::map<std::string, uint32_t> connected{{"jero", PLAYER_ID}};
 
     // Lo que los comandos le mandaron a cada jugador, en orden.
     std::vector<std::pair<uint32_t, GameMessage>> sent;

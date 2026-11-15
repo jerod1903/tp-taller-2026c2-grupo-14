@@ -2,6 +2,7 @@
 #define CLIENT_CONSTANTS_H
 
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <utility>
@@ -28,6 +29,26 @@ inline constexpr int CANALES_AUDIO = 16;
 inline constexpr int TAMANO_BUFFER_AUDIO = 1024;
 inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
 inline const char* const FUNCION_INICIO_AUDIO = "SDL_InitSubSystem";
+
+inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;
+
+inline constexpr int TAMANO_FUENTE_CHAT = 16;
+inline constexpr std::size_t MAX_LINEAS_CHAT = 6;
+inline const std::chrono::seconds DURACION_MENSAJE_CHAT(10);
+inline constexpr int PORCENTAJE_ANCHO_CHAT = 45;
+inline constexpr int MARGEN_CHAT = 12;
+inline constexpr int DISTANCIA_CHAT_ABAJO = 90;
+inline constexpr int RELLENO_CHAT = 4;
+inline const char* const PROMPT_CHAT = "> ";
+inline const char* const CURSOR_CHAT = "_";
+inline const char* const MARCA_PRIVADO = " (privado)";
+inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
+inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
+inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
+        {ChatKind::Public, {255, 255, 255, 255}},
+        {ChatKind::Private, {255, 150, 200, 255}},
+        {ChatKind::System, {170, 170, 170, 255}},
+};
 
 inline const int ANCHO_VENTANA = 800;
 inline const int ALTO_VENTANA = 600;

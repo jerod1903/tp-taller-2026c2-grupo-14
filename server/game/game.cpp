@@ -148,6 +148,21 @@ void Game::send_to(uint32_t player_id, const GameMessage& message) {
 }
 
 
+void Game::broadcast(const GameMessage& message) {
+    for (const auto& [player_id, player]: players) {
+        send(*player.outbox, message);
+    }
+}
+
+std::optional<uint32_t> Game::find_player_by_name(const std::string& character_name) {
+    for (const auto& [player_id, player]: players) {
+        if (player.info.characterName == character_name) {
+            return player_id;
+        }
+    }
+    return std::nullopt;
+}
+
 void Game::remove(uint32_t player_id) {
     auto player = players.find(player_id);
     if (player != players.end()) {

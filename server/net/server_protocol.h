@@ -36,12 +36,14 @@ public:
     std::optional<GameOp> recv_game_op();
     std::optional<MoveRequest> recv_move();
     std::optional<SelectSlotRequest> recv_select_slot();
+    std::optional<ChatRequest> recv_chat();
 
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);
     bool send_game_ended(const GameEnded& ended);
     bool send_player_info(const PlayerInfo& info);
     bool send_inventory_state(const InventoryState& inventory);
+    bool send_chat_message(const ChatMessage& message);
     bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
 
     void shutdown();

@@ -139,6 +139,13 @@ std::optional<SelectSlotRequest> ServerProtocol::recv_select_slot() {
 }
 
 
+std::optional<ChatRequest> ServerProtocol::recv_chat() {
+    std::optional<std::string> text = baseProtocol.recv_string();
+    if (!text)
+        return std::nullopt;
+    return ChatRequest{std::move(*text)};
+}
+
 bool ServerProtocol::send_location_data(const LocationData& location) {
     return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId);
 }
@@ -186,6 +193,12 @@ bool ServerProtocol::send_inventory_state(const InventoryState& inventory) {
                        });
 }
 
+
+bool ServerProtocol::send_chat_message(const ChatMessage& message) {
+    return send_game_msg(GameMsg::ChatMessage) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(message.kind)) &&
+           baseProtocol.send_string(message.from) && baseProtocol.send_string(message.text);
+}
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
     return send_game_msg(GameMsg::GameEnded) &&

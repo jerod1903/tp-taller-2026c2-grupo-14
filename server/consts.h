@@ -48,6 +48,11 @@ public:
     static constexpr float ANIMAL_MAX_WALK = 3.0f;
     // Mensajes pendientes por jugador; con la outbox llena se descartan snapshots.
     static constexpr unsigned int OUTBOX_SIZE = 64;
+
+    // Chat: "@nombre texto" es un mensaje privado para ese personaje.
+    static constexpr char PRIVATE_CHAT_PREFIX = '@';
+    // Aviso al que mando un privado a alguien que no esta: "<nombre> no está conectado".
+    static constexpr const char* NOT_CONNECTED = " no está conectado";
 };
 
 #endif  // SERVER_CONSTANTS_H

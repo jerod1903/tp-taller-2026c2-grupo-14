@@ -25,6 +25,8 @@ public:
                     std::shared_ptr<Outbox> outbox) override;
     void remove_player(uint32_t player_id) override;
     void send_to(uint32_t player_id, const GameMessage& message) override;
+    void broadcast(const GameMessage& message) override;
+    std::optional<uint32_t> find_player_by_name(const std::string& character_name) override;
 
     void start() override;
     void run() override;
