@@ -10,6 +10,7 @@ target_sources(taller_server
     game/commands/leave_command.cpp
     game/commands/move_command.cpp
     game/game_registry.cpp
+    game/sessions.cpp
     game/snapshot_builder.cpp
     game/characters/animals/animal.cpp
     game/characters/creature.cpp
@@ -53,6 +54,7 @@ target_sources(taller_server
     game/commands/player_movement.h
     game/commands/player_sessions.h
     game/game_registry.h
+    game/sessions.h
     game/snapshot_builder.h
     game/characters/animals/animal.h
     game/characters/creature.h
