@@ -2,6 +2,7 @@
 #define MAPA_H
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -11,10 +12,13 @@
 
 #include "sprite.h"
 
-// Con qué imagen se dibuja un tipo de tile: la textura y la casilla (columna, fila) dentro de ella
+// Con qué imagen se dibuja un tipo de tile: la textura, el recorte (de una casilla de ancho, a
+// veces menos de alto) y el tile que va debajo si tiene partes transparentes
 struct TileGrafico {
     SDL2pp::Texture& textura;
-    SDL2pp::Point casilla;
+    SDL2pp::Rect origen;
+    std::optional<stardew::maps::TileType> debajo;
+    bool espejado;
 };
 
 // Con qué imagen se dibuja un elemento del mapa (cabaña, NPC, ...). Se escala al ancho del
@@ -23,6 +27,7 @@ struct ElementoGrafico {
     SDL2pp::Texture& textura;
     SDL2pp::Rect origen;
     bool es_suelo;
+    bool espejado;
 };
 
 // Dibuja el mapa base (los tiles y los elementos fijos) del mundo que indica el servidor. Lo que
@@ -30,19 +35,26 @@ struct ElementoGrafico {
 // tileset: la Interfaz escala el resultado a la ventana
 class Mapa {
 public:
-    Mapa(SDL2pp::Renderer& renderer, const std::string& world_id);
+    // max_jugadores: el ala este de la cabaña tiene una cama por jugador
+    Mapa(SDL2pp::Renderer& renderer, const std::string& world_id, int max_jugadores);
     // graficos guarda referencias a las hojas de este mismo objeto: no se copia ni se mueve
     Mapa(const Mapa&) = delete;
     Mapa& operator=(const Mapa&) = delete;
     Mapa(Mapa&&) = delete;
     Mapa& operator=(Mapa&&) = delete;
-    // Elige el area a dibujar. Si el mundo no la tiene (p. ej. el interior de la cabaña, que lo
-    // arma el servidor) no se dibuja nada
+    // Elige el area a dibujar. Si no existe no se dibuja nada
     void mostrar_area(const std::string& area_id);
     // Los tiles y los elementos de suelo que entran en la camara
     void dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara);
+    // Un tile en la casilla (columna, fila), con lo que va debajo
+    void dibujar_tile(SDL2pp::Renderer& renderer, stardew::maps::TileType tipo, int columna,
+                      int fila, const SDL2pp::Rect& camara);
     // Las estructuras y NPCs del area: la Interfaz los dibuja junto con los personajes
     const std::vector<Sprite>& elementos() const;
+    // Un elemento que no esta en el mapa (como una cama), con su esquina de arriba a la izquierda
+    // en la casilla (x, y). Vacio si el tipo no tiene dibujo
+    std::optional<Sprite> sprite_elemento(stardew::maps::ElementType tipo, int x, int y, int ancho,
+                                          int alto) const;
     // Del area que se esta mostrando
     int ancho_px() const;
     int alto_px() const;
@@ -56,12 +68,15 @@ private:
     };
     // Carga una sola vez cada imagen que nombra la tabla de common/map/MapSprites.h
     static std::map<std::string, SDL2pp::Texture> cargar_hojas(SDL2pp::Renderer& renderer);
-    // Que textura y casilla usa cada tipo de tile, segun TILE_SPRITES. Con las hojas ya cargadas
+    // Que textura y recorte usa cada tipo de tile, segun TILE_SPRITES. Con las hojas ya cargadas
     std::map<stardew::maps::TileType, TileGrafico> armar_graficos();
     // Que textura y recorte usa cada tipo de elemento, segun ELEMENT_SPRITES
     std::map<stardew::maps::ElementType, ElementoGrafico> armar_graficos_elementos();
-    // Carga maps/<world_id>.toml y devuelve los tiles y elementos de cada area, por id
-    std::map<std::string, Area> cargar_areas(const std::string& world_id) const;
+    // Carga maps/<world_id>.toml y el interior de la cabaña, y devuelve los tiles y elementos de
+    // cada area, por id
+    std::map<std::string, Area> cargar_areas(const std::string& world_id, int max_jugadores) const;
+    void agregar_areas(stardew::maps::MapDefinition definicion,
+                       std::map<std::string, Area>& cargadas) const;
     // Ruta de la tabla (relativa a Assets/) -> su imagen
     std::map<std::string, SDL2pp::Texture> hojas;
     std::map<stardew::maps::TileType, TileGrafico> graficos;

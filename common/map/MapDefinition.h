@@ -7,15 +7,12 @@
 
 namespace stardew::maps {
 
-// Los *Area son los interiores de los edificios; se diseñan en el editor como cualquier otra area.
 enum class AreaType { Farm, Village, DungeonLevel, CabinArea, MarketArea, CommunityCenterArea };
 
 enum class ElementType {
     Cabin,
-    // La cama de un jugador: la pone el servidor en un tile sleepable cuando entra. Se dibuja en
-    // dos partes, asi la frazada tapa al que se para encima
     Bed,
-    BedBlanket,
+    BedBlanket,  // La cama se divide en dos elementos para dar ilusión de profundidad.
     Market,
     CommunityCenter,
     DungeonEntrance,
@@ -60,12 +57,7 @@ enum class TileType {
     CaveWall,
     WoodFloor,
     Sand,
-    Sleepable,  // donde va la cama de un jugador: se camina hasta que aparece la cama
-    // Interiores (common/map/InteriorWalls.h arma las paredes alrededor del piso): HouseFloor es
-    // el piso; la pared del fondo va de arriba a abajo con WallTop, WallUpper, Wall y WallBase; a
-    // los costados WallLeft y WallRight, abajo WallBottom con sus esquinas, donde el zocalo dobla
-    // hacia un pasillo de entrada CorridorLeft y CorridorRight. WallDivider separa dos cuartos
-    // contiguos y afuera va Void, negro
+    Sleepable,  // donde va la cama de un jugador: se camina hasta que aparece la cama.
     HouseFloor,
     WallTop,
     WallUpper,

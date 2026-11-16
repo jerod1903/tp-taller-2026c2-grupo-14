@@ -1,6 +1,7 @@
 #include "interfaz.h"
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
@@ -11,6 +12,7 @@
 
 #include "client/config/client_config.h"
 #include "client/constants.h"
+#include "common/map/CabinInterior.h"
 
 #include "rutas.h"
 
@@ -75,7 +77,7 @@ void Interfaz::alternar_pantalla_completa() {
 
 void Interfaz::actualizar_mapa(const EstadoJuego& estado) {
     if (estado.mundo && (!mapa || *estado.mundo != mundo_del_mapa)) {
-        mapa.emplace(renderer, *estado.mundo);
+        mapa.emplace(renderer, *estado.mundo, estado.max_jugadores);
         mundo_del_mapa = *estado.mundo;
     }
 }
@@ -152,11 +154,16 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
     }
 }
 
-void Interfaz::ajustar_lienzo() {
+void Interfaz::ajustar_lienzo(int ancho_area, int alto_area) {
     SDL2pp::Point salida = renderer.GetOutputSize();
     // Escala entera, para que todos los pixeles midan lo mismo, y elegida para que se vea mas o
     // menos la misma porcion del mundo en cualquier tamaño de ventana
     escala = std::max(1, salida.y / client_config().ventana.alto_mundo_visible);
+    // Con esta escala lo que se ve no es mas grande que el area: no quedan bordes negros
+    if (ancho_area > 0 && alto_area > 0) {
+        escala = std::max({escala, (salida.x + ancho_area - 1) / ancho_area,
+                           (salida.y + alto_area - 1) / alto_area});
+    }
     int ancho = std::max(1, (salida.x + escala - 1) / escala);
     int alto = std::max(1, (salida.y + escala - 1) / escala);
     if (!lienzo || lienzo->GetWidth() != ancho || lienzo->GetHeight() != alto) {
@@ -170,13 +177,20 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     auto ahora = std::chrono::steady_clock::now();
     actualizar_mapa(estado);
     actualizar_entidades(estado, ahora);
+    camas.clear();
+    std::copy_if(estado.entidades.begin(), estado.entidades.end(), std::back_inserter(camas),
+                 [](const EntityState& entidad) { return entidad.type == EntityType::Bed; });
     actualizar_sonidos(estado, ahora);
-    ajustar_lienzo();
+    // Sin personaje propio no se sabe que area mostrar
+    auto propio = entidades.find({EntityType::Player, estado.id_propio});
+    bool hay_area = mapa && propio != entidades.end();
+    if (hay_area) {
+        mapa->mostrar_area(propio->second.area());
+    }
+    ajustar_lienzo(hay_area ? mapa->ancho_px() : 0, hay_area ? mapa->alto_px() : 0);
     renderer.SetTarget(*lienzo);
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
-    // Sin personaje propio no se sabe que area mostrar
-    auto propio = entidades.find({EntityType::Player, estado.id_propio});
     if (propio != entidades.end()) {
         dibujar_area(propio->second);
     }
@@ -189,9 +203,6 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     const std::string& area = propio.area();
-    if (mapa) {
-        mapa->mostrar_area(area);
-    }
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
     SDL2pp::Rect camara = calculador_camara.calcular(propio.centro(), ancho_mapa, alto_mapa);
@@ -199,6 +210,26 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);
         sprites = mapa->elementos();
+    }
+    // La cabecera apoya en el medio de la cama y la frazada abajo: el que se para encima queda
+    // delante de la cabecera y detras de la frazada, que lo tapa
+    for (const EntityState& cama: camas) {
+        if (!mapa || cama.areaId != area) {
+            continue;
+        }
+        namespace maps = stardew::maps;
+        int x = static_cast<int>(cama.x / POSITION_SCALE);
+        int y = static_cast<int>(cama.y / POSITION_SCALE);
+        int alto_frazada = maps::BED_HEIGHT - maps::BED_HEAD_HEIGHT;
+        for (std::optional<Sprite> parte:
+             {mapa->sprite_elemento(maps::ElementType::Bed, x, y, maps::BED_WIDTH,
+                                    maps::BED_HEAD_HEIGHT),
+              mapa->sprite_elemento(maps::ElementType::BedBlanket, x, y + maps::BED_HEAD_HEIGHT,
+                                    maps::BED_WIDTH, alto_frazada)}) {
+            if (parte) {
+                sprites.push_back(*parte);
+            }
+        }
     }
     // Solo los que estan en la misma area que este jugador. Las capas de cada uno van juntas y en
     // orden: tienen la misma base, asi que el orden estable las deja una encima de la otra

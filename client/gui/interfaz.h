@@ -11,13 +11,15 @@
 #include <vector>
 
 #include <SDL2pp/SDL2pp.hh>
+
 #include "client/audio/reproductor_sonidos.h"
 #include "client/game/entrada.h"
 #include "client/game/estado_juego.h"
 #include "common/game_dto.h"
-#include "constructor_capas.h"
+
 #include "calculador_camara.h"
 #include "capa.h"
+#include "constructor_capas.h"
 #include "entidad_grafica.h"
 #include "mapa.h"
 
@@ -40,8 +42,9 @@ private:
     void vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
                 bool recien_creado);
     // El mundo se dibuja en pixeles del tileset sobre el lienzo, que despues se estira a la
-    // ventana. Se rehace si cambia el tamaño de la ventana
-    void ajustar_lienzo();
+    // ventana. Se rehace si cambia el tamaño de la ventana o si el area que se muestra es mas chica
+    // que la vista (como la cabaña): ahi se acerca hasta que la llene. 0 si no hay area
+    void ajustar_lienzo(int ancho_area, int alto_area);
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     // Dibuja el area donde esta `propio`, con la camara siguiendolo
@@ -72,6 +75,8 @@ private:
     std::string mundo_del_mapa;  // el worldId con el que se armo mapa
     // (tipo, id) -> su dibujo: los ids solo son unicos dentro de cada tipo
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
+    // Las camas de los jugadores que ya entraron: no se animan, se dibujan como un elemento
+    std::vector<EntityState> camas;
     // Los jugadores que ya se dibujan con su apariencia
     std::set<uint32_t> vestidos;
     // Para los sonidos: el jugador propio en el ultimo Snapshot, para compararlo con el siguiente
