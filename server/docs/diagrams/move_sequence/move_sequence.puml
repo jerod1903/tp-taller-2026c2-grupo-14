@@ -1,0 +1,17 @@
+@startuml move_sequence
+participant Cliente as C
+participant Receiver as R
+queue Inbox as I
+participant Game as G
+participant Movement as M
+
+C -> R : GameOp::Move (dirX, dirY)
+R -> R : CommandFactory crea MoveCommand
+R -> I : push
+== próximo tick ==
+G -> I : try_pop
+G -> G : MoveCommand::execute(*this)
+G -> G : movement(): el Movement del World
+G -> M : move_player(player_id, dir)
+M -> M : busca al jugador y le fija la dirección
+@enduml
