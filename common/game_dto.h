@@ -10,7 +10,8 @@
 // Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
     Move = 0x01,
-    LeaveGame = 0x02,  // sin payload
+    LeaveGame = 0x02,    // sin payload
+    EnterPortal = 0x03,  // sin payload
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.

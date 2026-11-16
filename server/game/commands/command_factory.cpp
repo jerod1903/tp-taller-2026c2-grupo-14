@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "server/game/commands/enter_portal_command.h"
 #include "server/game/commands/move_command.h"
 
 namespace {
@@ -32,6 +33,7 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
         protocol(protocol),
         builders{
                 {GameOp::Move, with_payload<MoveCommand>(&ServerProtocol::recv_move)},
+                {GameOp::EnterPortal, without_payload<EnterPortalCommand>()},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

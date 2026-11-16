@@ -5,10 +5,18 @@
 #include <utility>
 #include <vector>
 
+namespace {
+// Cuánto por debajo del centro de la puerta se sale: más cerca, el dibujo de la cabaña lo tapa
+constexpr float EXIT_DISTANCE = 1.5f;
+}  // namespace
+
 Farm::Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin):
         Location(std::move(name), std::move(grid)), cabin_pos(cabin_pos), cabin(std::move(cabin)) {
-    add_portal(Portal{cabin_pos, this->cabin.get(), this->cabin->get_door_pos()});
-    this->cabin->add_portal(Portal{this->cabin->get_door_pos(), this, cabin_pos});
+    add_portal(Portal{cabin_pos, this->cabin.get(), center_of(this->cabin->get_door_pos()),
+                      PortalTrigger::Action});
+    Point door = center_of(cabin_pos);
+    this->cabin->add_portal(Portal{this->cabin->get_door_pos(), this,
+                                   Point{door.x, door.y + EXIT_DISTANCE}, PortalTrigger::Action});
 }
 
 const Position& Farm::get_cabin_pos() const { return cabin_pos; }

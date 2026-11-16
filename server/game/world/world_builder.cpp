@@ -39,13 +39,8 @@ Position cabin_door(const maps::MapElement& cabin) {
     return Position{door.x, door.y};
 }
 
-std::set<std::string> trigger_ids(const maps::MapDefinition& map) {
-    std::set<std::string> ids;
-    for (const maps::MapTransition& transition: map.transitions) {
-        ids.insert(transition.triggerElementId);
-    }
-    return ids;
-}
+// Los portones de los pasajes se cruzan caminando; la mina, sus escaleras y salidas, con la tecla
+bool is_passage(const maps::MapElement& trigger) { return trigger.type == maps::ElementType::Door; }
 
 const maps::MapArea& area_of_type(const maps::MapDefinition& map, maps::AreaType type) {
     auto area = std::find_if(map.areas.begin(), map.areas.end(),
@@ -74,8 +69,19 @@ Location* location_by_id(const LocationsById& locations, const std::string& id) 
     return location->second;
 }
 
+std::set<std::string> passage_ids(const maps::MapDefinition& map) {
+    std::set<std::string> ids;
+    for (const maps::MapTransition& transition: map.transitions) {
+        if (is_passage(element_by_id(map, transition.triggerElementId))) {
+            ids.insert(transition.triggerElementId);
+        }
+    }
+    return ids;
+}
+
 // El terreno decide qué se camina; además, las estructuras y los NPCs tapan sus celdas salvo
-// las de los elementos de `passable`, que hay que pisar para viajar.
+// las de los elementos de `passable`, que hay que pisar para viajar. Las puertas que se usan con
+// la tecla, como la de la cabaña, también se tapan: se usan desde al lado.
 Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area,
                 const std::set<std::string>& passable) {
     std::vector<Tile> tiles;
@@ -89,11 +95,8 @@ Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area,
             continue;
         }
         for (const Position& cell: cells_of(element)) {
-            bool is_door = element.type == maps::ElementType::Cabin && cell == cabin_door(element);
-            if (!is_door) {
-                Tile& tile = tiles.at(cell.y * area.width + cell.x);
-                tile = Tile(tile.get_type(), false);
-            }
+            Tile& tile = tiles.at(cell.y * area.width + cell.x);
+            tile = Tile(tile.get_type(), false);
         }
     }
     return Grid(area.width, area.height, std::move(tiles));
@@ -140,7 +143,7 @@ Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area
 }
 
 std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::MapArea& area,
-                                 const std::set<std::string>& triggers,
+                                 const std::set<std::string>& passages,
                                  std::unique_ptr<Cabin> cabin_interior) {
     auto cabin = std::find_if(
             map.elements.begin(), map.elements.end(), [&area](const maps::MapElement& element) {
@@ -149,13 +152,13 @@ std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::Map
     if (cabin == map.elements.end()) {
         throw std::invalid_argument("la granja no tiene cabaña");
     }
-    return std::make_unique<Farm>(area.id, build_grid(map, area, triggers), cabin_door(*cabin),
+    return std::make_unique<Farm>(area.id, build_grid(map, area, passages), cabin_door(*cabin),
                                   std::move(cabin_interior));
 }
 
 // Los niveles se ordenan por su número: el nivel 1 es la entrada, sin importar el orden del
 // archivo.
-Dungeon build_dungeon(const maps::MapDefinition& map, const std::set<std::string>& triggers,
+Dungeon build_dungeon(const maps::MapDefinition& map, const std::set<std::string>& passages,
                       LocationsById& locations) {
     std::vector<const maps::MapArea*> level_areas;
     for (const maps::MapArea& area: map.areas) {
@@ -171,7 +174,7 @@ Dungeon build_dungeon(const maps::MapDefinition& map, const std::set<std::string
     for (const maps::MapArea* level_area: level_areas) {
         int depth = static_cast<int>(levels.size());
         levels.push_back(std::make_unique<DungeonLevel>(
-                level_area->id, build_grid(map, *level_area, triggers), depth));
+                level_area->id, build_grid(map, *level_area, passages), depth));
         locations[level_area->id] = levels.back().get();
     }
     return Dungeon(std::move(levels));
@@ -182,9 +185,11 @@ void add_portals(const maps::MapDefinition& map, const LocationsById& locations)
     for (const maps::MapTransition& transition: map.transitions) {
         Location* from = location_by_id(locations, transition.fromAreaId);
         Location* to = location_by_id(locations, transition.toAreaId);
-        Position arrival{transition.targetX, transition.targetY};
-        for (const Position& cell: cells_of(element_by_id(map, transition.triggerElementId))) {
-            from->add_portal(Portal{cell, to, arrival});
+        Point arrival = center_of(Position{transition.targetX, transition.targetY});
+        const maps::MapElement& trigger = element_by_id(map, transition.triggerElementId);
+        PortalTrigger kind = is_passage(trigger) ? PortalTrigger::Step : PortalTrigger::Action;
+        for (const Position& cell: cells_of(trigger)) {
+            from->add_portal(Portal{cell, to, arrival, kind});
         }
     }
 }
@@ -211,13 +216,13 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     const maps::MapArea& town_area = area_of_type(map, maps::AreaType::Village);
     std::unique_ptr<Cabin> cabin = build_cabin(cabin_interior());
     reject_cabin_id(map, cabin->get_name());
-    std::set<std::string> triggers = trigger_ids(map);
+    std::set<std::string> passages = passage_ids(map);
 
-    std::unique_ptr<Farm> farm = build_farm(map, farm_area, triggers, std::move(cabin));
+    std::unique_ptr<Farm> farm = build_farm(map, farm_area, passages, std::move(cabin));
     std::unique_ptr<Town> town =
-            std::make_unique<Town>(town_area.id, build_grid(map, town_area, triggers));
+            std::make_unique<Town>(town_area.id, build_grid(map, town_area, passages));
     LocationsById locations{{farm_area.id, farm.get()}, {town_area.id, town.get()}};
-    Dungeon dungeon = build_dungeon(map, triggers, locations);
+    Dungeon dungeon = build_dungeon(map, passages, locations);
 
     // Los portales van al final: apuntan a Locations que tienen que existir.
     add_portals(map, locations);

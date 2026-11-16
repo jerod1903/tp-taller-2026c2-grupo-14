@@ -22,8 +22,9 @@ public:
     std::optional<EndReason> ejecutar();
 
 private:
-    // Manda Move solo si cambio la direccion, y LeaveGame si el usuario sale. Despues de salir
-    // ya no manda nada: solo se espera el GameEnded, para que la conexion vuelva al lobby
+    // Manda Move solo si cambio la direccion, EnterPortal al apretar X y LeaveGame si el usuario
+    // sale. Despues de salir ya no manda nada: solo se espera el GameEnded, para que la conexion
+    // vuelva al lobby
     void procesar_entrada(const Entrada& entrada);
     // Vacia lo que dejo el Recibidor y actualiza el estado
     void procesar_mensajes();

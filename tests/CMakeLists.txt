@@ -56,6 +56,7 @@ target_sources(taller_tests
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
+    ../server/game/commands/enter_portal_command.cpp
     ../server/game/commands/move_command.cpp
     ../server/lobby/lobby_session.cpp
     ../server/net/receiver.cpp

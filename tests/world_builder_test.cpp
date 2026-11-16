@@ -102,9 +102,10 @@ TEST_F(WorldBuilderTest, StructuresAndNpcsBlockTheirCells) {
     EXPECT_TRUE(town().is_walkable(Position{2, 0}));
 }
 
-TEST_F(WorldBuilderTest, TriggersOfTransitionsStayWalkable) {
-    EXPECT_TRUE(town().is_walkable(Position{5, 0}));
-    EXPECT_TRUE(level(0).is_walkable(Position{1, 0}));
+TEST_F(WorldBuilderTest, PassagesStayWalkableButDoorsBlock) {
+    EXPECT_TRUE(farm().is_walkable(Position{5, 4}));
+    EXPECT_FALSE(town().is_walkable(Position{5, 0}));
+    EXPECT_FALSE(level(0).is_walkable(Position{1, 0}));
 }
 
 TEST_F(WorldBuilderTest, TransitionIsAPortalOnEveryCellOfItsTrigger) {
@@ -112,7 +113,7 @@ TEST_F(WorldBuilderTest, TransitionIsAPortalOnEveryCellOfItsTrigger) {
         std::optional<Portal> portal = level(0).portal_at(stairs);
         ASSERT_TRUE(portal.has_value());
         EXPECT_EQ(portal->target, &level(1));
-        EXPECT_EQ(portal->arrival, (Position{0, 0}));
+        EXPECT_EQ(cell_of(portal->arrival), (Position{0, 0}));
     }
 }
 
@@ -120,14 +121,14 @@ TEST_F(WorldBuilderTest, EveryLevelExitLeadsToTheTown) {
     std::optional<Portal> portal = level(Dungeon::LEVEL_COUNT - 1).portal_at(Position{0, 0});
     ASSERT_TRUE(portal.has_value());
     EXPECT_EQ(portal->target, &town());
-    EXPECT_EQ(portal->arrival, (Position{5, 1}));
+    EXPECT_EQ(cell_of(portal->arrival), (Position{5, 1}));
     EXPECT_EQ(town().portal_at(Position{5, 0})->target, &level(0));
 }
 
-TEST_F(WorldBuilderTest, CabinBlocksItsCellsExceptTheDoor) {
+TEST_F(WorldBuilderTest, CabinBlocksAllItsCells) {
     EXPECT_FALSE(farm().is_walkable(Position{1, 1}));
     EXPECT_FALSE(farm().is_walkable(Position{3, 2}));
-    EXPECT_TRUE(farm().is_walkable(Position{2, 2}));
+    EXPECT_FALSE(farm().is_walkable(Position{2, 2}));
     EXPECT_EQ(farm().get_cabin_pos(), (Position{2, 2}));
 }
 
@@ -136,7 +137,7 @@ TEST_F(WorldBuilderTest, CabinDoorLeadsToTheInteriorAndBack) {
     ASSERT_TRUE(in.has_value());
     Cabin& cabin = farm().get_cabin();
     EXPECT_EQ(in->target, &cabin);
-    EXPECT_EQ(in->arrival, cabin.get_door_pos());
+    EXPECT_EQ(cell_of(in->arrival), cabin.get_door_pos());
     EXPECT_EQ(cabin.portal_at(cabin.get_door_pos())->target, &farm());
 }
 

@@ -15,4 +15,6 @@ inline Position cell_of(const Point& point) {
     return Position{static_cast<int>(std::floor(point.x)), static_cast<int>(std::floor(point.y))};
 }
 
+inline Point center_of(const Position& cell) { return Point{cell.x + 0.5f, cell.y + 0.5f}; }
+
 #endif  // POINT_H

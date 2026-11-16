@@ -31,6 +31,8 @@ public:
         }
     }
 
+    void enter_portal(uint32_t player_id) override { entered_portal.push_back(player_id); }
+
     void add_player(uint32_t player_id, const GameMember& member,
                     std::shared_ptr<Outbox> outbox) override {
         added.push_back(Added{player_id, member.characterName, std::move(outbox)});
@@ -42,6 +44,7 @@ public:
     Player player{PLAYER_ID, Position{0, 0}, location, "jero", 10, 1.0f, 0, 0};
     std::vector<Added> added;
     std::vector<uint32_t> removed;
+    std::vector<uint32_t> entered_portal;
 };
 
 #endif  // FAKE_GAME_CONTEXT_H

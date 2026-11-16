@@ -20,6 +20,24 @@ void Movement::move_player(uint32_t player_id, Direction dir) {
     }
 }
 
+void Movement::enter_portal(uint32_t player_id) {
+    auto it = players.find(player_id);
+    if (it == players.end()) {
+        return;
+    }
+    Player& player = *it->second;
+    const Position& here = player.get_position();
+    for (const Position& cell: {here, step(here, Direction::UP), step(here, Direction::DOWN),
+                                step(here, Direction::LEFT), step(here, Direction::RIGHT)}) {
+        std::optional<Portal> portal = player.get_location().portal_at(cell);
+        if (portal && portal->trigger == PortalTrigger::Action) {
+            travel(player, *portal);
+            player.set_direction(Direction::NONE);
+            return;
+        }
+    }
+}
+
 void Movement::travel_through_portals() {
     for (const auto& [player_id, player]: players) {
         // Los portales se disparan al entrar a la celda: el que llega sobre uno no rebota
@@ -27,7 +45,7 @@ void Movement::travel_through_portals() {
             continue;
         }
         std::optional<Portal> portal = player->get_location().portal_at(player->get_position());
-        if (portal) {
+        if (portal && portal->trigger == PortalTrigger::Step) {
             travel(*player, *portal);
         }
     }
@@ -77,5 +95,6 @@ std::optional<Position> Movement::nearest_free_cell(const Location& location,
 }
 
 void Movement::travel(Player& player, const Portal& portal) {
-    player.relocate(*portal.target, portal.arrival);
+    player.relocate(*portal.target, cell_of(portal.arrival));
+    player.place_at(portal.arrival);
 }

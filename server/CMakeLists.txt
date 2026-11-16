@@ -8,6 +8,7 @@ target_sources(taller_server
     game/commands/command_factory.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
+    game/commands/enter_portal_command.cpp
     game/commands/move_command.cpp
     game/game_registry.cpp
     game/sessions.cpp
@@ -50,6 +51,7 @@ target_sources(taller_server
     game/commands/game_context.h
     game/commands/join_command.h
     game/commands/leave_command.h
+    game/commands/enter_portal_command.h
     game/commands/move_command.h
     game/commands/player_movement.h
     game/commands/player_sessions.h

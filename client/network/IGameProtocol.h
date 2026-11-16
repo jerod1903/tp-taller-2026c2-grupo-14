@@ -17,6 +17,8 @@ public:
     // dir_x: -1 izq, 0 quieto, 1 der. dir_y: -1 arriba, 0 quieto, 1 abajo. (0, 0) frena
     virtual void sendMove(int8_t dir_x, int8_t dir_y) = 0;
     virtual void sendLeaveGame() = 0;
+    // Cruza la puerta que el jugador tiene al alcance, si hay una
+    virtual void sendEnterPortal() = 0;
     // Bloquea hasta que llega un mensaje. Si el tag no se conoce tira std::runtime_error.
     virtual ServerGameMessage recvGameMessage() = 0;
     // Corta la conexion: despierta a quien este bloqueado en recvGameMessage

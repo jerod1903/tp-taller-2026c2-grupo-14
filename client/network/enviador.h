@@ -11,6 +11,7 @@ public:
     explicit Enviador(IGameProtocol& protocolo);
     void enviar(const MoveRequest& movimiento);
     void salir();
+    void cruzar_puerta();
 
 private:
     IGameProtocol& protocolo;

@@ -7,3 +7,5 @@ void Enviador::enviar(const MoveRequest& movimiento) {
 }
 
 void Enviador::salir() { protocolo.sendLeaveGame(); }
+
+void Enviador::cruzar_puerta() { protocolo.sendEnterPortal(); }

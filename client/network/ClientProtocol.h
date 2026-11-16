@@ -32,6 +32,7 @@ public:
 
     void sendMove(int8_t dir_x, int8_t dir_y) override;
     void sendLeaveGame() override;
+    void sendEnterPortal() override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;

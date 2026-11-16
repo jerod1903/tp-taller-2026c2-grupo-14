@@ -31,11 +31,11 @@ std::unique_ptr<World> make_world() {
 
 class WorldTest: public ::testing::Test {
 protected:
-    // Deja al jugador al lado de la puerta de la cabaña, mirando hacia ella.
+    // Lo deja caminando al lado de la puerta de la cabaña y la usa.
     void walk_into_the_cabin() {
         player.relocate(farm(), Position{3, 4});
         player.set_direction(Direction::RIGHT);
-        world->update(1.0f);
+        world->get_movement().enter_portal(1);
     }
 
     Farm& farm() { return world->get_farm(); }
@@ -87,22 +87,18 @@ TEST_F(WorldTest, EnteringTheDoorTravelsToTheCabin) {
     EXPECT_EQ(cabin().get_entities().size(), 1u);
 }
 
-TEST_F(WorldTest, StandingOnTheArrivalPortalDoesNotBounce) {
+TEST_F(WorldTest, ArrivingThroughADoorStopsThePlayer) {
     walk_into_the_cabin();
-    player.set_direction(Direction::NONE);
-    world->update(1.0f);
+    EXPECT_EQ(player.get_direction(), Direction::NONE);
     world->update(1.0f);
     EXPECT_EQ(&player.get_location(), &cabin());
 }
 
-TEST_F(WorldTest, SteppingOutAndBackOnTheDoorReturnsToTheFarm) {
+TEST_F(WorldTest, UsingTheCabinDoorReturnsToTheFarm) {
     walk_into_the_cabin();
-    player.set_direction(Direction::RIGHT);
-    world->update(1.0f);
-    player.set_direction(Direction::LEFT);
-    world->update(1.0f);
+    world->get_movement().enter_portal(1);
     EXPECT_EQ(&player.get_location(), &farm());
-    EXPECT_EQ(player.get_position(), CABIN_POS);
+    EXPECT_EQ(player.get_position(), (Position{CABIN_POS.x, CABIN_POS.y + 2}));
 }
 
 }  // namespace

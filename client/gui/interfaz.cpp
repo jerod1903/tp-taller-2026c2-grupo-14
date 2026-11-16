@@ -50,6 +50,9 @@ Entrada Interfaz::leer_entrada() {
         if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_F11 && !evento.key.repeat) {
             alternar_pantalla_completa();
         }
+        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_x && !evento.key.repeat) {
+            entrada.cruzar_puerta = true;
+        }
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},

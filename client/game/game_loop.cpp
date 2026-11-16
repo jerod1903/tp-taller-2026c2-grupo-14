@@ -57,6 +57,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
         ultima_dir_x = entrada.dir_x;
         ultima_dir_y = entrada.dir_y;
     }
+    if (entrada.cruzar_puerta) {
+        enviador.cruzar_puerta();
+    }
 }
 
 void GameLoop::procesar_mensajes() {

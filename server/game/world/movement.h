@@ -27,7 +27,10 @@ public:
 
     void move_player(uint32_t player_id, Direction dir) override;
 
-    // Los que en este tick entraron a la celda de un portal aparecen en su llegada.
+    // Usa la puerta en la que está parado o una de al lado, y llega frenado.
+    void enter_portal(uint32_t player_id) override;
+
+    // Los que en este tick entraron a la celda de un pasaje aparecen en su llegada.
     void travel_through_portals();
 
     // Los que quedaron encerrados (apareció algo donde estaban parados) pasan a la celda libre más

@@ -129,6 +129,8 @@ void ClientProtocol::sendMove(int8_t dir_x, int8_t dir_y) {
 
 void ClientProtocol::sendLeaveGame() { ensure(sendGameOp(GameOp::LeaveGame)); }
 
+void ClientProtocol::sendEnterPortal() { ensure(sendGameOp(GameOp::EnterPortal)); }
+
 ServerGameMessage ClientProtocol::recvGameMessage() {
     auto msg = static_cast<GameMsg>(ensure(baseProtocol.recv_u8()));
     switch (msg) {
