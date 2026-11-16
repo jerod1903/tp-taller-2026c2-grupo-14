@@ -11,6 +11,8 @@ target_sources(taller_common
     map/persistence/MapRequirementsLoader.cpp
     map/persistence/TomlMapFile.cpp
     map/service/MapService.cpp
+    map/CabinInterior.cpp
+    map/InteriorWalls.cpp
     map/validation/MapValidator.cpp
     PUBLIC
     # .h files
@@ -22,6 +24,8 @@ target_sources(taller_common
     logger.h
     lib/queue.h
     lib/thread.h
+    map/CabinInterior.h
+    map/InteriorWalls.h
     map/MapDefinition.h
     map/MapRequirements.h
     map/MapSprites.h
