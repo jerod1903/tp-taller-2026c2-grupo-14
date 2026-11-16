@@ -15,6 +15,7 @@ enum class GameOp : uint8_t {
     SelectSlot = 0x03,
     Chat = 0x04,  // payload: string con el texto tal cual lo escribio el jugador
     Interact = 0x05,  // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
+    Typing = 0x06,    // payload: u8, 1 si abrio el chat y 0 si lo cerro
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -77,7 +78,8 @@ enum class EntityType : uint8_t {
 // Lo que se muestra arriba de la cabeza de una entidad.
 enum class Emote : uint8_t {
     None,
-    Ready,  // una vaca lista para ordeñar
+    CowMilkReady,  // una vaca lista para ordeñar
+    Typing,        // un jugador con el chat abierto
 };
 
 // Algo que se dibuja y se mueve, en un tick. entityId es único dentro de su tipo (una vaca puede
@@ -131,6 +133,14 @@ struct SelectSlotRequest {
     bool operator==(const SelectSlotRequest&) const = default;
 };
 
+
+// Si el jugador tiene el chat abierto. El cliente lo manda solo cuando cambia; los demas le ven
+// el globito de "escribiendo" (Emote::Typing).
+struct TypingRequest {
+    bool typing;
+
+    bool operator==(const TypingRequest&) const = default;
+};
 
 // Largo maximo de un mensaje de chat, en bytes. El servidor corta lo que sobra.
 constexpr std::size_t MAX_CHAT_LENGTH = 80;

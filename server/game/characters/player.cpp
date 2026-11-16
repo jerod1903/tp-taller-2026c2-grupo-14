@@ -25,4 +25,8 @@ void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); 
 
 InventoryState Player::get_inventory_state() const { return inventory.get_state(); }
 
+void Player::set_typing(bool typing) { this->typing = typing; }
+
+bool Player::is_typing() const { return typing; }
+
 uint8_t Player::receive(ItemType item, uint8_t quantity) { return inventory.add(item, quantity); }

@@ -146,6 +146,14 @@ std::optional<ChatRequest> ServerProtocol::recv_chat() {
     return ChatRequest{std::move(*text)};
 }
 
+// Cualquier valor distinto de 0 cuenta como "escribiendo".
+std::optional<TypingRequest> ServerProtocol::recv_typing() {
+    std::optional<uint8_t> typing = baseProtocol.recv_u8();
+    if (!typing)
+        return std::nullopt;
+    return TypingRequest{*typing != 0};
+}
+
 bool ServerProtocol::send_location_data(const LocationData& location) {
     return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId);
 }

@@ -35,6 +35,7 @@ public:
     void sendSelectSlot(uint8_t slot) override;
     void sendChat(const std::string& texto) override;
     void sendInteract() override;
+    void sendTyping(bool escribiendo) override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;

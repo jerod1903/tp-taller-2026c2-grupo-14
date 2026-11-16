@@ -213,7 +213,7 @@ TEST_F(ClientGameProtocolTest, RecvsSnapshotWithItsEntities) {
     ServerProtocol server(std::move(*server_socket));
     const PlayerState player{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
     const EntityState as_entity{7, EntityType::Player, "granja", 14500, 3250, -1, 1};
-    const EntityState chicken{7, EntityType::Cow, "granja", 2000, 1000, 0, 0, Emote::Ready};
+    const EntityState chicken{7, EntityType::Cow, "granja", 2000, 1000, 0, 0, Emote::CowMilkReady};
     ASSERT_TRUE(server.send_snapshot(Snapshot{3, {player}, {as_entity, chicken}}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
@@ -284,4 +284,14 @@ TEST_F(ClientGameProtocolTest, SendInteractSendsOnlyTheTag) {
     client->shutdown();
     EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Interact));
     EXPECT_EQ(server.recv_u8(), std::nullopt);
+}
+
+TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendTyping(true);
+    client->sendTyping(false);
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Typing));
+    EXPECT_EQ(server.recv_u8(), 1);
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Typing));
+    EXPECT_EQ(server.recv_u8(), 0);
 }

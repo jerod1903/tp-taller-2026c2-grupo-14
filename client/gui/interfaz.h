@@ -21,6 +21,7 @@
 #include "client/gui/chat/fuente.h"
 #include "client/gui/chat/panel_chat.h"
 #include "client/gui/inventario/barra_inventario.h"
+#include "client/gui/sprites/globo.h"
 #include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/mapa/mapa.h"
 
@@ -67,6 +68,7 @@ private:
     Fuente fuente;
     PanelChat panel_chat;
     std::optional<std::string> borrador;
+    Globo globo;
     std::set<uint32_t> vestidos;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;

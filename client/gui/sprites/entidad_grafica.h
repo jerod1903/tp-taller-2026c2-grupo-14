@@ -23,12 +23,16 @@ public:
                     std::chrono::steady_clock::time_point ahora);
     std::vector<Sprite> sprites() const;
     SDL2pp::Point centro() const;
+    SDL2pp::Point cabeza() const;
+    Emote emote() const;
     const std::string& area() const;
 
 private:
     std::vector<Capa> capas;
     int ancho_cuadro;
     int alto_cuadro;
+    int margen_arriba;
+    Emote emote_actual = Emote::None;
     CalculadorPosicion posicion;
     AnimadorSprites animador;
 };

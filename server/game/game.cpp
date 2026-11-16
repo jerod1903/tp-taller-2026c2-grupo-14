@@ -45,7 +45,8 @@ EntityState entity_of(uint32_t player_id, const Player& player) {
                        to_wire(player.get_x()),
                        to_wire(player.get_y()),
                        static_cast<int8_t>(delta.x),
-                       static_cast<int8_t>(delta.y)};
+                       static_cast<int8_t>(delta.y),
+                       player.is_typing() ? Emote::Typing : Emote::None};
 }
 const std::map<AnimalKind, EntityType> ENTITY_TYPE_OF = {
         {AnimalKind::Cow, EntityType::Cow},
@@ -61,7 +62,7 @@ EntityState entity_of(const Animal& animal) {
                        to_wire(animal.get_y()),
                        static_cast<int8_t>(delta.x),
                        static_cast<int8_t>(delta.y),
-                       animal.is_ready() ? Emote::Ready : Emote::None};
+                       animal.is_ready() ? Emote::CowMilkReady : Emote::None};
 }
 }  // namespace
 
