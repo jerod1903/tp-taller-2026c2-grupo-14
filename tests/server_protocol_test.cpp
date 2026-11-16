@@ -37,10 +37,12 @@ protected:
     std::unique_ptr<BaseProtocol> client;
 };
 
-TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagAndWorldId) {
-    ASSERT_TRUE(server->send_location_data(LocationData{"granja"}));
+TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagWorldIdTickRateAndMaxPlayers) {
+    ASSERT_TRUE(server->send_location_data(LocationData{"granja", 30, 4}));
     expect_msg(GameMsg::LocationData);
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(30));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(4));
 }
 
 TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {

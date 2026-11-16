@@ -25,6 +25,7 @@ public:
     void vestir(std::vector<Capa> capas);
     // Se llama en cada frame con el estado del ultimo Snapshot
     void actualizar(const EntityState& estado, uint32_t tick,
+                    std::chrono::duration<float> duracion_tick,
                     std::chrono::steady_clock::time_point ahora);
     // Una por capa, en orden: cada una se dibuja encima de la anterior
     std::vector<Sprite> sprites() const;

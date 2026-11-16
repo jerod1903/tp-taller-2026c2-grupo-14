@@ -95,7 +95,7 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
         }
-        it->second.actualizar(entidad, estado.tick, ahora);
+        it->second.actualizar(entidad, estado.tick, estado.duracion_tick, ahora);
     }
     for (auto it = entidades.begin(); it != entidades.end();) {
         if (presentes.contains(it->first)) {

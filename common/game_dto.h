@@ -29,9 +29,12 @@ enum class GameMsg : uint8_t {
     PlayerInfo,
 };
 
-// El área en la que está el jugador. Se manda al entrar y cada vez que cambia.
+// El mundo de la partida, cuántos Snapshots por segundo manda el servidor y el máximo de jugadores
+// (el ala este de la cabaña tiene una cama por jugador). Se manda al entrar.
 struct LocationData {
     std::string worldId;
+    uint16_t tickRate;
+    uint8_t maxPlayers;
 };
 
 // Las posiciones van en milésimas de celda: x = 14500 es el centro de la columna 14.

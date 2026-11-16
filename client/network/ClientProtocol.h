@@ -45,6 +45,7 @@ private:
     LobbyStatus recvStatus();
     GameEnteredResponse recvGameEntered();
     CharacterAppearance recvAppearance();
+    LocationData recvLocationData();
     Snapshot recvSnapshot();
     PlayerState recvPlayerState();
     EntityState recvEntityState();

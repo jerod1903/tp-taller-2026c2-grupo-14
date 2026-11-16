@@ -68,6 +68,10 @@ void GameLoop::procesar_mensajes() {
     while ((mensaje = recibidor.recibir())) {
         if (const auto* ubicacion = std::get_if<LocationData>(&*mensaje)) {
             estado.mundo = ubicacion->worldId;
+            estado.max_jugadores = ubicacion->maxPlayers;
+            if (ubicacion->tickRate > 0) {
+                estado.duracion_tick = std::chrono::duration<float>(1.0f / ubicacion->tickRate);
+            }
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
             estado.entidades = snapshot->entities;

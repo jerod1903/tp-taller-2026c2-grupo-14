@@ -119,7 +119,8 @@ void Game::add_player(uint32_t player_id, const GameMember& member,
             server_config().player.health, server_config().player.speed,
             server_config().player.gold, server_config().player.energy);
     world->add_player(*character);
-    send(*outbox, LocationData{world_id});
+    send(*outbox, LocationData{world_id, static_cast<uint16_t>(server_config().game.tick_rate),
+                               server_config().game.max_players});
     PlayerInfo info{player_id, member.characterName, member.appearance};
     for (const auto& [other_id, other]: players) {
         send(*outbox, other.info);

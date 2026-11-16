@@ -158,6 +158,11 @@ TEST_F(GameTest, SnapshotsHaveTheAnimalsOfTheFarm) {
     EXPECT_EQ(chickens, server_config().animals.chickens);
 }
 
+TEST_F(GameTest, LocationDataCarriesTheTickRate) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    EXPECT_EQ(next<LocationData>(*outbox).tickRate, server_config().game.tick_rate);
+}
+
 TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
     std::shared_ptr<Outbox> first = join(0);
     join(1);

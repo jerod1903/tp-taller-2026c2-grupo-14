@@ -131,7 +131,8 @@ std::optional<MoveRequest> ServerProtocol::recv_move() {
 }
 
 bool ServerProtocol::send_location_data(const LocationData& location) {
-    return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId);
+    return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId) &&
+           baseProtocol.send_u16(location.tickRate) && baseProtocol.send_u8(location.maxPlayers);
 }
 
 bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {

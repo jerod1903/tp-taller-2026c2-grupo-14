@@ -74,10 +74,6 @@ inline constexpr int BASE_HEXADECIMAL = 16;
 inline constexpr uint32_t MASCARA_ALFA = 0xFF000000;
 inline constexpr uint32_t MASCARA_COLOR = 0x00FFFFFF;
 
-// calculador_posicion.cpp
-// Cada cuanto manda el servidor un Snapshot (ServerConstants::TICK_RATE = 30 por segundo)
-inline const std::chrono::duration<float> DURACION_TICK_SERVIDOR(1.0f / 30);
-
 // mapa.cpp
 // En pixeles del tileset, sin escalar: el mismo de la tabla de sprites que comparte con el editor
 inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;

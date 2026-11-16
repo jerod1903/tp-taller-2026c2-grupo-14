@@ -13,9 +13,10 @@ EntidadGrafica::EntidadGrafica(const FormatoAnimacion& formato, std::vector<Capa
 void EntidadGrafica::vestir(std::vector<Capa> capas) { this->capas = std::move(capas); }
 
 void EntidadGrafica::actualizar(const EntityState& estado, uint32_t tick,
+                                std::chrono::duration<float> duracion_tick,
                                 std::chrono::steady_clock::time_point ahora) {
     posicion.actualizar(CalculadorPosicion::pies_desde_servidor(estado.x, estado.y), estado.areaId,
-                        tick, ahora);
+                        tick, duracion_tick, ahora);
     animador.actualizar(estado.dirX, estado.dirY, ahora);
 }
 
@@ -39,8 +40,8 @@ std::vector<Sprite> EntidadGrafica::sprites() const {
             bajada = cuadro.bajada_cabeza;
         }
         // Si el cuerpo esta espejado, lo que lleva encima queda del otro lado del cuadro
-        int x = cuadro.espejado ? ancho_cuadro - capa.desplazamiento.x - capa.tamano.x
-                                : capa.desplazamiento.x;
+        int x = cuadro.espejado ? ancho_cuadro - capa.desplazamiento.x - capa.tamano.x :
+                                  capa.desplazamiento.x;
         SDL2pp::Rect destino(esquina.x + x, esquina.y + capa.desplazamiento.y + bajada,
                              capa.tamano.x, capa.tamano.y);
         resultado.push_back(Sprite{capa.hoja, origen, destino, espejado, capa.tinte, pies.y});
