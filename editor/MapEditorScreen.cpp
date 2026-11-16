@@ -226,6 +226,10 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
 QVBoxLayout* MapEditorScreen::createTiles(QButtonGroup* group) {
     auto* tiles = new QVBoxLayout();
     for (maps::TileType tile: maps::allTileTypes()) {
+        // Los sleepable son del ala este de la cabaña, que arma el juego
+        if (tile == maps::TileType::Sleepable) {
+            continue;
+        }
         auto* button = new QToolButton(this);
         // El tile mide una casilla: se agranda al tamano del icono (el icono no agranda solo)
         button->setIcon(QIcon(sprites.tile(tile).scaled(TILE_ICON_SIZE, TILE_ICON_SIZE)));

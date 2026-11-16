@@ -588,6 +588,23 @@ void validateRequiredElements(const MapDefinition& map, const MapRequirements& r
     }
 }
 
+// Los tiles sleepable son del ala este de la cabaña, que arma el juego: no van en un mapa
+void validateNoSleepables(const MapDefinition& map, Issues& errors) {
+    for (const MapArea& area: map.areas) {
+        int count = 0;
+        for (const auto& row: area.tiles) {
+            count += static_cast<int>(std::count(row.begin(), row.end(), TileType::Sleepable));
+        }
+        if (count > 0) {
+            errors.push_back({
+                    .code = MapIssueCode::SleepableTileInMap,
+                    .areaId = area.id,
+                    .actual = count,
+            });
+        }
+    }
+}
+
 }  // namespace
 
 std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
@@ -608,6 +625,7 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
     validateSprites(elements, errors);
     validateElementRules(requirements, areas, elements, errors);
     validateRequiredElements(map, requirements, areas, elements, errors);
+    validateNoSleepables(map, errors);
     return errors;
 }
 

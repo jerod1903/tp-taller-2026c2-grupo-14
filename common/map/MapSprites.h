@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <optional>
 
 #include "common/map/MapDefinition.h"
 
@@ -24,6 +25,8 @@ inline const char* const SHEET_ROBIN = "Market/NPCs/NPC_Robin.png";
 inline const char* const SHEET_ORE = "Caverns/Mining/ore.png";
 inline const char* const SHEET_TREE = "Misc/tree2/tree1.png";
 inline const char* const SHEET_BUSHES = "Misc/tree_01_16x16.png";
+inline const char* const SHEET_FARMHOUSE = "Farm/Environment/Tilesets_Farmhouse.png";
+inline const char* const SHEET_CHEST = "Misc/chest.png";
 
 struct SpriteRect {
     int x;
@@ -32,11 +35,17 @@ struct SpriteRect {
     int height;
 };
 
-// Casilla (columna, fila) dentro de un tileset
+// Casilla (columna, fila) dentro de un tileset. Algunas piezas no caen justo en la grilla (se
+// corren offsetX pixeles), miden menos de alto (el resto queda negro), tienen partes
+// transparentes (debajo se dibuja el tile `under`) o se usan dadas vuelta de izquierda a derecha
 struct TileSprite {
     const char* sheet;
     int column;
     int row;
+    int offsetX = 0;
+    int height = TILE_SIZE;
+    std::optional<TileType> under = std::nullopt;
+    bool flipped = false;
 };
 
 struct ElementSprite {
@@ -44,6 +53,7 @@ struct ElementSprite {
     SpriteRect rect;
     // Se dibuja con el piso, debajo de los jugadores (por ejemplo, la entrada a la mina)
     bool ground;
+    bool flipped = false;  // dado vuelta de izquierda a derecha
 };
 
 inline const std::map<TileType, TileSprite> TILE_SPRITES = {
@@ -59,6 +69,27 @@ inline const std::map<TileType, TileSprite> TILE_SPRITES = {
         {TileType::Sand, {SHEET_OUTDOOR, 8, 1}},
         {TileType::Stone, {SHEET_OUTDOOR, 13, 16}},
         {TileType::WoodFloor, {SHEET_OUTDOOR, 2, 9}},
+        // Interiores, del tileset de la casa
+        {TileType::HouseFloor, {SHEET_FARMHOUSE, 1, 8}},
+        // En el juego se ve como el piso: lo que se dibuja es la cama, cuando aparece
+        {TileType::Sleepable, {SHEET_FARMHOUSE, 1, 8}},
+        {TileType::WallTop, {SHEET_FARMHOUSE, 2, 0}},
+        {TileType::WallUpper, {SHEET_FARMHOUSE, 2, 1}},
+        {TileType::Wall, {SHEET_FARMHOUSE, 2, 2}},
+        {TileType::WallBase, {SHEET_FARMHOUSE, 2, 3}},
+        {TileType::WallLeft, {SHEET_FARMHOUSE, 0, 2}},
+        {TileType::WallRight, {SHEET_FARMHOUSE, 11, 2}},
+        // El tramo recto del zocalo de abajo, entre dos casillas del tileset, sobre el piso
+        {TileType::WallBottom, {SHEET_FARMHOUSE, 0, 11, 8, TILE_SIZE, TileType::HouseFloor}},
+        // Las molduras de los costados bajan hasta la linea del zocalo
+        {TileType::WallBottomLeft, {SHEET_FARMHOUSE, 0, 2, 0, 12}},
+        {TileType::WallBottomRight, {SHEET_FARMHOUSE, 11, 2, 0, 12}},
+        // Donde el zocalo dobla hacia abajo para seguir por el pasillo de entrada
+        {TileType::CorridorLeft, {SHEET_FARMHOUSE, 1, 11, 0, TILE_SIZE, TileType::HouseFloor}},
+        {TileType::CorridorRight,
+         {SHEET_FARMHOUSE, 1, 11, 0, TILE_SIZE, TileType::HouseFloor, true}},
+        {TileType::WallDivider, {SHEET_FARMHOUSE, 10, 7}},  // la pared lateral, de tablas
+        {TileType::Void, {SHEET_FARMHOUSE, 0, 0}},
 };
 
 // Los elementos que no estan aca no se ven en el juego: el spawn y los portones de los pasajes
@@ -86,6 +117,22 @@ inline const std::map<ElementType, ElementSprite> ELEMENT_SPRITES = {
         {ElementType::MerchantClint, {SHEET_CLINT, {0, 0, 16, 32}, false}},
         {ElementType::MerchantPierre, {SHEET_PIERRE, {0, 0, 16, 32}, false}},
         {ElementType::MerchantRobin, {SHEET_ROBIN, {0, 0, 16, 32}, false}},
+        // Interior de la cabaña, del tileset de la casa (el cofre no esta ahi). La puerta de salida
+        // no se dibuja: es el final del pasillo de entrada
+        // La cama simple: cabecera con almohada y, abajo, la frazada con el pie
+        {ElementType::Bed, {SHEET_FARMHOUSE, {128, 112, 32, 32}, false}},
+        {ElementType::BedBlanket, {SHEET_FARMHOUSE, {128, 144, 32, 32}, false}},
+        // Justo los ladrillos: al costado el tileset sigue con la pared en diagonal
+        {ElementType::Fireplace, {SHEET_FARMHOUSE, {131, 0, 32, 80}, false}},
+        {ElementType::Window, {SHEET_FARMHOUSE, {48, 16, 16, 32}, false}},
+        {ElementType::Shelf, {SHEET_FARMHOUSE, {80, 16, 32, 32}, false}},
+        {ElementType::Tv, {SHEET_FARMHOUSE, {96, 192, 32, 48}, false}},
+        {ElementType::Kitchen, {SHEET_FARMHOUSE, {16, 192, 80, 48}, false}},
+        // El tileset trae la mitad derecha de la alfombra: la izquierda es la misma espejada
+        {ElementType::Rug, {SHEET_FARMHOUSE, {96, 128, 32, 32}, true}},
+        {ElementType::RugLeft, {SHEET_FARMHOUSE, {96, 128, 32, 32}, true, true}},
+        {ElementType::Plant, {SHEET_FARMHOUSE, {64, 304, 16, 48}, false}},
+        {ElementType::Chest, {SHEET_CHEST, {8, 0, 16, 16}, false}},
 };
 
 }  // namespace stardew::maps
