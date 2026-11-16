@@ -43,8 +43,9 @@ Fuente: [diagrams/commands/commands.puml](diagrams/commands/commands.puml)
 
 Los comandos solo conocen `GameContext`, no `Game`. `GameContext` no tiene las acciones: devuelve una interfaz chica por tema, y cada comando usa solo la que necesita.
 
-- `sessions()` → `PlayerSessions` (entrar y salir). La implementa `Sessions`, que tiene los jugadores conectados: su outbox y su info.
+- `sessions()` → `PlayerSessions`: entrar, salir y mandarles mensajes a los conectados (`send_to`, `broadcast`, `find_player_by_name`). La implementa `Sessions`, que tiene los jugadores conectados: su outbox y su info.
 - `movement()` → `PlayerMovement` (caminar y cruzar puertas). La implementa `Movement`, el del `World`.
+- `characters()` → `PlayerCharacters`: los personajes por id (`find_player`) y los animales de la granja. La implementa el `World`. La usan `ChatCommand`, `InteractCommand` (ordeñar con la E), `SelectSlotCommand` y `TypingCommand`.
 
 `Game` queda con la inbox, el loop de ticks, el `World` y sus `Sessions`.
 

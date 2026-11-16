@@ -1,4 +1,4 @@
-#include "mapa.h"
+#include "client/gui/mapa/mapa.h"
 
 #include <algorithm>
 #include <map>
@@ -8,12 +8,11 @@
 #include <vector>
 
 #include "client/constants.h"
+#include "client/gui/rutas.h"
 #include "common/map/CabinInterior.h"
 #include "common/map/MapSprites.h"
 #include "common/map/MarketInterior.h"
 #include "common/map/persistence/MapRepository.h"
-
-#include "rutas.h"
 
 using stardew::maps::ELEMENT_SPRITES;
 using stardew::maps::ElementType;
@@ -140,7 +139,6 @@ void Mapa::dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara)
         return;
     }
     const Tiles& tiles = area_actual->tiles;
-    // Solo las casillas que entran en la camara
     int primera_fila = std::max(0, camara.y / TAMANO_TILE);
     int ultima_fila =
             std::min(static_cast<int>(tiles.size()) - 1, (camara.y + camara.h - 1) / TAMANO_TILE);

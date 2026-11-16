@@ -1,12 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <variant>
 
 #include "common/game_dto.h"
 
 // Lo que manda el servidor durante la partida.
-using ServerGameMessage = std::variant<LocationData, Snapshot, GameEnded, PlayerInfo>;
+using ServerGameMessage =
+        std::variant<LocationData, Snapshot, GameEnded, PlayerInfo, InventoryState, ChatMessage>;
 
 // Lo que la partida necesita del servidor: un send por cada accion del jugador y el recv de lo que
 // manda el servidor. Los send tiran LobbyConnectionError si se corto la conexion.
@@ -23,4 +25,9 @@ public:
     virtual ServerGameMessage recvGameMessage() = 0;
     // Corta la conexion: despierta a quien este bloqueado en recvGameMessage
     virtual void shutdown() = 0;
+
+    virtual void sendSelectSlot(uint8_t slot) = 0;
+    virtual void sendChat(const std::string& texto) = 0;
+    virtual void sendInteract() = 0;
+    virtual void sendTyping(bool escribiendo) = 0;
 };

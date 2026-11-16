@@ -1,17 +1,21 @@
 #ifndef CLIENT_CONSTANTS_H
 #define CLIENT_CONSTANTS_H
 
+#include <array>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <utility>
 
+#include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
 
 #include "client/audio/sonido.h"
-#include "client/gui/animador_sprites.h"
-#include "client/gui/capa.h"
+#include "client/gui/sprites/animador_sprites.h"
+#include "client/gui/sprites/capa.h"
 #include "common/character/CharacterSheets.h"
+#include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
 
@@ -57,6 +61,58 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
                                                {Orientacion::Arriba, {1, false}}},
                                               {0, 1, 2, 3},
                                               std::chrono::duration<float>(0.15f)};
+
+// game_loop.cpp, interfaz.cpp y panel_chat.cpp: el chat
+inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;
+
+inline constexpr int TAMANO_FUENTE_CHAT = 16;
+inline constexpr std::size_t MAX_LINEAS_CHAT = 6;
+inline const std::chrono::seconds DURACION_MENSAJE_CHAT(10);
+inline constexpr int PORCENTAJE_ANCHO_CHAT = 45;
+inline constexpr int MARGEN_CHAT = 12;
+inline constexpr int DISTANCIA_CHAT_ABAJO = 90;
+inline constexpr int RELLENO_CHAT = 4;
+inline const char* const PROMPT_CHAT = "> ";
+inline const char* const CURSOR_CHAT = "_";
+inline const char* const MARCA_PRIVADO = " (privado)";
+inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
+inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
+inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
+        {ChatKind::Public, {255, 255, 255, 255}},
+        {ChatKind::Private, {255, 150, 200, 255}},
+        {ChatKind::System, {170, 170, 170, 255}},
+};
+
+// globo.cpp: el globito con el emote arriba de un personaje
+inline constexpr int SEPARACION_GLOBO = 1;
+inline constexpr int RELLENO_GLOBO = 2;
+inline constexpr int ALTO_PALITO = 3;
+inline constexpr SDL_Color COLOR_FONDO_GLOBO = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_BORDE_GLOBO = {38, 43, 68, 255};
+
+// barra_inventario.cpp
+inline constexpr int TAMANO_CASILLERO = 18;
+inline constexpr int SEPARACION_CASILLEROS = 1;
+inline constexpr int MARGEN_BARRA = 3;
+inline constexpr SDL_Color COLOR_FONDO_CASILLERO = {60, 40, 30, 220};
+inline constexpr SDL_Color COLOR_BORDE_CASILLERO = {150, 110, 70, 255};
+inline constexpr SDL_Color COLOR_SELECCIONADO = {250, 210, 60, 255};
+inline constexpr SDL_Color COLOR_NUMERO = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_SOMBRA_NUMERO = {0, 0, 0, 255};
+inline constexpr int ANCHO_DIGITO = 3;
+inline constexpr int ALTO_DIGITO = 5;
+inline constexpr std::array<std::array<const char*, 5>, 10> DIGITOS = {{
+        {"###", "#.#", "#.#", "#.#", "###"},
+        {".#.", "##.", ".#.", ".#.", "###"},
+        {"###", "..#", "###", "#..", "###"},
+        {"###", "..#", "###", "..#", "###"},
+        {"#.#", "#.#", "###", "..#", "..#"},
+        {"###", "#..", "###", "..#", "###"},
+        {"###", "#..", "###", "#.#", "###"},
+        {"###", "..#", "..#", "..#", "..#"},
+        {"###", "#.#", "###", "#.#", "###"},
+        {"###", "#.#", "###", "..#", "###"},
+}};
 
 // constructor_capas.cpp
 // Que vista de cada hoja va con cada orientacion: (numero de vista, si se espeja). El pelo trae un

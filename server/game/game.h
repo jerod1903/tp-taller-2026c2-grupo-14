@@ -23,6 +23,8 @@ public:
     PlayerSessions& sessions() override;
     // El Movement del World, que tiene los personajes.
     PlayerMovement& movement() override;
+    // El World, dueño de los personajes y los animales.
+    PlayerCharacters& characters() override;
 
     void start() override;
     void run() override;

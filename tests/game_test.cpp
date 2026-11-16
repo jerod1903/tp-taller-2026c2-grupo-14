@@ -18,6 +18,7 @@
 #include "server/game/commands/join_command.h"
 #include "server/game/commands/leave_command.h"
 #include "server/game/commands/move_command.h"
+#include "server/game/commands/typing_command.h"
 #include "tests/test_worlds.h"
 
 namespace {
@@ -218,6 +219,17 @@ TEST_F(GameTest, JoinedPlayerStartsStillInItsBed) {
     EXPECT_EQ(player.dirY, 0);
     EXPECT_EQ(player.health, server_config().player.health);
     EXPECT_EQ(player.gold, static_cast<uint32_t>(server_config().player.gold));
+}
+
+TEST_F(GameTest, APlayerWithTheChatOpenTravelsWithTheTypingEmote) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    game.get_inbox().push(std::make_shared<TypingCommand>(0, TypingRequest{true}));
+    Snapshot snapshot = wait_snapshot(*outbox, [](const Snapshot& s) {
+        return !s.entities.empty() && s.entities.at(0).emote == Emote::Typing;
+    });
+    EXPECT_EQ(snapshot.entities.at(0).type, EntityType::Player);
+    game.get_inbox().push(std::make_shared<TypingCommand>(0, TypingRequest{false}));
+    wait_snapshot(*outbox, [](const Snapshot& s) { return s.entities.at(0).emote == Emote::None; });
 }
 
 TEST_F(GameTest, MoveMakesThePlayerWalkThatWay) {

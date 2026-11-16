@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "server/game/characters/player.h"
+#include "server/game/commands/player_characters.h"
 #include "server/game/world/direction.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/farm.h"
@@ -17,8 +18,8 @@
 // El mapa completo de una partida. Es dueño de las tres zonas y de los personajes de los
 // jugadores, que se piden por id. Los portales entre zonas (pueblo <-> granja, pueblo <-> mazmorra)
 // los enlaza quien arma el mundo a partir del mapa, porque las posiciones de origen y llegada salen
-// de ahí.
-class World {
+// de ahí. Atiende a los comandos que usan los personajes (PlayerCharacters).
+class World: public PlayerCharacters {
 public:
     World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon);
 
@@ -38,6 +39,8 @@ public:
     Player& add_player(std::unique_ptr<Player> player);
     // Si no está, no hace nada.
     void remove_player(uint32_t player_id);
+    Player* find_player(uint32_t player_id) override;
+    const std::vector<std::unique_ptr<Animal>>& farm_animals() override;
     // Atiende a MoveCommand.
     Movement& get_movement();
 

@@ -1,9 +1,14 @@
 #include "server/game/commands/command_factory.h"
 
+#include <memory>
 #include <optional>
 
+#include "server/game/commands/chat_command.h"
 #include "server/game/commands/enter_portal_command.h"
+#include "server/game/commands/interact_command.h"
 #include "server/game/commands/move_command.h"
+#include "server/game/commands/select_slot_command.h"
+#include "server/game/commands/typing_command.h"
 
 namespace {
 
@@ -34,6 +39,11 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
         builders{
                 {GameOp::Move, with_payload<MoveCommand>(&ServerProtocol::recv_move)},
                 {GameOp::EnterPortal, without_payload<EnterPortalCommand>()},
+                {GameOp::SelectSlot,
+                 with_payload<SelectSlotCommand>(&ServerProtocol::recv_select_slot)},
+                {GameOp::Chat, with_payload<ChatCommand>(&ServerProtocol::recv_chat)},
+                {GameOp::Interact, without_payload<InteractCommand>()},
+                {GameOp::Typing, with_payload<TypingCommand>(&ServerProtocol::recv_typing)},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

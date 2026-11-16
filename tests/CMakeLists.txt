@@ -8,6 +8,9 @@ target_sources(taller_tests
     animador_sprites_test.cpp
     animal_test.cpp
     character_sheets_test.cpp
+    chat_command_test.cpp
+    interact_command_test.cpp
+    typing_command_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp
@@ -28,6 +31,8 @@ target_sources(taller_tests
     receiver_test.cpp
     sender_test.cpp
     server_protocol_test.cpp
+    inventory_test.cpp
+    select_slot_command_test.cpp
     # Código del servidor bajo test (sin main.cpp)
     ../server/config/server_config.cpp
     ../server/game/characters/animals/animal.cpp
@@ -54,7 +59,10 @@ target_sources(taller_tests
     ../server/game/game.cpp
     ../server/game/sessions.cpp
     ../server/game/snapshot_builder.cpp
+    ../server/game/commands/chat_command.cpp
     ../server/game/commands/command_factory.cpp
+    ../server/game/commands/interact_command.cpp
+    ../server/game/commands/typing_command.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
     ../server/game/commands/enter_portal_command.cpp
@@ -79,7 +87,10 @@ target_sources(taller_tests
     # Código del cliente bajo test (sin Qt)
     ../client/config/client_config.cpp
     ../client/network/ClientProtocol.cpp
-    ../client/gui/animador_sprites.cpp
+    ../client/gui/sprites/animador_sprites.cpp
+    # Inventario
+    ../server/game/characters/inventory.cpp
+    ../server/game/commands/select_slot_command.cpp
     PUBLIC
     # .h files
     world_helpers.h

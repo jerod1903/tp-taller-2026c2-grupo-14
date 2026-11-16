@@ -116,6 +116,7 @@ if(TALLER_CLIENT)
     # Como subproyecto, libSDL2pp solo envuelve SDL_image y SDL_mixer si el proyecto padre lo pide.
     set(SDL2PP_WITH_IMAGE ON)
     set(SDL2PP_WITH_MIXER ON)
+    set(SDL2PP_WITH_TTF ON)
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
 endif()
 

@@ -23,6 +23,11 @@ public:
     static constexpr std::size_t MAX_LOGGED_LEN = 2 * MAX_NAME_LEN;
 
     static constexpr const char* MAP_REQUIREMENTS = TALLER_MAPS_DIR "/config/map_requirements.toml";
+
+    // Chat: "@nombre texto" es un mensaje privado para ese personaje.
+    static constexpr char PRIVATE_CHAT_PREFIX = '@';
+    // Aviso al que mando un privado a alguien que no esta: "<nombre> no está conectado".
+    static constexpr const char* NOT_CONNECTED = " no está conectado";
 };
 
 #endif  // SERVER_CONSTANTS_H

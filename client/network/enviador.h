@@ -1,6 +1,8 @@
 #ifndef ENVIADOR_H
 #define ENVIADOR_H
 
+#include <string>
+
 #include "client/network/IGameProtocol.h"
 #include "common/game_dto.h"
 
@@ -12,6 +14,11 @@ public:
     void enviar(const MoveRequest& movimiento);
     void salir();
     void cruzar_puerta();
+
+    void seleccionar_slot(uint8_t slot) { protocolo.sendSelectSlot(slot); }
+    void enviar_chat(const std::string& texto) { protocolo.sendChat(texto); }
+    void interactuar() { protocolo.sendInteract(); }
+    void escribiendo(bool valor) { protocolo.sendTyping(valor); }
 
 private:
     IGameProtocol& protocolo;

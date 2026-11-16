@@ -64,7 +64,7 @@ TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
 }
 
 TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
-    EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1};
+    EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1, Emote::CowMilkReady};
     ASSERT_TRUE(server->send_snapshot(Snapshot{7, {}, {cow}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(7));
@@ -77,6 +77,7 @@ TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(4500));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(-1)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(Emote::CowMilkReady)));
 }
 
 TEST_F(ServerProtocolTest, PlayerInfoGoesWithIdNameAndAppearance) {
@@ -173,3 +174,35 @@ TEST_F(ServerProtocolTest, RecvMoveConsumesExactlyItsPayload) {
 
 
 }  // namespace
+
+TEST_F(ServerProtocolTest, RecvChatReadsTheText) {
+    ASSERT_TRUE(client->send_string("hola, gente!"));
+    std::optional<ChatRequest> chat = server->recv_chat();
+    ASSERT_TRUE(chat.has_value());
+    EXPECT_EQ(chat->text, "hola, gente!");
+}
+
+TEST_F(ServerProtocolTest, RecvChatClosedWithoutDataIsNullopt) {
+    client->shutdown();
+    EXPECT_FALSE(server->recv_chat().has_value());
+}
+
+TEST_F(ServerProtocolTest, ChatMessageGoesWithItsTagKindAuthorAndText) {
+    ASSERT_TRUE(server->send_chat_message(ChatMessage{ChatKind::Private, "Ana", "vamos?"}));
+    EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(GameMsg::ChatMessage));
+    EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(ChatKind::Private));
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("Ana"));
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("vamos?"));
+}
+
+TEST_F(ServerProtocolTest, RecvTypingReadsOpenAndClosed) {
+    ASSERT_TRUE(client->send_u8(1));
+    ASSERT_TRUE(client->send_u8(0));
+    EXPECT_EQ(server->recv_typing(), std::optional<TypingRequest>(TypingRequest{true}));
+    EXPECT_EQ(server->recv_typing(), std::optional<TypingRequest>(TypingRequest{false}));
+}
+
+TEST_F(ServerProtocolTest, RecvTypingClosedWithoutDataIsNullopt) {
+    client->shutdown();
+    EXPECT_FALSE(server->recv_typing().has_value());
+}

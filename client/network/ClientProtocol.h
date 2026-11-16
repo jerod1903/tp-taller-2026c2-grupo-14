@@ -33,6 +33,10 @@ public:
     void sendMove(int8_t dir_x, int8_t dir_y) override;
     void sendLeaveGame() override;
     void sendEnterPortal() override;
+    void sendSelectSlot(uint8_t slot) override;
+    void sendChat(const std::string& texto) override;
+    void sendInteract() override;
+    void sendTyping(bool escribiendo) override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;
@@ -51,6 +55,8 @@ private:
     PlayerState recvPlayerState();
     EntityState recvEntityState();
     PlayerInfo recvPlayerInfo();
+    InventoryState recvInventoryState();
+    ChatMessage recvChatMessage();
 
     BaseProtocol baseProtocol;
 };

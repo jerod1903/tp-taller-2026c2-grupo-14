@@ -15,11 +15,23 @@ Animal::Animal(uint32_t id, AnimalKind kind, const Position& pos, Location& loca
                uint32_t seed):
         Creature(id, pos, location, server_config().animals.health, server_config().animals.speed),
         kind(kind),
+        time_to_ready(server_config().animals.cow_ready_seconds),
         rng(seed) {}
 
 AnimalKind Animal::get_kind() const { return kind; }
 
+bool Animal::is_ready() const { return ready; }
+
+void Animal::milk() {
+    ready = false;
+    time_to_ready = server_config().animals.cow_ready_seconds;
+}
+
 void Animal::update(float dt) {
+    if (kind == AnimalKind::Cow && !ready) {
+        time_to_ready -= dt;
+        ready = time_to_ready <= 0;
+    }
     time_left -= dt;
     if (time_left <= 0) {
         choose_direction();

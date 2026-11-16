@@ -16,6 +16,8 @@ struct ServerConfig {
         int energy;
         int gold;
         float speed;  // celdas por segundo
+        // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
+        uint8_t max_stack;
     };
     struct Animals {
         int cows;
@@ -27,6 +29,11 @@ struct ServerConfig {
         float speed;     // celdas por segundo
         float min_walk;  // segundos
         float max_walk;
+        // Provisorio, hasta que exista el ciclo de días: cada cuánto da leche una vaca, en
+        // segundos.
+        float cow_ready_seconds;
+        // Hasta dónde llega el jugador para ordeñar: de su centro al de la vaca, en casillas.
+        float milking_reach;
     };
 
     Game game;

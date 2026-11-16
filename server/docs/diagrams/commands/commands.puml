@@ -6,10 +6,18 @@ skinparam classAttributeIconSize 0
 interface GameContext {
   + sessions(): PlayerSessions&
   + movement(): PlayerMovement&
+  + characters(): PlayerCharacters&
 }
 interface PlayerSessions {
   + add_player(player_id, GameMember, Outbox)
   + remove_player(player_id)
+  + send_to(player_id, GameMessage)
+  + broadcast(GameMessage)
+  + find_player_by_name(name): player_id
+}
+interface PlayerCharacters {
+  + find_player(player_id): Player*
+  + farm_animals(): vector<Animal>
 }
 interface PlayerMovement {
   + move_player(player_id, Direction)
@@ -18,6 +26,7 @@ interface PlayerMovement {
 class Game
 class Sessions
 class Movement
+class World
 abstract class GameCommand {
   # player_id: uint32_t
   + {abstract} execute(GameContext&)
@@ -31,6 +40,10 @@ class JoinCommand {
 }
 class LeaveCommand
 class EnterPortalCommand
+class ChatCommand
+class InteractCommand
+class SelectSlotCommand
+class TypingCommand
 class CommandFactory {
   - builders: map<GameOp, Builder>
   + create(GameOp, player_id): GameCommand
@@ -41,6 +54,20 @@ class LobbySession
 GameContext <|.. Game
 PlayerSessions <|.. Sessions
 PlayerMovement <|.. Movement
+PlayerCharacters <|.. World
+GameContext ..> PlayerCharacters
+Game ..> World : characters()
+ChatCommand ..> PlayerSessions : usa
+ChatCommand ..> PlayerCharacters : usa
+InteractCommand ..> PlayerSessions : usa
+InteractCommand ..> PlayerCharacters : usa
+SelectSlotCommand ..> PlayerSessions : usa
+SelectSlotCommand ..> PlayerCharacters : usa
+TypingCommand ..> PlayerCharacters : usa
+GameCommand <|-- ChatCommand
+GameCommand <|-- InteractCommand
+GameCommand <|-- SelectSlotCommand
+GameCommand <|-- TypingCommand
 GameContext ..> PlayerSessions
 GameContext ..> PlayerMovement
 Game *-- Sessions

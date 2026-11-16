@@ -10,6 +10,7 @@ health = 100
 energy = 100
 gold = 500
 speed = 4.0              # celdas por segundo
+max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
 
 # Provisorio: hasta que se compren a Marnie, la granja arranca con estos.
 [animals]
@@ -21,3 +22,5 @@ health = 100
 speed = 1.0              # celdas por segundo
 min_walk = 1.0           # segundos que camina (o se queda quieto) antes de elegir otra direccion
 max_walk = 3.0
+cow_ready_seconds = 20.0 # provisorio, hasta el ciclo de dias: cada cuanto da leche una vaca
+milking_reach = 1.5      # hasta donde llega el jugador para ordeñar, en casillas

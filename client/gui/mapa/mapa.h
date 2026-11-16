@@ -8,9 +8,8 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
+#include "client/gui/sprites/sprite.h"
 #include "common/map/MapDefinition.h"
-
-#include "sprite.h"
 
 // Con qué imagen se dibuja un tipo de tile: la textura, el recorte (de una casilla de ancho, a
 // veces menos de alto) y el tile que va debajo si tiene partes transparentes
@@ -21,8 +20,6 @@ struct TileGrafico {
     bool espejado;
 };
 
-// Con qué imagen se dibuja un elemento del mapa (cabaña, NPC, ...). Se escala al ancho del
-// elemento y se apoya en su borde de abajo. Los de suelo se pisan: van debajo de los personajes
 struct ElementoGrafico {
     SDL2pp::Texture& textura;
     SDL2pp::Rect origen;
@@ -30,9 +27,6 @@ struct ElementoGrafico {
     bool espejado;
 };
 
-// Dibuja el mapa base (los tiles y los elementos fijos) del mundo que indica el servidor. Lo que
-// cambia durante la partida (cultivos, jugadores, etc.) lo manda el servidor. Todo en pixeles del
-// tileset: la Interfaz escala el resultado a la ventana
 class Mapa {
 public:
     // max_jugadores: el ala este de la cabaña tiene una cama por jugador
@@ -44,7 +38,6 @@ public:
     Mapa& operator=(Mapa&&) = delete;
     // Elige el area a dibujar. Si no existe no se dibuja nada
     void mostrar_area(const std::string& area_id);
-    // Los tiles y los elementos de suelo que entran en la camara
     void dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara);
     // Un tile en la casilla (columna, fila), con lo que va debajo
     void dibujar_tile(SDL2pp::Renderer& renderer, stardew::maps::TileType tipo, int columna,
@@ -66,11 +59,9 @@ private:
         std::vector<Sprite> suelo;
         std::vector<Sprite> elementos;
     };
-    // Carga una sola vez cada imagen que nombra la tabla de common/map/MapSprites.h
     static std::map<std::string, SDL2pp::Texture> cargar_hojas(SDL2pp::Renderer& renderer);
     // Que textura y recorte usa cada tipo de tile, segun TILE_SPRITES. Con las hojas ya cargadas
     std::map<stardew::maps::TileType, TileGrafico> armar_graficos();
-    // Que textura y recorte usa cada tipo de elemento, segun ELEMENT_SPRITES
     std::map<stardew::maps::ElementType, ElementoGrafico> armar_graficos_elementos();
     // Carga maps/<world_id>.toml y el interior de la cabaña, y devuelve los tiles y elementos de
     // cada area, por id
@@ -82,7 +73,6 @@ private:
     std::map<stardew::maps::TileType, TileGrafico> graficos;
     std::map<stardew::maps::ElementType, ElementoGrafico> graficos_elementos;
     std::map<std::string, Area> areas;
-    // nullptr hasta que se elija un area que exista
     const Area* area_actual = nullptr;
 };
 

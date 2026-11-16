@@ -5,11 +5,16 @@ target_sources(taller_server
     server.cpp
     config/server_config.cpp
     game/game.cpp
+    game/commands/chat_command.cpp
     game/commands/command_factory.cpp
+    game/commands/interact_command.cpp
+    game/commands/typing_command.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/enter_portal_command.cpp
     game/commands/move_command.cpp
+    game/commands/select_slot_command.cpp
+    game/characters/inventory.cpp
     game/game_registry.cpp
     game/sessions.cpp
     game/snapshot_builder.cpp
@@ -19,6 +24,7 @@ target_sources(taller_server
     game/characters/enemies/skeleton.cpp
     game/characters/entity.cpp
     game/characters/player.cpp
+    game/characters/inventory.cpp
     game/world/direction.cpp
     game/world/dungeon/dungeon.cpp
     game/world/dungeon/dungeon_level.cpp
@@ -47,13 +53,17 @@ target_sources(taller_server
     game/game_event.h
     game/game.h
     game/outbox.h
+    game/commands/chat_command.h
     game/commands/command_factory.h
+    game/commands/interact_command.h
+    game/commands/typing_command.h
     game/commands/game_command.h
     game/commands/game_context.h
     game/commands/join_command.h
     game/commands/leave_command.h
     game/commands/enter_portal_command.h
     game/commands/move_command.h
+    game/commands/player_characters.h
     game/commands/player_movement.h
     game/commands/player_sessions.h
     game/game_registry.h

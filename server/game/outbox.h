@@ -7,7 +7,7 @@
 #include "common/lib/queue.h"
 
 // Lo que el Game le manda a un jugador; el Sender lo serializa.
-using GameMessage = std::variant<LocationData, Snapshot, PlayerInfo>;
+using GameMessage = std::variant<LocationData, Snapshot, PlayerInfo, InventoryState, ChatMessage>;
 using Outbox = Queue<GameMessage>;
 
 #endif  // OUTBOX_H

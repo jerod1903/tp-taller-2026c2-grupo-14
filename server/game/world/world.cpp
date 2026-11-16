@@ -46,6 +46,13 @@ void World::remove_player(uint32_t player_id) {
     }
 }
 
+Player* World::find_player(uint32_t player_id) {
+    auto player = players.find(player_id);
+    return player == players.end() ? nullptr : player->second.get();
+}
+
+const std::vector<std::unique_ptr<Animal>>& World::farm_animals() { return farm->get_animals(); }
+
 Movement& World::get_movement() { return movement; }
 
 const Location& World::location_of(uint32_t player_id) const {

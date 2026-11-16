@@ -215,7 +215,7 @@ TEST_F(ClientGameProtocolTest, RecvsSnapshotWithItsEntities) {
     ServerProtocol server(std::move(*server_socket));
     const PlayerState player{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
     const EntityState as_entity{7, EntityType::Player, "granja", 14500, 3250, -1, 1};
-    const EntityState chicken{7, EntityType::Chicken, "granja", 2000, 1000, 0, 0};
+    const EntityState chicken{7, EntityType::Cow, "granja", 2000, 1000, 0, 0, Emote::CowMilkReady};
     ASSERT_TRUE(server.send_snapshot(Snapshot{3, {player}, {as_entity, chicken}}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
@@ -246,4 +246,54 @@ TEST_F(ClientGameProtocolTest, UnknownTagThrows) {
     BaseProtocol server(std::move(*server_socket));
     ASSERT_TRUE(server.send_u8(0x7F));
     EXPECT_THROW(client->recvGameMessage(), std::runtime_error);
+}
+
+
+TEST_F(ClientGameProtocolTest, SendSelectSlotSendsTagAndSlot) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendSelectSlot(2);
+    EXPECT_EQ(server.recv_u8(), 0x03);
+    EXPECT_EQ(server.recv_u8(), 0x02);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
+    ServerProtocol server(std::move(*server_socket));
+    const InventoryState inventory{2, {{ItemType::Pickaxe, 1}, {ItemType::Empty, 0}}};
+    ASSERT_TRUE(server.send_inventory_state(inventory));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
+    EXPECT_EQ(std::get<InventoryState>(message), inventory);
+}
+TEST_F(ClientGameProtocolTest, SendChatSendsTagAndText) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendChat("hola");
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Chat));
+    EXPECT_EQ(server.recv_string(), std::optional<std::string>("hola"));
+}
+
+TEST_F(ClientGameProtocolTest, RecvsChatMessage) {
+    ServerProtocol server(std::move(*server_socket));
+    const ChatMessage chat{ChatKind::Public, "Pandamos", "Hola, gente!"};
+    ASSERT_TRUE(server.send_chat_message(chat));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<ChatMessage>(message));
+    EXPECT_EQ(std::get<ChatMessage>(message), chat);
+}
+
+TEST_F(ClientGameProtocolTest, SendInteractSendsOnlyTheTag) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendInteract();
+    client->shutdown();
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Interact));
+    EXPECT_EQ(server.recv_u8(), std::nullopt);
+}
+
+TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendTyping(true);
+    client->sendTyping(false);
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Typing));
+    EXPECT_EQ(server.recv_u8(), 1);
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Typing));
+    EXPECT_EQ(server.recv_u8(), 0);
 }

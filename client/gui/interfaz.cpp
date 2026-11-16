@@ -1,6 +1,7 @@
 #include "interfaz.h"
 
 #include <algorithm>
+#include <cstring>
 #include <iterator>
 #include <map>
 #include <set>
@@ -12,9 +13,8 @@
 
 #include "client/config/client_config.h"
 #include "client/constants.h"
+#include "client/gui/rutas.h"
 #include "common/map/CabinInterior.h"
-
-#include "rutas.h"
 
 Interfaz::Interfaz():
         sdl(SDL_INIT_VIDEO),
@@ -27,32 +27,63 @@ Interfaz::Interfaz():
         constructor_capas(renderer),
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
-        // Las capas de los jugadores dependen de su apariencia: las arma el ConstructorCapas
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
-                  {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}} {}
+                  {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
+        barra(renderer),
+        fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
+        panel_chat(fuente),
+        globo(renderer) {}
 
-// Un animal es una sola capa: su hoja entera, cuadro por cuadro
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
     return Capa{&hoja, TipoCapa::PorCuadro, SDL2pp::Point(0, 0), cuadro, SDL2pp::Point(0, 0)};
 }
 
+namespace {
+void borrar_ultima_letra(std::string& texto) {
+    while (!texto.empty() && (static_cast<unsigned char>(texto.back()) & 0xC0) == 0x80) {
+        texto.pop_back();
+    }
+    if (!texto.empty()) {
+        texto.pop_back();
+    }
+}
+}  // namespace
+
 Entrada Interfaz::leer_entrada() {
     Entrada entrada;
     SDL_Event evento;
     while (SDL_PollEvent(&evento)) {
-        if (evento.type == SDL_QUIT ||
-            (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_ESCAPE)) {
+        if (evento.type == SDL_QUIT) {
             entrada.salir = true;
         }
-        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_F11 && !evento.key.repeat) {
-            alternar_pantalla_completa();
+        if (borrador) {
+            leer_chat(evento, entrada);
+            continue;
         }
-        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_x && !evento.key.repeat) {
+        if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
+            continue;
+        }
+        SDL_Keycode tecla = evento.key.keysym.sym;
+        if (tecla == SDLK_ESCAPE) {
+            entrada.salir = true;
+        } else if (tecla == SDLK_RETURN) {
+            borrador = "";
+            entrada.escribiendo = true;
+        } else if (tecla == SDLK_e) {
+            entrada.interactuar = true;
+        } else if (tecla == SDLK_x) {
             entrada.cruzar_puerta = true;
+        } else if (tecla == SDLK_F11) {
+            alternar_pantalla_completa();
+        } else if (tecla >= SDLK_1 && tecla <= SDLK_9) {
+            entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
+    }
+    if (borrador) {
+        return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
             {{-1, 0}, {SDL_SCANCODE_LEFT, SDL_SCANCODE_A}},
@@ -73,6 +104,29 @@ Entrada Interfaz::leer_entrada() {
     return entrada;
 }
 
+void Interfaz::leer_chat(const SDL_Event& evento, Entrada& entrada) {
+    if (evento.type == SDL_TEXTINPUT &&
+        borrador->size() + std::strlen(evento.text.text) <= MAX_CHAT_LENGTH) {
+        borrador->append(evento.text.text);
+    }
+    if (evento.type != SDL_KEYDOWN) {
+        return;
+    }
+    SDL_Keycode tecla = evento.key.keysym.sym;
+    if (tecla == SDLK_BACKSPACE) {
+        borrar_ultima_letra(*borrador);
+    } else if (tecla == SDLK_RETURN) {
+        if (!borrador->empty()) {
+            entrada.mensaje_chat = *borrador;
+        }
+        borrador.reset();
+        entrada.escribiendo = false;
+    } else if (tecla == SDLK_ESCAPE) {
+        borrador.reset();
+        entrada.escribiendo = false;
+    }
+}
+
 void Interfaz::alternar_pantalla_completa() {
     pantalla_completa = !pantalla_completa;
     ventana.SetFullscreen(pantalla_completa ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
@@ -91,7 +145,7 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
     for (const EntityState& entidad: estado.entidades) {
         auto aspecto = aspectos.find(entidad.type);
         if (aspecto == aspectos.end()) {
-            continue;  // todavia no hay dibujo para ese tipo
+            continue;
         }
         std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
         presentes.insert(clave);
@@ -132,13 +186,20 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
 
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
+    int leche = 0;
+    for (const InventorySlot& slot: estado.inventario.slots) {
+        leche += slot.item == ItemType::Milk ? slot.quantity : 0;
+    }
+    if (leche_anterior && leche > *leche_anterior) {
+        reproductor.reproducir(Sonido::Ordenar);
+    }
+    leche_anterior = leche;
     auto propio = std::find_if(
             estado.jugadores.begin(), estado.jugadores.end(),
             [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
     if (propio == estado.jugadores.end()) {
         return;
     }
-    // Hay varios frames por Snapshot: se compara solo cuando llega uno nuevo
     if (estado.tick != tick_escuchado) {
         if (propio_anterior) {
             bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;
@@ -170,7 +231,6 @@ void Interfaz::ajustar_lienzo(int ancho_area, int alto_area) {
     int ancho = std::max(1, (salida.x + escala - 1) / escala);
     int alto = std::max(1, (salida.y + escala - 1) / escala);
     if (!lienzo || lienzo->GetWidth() != ancho || lienzo->GetHeight() != alto) {
-        // ARGB8888 es un formato nativo del renderer; con RGBA8888 cada frame tardaba un 60% mas
         lienzo.emplace(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, ancho, alto);
         calculador_camara.ajustar_vista(ancho, alto);
     }
@@ -196,12 +256,18 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Clear();
     if (propio != entidades.end()) {
         dibujar_area(propio->second);
+        dibujar_inventario(estado.inventario);
     }
     renderer.SetTarget();
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
     renderer.Present();
+}
+
+void Interfaz::dibujar_inventario(const InventoryState& inventario) {
+    barra.dibujar(renderer, inventario, SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
 }
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio) {
@@ -242,10 +308,14 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
             sprites.insert(sprites.end(), capas.begin(), capas.end());
         }
     }
-    // Lo que apoya mas abajo esta mas adelante: se dibuja despues y tapa a lo de atras
     std::stable_sort(sprites.begin(), sprites.end(),
                      [](const Sprite& a, const Sprite& b) { return a.base() < b.base(); });
     for (const Sprite& sprite: sprites) {
         sprite.dibujar(renderer, camara);
+    }
+    for (const auto& [clave, entidad]: entidades) {
+        if (entidad.area() == area && entidad.emote() != Emote::None) {
+            globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+        }
     }
 }

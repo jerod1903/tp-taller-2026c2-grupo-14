@@ -12,12 +12,16 @@ target_sources(taller_client
     client.cpp
     game/game_loop.cpp
     gui/interfaz.cpp
-    gui/calculador_posicion.cpp
-    gui/animador_sprites.cpp
-    gui/entidad_grafica.cpp
-    gui/constructor_capas.cpp
-    gui/calculador_camara.cpp
-    gui/mapa.cpp
+    gui/calculadores/calculador_posicion.cpp
+    gui/sprites/animador_sprites.cpp
+    gui/sprites/entidad_grafica.cpp
+    gui/sprites/globo.cpp
+    gui/sprites/constructor_capas.cpp
+    gui/calculadores/calculador_camara.cpp
+    gui/mapa/mapa.cpp
+    gui/inventario/barra_inventario.cpp
+    gui/chat/fuente.cpp
+    gui/chat/panel_chat.cpp
     network/enviador.cpp
     network/recibidor.cpp
     audio/reproductor_sonidos.cpp
@@ -37,15 +41,19 @@ target_sources(taller_client
     game/estado_juego.h
     game/game_loop.h
     gui/interfaz.h
-    gui/calculador_posicion.h
-    gui/animador_sprites.h
-    gui/entidad_grafica.h
-    gui/capa.h
-    gui/constructor_capas.h
-    gui/calculador_camara.h
-    gui/mapa.h
+    gui/calculadores/calculador_posicion.h
+    gui/sprites/animador_sprites.h
+    gui/sprites/entidad_grafica.h
+    gui/sprites/globo.h
+    gui/sprites/capa.h
+    gui/sprites/constructor_capas.h
+    gui/calculadores/calculador_camara.h
+    gui/mapa/mapa.h
+    gui/inventario/barra_inventario.h
+    gui/chat/fuente.h
+    gui/chat/panel_chat.h
     gui/rutas.h
-    gui/sprite.h
+    gui/sprites/sprite.h
     network/enviador.h
     network/recibidor.h
     audio/sonido.h

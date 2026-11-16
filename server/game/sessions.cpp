@@ -21,6 +21,9 @@ void Sessions::add_player(uint32_t player_id, const GameMember& member,
         send(*other.outbox, info);
     }
     send(*outbox, info);
+    if (Player* character = world.find_player(player_id)) {
+        send(*outbox, character->get_inventory_state());
+    }
     players.emplace(player_id, ConnectedPlayer{std::move(outbox), std::move(info)});
 }
 
@@ -35,10 +38,26 @@ void Sessions::remove_player(uint32_t player_id) {
     remove(player_id);
 }
 
+void Sessions::send_to(uint32_t player_id, const GameMessage& message) {
+    auto player = players.find(player_id);
+    if (player != players.end()) {
+        send(*player->second.outbox, message);
+    }
+}
+
 void Sessions::broadcast(const GameMessage& message) {
     for (const auto& [player_id, player]: players) {
         send(*player.outbox, message);
     }
+}
+
+std::optional<uint32_t> Sessions::find_player_by_name(const std::string& character_name) {
+    for (const auto& [player_id, player]: players) {
+        if (player.info.characterName == character_name) {
+            return player_id;
+        }
+    }
+    return std::nullopt;
 }
 
 void Sessions::remove(uint32_t player_id) {

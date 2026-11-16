@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "common/game_dto.h"
@@ -12,8 +13,7 @@
 #include "server/game/world/world.h"
 
 // Los jugadores conectados a una partida: su outbox y su info. Al entrar crea su personaje en el
-// World y le manda la ubicación y quiénes están; al salir lo saca. Atiende a JoinCommand y
-// LeaveCommand.
+// World y le manda la ubicación, quiénes están y su inventario; al salir lo saca.
 class Sessions: public PlayerSessions {
 public:
     Sessions(std::string world_id, World& world);
@@ -22,8 +22,9 @@ public:
                     std::shared_ptr<Outbox> outbox) override;
     void remove_player(uint32_t player_id) override;
 
-    // A todos los conectados.
-    void broadcast(const GameMessage& message);
+    void send_to(uint32_t player_id, const GameMessage& message) override;
+    void broadcast(const GameMessage& message) override;
+    std::optional<uint32_t> find_player_by_name(const std::string& character_name) override;
 
 private:
     struct ConnectedPlayer {

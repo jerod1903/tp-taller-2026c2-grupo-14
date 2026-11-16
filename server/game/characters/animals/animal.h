@@ -16,11 +16,19 @@ public:
 
     AnimalKind get_kind() const;
 
+    // Solo la vaca se pone lista para ordeñar, COW_READY_SECONDS despues de la ultima vez (o de
+    // aparecer). La gallina nunca.
+    bool is_ready() const;
+    // Deja a la vaca sin leche y vuelve a contar desde COW_READY_SECONDS.
+    void milk();
+
     void update(float dt) override;
 
 private:
     AnimalKind kind;
     float time_left = 0;  // segundos hasta elegir otra direccion
+    float time_to_ready;  // segundos hasta tener leche (solo cuenta en la vaca)
+    bool ready = false;
     std::mt19937 rng;
 
     void choose_direction();

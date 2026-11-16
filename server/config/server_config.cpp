@@ -53,22 +53,29 @@ ServerConfig::Game read_game(const toml::table& root) {
 
 ServerConfig::Player read_player(const toml::table& root) {
     TomlTableReader player = section(root, "player");
-    return ServerConfig::Player{positive(player.requiredInt("health"), "health"),
-                                positive(player.requiredInt("energy"), "energy"),
-                                player.requiredInt("gold"),
-                                positive(required_float(player, "speed"), "speed")};
+    int max_stack = positive(player.requiredInt("max_stack"), "max_stack");
+    if (max_stack > std::numeric_limits<uint8_t>::max()) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'max_stack' is too big");
+    }
+    return ServerConfig::Player{
+            positive(player.requiredInt("health"), "health"),
+            positive(player.requiredInt("energy"), "energy"), player.requiredInt("gold"),
+            positive(required_float(player, "speed"), "speed"), static_cast<uint8_t>(max_stack)};
 }
 
 ServerConfig::Animals read_animals(const toml::table& root) {
     TomlTableReader animals = section(root, "animals");
-    ServerConfig::Animals read{animals.requiredInt("cows"),
-                               animals.requiredInt("chickens"),
-                               animals.requiredInt("offset_x"),
-                               animals.requiredInt("offset_y"),
-                               positive(animals.requiredInt("health"), "health"),
-                               positive(required_float(animals, "speed"), "speed"),
-                               positive(required_float(animals, "min_walk"), "min_walk"),
-                               positive(required_float(animals, "max_walk"), "max_walk")};
+    ServerConfig::Animals read{
+            animals.requiredInt("cows"),
+            animals.requiredInt("chickens"),
+            animals.requiredInt("offset_x"),
+            animals.requiredInt("offset_y"),
+            positive(animals.requiredInt("health"), "health"),
+            positive(required_float(animals, "speed"), "speed"),
+            positive(required_float(animals, "min_walk"), "min_walk"),
+            positive(required_float(animals, "max_walk"), "max_walk"),
+            positive(required_float(animals, "cow_ready_seconds"), "cow_ready_seconds"),
+            positive(required_float(animals, "milking_reach"), "milking_reach")};
     if (read.min_walk > read.max_walk) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'min_walk' is bigger than 'max_walk'");
     }

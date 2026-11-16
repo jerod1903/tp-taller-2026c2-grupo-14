@@ -33,9 +33,23 @@ TEST(AnimalTest, ChangesDirectionOverTime) {
 
 TEST(AnimalTest, NeverLeavesAWalledPen) {
     // Corral de 3x3 rodeado de paredes, en una grilla de 5x5
-    TestLocation location{make_grid(5, 5, {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {0, 4},
-                                           {1, 4}, {2, 4}, {3, 4}, {4, 4}, {0, 1}, {0, 2},
-                                           {0, 3}, {4, 1}, {4, 2}, {4, 3}})};
+    TestLocation location{make_grid(5, 5,
+                                    {{0, 0},
+                                     {1, 0},
+                                     {2, 0},
+                                     {3, 0},
+                                     {4, 0},
+                                     {0, 4},
+                                     {1, 4},
+                                     {2, 4},
+                                     {3, 4},
+                                     {4, 4},
+                                     {0, 1},
+                                     {0, 2},
+                                     {0, 3},
+                                     {4, 1},
+                                     {4, 2},
+                                     {4, 3}})};
     Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
     for (int i = 0; i < 60 * server_config().game.tick_rate; ++i) {
         cow.update(TICK);
@@ -44,4 +58,30 @@ TEST(AnimalTest, NeverLeavesAWalledPen) {
         ASSERT_GE(cow.get_position().y, 1);
         ASSERT_LE(cow.get_position().y, 3);
     }
+}
+
+TEST(AnimalTest, ACowIsReadyAfterCowReadySeconds) {
+    TestLocation location;
+    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
+    cow.update(server_config().animals.cow_ready_seconds - 1);
+    EXPECT_FALSE(cow.is_ready());
+    cow.update(1);
+    EXPECT_TRUE(cow.is_ready());
+}
+
+TEST(AnimalTest, MilkingStartsTheCountAgain) {
+    TestLocation location;
+    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
+    cow.update(server_config().animals.cow_ready_seconds);
+    cow.milk();
+    EXPECT_FALSE(cow.is_ready());
+    cow.update(server_config().animals.cow_ready_seconds);
+    EXPECT_TRUE(cow.is_ready());
+}
+
+TEST(AnimalTest, AChickenIsNeverReady) {
+    TestLocation location;
+    Animal chicken(0, AnimalKind::Chicken, Position{2, 2}, location, SEED);
+    chicken.update(server_config().animals.cow_ready_seconds * 10);
+    EXPECT_FALSE(chicken.is_ready());
 }

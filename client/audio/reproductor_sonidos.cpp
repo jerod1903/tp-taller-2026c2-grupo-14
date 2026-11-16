@@ -46,7 +46,5 @@ void ReproductorSonidos::reproducir(Sonido sonido) {
     }
     try {
         mixer->PlayChannel(-1, encontrado->second);
-    } catch (const SDL2pp::Exception&) {
-        // si llega aca es xq estan todos los canales ocupados
-    }
+    } catch (const SDL2pp::Exception&) {}
 }
