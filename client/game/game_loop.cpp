@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 
+#include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/menu/backend/ILobbyProtocol.h"
 
@@ -31,7 +32,7 @@ std::optional<EndReason> GameLoop::ejecutar() {
             procesar_entrada(interfaz.leer_entrada());
             procesar_mensajes();
             interfaz.dibujar(estado);
-            std::this_thread::sleep_until(inicio + DURACION_FRAME);
+            std::this_thread::sleep_until(inicio + client_config().ventana.duracion_frame);
         }
     } catch (const LobbyConnectionError&) {
         return std::nullopt;  // no se pudo mandar: se corto la conexion

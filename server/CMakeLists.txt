@@ -3,6 +3,7 @@ target_sources(taller_server
     # .cpp files
     main.cpp
     server.cpp
+    config/server_config.cpp
     game/game.cpp
     game/commands/command_factory.cpp
     game/commands/join_command.cpp
@@ -36,6 +37,7 @@ target_sources(taller_server
     PUBLIC
     # .h files
     consts.h
+    config/server_config.h
     server.h
     game/game_event.h
     game/game.h

@@ -12,15 +12,15 @@
 #include <vector>
 
 #include "common/logger.h"
-#include "server/consts.h"
+#include "server/config/server_config.h"
 #include "server/game/characters/animals/animal.h"
 #include "server/game/world/world_builder.h"
 
 namespace {
-constexpr std::chrono::nanoseconds TICK_DURATION =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
-        ServerConstants::TICK_RATE;
-const float TICK_SECONDS = std::chrono::duration<float>(TICK_DURATION).count();
+std::chrono::nanoseconds tick_duration() {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
+           server_config().game.tick_rate;
+}
 
 uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
 
@@ -75,14 +75,16 @@ void Game::start() {
 }
 
 void Game::run() {
+    const std::chrono::nanoseconds period = tick_duration();
+    const float tick_seconds = std::chrono::duration<float>(period).count();
     std::chrono::steady_clock::time_point next = std::chrono::steady_clock::now();
     try {
         while (should_keep_running()) {
             process_events();
-            world->update(TICK_SECONDS);
+            world->update(tick_seconds);
             ++tick;
             broadcast_snapshot();
-            next += TICK_DURATION;
+            next += period;
             std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
             if (next < now) {
                 next = now;  // Atrasado: no intenta recuperar los ticks perdidos.
@@ -114,8 +116,8 @@ void Game::add_player(uint32_t player_id, const GameMember& member,
     remove(player_id);
     auto character = std::make_unique<Player>(
             player_id, world->get_spawn(), world->get_farm(), member.characterName,
-            ServerConstants::INITIAL_HEALTH, ServerConstants::PLAYER_SPEED,
-            ServerConstants::INITIAL_GOLD, ServerConstants::INITIAL_ENERGY);
+            server_config().player.health, server_config().player.speed,
+            server_config().player.gold, server_config().player.energy);
     world->add_player(*character);
     send(*outbox, LocationData{world_id});
     PlayerInfo info{player_id, member.characterName, member.appearance};

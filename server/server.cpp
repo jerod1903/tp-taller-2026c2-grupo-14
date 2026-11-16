@@ -5,11 +5,12 @@
 #include <vector>
 
 #include "common/logger.h"
+#include "server/config/server_config.h"
 #include "server/consts.h"
 
 Server::Server(const char* servicename, std::istream& input, const std::vector<GameWorld>& worlds):
         input(input),
-        registry(worlds, store, ServerConstants::MAX_PLAYERS),
+        registry(worlds, store, server_config().game.max_players),
         acceptor(servicename, registry) {}
 
 void Server::execute() {

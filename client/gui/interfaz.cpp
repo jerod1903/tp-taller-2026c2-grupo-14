@@ -7,19 +7,21 @@
 #include <utility>
 #include <vector>
 
-#include <SDL2/SDL_image.h>
+#include <SDL_image.h>
 
+#include "client/config/client_config.h"
 #include "client/constants.h"
+
 #include "rutas.h"
 
 Interfaz::Interfaz():
         sdl(SDL_INIT_VIDEO),
         sdl_image(IMG_INIT_PNG),
-        ventana("Jueguito", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, ANCHO_VENTANA,
-                ALTO_VENTANA, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
+        ventana("Jueguito", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                client_config().ventana.ancho, client_config().ventana.alto,
+                SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
         renderer(ventana, -1,
-                 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
-                         SDL_RENDERER_TARGETTEXTURE),
+                 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
         constructor_capas(renderer),
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
@@ -43,8 +45,7 @@ Entrada Interfaz::leer_entrada() {
             (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_ESCAPE)) {
             entrada.salir = true;
         }
-        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_F11 &&
-            !evento.key.repeat) {
+        if (evento.type == SDL_KEYDOWN && evento.key.keysym.sym == SDLK_F11 && !evento.key.repeat) {
             alternar_pantalla_completa();
         }
     }
@@ -147,7 +148,7 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
     }
     if (caminando && ahora >= proximo_paso) {
         reproductor.reproducir(Sonido::Paso);
-        proximo_paso = ahora + INTERVALO_PASO;
+        proximo_paso = ahora + client_config().audio.intervalo_paso;
     }
 }
 
@@ -155,7 +156,7 @@ void Interfaz::ajustar_lienzo() {
     SDL2pp::Point salida = renderer.GetOutputSize();
     // Escala entera, para que todos los pixeles midan lo mismo, y elegida para que se vea mas o
     // menos la misma porcion del mundo en cualquier tamaño de ventana
-    escala = std::max(1, salida.y / ALTO_MUNDO_VISIBLE);
+    escala = std::max(1, salida.y / client_config().ventana.alto_mundo_visible);
     int ancho = std::max(1, (salida.x + escala - 1) / escala);
     int alto = std::max(1, (salida.y + escala - 1) / escala);
     if (!lienzo || lienzo->GetWidth() != ancho || lienzo->GetHeight() != alto) {

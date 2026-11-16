@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "server/consts.h"
+#include "server/config/server_config.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/cabin.h"
 #include "server/game/world/farm/farm.h"
@@ -175,14 +175,14 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     // jugador (o ahi mismo si esa celda no se puede pisar).
     int next = 0;
     auto add_animal = [&](AnimalKind kind) {
-        Position pos{spawn.x + ServerConstants::ANIMALS_OFFSET_X + next++,
-                     spawn.y + ServerConstants::ANIMALS_OFFSET_Y};
+        Position pos{spawn.x + server_config().animals.offset_x + next++,
+                     spawn.y + server_config().animals.offset_y};
         farm->add_animal(kind, farm->is_walkable(pos) ? pos : spawn);
     };
-    for (int i = 0; i < ServerConstants::INITIAL_COWS; ++i) {
+    for (int i = 0; i < server_config().animals.cows; ++i) {
         add_animal(AnimalKind::Cow);
     }
-    for (int i = 0; i < ServerConstants::INITIAL_CHICKENS; ++i) {
+    for (int i = 0; i < server_config().animals.chickens; ++i) {
         add_animal(AnimalKind::Chicken);
     }
     return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon), spawn);

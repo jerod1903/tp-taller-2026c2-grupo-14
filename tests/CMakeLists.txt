@@ -4,6 +4,7 @@ target_sources(taller_tests
     creature_test.cpp
     dungeon_test.cpp
     client_protocol_test.cpp
+    config_test.cpp
     animador_sprites_test.cpp
     animal_test.cpp
     character_sheets_test.cpp
@@ -28,6 +29,7 @@ target_sources(taller_tests
     sender_test.cpp
     server_protocol_test.cpp
     # Código del servidor bajo test (sin main.cpp)
+    ../server/config/server_config.cpp
     ../server/game/characters/animals/animal.cpp
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
@@ -70,6 +72,7 @@ target_sources(taller_tests
     ../editor/tools/PlaceTool.cpp
     ../editor/tools/SelectTool.cpp
     # Código del cliente bajo test (sin Qt)
+    ../client/config/client_config.cpp
     ../client/network/ClientProtocol.cpp
     ../client/gui/animador_sprites.cpp
     PUBLIC

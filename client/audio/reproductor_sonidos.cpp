@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
 
@@ -15,8 +16,8 @@ ReproductorSonidos::ReproductorSonidos() {
         audio_iniciado = true;
         biblioteca.emplace(MIX_INIT_OGG);
         mixer.emplace(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,
-                      TAMANO_BUFFER_AUDIO);
-        mixer->AllocateChannels(CANALES_AUDIO);
+                      client_config().audio.tamano_buffer);
+        mixer->AllocateChannels(client_config().audio.canales);
         for (const auto& [sonido, ruta]: RUTAS_SONIDOS) {
             sonidos.emplace(sonido, SDL2pp::Chunk(ruta));
         }

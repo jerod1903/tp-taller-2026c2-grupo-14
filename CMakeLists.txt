@@ -56,6 +56,8 @@ target_link_libraries(taller_common PUBLIC tomlplusplus::tomlplusplus)
 
 # Ruta absoluta a maps/ para que cliente, servidor y editor no dependan del cwd
 target_compile_definitions(taller_common PUBLIC TALLER_MAPS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/maps")
+# Carpeta de server_config.toml y client_config.toml
+target_compile_definitions(taller_common PUBLIC TALLER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # HEY!! TODO XXX: you need to install some runtime and dev libraries *before*
 # compiling the client/editor code.

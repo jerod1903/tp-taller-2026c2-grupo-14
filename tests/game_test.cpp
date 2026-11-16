@@ -12,7 +12,7 @@
 #include <gtest/gtest.h>
 
 #include "common/logger.h"
-#include "server/consts.h"
+#include "server/config/server_config.h"
 #include "server/game/commands/join_command.h"
 #include "server/game/commands/leave_command.h"
 #include "server/game/commands/move_command.h"
@@ -104,9 +104,8 @@ TEST_F(GameTest, SecondPlayerReceivesTheInfoOfBoth) {
     outbox->pop();
     // Llegan juntos, antes de cualquier snapshot: el orden entre ellos no está definido.
     std::vector<PlayerInfo> infos{next<PlayerInfo>(*outbox), next<PlayerInfo>(*outbox)};
-    std::sort(infos.begin(), infos.end(), [](const PlayerInfo& a, const PlayerInfo& b) {
-        return a.playerId < b.playerId;
-    });
+    std::sort(infos.begin(), infos.end(),
+              [](const PlayerInfo& a, const PlayerInfo& b) { return a.playerId < b.playerId; });
     EXPECT_EQ(infos, (std::vector<PlayerInfo>{{0, "Martu", first.appearance},
                                               {1, "Santu", second.appearance}}));
 }
@@ -155,8 +154,8 @@ TEST_F(GameTest, SnapshotsHaveTheAnimalsOfTheFarm) {
             EXPECT_EQ(entity.areaId, "granja");
         }
     }
-    EXPECT_EQ(cows, ServerConstants::INITIAL_COWS);
-    EXPECT_EQ(chickens, ServerConstants::INITIAL_CHICKENS);
+    EXPECT_EQ(cows, server_config().animals.cows);
+    EXPECT_EQ(chickens, server_config().animals.chickens);
 }
 
 TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
@@ -179,8 +178,8 @@ TEST_F(GameTest, JoinedPlayerStartsStillOnTheSpawnOfTheFarm) {
     EXPECT_EQ(player.y, 7 * POSITION_SCALE + POSITION_SCALE / 2);
     EXPECT_EQ(player.dirX, 0);
     EXPECT_EQ(player.dirY, 0);
-    EXPECT_EQ(player.health, ServerConstants::INITIAL_HEALTH);
-    EXPECT_EQ(player.gold, static_cast<uint32_t>(ServerConstants::INITIAL_GOLD));
+    EXPECT_EQ(player.health, server_config().player.health);
+    EXPECT_EQ(player.gold, static_cast<uint32_t>(server_config().player.gold));
 }
 
 TEST_F(GameTest, MoveMakesThePlayerWalkThatWay) {

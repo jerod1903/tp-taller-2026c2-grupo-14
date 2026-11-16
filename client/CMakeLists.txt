@@ -6,6 +6,7 @@ target_sources(taller_client
     # .cpp files
     main.cpp
     app/ClientApp.cpp
+    config/client_config.cpp
     menu/QtMenu.cpp
     network/ClientProtocol.cpp
     client.cpp
@@ -23,6 +24,7 @@ target_sources(taller_client
     PUBLIC
     # .h files
     app/ClientApp.h
+    config/client_config.h
     app/GameSession.h
     app/IGameView.h
     app/IMenu.h

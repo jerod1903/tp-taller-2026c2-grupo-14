@@ -21,25 +21,12 @@ inline const char* const MUNDO_PRUEBA = "valle";
 inline const char* const NOMBRE_PARTIDA_PRUEBA = "prueba";
 inline constexpr CharacterAppearance APARIENCIA_PRUEBA{0, 0, 0, 0, 0};
 
-// game_loop.cpp
-inline const std::chrono::milliseconds DURACION_FRAME(16);  // 60 fps aprox
-
 // reproductor_sonidos.cpp
-inline constexpr int CANALES_AUDIO = 16;  // cuantos efectos pueden sonar a la vez
-// Muestras por bloque: mas chico suena antes (1024 a 44100 Hz son 23 ms), mas grande corta menos
-inline constexpr int TAMANO_BUFFER_AUDIO = 1024;
 inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
 // La funcion de SDL que fallo, para el mensaje de la excepcion
 inline const char* const FUNCION_INICIO_AUDIO = "SDL_InitSubSystem";
 
 // interfaz.cpp
-inline const int ANCHO_VENTANA = 800;
-inline const int ALTO_VENTANA = 600;
-// En pixeles del tileset: la escala se elige para que entre mas o menos esto de alto (12 casillas
-// y media), sea cual sea el tamaño de la ventana
-inline const int ALTO_MUNDO_VISIBLE = 200;
-// Mientras el jugador camina suena un paso cada tanto
-inline const std::chrono::milliseconds INTERVALO_PASO(300);
 // La hoja del granjero: una fila por orientacion (el costado mira a la derecha) y la caminata va
 // quieto, pie izquierdo, quieto, pie derecho. En los pasos la cabeza baja un pixel
 inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x,
@@ -74,16 +61,14 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
 // constructor_capas.cpp
 // Que vista de cada hoja va con cada orientacion: (numero de vista, si se espeja). El pelo trae un
 // solo costado; la camisa y el sombrero traen los dos
-inline const Vistas VISTAS_PELO = {
-        {Orientacion::Abajo, {0, false}},
-        {Orientacion::Derecha, {1, false}},
-        {Orientacion::Izquierda, {1, true}},
-        {Orientacion::Arriba, {2, false}}};
-inline const Vistas VISTAS_CUATRO = {
-        {Orientacion::Abajo, {0, false}},
-        {Orientacion::Derecha, {1, false}},
-        {Orientacion::Izquierda, {2, false}},
-        {Orientacion::Arriba, {3, false}}};
+inline const Vistas VISTAS_PELO = {{Orientacion::Abajo, {0, false}},
+                                   {Orientacion::Derecha, {1, false}},
+                                   {Orientacion::Izquierda, {1, true}},
+                                   {Orientacion::Arriba, {2, false}}};
+inline const Vistas VISTAS_CUATRO = {{Orientacion::Abajo, {0, false}},
+                                     {Orientacion::Derecha, {1, false}},
+                                     {Orientacion::Izquierda, {2, false}},
+                                     {Orientacion::Arriba, {3, false}}};
 inline constexpr int BASE_HEXADECIMAL = 16;
 // Partes de un pixel ARGB8888, para repintar las mangas sin tocar la transparencia
 inline constexpr uint32_t MASCARA_ALFA = 0xFF000000;
