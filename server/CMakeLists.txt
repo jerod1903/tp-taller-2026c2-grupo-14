@@ -72,6 +72,7 @@ target_sources(taller_server
     game/world/movement.h
     game/world/portal.h
     game/world/position.h
+    game/world/point.h
     game/world/spawn_point.h
     game/world/tile.h
     game/world/town/town.h

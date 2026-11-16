@@ -1,5 +1,6 @@
 #include "server/game/world/farm/cabin.h"
 
+#include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <utility>
@@ -29,11 +30,26 @@ const Position& Cabin::assign_bed(uint32_t player_id) {
 
 SpawnPoint Cabin::bed_spawn(uint32_t player_id) {
     const Position& bed = assign_bed(player_id);
-    return SpawnPoint{*this, Position{bed.x, bed.y + stardew::maps::BED_HEAD_HEIGHT}};
+    constexpr float CELL_CENTER = 0.5f;
+    return SpawnPoint{*this, Point{bed.x + stardew::maps::BED_WIDTH / 2.0f,
+                                   bed.y + stardew::maps::BED_HEAD_HEIGHT + CELL_CENTER}};
 }
 
 const std::map<uint32_t, Position>& Cabin::get_beds() const { return beds; }
 
 std::size_t Cabin::bed_slot_count() const { return bed_slots.size(); }
+
+bool Cabin::is_walkable(const Position& pos) const {
+    return Location::is_walkable(pos) && !is_bed_head(pos);
+}
+
+bool Cabin::is_bed_head(const Position& pos) const {
+    return std::any_of(beds.begin(), beds.end(), [&pos](const auto& bed) {
+        const Position& corner = bed.second;
+        // Solo la fila de la almohada: por la de arriba se pasa por detras de la cabecera
+        return pos.x >= corner.x && pos.x < corner.x + stardew::maps::BED_WIDTH &&
+               pos.y == corner.y + stardew::maps::BED_HEAD_HEIGHT - 1;
+    });
+}
 
 void Cabin::update(float dt) { update_entities(dt); }

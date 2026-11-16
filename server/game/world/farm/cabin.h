@@ -30,6 +30,8 @@ public:
     const std::map<uint32_t, Position>& get_beds() const;
     std::size_t bed_slot_count() const;
 
+    // Como cualquier Location, pero la cabecera de una cama con dueño no se pisa.
+    bool is_walkable(const Position& pos) const override;
 
     void update(float dt) override;
 
@@ -37,6 +39,8 @@ private:
     Position door_pos;
     std::vector<Position> bed_slots;
     std::map<uint32_t, Position> beds;
+
+    bool is_bed_head(const Position& pos) const;
 };
 
 #endif  // CABIN_H

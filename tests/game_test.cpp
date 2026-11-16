@@ -210,7 +210,8 @@ TEST_F(GameTest, JoinedPlayerStartsStillInItsBed) {
         }
     }
     EXPECT_EQ(player.areaId, "cabin");
-    EXPECT_EQ(player.x, bed_x * POSITION_SCALE + POSITION_SCALE / 2);  // centro de la celda
+    // En el medio de la cama, que ocupa BED_WIDTH celdas
+    EXPECT_EQ(player.x, bed_x * POSITION_SCALE + stardew::maps::BED_WIDTH * POSITION_SCALE / 2);
     EXPECT_EQ(player.y,
               (bed_y + stardew::maps::BED_HEAD_HEIGHT) * POSITION_SCALE + POSITION_SCALE / 2);
     EXPECT_EQ(player.dirX, 0);

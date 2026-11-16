@@ -39,10 +39,18 @@ float Creature::get_y() const { return y; }
 
 bool Creature::has_stepped() const { return stepped; }
 
+bool Creature::is_trapped() const { return !fits(x, y); }
+
 void Creature::relocate(Location& target, const Position& arrival) {
     Entity::relocate(target, arrival);
     x = arrival.x + CELL_CENTER;
     y = arrival.y + CELL_CENTER;
+}
+
+void Creature::place_at(const Point& point) {
+    x = point.x;
+    y = point.y;
+    pos = cell_of(point);
 }
 
 bool Creature::advance(float dt) {

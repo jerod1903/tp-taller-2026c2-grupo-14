@@ -22,8 +22,13 @@ Dungeon& World::get_dungeon() { return dungeon; }
 void World::spawn_player(uint32_t player_id, std::string name) {
     SpawnPoint spawn = movement.spawn_point(player_id);
     const ServerConfig::Player& stats = server_config().player;
-    add_player(std::make_unique<Player>(player_id, spawn.position, spawn.location, std::move(name),
-                                        stats.health, stats.speed, stats.gold, stats.energy));
+    auto player = std::make_unique<Player>(player_id, cell_of(spawn.point), spawn.location,
+                                           std::move(name), stats.health, stats.speed, stats.gold,
+                                           stats.energy);
+    player->place_at(spawn.point);
+    add_player(std::move(player));
+    // Su cama puede haber aparecido donde estaba parado otro
+    movement.free_trapped();
 }
 
 Player& World::add_player(std::unique_ptr<Player> player) {
