@@ -10,11 +10,7 @@
 
 Cabin::Cabin(std::string name, Grid grid, const Position& door_pos,
              std::vector<Position> bed_slots):
-        Location(std::move(name), std::move(grid)),
-        door_pos(door_pos),
-        bed_slots(std::move(bed_slots)) {}
-
-const Position& Cabin::get_door_pos() const { return door_pos; }
+        Interior(std::move(name), std::move(grid), door_pos), bed_slots(std::move(bed_slots)) {}
 
 const Position& Cabin::assign_bed(uint32_t player_id) {
     auto bed = beds.find(player_id);
@@ -51,5 +47,3 @@ bool Cabin::is_bed_head(const Position& pos) const {
                pos.y == corner.y + stardew::maps::BED_HEAD_HEIGHT - 1;
     });
 }
-
-void Cabin::update(float dt) { update_entities(dt); }

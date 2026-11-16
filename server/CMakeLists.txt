@@ -23,6 +23,7 @@ target_sources(taller_server
     game/world/dungeon/dungeon.cpp
     game/world/dungeon/dungeon_level.cpp
     game/world/farm/cabin.cpp
+    game/world/interior.cpp
     game/world/farm/farm.cpp
     game/world/grid.cpp
     game/world/location.cpp
@@ -68,6 +69,7 @@ target_sources(taller_server
     game/world/dungeon/dungeon.h
     game/world/dungeon/dungeon_level.h
     game/world/farm/cabin.h
+    game/world/interior.h
     game/world/farm/farm.h
     game/world/grid.h
     game/world/location.h

@@ -40,6 +40,7 @@ target_sources(taller_tests
     ../server/game/world/dungeon/dungeon.cpp
     ../server/game/world/dungeon/dungeon_level.cpp
     ../server/game/world/farm/cabin.cpp
+    ../server/game/world/interior.cpp
     ../server/game/world/farm/farm.cpp
     ../server/game/world/grid.cpp
     ../server/game/world/location.cpp
