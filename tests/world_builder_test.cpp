@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "common/map/persistence/MapRepository.h"
+#include "server/config/server_config.h"
 
 namespace {
 
@@ -133,10 +134,14 @@ TEST_F(WorldBuilderTest, CabinBlocksItsCellsExceptTheDoor) {
 TEST_F(WorldBuilderTest, CabinDoorLeadsToTheInteriorAndBack) {
     std::optional<Portal> in = farm().portal_at(Position{2, 2});
     ASSERT_TRUE(in.has_value());
-    EXPECT_EQ(in->target, &farm().get_cabin());
-    EXPECT_EQ(in->arrival, CabinInterior::DOOR);
-    EXPECT_EQ(farm().get_cabin().portal_at(CabinInterior::DOOR)->target, &farm());
-    EXPECT_EQ(farm().get_cabin().get_grid().get_width(), CabinInterior::WIDTH);
+    Cabin& cabin = farm().get_cabin();
+    EXPECT_EQ(in->target, &cabin);
+    EXPECT_EQ(in->arrival, cabin.get_door_pos());
+    EXPECT_EQ(cabin.portal_at(cabin.get_door_pos())->target, &farm());
+}
+
+TEST_F(WorldBuilderTest, CabinHasABedSlotForEachPlayer) {
+    EXPECT_EQ(farm().get_cabin().bed_slot_count(), server_config().game.max_players);
 }
 
 TEST_F(WorldBuilderTest, PlayersSpawnOnTheSpawnPointOfTheFarm) {

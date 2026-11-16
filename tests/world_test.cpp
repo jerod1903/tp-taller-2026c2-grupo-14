@@ -1,6 +1,7 @@
 #include "server/game/world/world.h"
 
 #include <memory>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -105,6 +106,35 @@ TEST_F(WorldTest, SteppingOutAndBackOnTheDoorReturnsToTheFarm) {
     world->update(1.0f);
     EXPECT_EQ(&player.get_location(), &farm());
     EXPECT_EQ(player.get_position(), CABIN_POS);
+}
+
+}  // namespace
+
+namespace {
+
+Cabin make_cabin_with_beds(std::vector<Position> slots) {
+    return Cabin("cabin", make_grid(), DOOR_POS, std::move(slots));
+}
+
+TEST(CabinBedsTest, BedsAreGivenInTheOrderOfTheSlots) {
+    Cabin cabin = make_cabin_with_beds({Position{1, 1}, Position{3, 1}});
+    EXPECT_EQ(cabin.assign_bed(5), (Position{1, 1}));
+    EXPECT_EQ(cabin.assign_bed(2), (Position{3, 1}));
+    EXPECT_EQ(cabin.get_beds().size(), 2u);
+}
+
+TEST(CabinBedsTest, APlayerThatComesBackKeepsItsBed) {
+    Cabin cabin = make_cabin_with_beds({Position{1, 1}, Position{3, 1}});
+    cabin.assign_bed(5);
+    cabin.assign_bed(2);
+    EXPECT_EQ(cabin.assign_bed(5), (Position{1, 1}));
+    EXPECT_EQ(cabin.get_beds().size(), 2u);
+}
+
+TEST(CabinBedsTest, WithoutFreeSlotsAssigningABedThrows) {
+    Cabin cabin = make_cabin_with_beds({Position{1, 1}});
+    cabin.assign_bed(5);
+    EXPECT_THROW(cabin.assign_bed(6), std::logic_error);
 }
 
 }  // namespace

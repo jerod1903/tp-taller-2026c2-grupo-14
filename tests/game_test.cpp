@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <iterator>
 #include <memory>
 #include <thread>
 #include <utility>
@@ -104,8 +105,9 @@ TEST_F(GameTest, SecondPlayerReceivesTheInfoOfBoth) {
     outbox->pop();
     // Llegan juntos, antes de cualquier snapshot: el orden entre ellos no está definido.
     std::vector<PlayerInfo> infos{next<PlayerInfo>(*outbox), next<PlayerInfo>(*outbox)};
-    std::sort(infos.begin(), infos.end(),
-              [](const PlayerInfo& a, const PlayerInfo& b) { return a.playerId < b.playerId; });
+    std::sort(infos.begin(), infos.end(), [](const PlayerInfo& a, const PlayerInfo& b) {
+        return a.playerId < b.playerId;
+    });
     EXPECT_EQ(infos, (std::vector<PlayerInfo>{{0, "Martu", first.appearance},
                                               {1, "Santu", second.appearance}}));
 }
@@ -150,12 +152,26 @@ TEST_F(GameTest, SnapshotsHaveTheAnimalsOfTheFarm) {
     for (const EntityState& entity: snapshot.entities) {
         cows += entity.type == EntityType::Cow ? 1 : 0;
         chickens += entity.type == EntityType::Chicken ? 1 : 0;
-        if (entity.type != EntityType::Player) {
+        if (entity.type == EntityType::Cow || entity.type == EntityType::Chicken) {
             EXPECT_EQ(entity.areaId, "granja");
         }
     }
     EXPECT_EQ(cows, server_config().animals.cows);
     EXPECT_EQ(chickens, server_config().animals.chickens);
+}
+
+TEST_F(GameTest, EachPlayerGetsItsOwnBedInTheCabinWhenJoining) {
+    std::shared_ptr<Outbox> first = join(0);
+    join(1);
+    Snapshot snapshot = wait_snapshot(*first, [](const Snapshot& s) { return s.players.size() == 2; });
+    std::vector<EntityState> beds;
+    std::copy_if(snapshot.entities.begin(), snapshot.entities.end(), std::back_inserter(beds),
+                 [](const EntityState& e) { return e.type == EntityType::Bed; });
+    ASSERT_EQ(beds.size(), 2u);
+    EXPECT_EQ(beds[0].entityId, 0u);
+    EXPECT_EQ(beds[1].entityId, 1u);
+    EXPECT_EQ(beds[0].areaId, "cabin");
+    EXPECT_NE(std::make_pair(beds[0].x, beds[0].y), std::make_pair(beds[1].x, beds[1].y));
 }
 
 TEST_F(GameTest, LocationDataCarriesTheTickRate) {

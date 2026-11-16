@@ -52,6 +52,17 @@ const std::map<AnimalKind, EntityType> ENTITY_TYPE_OF = {
         {AnimalKind::Chicken, EntityType::Chicken},
 };
 
+// La celda de arriba a la izquierda de la cama, en milésimas de celda
+EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& area_id) {
+    return EntityState{player_id,
+                       EntityType::Bed,
+                       area_id,
+                       static_cast<uint32_t>(slot.x) * POSITION_SCALE,
+                       static_cast<uint32_t>(slot.y) * POSITION_SCALE,
+                       0,
+                       0};
+}
+
 EntityState entity_of(const Animal& animal) {
     Position delta = step(Position{0, 0}, animal.get_direction());
     return EntityState{animal.get_id(),
@@ -119,6 +130,7 @@ void Game::add_player(uint32_t player_id, const GameMember& member,
             server_config().player.health, server_config().player.speed,
             server_config().player.gold, server_config().player.energy);
     world->add_player(*character);
+    world->get_farm().get_cabin().assign_bed(player_id);
     send(*outbox, LocationData{world_id, static_cast<uint16_t>(server_config().game.tick_rate),
                                server_config().game.max_players});
     PlayerInfo info{player_id, member.characterName, member.appearance};
@@ -158,6 +170,10 @@ void Game::broadcast_snapshot() {
     }
     for (const std::unique_ptr<Animal>& animal: world->get_farm().get_animals()) {
         snapshot.entities.push_back(entity_of(*animal));
+    }
+    const Cabin& cabin = world->get_farm().get_cabin();
+    for (const auto& [player_id, slot]: cabin.get_beds()) {
+        snapshot.entities.push_back(bed_of(player_id, slot, cabin.get_name()));
     }
     for (const auto& [player_id, player]: players) {
         send(*player.outbox, snapshot);

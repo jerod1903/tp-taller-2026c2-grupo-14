@@ -66,6 +66,7 @@ enum class EntityType : uint8_t {
     Player,
     Cow,
     Chicken,
+    Bed,  // la de cada jugador, con su playerId como entityId; aparece cuando entra a la partida
 };
 
 // Algo que se dibuja y se mueve, en un tick. entityId es único dentro de su tipo (una vaca puede
