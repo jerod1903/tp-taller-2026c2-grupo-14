@@ -12,6 +12,7 @@ struct Entrada {
     std::optional<uint8_t> slot_seleccionado;
     std::optional<std::string> mensaje_chat;
     bool interactuar = false;
+    std::optional<bool> escribiendo;
 };
 
 #endif

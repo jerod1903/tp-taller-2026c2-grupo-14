@@ -62,7 +62,8 @@ inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x
                                                  {Orientacion::Izquierda, {1, true}}},
                                                 {0, 1, 0, 2},
                                                 std::chrono::duration<float>(0.15f),
-                                                {{1, 1}, {2, 1}}};
+                                                {{1, 1}, {2, 1}},
+                                                4};
 
 inline const FormatoAnimacion FORMATO_VACA{32,
                                            32,
@@ -71,7 +72,9 @@ inline const FormatoAnimacion FORMATO_VACA{32,
                                             {Orientacion::Abajo, {1, false}},
                                             {Orientacion::Arriba, {2, false}}},
                                            {0, 1, 2, 3},
-                                           std::chrono::duration<float>(0.15f)};
+                                           std::chrono::duration<float>(0.15f),
+                                           {},
+                                           11};
 inline const FormatoAnimacion FORMATO_GALLINA{16,
                                               16,
                                               {{Orientacion::Izquierda, {0, false}},
@@ -80,6 +83,12 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
                                                {Orientacion::Arriba, {1, false}}},
                                               {0, 1, 2, 3},
                                               std::chrono::duration<float>(0.15f)};
+
+inline constexpr int SEPARACION_GLOBO = 1;
+inline constexpr int RELLENO_GLOBO = 2;
+inline constexpr int ALTO_PALITO = 3;
+inline constexpr SDL_Color COLOR_FONDO_GLOBO = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_BORDE_GLOBO = {38, 43, 68, 255};
 
 inline constexpr int TAMANO_CASILLERO = 18;
 inline constexpr int SEPARACION_CASILLEROS = 1;

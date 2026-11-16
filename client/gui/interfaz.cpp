@@ -30,7 +30,8 @@ Interfaz::Interfaz():
                   {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
         barra(renderer),
         fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
-        panel_chat(fuente) {}
+        panel_chat(fuente),
+        globo(renderer) {}
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
@@ -67,6 +68,7 @@ Entrada Interfaz::leer_entrada() {
             entrada.salir = true;
         } else if (tecla == SDLK_RETURN) {
             borrador = "";
+            entrada.escribiendo = true;
         } else if (tecla == SDLK_e) {
             entrada.interactuar = true;
         } else if (tecla == SDLK_F11) {
@@ -113,8 +115,10 @@ void Interfaz::leer_chat(const SDL_Event& evento, Entrada& entrada) {
             entrada.mensaje_chat = *borrador;
         }
         borrador.reset();
+        entrada.escribiendo = false;
     } else if (tecla == SDLK_ESCAPE) {
         borrador.reset();
+        entrada.escribiendo = false;
     }
 }
 
@@ -269,5 +273,10 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
                      [](const Sprite& a, const Sprite& b) { return a.base() < b.base(); });
     for (const Sprite& sprite: sprites) {
         sprite.dibujar(renderer, camara);
+    }
+    for (const auto& [clave, entidad]: entidades) {
+        if (entidad.area() == area && entidad.emote() != Emote::None) {
+            globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+        }
     }
 }

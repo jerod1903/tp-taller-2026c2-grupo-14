@@ -236,6 +236,10 @@ PlayerInfo ClientProtocol::recvPlayerInfo() {
 
 void ClientProtocol::sendInteract() { ensure(sendGameOp(GameOp::Interact)); }
 
+void ClientProtocol::sendTyping(bool escribiendo) {
+    ensure(sendGameOp(GameOp::Typing) && baseProtocol.send_u8(escribiendo ? 1 : 0));
+}
+
 void ClientProtocol::sendChat(const std::string& texto) {
     ensure(sendGameOp(GameOp::Chat) && baseProtocol.send_string(texto));
 }

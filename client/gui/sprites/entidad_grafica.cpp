@@ -8,6 +8,7 @@ EntidadGrafica::EntidadGrafica(const FormatoAnimacion& formato, std::vector<Capa
         capas(std::move(capas)),
         ancho_cuadro(formato.ancho_cuadro),
         alto_cuadro(formato.alto_cuadro),
+        margen_arriba(formato.margen_arriba),
         animador(formato) {}
 
 void EntidadGrafica::vestir(std::vector<Capa> capas) { this->capas = std::move(capas); }
@@ -17,6 +18,7 @@ void EntidadGrafica::actualizar(const EntityState& estado, uint32_t tick,
     posicion.actualizar(CalculadorPosicion::pies_desde_servidor(estado.x, estado.y), estado.areaId,
                         tick, ahora);
     animador.actualizar(estado.dirX, estado.dirY, ahora);
+    emote_actual = estado.emote;
 }
 
 std::vector<Sprite> EntidadGrafica::sprites() const {
@@ -50,5 +52,12 @@ SDL2pp::Point EntidadGrafica::centro() const {
     const SDL2pp::Point& pies = posicion.pies();
     return SDL2pp::Point(pies.x, pies.y - alto_cuadro / 2);
 }
+
+SDL2pp::Point EntidadGrafica::cabeza() const {
+    const SDL2pp::Point& pies = posicion.pies();
+    return SDL2pp::Point(pies.x, pies.y - alto_cuadro + margen_arriba);
+}
+
+Emote EntidadGrafica::emote() const { return emote_actual; }
 
 const std::string& EntidadGrafica::area() const { return posicion.area(); }

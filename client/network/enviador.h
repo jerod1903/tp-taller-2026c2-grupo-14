@@ -17,6 +17,7 @@ public:
     void seleccionar_slot(uint8_t slot) { protocolo.sendSelectSlot(slot); }
     void enviar_chat(const std::string& texto) { protocolo.sendChat(texto); }
     void interactuar() { protocolo.sendInteract(); }
+    void escribiendo(bool valor) { protocolo.sendTyping(valor); }
 
 private:
     IGameProtocol& protocolo;

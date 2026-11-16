@@ -7,6 +7,7 @@ target_sources(taller_server
     game/commands/chat_command.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
+    game/commands/typing_command.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/move_command.cpp
@@ -48,6 +49,7 @@ target_sources(taller_server
     game/commands/chat_command.h
     game/commands/command_factory.h
     game/commands/interact_command.h
+    game/commands/typing_command.h
     game/commands/game_command.h
     game/commands/game_context.h
     game/commands/join_command.h

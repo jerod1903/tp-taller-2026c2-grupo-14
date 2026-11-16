@@ -27,6 +27,7 @@ struct FormatoAnimacion {
     std::vector<int> caminata;
     std::chrono::duration<float> duracion_cuadro;
     std::map<int, int> bajada_cabeza = {};
+    int margen_arriba = 0;
 };
 
 class AnimadorSprites {
