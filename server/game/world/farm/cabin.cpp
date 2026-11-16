@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "common/map/CabinInterior.h"
+
 Cabin::Cabin(std::string name, Grid grid, const Position& door_pos,
              std::vector<Position> bed_slots):
         Location(std::move(name), std::move(grid)),
@@ -23,6 +25,11 @@ const Position& Cabin::assign_bed(uint32_t player_id) {
         throw std::logic_error("no quedan lugares para camas en la cabaña");
     }
     return beds.emplace(player_id, bed_slots[beds.size()]).first->second;
+}
+
+SpawnPoint Cabin::bed_spawn(uint32_t player_id) {
+    const Position& bed = assign_bed(player_id);
+    return SpawnPoint{*this, Position{bed.x, bed.y + stardew::maps::BED_HEAD_HEIGHT}};
 }
 
 const std::map<uint32_t, Position>& Cabin::get_beds() const { return beds; }

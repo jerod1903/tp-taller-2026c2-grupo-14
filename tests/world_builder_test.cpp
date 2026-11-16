@@ -144,17 +144,6 @@ TEST_F(WorldBuilderTest, CabinHasABedSlotForEachPlayer) {
     EXPECT_EQ(farm().get_cabin().bed_slot_count(), server_config().game.max_players);
 }
 
-TEST_F(WorldBuilderTest, PlayersSpawnOnTheSpawnPointOfTheFarm) {
-    EXPECT_EQ(world->get_spawn(), (Position{0, 4}));
-}
-
-TEST(WorldBuilderSpawnTest, WithoutSpawnPointPlayersSpawnOnTheCabinDoor) {
-    maps::MapDefinition map = make_map();
-    map.elements.erase(std::find_if(map.elements.begin(), map.elements.end(),
-                                    [](const maps::MapElement& e) { return e.id == "spawn"; }));
-    EXPECT_EQ(build_world(map)->get_spawn(), (Position{2, 2}));
-}
-
 TEST(WorldBuilderErrorsTest, FarmWithoutCabinIsRejected) {
     maps::MapDefinition map = make_map();
     map.elements.erase(map.elements.begin());

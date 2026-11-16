@@ -8,6 +8,7 @@
 
 #include "server/game/world/location.h"
 #include "server/game/world/position.h"
+#include "server/game/world/spawn_point.h"
 
 // El interior de la cabaña. Es una Location propia, pero vive dentro de la Farm.
 class Cabin: public Location {
@@ -22,9 +23,13 @@ public:
     // La cama del jugador: la primera libre la primera vez, después siempre la misma (aunque se
     // vaya y vuelva). Lanza std::logic_error si no queda ningún lugar.
     const Position& assign_bed(uint32_t player_id);
+    // Donde aparece el jugador: acostado en el medio de su cama, con la frazada encima. Le asigna
+    // una si no tenia.
+    SpawnPoint bed_spawn(uint32_t player_id);
     // Las camas que ya tienen dueño, por player_id.
     const std::map<uint32_t, Position>& get_beds() const;
     std::size_t bed_slot_count() const;
+
 
     void update(float dt) override;
 

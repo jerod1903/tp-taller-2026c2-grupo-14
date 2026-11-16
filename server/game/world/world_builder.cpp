@@ -127,7 +127,8 @@ std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
                                    Position{door->x, door->y}, std::move(bed_slots));
 }
 
-// El primer spawn_point de la granja; sin uno, el jugador aparece en la puerta de la cabaña.
+// El primer spawn_point de la granja (donde arrancan los animales); sin uno, la puerta de la
+// cabaña.
 Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area,
                   const Farm& farm) {
     auto spawn = std::find_if(map.elements.begin(), map.elements.end(),
@@ -221,8 +222,8 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     // Los portales van al final: apuntan a Locations que tienen que existir.
     add_portals(map, locations);
     Position spawn = spawn_of(map, farm_area, *farm);
-    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo de donde aparece el
-    // jugador (o ahi mismo si esa celda no se puede pisar).
+    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo del spawn_point (o ahi
+    // mismo si esa celda no se puede pisar).
     int next = 0;
     auto add_animal = [&](AnimalKind kind) {
         Position pos{spawn.x + server_config().animals.offset_x + next++,
@@ -235,5 +236,5 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     for (int i = 0; i < server_config().animals.chickens; ++i) {
         add_animal(AnimalKind::Chicken);
     }
-    return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon), spawn);
+    return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon));
 }

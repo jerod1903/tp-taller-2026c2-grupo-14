@@ -10,6 +10,7 @@ target_sources(taller_server
     game/commands/leave_command.cpp
     game/commands/move_command.cpp
     game/game_registry.cpp
+    game/snapshot_builder.cpp
     game/characters/animals/animal.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
@@ -23,6 +24,7 @@ target_sources(taller_server
     game/world/farm/farm.cpp
     game/world/grid.cpp
     game/world/location.cpp
+    game/world/movement.cpp
     game/world/tile.cpp
     game/world/town/town.cpp
     game/world/world.cpp
@@ -51,6 +53,7 @@ target_sources(taller_server
     game/commands/player_movement.h
     game/commands/player_sessions.h
     game/game_registry.h
+    game/snapshot_builder.h
     game/characters/animals/animal.h
     game/characters/creature.h
     game/characters/enemies/enemy.h
@@ -64,8 +67,10 @@ target_sources(taller_server
     game/world/farm/farm.h
     game/world/grid.h
     game/world/location.h
+    game/world/movement.h
     game/world/portal.h
     game/world/position.h
+    game/world/spawn_point.h
     game/world/tile.h
     game/world/town/town.h
     game/world/world.h

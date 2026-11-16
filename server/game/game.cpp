@@ -1,7 +1,6 @@
 #include "server/game/game.h"
 
 #include <chrono>
-#include <cmath>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -12,67 +11,14 @@
 #include <vector>
 
 #include "common/logger.h"
-#include "common/map/CabinInterior.h"
 #include "server/config/server_config.h"
-#include "server/game/characters/animals/animal.h"
+#include "server/game/snapshot_builder.h"
 #include "server/game/world/world_builder.h"
 
 namespace {
 std::chrono::nanoseconds tick_duration() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
            server_config().game.tick_rate;
-}
-
-uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
-
-PlayerState state_of(uint32_t player_id, const Player& player) {
-    Position delta = step(Position{0, 0}, player.get_direction());
-    return PlayerState{player_id,
-                       player.get_location().get_name(),
-                       to_wire(player.get_x()),
-                       to_wire(player.get_y()),
-                       static_cast<int8_t>(delta.x),
-                       static_cast<int8_t>(delta.y),
-                       static_cast<uint16_t>(player.get_health()),
-                       static_cast<uint16_t>(player.get_energy()),
-                       static_cast<uint32_t>(player.get_gold())};
-}
-
-EntityState entity_of(uint32_t player_id, const Player& player) {
-    Position delta = step(Position{0, 0}, player.get_direction());
-    return EntityState{player_id,
-                       EntityType::Player,
-                       player.get_location().get_name(),
-                       to_wire(player.get_x()),
-                       to_wire(player.get_y()),
-                       static_cast<int8_t>(delta.x),
-                       static_cast<int8_t>(delta.y)};
-}
-const std::map<AnimalKind, EntityType> ENTITY_TYPE_OF = {
-        {AnimalKind::Cow, EntityType::Cow},
-        {AnimalKind::Chicken, EntityType::Chicken},
-};
-
-// La celda de arriba a la izquierda de la cama, en milésimas de celda
-EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& area_id) {
-    return EntityState{player_id,
-                       EntityType::Bed,
-                       area_id,
-                       static_cast<uint32_t>(slot.x) * POSITION_SCALE,
-                       static_cast<uint32_t>(slot.y) * POSITION_SCALE,
-                       0,
-                       0};
-}
-
-EntityState entity_of(const Animal& animal) {
-    Position delta = step(Position{0, 0}, animal.get_direction());
-    return EntityState{animal.get_id(),
-                       ENTITY_TYPE_OF.at(animal.get_kind()),
-                       animal.get_location().get_name(),
-                       to_wire(animal.get_x()),
-                       to_wire(animal.get_y()),
-                       static_cast<int8_t>(delta.x),
-                       static_cast<int8_t>(delta.y)};
 }
 }  // namespace
 
@@ -120,27 +66,12 @@ void Game::process_events() {
 
 PlayerSessions& Game::sessions() { return *this; }
 
-PlayerMovement& Game::movement() { return *this; }
-
-void Game::move_player(uint32_t player_id, Direction dir) {
-    auto player = players.find(player_id);
-    if (player != players.end()) {
-        player->second.character->set_direction(dir);
-    }
-}
+PlayerMovement& Game::movement() { return world->get_movement(); }
 
 void Game::add_player(uint32_t player_id, const GameMember& member,
                       std::shared_ptr<Outbox> outbox) {
     remove(player_id);
-    // Aparece acostado en su cama, con la frazada encima
-    Cabin& cabin = world->get_farm().get_cabin();
-    const Position& bed = cabin.assign_bed(player_id);
-    Position spawn{bed.x, bed.y + stardew::maps::BED_HEAD_HEIGHT};
-    auto character =
-            std::make_unique<Player>(player_id, spawn, cabin, member.characterName,
-                                     server_config().player.health, server_config().player.speed,
-                                     server_config().player.gold, server_config().player.energy);
-    world->add_player(*character);
+    world->spawn_player(player_id, member.characterName);
     send(*outbox, LocationData{world_id, static_cast<uint16_t>(server_config().game.tick_rate),
                                server_config().game.max_players});
     PlayerInfo info{player_id, member.characterName, member.appearance};
@@ -149,8 +80,7 @@ void Game::add_player(uint32_t player_id, const GameMember& member,
         send(*other.outbox, info);
     }
     send(*outbox, info);
-    players.emplace(player_id,
-                    ConnectedPlayer{std::move(outbox), std::move(character), std::move(info)});
+    players.emplace(player_id, ConnectedPlayer{std::move(outbox), std::move(info)});
 }
 
 void Game::remove_player(uint32_t player_id) {
@@ -167,24 +97,13 @@ void Game::remove_player(uint32_t player_id) {
 void Game::remove(uint32_t player_id) {
     auto player = players.find(player_id);
     if (player != players.end()) {
-        world->remove_player(*player->second.character);
+        world->remove_player(player_id);
         players.erase(player);
     }
 }
 
 void Game::broadcast_snapshot() {
-    Snapshot snapshot{tick, {}, {}};
-    for (const auto& [player_id, player]: players) {
-        snapshot.players.push_back(state_of(player_id, *player.character));
-        snapshot.entities.push_back(entity_of(player_id, *player.character));
-    }
-    for (const std::unique_ptr<Animal>& animal: world->get_farm().get_animals()) {
-        snapshot.entities.push_back(entity_of(*animal));
-    }
-    const Cabin& cabin = world->get_farm().get_cabin();
-    for (const auto& [player_id, slot]: cabin.get_beds()) {
-        snapshot.entities.push_back(bed_of(player_id, slot, cabin.get_name()));
-    }
+    Snapshot snapshot = SnapshotBuilder::build(tick, *world);
     for (const auto& [player_id, player]: players) {
         send(*player.outbox, snapshot);
     }

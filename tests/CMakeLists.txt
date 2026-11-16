@@ -43,6 +43,7 @@ target_sources(taller_tests
     ../server/game/world/farm/farm.cpp
     ../server/game/world/grid.cpp
     ../server/game/world/location.cpp
+    ../server/game/world/movement.cpp
     ../server/game/world/tile.cpp
     ../server/game/world/town/town.cpp
     ../server/game/world/world.cpp
@@ -50,6 +51,7 @@ target_sources(taller_tests
     ../server/game/world/world_loader.cpp
     ../server/game/game_registry.cpp
     ../server/game/game.cpp
+    ../server/game/snapshot_builder.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp

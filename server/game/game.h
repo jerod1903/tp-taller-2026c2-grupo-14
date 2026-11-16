@@ -8,12 +8,11 @@
 
 #include "common/lib/thread.h"
 #include "common/map/MapDefinition.h"
-#include "server/game/characters/player.h"
 #include "server/game/commands/game_context.h"
 #include "server/game/game_event.h"
 #include "server/game/world/world.h"
 
-class Game: public Thread, public GameContext, public PlayerSessions, public PlayerMovement {
+class Game: public Thread, public GameContext, public PlayerSessions {
 public:
     // Arma el World a partir del mapa, que tiene que estar validado.
     Game(std::string world_id, const stardew::maps::MapDefinition& map);
@@ -21,9 +20,9 @@ public:
     Inbox& get_inbox();
 
     PlayerSessions& sessions() override;
+    // El Movement del World, que tiene los personajes.
     PlayerMovement& movement() override;
 
-    void move_player(uint32_t player_id, Direction dir) override;
     void add_player(uint32_t player_id, const GameMember& member,
                     std::shared_ptr<Outbox> outbox) override;
     void remove_player(uint32_t player_id) override;
@@ -40,9 +39,9 @@ private:
     Inbox inbox;
     std::unique_ptr<World> world;
 
+    // Lo de red de cada jugador: su personaje lo tiene el World.
     struct ConnectedPlayer {
         std::shared_ptr<Outbox> outbox;
-        std::unique_ptr<Player> character;
         PlayerInfo info;
     };
     std::map<uint32_t, ConnectedPlayer> players;

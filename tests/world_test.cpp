@@ -26,14 +26,11 @@ std::unique_ptr<World> make_world() {
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));
     }
-    return std::make_unique<World>(std::move(farm), std::move(town), Dungeon(std::move(levels)),
-                                   Position{0, 0});
+    return std::make_unique<World>(std::move(farm), std::move(town), Dungeon(std::move(levels)));
 }
 
 class WorldTest: public ::testing::Test {
 protected:
-    void SetUp() override { world->add_player(player); }
-
     // Deja al jugador al lado de la puerta de la cabaña, mirando hacia ella.
     void walk_into_the_cabin() {
         player.relocate(farm(), Position{3, 4});
@@ -45,7 +42,8 @@ protected:
     Cabin& cabin() { return world->get_farm().get_cabin(); }
 
     std::unique_ptr<World> world = make_world();
-    Player player{1, Position{0, 0}, world->get_farm(), "jero", 100, 1.0f, 0, 100};
+    Player& player = world->add_player(std::make_unique<Player>(
+            1, Position{0, 0}, world->get_farm(), "jero", 100, 1.0f, 0, 100));
 };
 
 TEST_F(WorldTest, FarmLinksBothCabinDoors) {
@@ -58,15 +56,14 @@ TEST_F(WorldTest, FarmLinksBothCabinDoors) {
 TEST_F(WorldTest, AddPlayerRegistersItInItsLocation) {
     ASSERT_EQ(farm().get_entities().size(), 1u);
     EXPECT_EQ(farm().get_entities()[0], &player);
-    EXPECT_EQ(&world->location_of(player), &farm());
+    EXPECT_EQ(&world->location_of(1), &farm());
 }
 
 TEST_F(WorldTest, RemovePlayerUnregistersIt) {
-    world->remove_player(player);
+    world->remove_player(1);
     EXPECT_TRUE(farm().get_entities().empty());
-    player.set_direction(Direction::DOWN);
+    EXPECT_TRUE(world->get_players().empty());
     world->update(1.0f);
-    EXPECT_EQ(player.get_position(), (Position{0, 0}));
 }
 
 TEST_F(WorldTest, UpdateMovesThePlayers) {
