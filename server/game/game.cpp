@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "common/logger.h"
+#include "common/map/CabinInterior.h"
 #include "server/config/server_config.h"
 #include "server/game/characters/animals/animal.h"
 #include "server/game/world/world_builder.h"
@@ -125,12 +126,15 @@ Player* Game::find_player(uint32_t player_id) {
 void Game::add_player(uint32_t player_id, const GameMember& member,
                       std::shared_ptr<Outbox> outbox) {
     remove(player_id);
-    auto character = std::make_unique<Player>(
-            player_id, world->get_spawn(), world->get_farm(), member.characterName,
-            server_config().player.health, server_config().player.speed,
-            server_config().player.gold, server_config().player.energy);
+    // Aparece acostado en su cama, con la frazada encima
+    Cabin& cabin = world->get_farm().get_cabin();
+    const Position& bed = cabin.assign_bed(player_id);
+    Position spawn{bed.x, bed.y + stardew::maps::BED_HEAD_HEIGHT};
+    auto character =
+            std::make_unique<Player>(player_id, spawn, cabin, member.characterName,
+                                     server_config().player.health, server_config().player.speed,
+                                     server_config().player.gold, server_config().player.energy);
     world->add_player(*character);
-    world->get_farm().get_cabin().assign_bed(player_id);
     send(*outbox, LocationData{world_id, static_cast<uint16_t>(server_config().game.tick_rate),
                                server_config().game.max_players});
     PlayerInfo info{player_id, member.characterName, member.appearance};
