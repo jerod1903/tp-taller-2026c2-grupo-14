@@ -10,6 +10,7 @@
 #include "client/constants.h"
 #include "common/map/CabinInterior.h"
 #include "common/map/MapSprites.h"
+#include "common/map/MarketInterior.h"
 #include "common/map/persistence/MapRepository.h"
 
 #include "rutas.h"
@@ -73,6 +74,7 @@ std::map<std::string, Mapa::Area> Mapa::cargar_areas(const std::string& world_id
     agregar_areas(repositorio.loadMap(std::string(TALLER_MAPS_DIR) + "/" + world_id + ".toml"),
                   cargadas);
     agregar_areas(stardew::maps::loadCabinInterior(max_jugadores), cargadas);
+    agregar_areas(stardew::maps::loadMarketInterior(), cargadas);
     return cargadas;
 }
 

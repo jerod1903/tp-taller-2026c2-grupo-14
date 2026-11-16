@@ -12,7 +12,7 @@ extensión PlantUML de VS Code (`Export Current Diagram`, en formato svg) o con
 - [Comandos del jugador](#comandos-del-jugador)
 - [Mundo y personajes](#mundo-y-personajes)
 - [Un tick de la partida](#un-tick-de-la-partida)
-- [Interiores: la cabaña](#interiores-la-cabaña)
+- [Interiores: la cabaña y el mercado](#interiores-la-cabaña-y-el-mercado)
 
 ## Vista general y hilos
 
@@ -99,7 +99,12 @@ Fuente: [diagrams/world/world.puml](diagrams/world/world.puml)
 
 Fuente: [diagrams/tick_sequence/tick_sequence.puml](diagrams/tick_sequence/tick_sequence.puml)
 
-## Interiores: la cabaña
+## Interiores: la cabaña y el mercado
+
+Cada interior es un `Interior`: una `Location` con una puerta que lleva afuera. `Interior::link_to` enlaza esa puerta con la del edificio, y las dos se usan con la tecla X. Se sale un tile y medio debajo de la puerta del edificio. La `Farm` es dueña de la `Cabin` y el `Town`, del mercado.
+
+**La cabaña**:
+
 
 - La sala es la misma en todas las partidas: `maps/interiors/cabin.toml`. Ese archivo marca solo el piso, los muebles y la puerta de salida (`house_door`).
 - `loadCabinInterior(max_players)` (en `common/map/CabinInterior.h`):
@@ -112,4 +117,10 @@ Fuente: [diagrams/tick_sequence/tick_sequence.puml](diagrams/tick_sequence/tick_
 - La cama aparece cuando el jugador entra por primera vez: `Cabin::assign_bed` le da el primer lugar libre. Si sale y vuelve, conserva la misma cama.
 - Al entrar a la partida, el jugador aparece centrado en su cama (`Cabin::bed_spawn`). La fila de la almohada no se camina; la de arriba sí, para pasar por detrás de la cabecera.
 - Cada cama viaja en el snapshot como `EntityType::Bed`, con el `playerId` del dueño.
-- `addWalls` sirve para cualquier interior, como el mercado y el centro comunitario: alcanza con un `.toml` que marque el piso.
+**El mercado**:
+
+- La sala es la misma en todas las partidas: `maps/interiors/market.toml`, que lee `loadMarketInterior()` (en `common/map/MarketInterior.h`). Las paredes las pone `addWalls`, como en la cabaña.
+- Los cuatro comerciantes están adentro: Pierre atiende detrás del mostrador y los otros andan por la tienda. Son elementos del interior y tapan su celda como cualquier NPC.
+- En el pueblo solo queda el edificio, el elemento `market`: su puerta (`doorCell`) es la que se enlaza con el interior.
+
+**El centro comunitario** está pendiente (TODO en `Town` y en `MarketInterior.h`). Se arma igual que el mercado: un `.toml` con el piso y un `Interior` enlazado a la puerta del elemento `community_center`.

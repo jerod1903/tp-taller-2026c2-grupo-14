@@ -21,7 +21,8 @@ const Position DOOR_POS{0, 4};   // Puerta de salida, dentro de la cabaña.
 std::unique_ptr<World> make_world() {
     auto cabin = std::make_unique<Cabin>("cabin", make_grid(), DOOR_POS);
     auto farm = std::make_unique<Farm>("farm", make_grid(), CABIN_POS, std::move(cabin));
-    auto town = std::make_unique<Town>("town", make_grid());
+    auto market = std::make_unique<Interior>("market", make_grid(), DOOR_POS);
+    auto town = std::make_unique<Town>("town", make_grid(), CABIN_POS, std::move(market));
     std::vector<std::unique_ptr<DungeonLevel>> levels;
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));

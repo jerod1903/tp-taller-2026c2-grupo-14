@@ -27,6 +27,8 @@ inline const char* const SHEET_TREE = "Misc/tree2/tree1.png";
 inline const char* const SHEET_BUSHES = "Misc/tree_01_16x16.png";
 inline const char* const SHEET_FARMHOUSE = "Farm/Environment/Tilesets_Farmhouse.png";
 inline const char* const SHEET_CHEST = "Misc/chest.png";
+inline const char* const SHEET_TOWN_INTERIORS =
+        "Market/World/StradewValley/Tilesets_Town_Interiors.png";
 
 struct SpriteRect {
     int x;
@@ -133,6 +135,9 @@ inline const std::map<ElementType, ElementSprite> ELEMENT_SPRITES = {
         {ElementType::RugLeft, {SHEET_FARMHOUSE, {96, 128, 32, 32}, true, true}},
         {ElementType::Plant, {SHEET_FARMHOUSE, {64, 304, 16, 48}, false}},
         {ElementType::Chest, {SHEET_CHEST, {8, 0, 16, 16}, false}},
+        // Interior del mercado: el mostrador con la caja y la vitrina, y el estante con mercaderia
+        {ElementType::MarketCounter, {SHEET_TOWN_INTERIORS, {304, 480, 48, 32}, false}},
+        {ElementType::MarketShelf, {SHEET_TOWN_INTERIORS, {416, 464, 96, 48}, false}},
 };
 
 }  // namespace stardew::maps

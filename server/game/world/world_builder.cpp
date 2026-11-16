@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "common/map/CabinInterior.h"
+#include "common/map/MarketInterior.h"
 #include "server/config/server_config.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/cabin.h"
@@ -34,8 +35,8 @@ std::vector<Position> cells_of(const maps::MapElement& element) {
     return cells;
 }
 
-Position cabin_door(const maps::MapElement& cabin) {
-    maps::MapCell door = maps::doorCell(cabin);
+Position building_door(const maps::MapElement& building) {
+    maps::MapCell door = maps::doorCell(building);
     return Position{door.x, door.y};
 }
 
@@ -102,17 +103,25 @@ Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area,
     return Grid(area.width, area.height, std::move(tiles));
 }
 
+// El primer elemento de ese tipo en el área; lanza std::invalid_argument si no hay ninguno.
+const maps::MapElement& element_of_type(const maps::MapDefinition& map, const maps::MapArea& area,
+                                        maps::ElementType type) {
+    auto element = std::find_if(map.elements.begin(), map.elements.end(),
+                                [&area, type](const maps::MapElement& candidate) {
+                                    return candidate.areaId == area.id && candidate.type == type;
+                                });
+    if (element == map.elements.end()) {
+        throw std::invalid_argument("al área " + area.id + " le falta un " +
+                                    std::string(maps::toString(type)));
+    }
+    return *element;
+}
+
 // La puerta es la primera house_door del área: se aparece ahí al entrar. Las camas van en los tiles
 // sleepable del cuarto, que se ocupan por filas de arriba a abajo y de izquierda a derecha.
 std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
     const maps::MapArea& area = area_of_type(map, maps::AreaType::CabinArea);
-    auto door = std::find_if(
-            map.elements.begin(), map.elements.end(), [&area](const maps::MapElement& element) {
-                return element.areaId == area.id && element.type == maps::ElementType::HouseDoor;
-            });
-    if (door == map.elements.end()) {
-        throw std::invalid_argument("la cabaña no tiene puerta");
-    }
+    const maps::MapElement& door = element_of_type(map, area, maps::ElementType::HouseDoor);
     std::vector<Position> bed_slots;
     for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
         for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
@@ -126,8 +135,16 @@ std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
                                     " tiles sleepable y tiene que tener " +
                                     std::to_string(server_config().game.max_players));
     }
-    return std::make_unique<Cabin>(area.id, build_grid(map, area, {door->id}),
-                                   Position{door->x, door->y}, std::move(bed_slots));
+    return std::make_unique<Cabin>(area.id, build_grid(map, area, {door.id}),
+                                   Position{door.x, door.y}, std::move(bed_slots));
+}
+
+// Los comerciantes son elementos del interior: tapan su celda como cualquier NPC.
+std::unique_ptr<Interior> build_market(const maps::MapDefinition& map) {
+    const maps::MapArea& area = area_of_type(map, maps::AreaType::MarketArea);
+    const maps::MapElement& door = element_of_type(map, area, maps::ElementType::HouseDoor);
+    return std::make_unique<Interior>(area.id, build_grid(map, area, {door.id}),
+                                      Position{door.x, door.y});
 }
 
 // El primer spawn_point de la granja (donde arrancan los animales); sin uno, la puerta de la
@@ -145,15 +162,17 @@ Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area
 std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::MapArea& area,
                                  const std::set<std::string>& passages,
                                  std::unique_ptr<Cabin> cabin_interior) {
-    auto cabin = std::find_if(
-            map.elements.begin(), map.elements.end(), [&area](const maps::MapElement& element) {
-                return element.areaId == area.id && element.type == maps::ElementType::Cabin;
-            });
-    if (cabin == map.elements.end()) {
-        throw std::invalid_argument("la granja no tiene cabaña");
-    }
-    return std::make_unique<Farm>(area.id, build_grid(map, area, passages), cabin_door(*cabin),
+    const maps::MapElement& cabin = element_of_type(map, area, maps::ElementType::Cabin);
+    return std::make_unique<Farm>(area.id, build_grid(map, area, passages), building_door(cabin),
                                   std::move(cabin_interior));
+}
+
+std::unique_ptr<Town> build_town(const maps::MapDefinition& map, const maps::MapArea& area,
+                                 const std::set<std::string>& passages,
+                                 std::unique_ptr<Interior> market_interior) {
+    const maps::MapElement& market = element_of_type(map, area, maps::ElementType::Market);
+    return std::make_unique<Town>(area.id, build_grid(map, area, passages), building_door(market),
+                                  std::move(market_interior));
 }
 
 // Los niveles se ordenan por su número: el nivel 1 es la entrada, sin importar el orden del
@@ -194,17 +213,22 @@ void add_portals(const maps::MapDefinition& map, const LocationsById& locations)
     }
 }
 
-// Se lee una sola vez: es el mismo para todas las partidas.
+// Los interiores se leen una sola vez: son los mismos para todas las partidas.
 const maps::MapDefinition& cabin_interior() {
     static const maps::MapDefinition interior =
             maps::loadCabinInterior(server_config().game.max_players);
     return interior;
 }
 
-void reject_cabin_id(const maps::MapDefinition& map, const std::string& cabin_id) {
+const maps::MapDefinition& market_interior() {
+    static const maps::MapDefinition interior = maps::loadMarketInterior();
+    return interior;
+}
+
+void reject_interior_id(const maps::MapDefinition& map, const std::string& interior_id) {
     for (const maps::MapArea& area: map.areas) {
-        if (area.id == cabin_id) {
-            throw std::invalid_argument("el mapa usa el id del interior de la cabaña: " + cabin_id);
+        if (area.id == interior_id) {
+            throw std::invalid_argument("el mapa usa el id de un interior: " + interior_id);
         }
     }
 }
@@ -215,12 +239,13 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     const maps::MapArea& farm_area = area_of_type(map, maps::AreaType::Farm);
     const maps::MapArea& town_area = area_of_type(map, maps::AreaType::Village);
     std::unique_ptr<Cabin> cabin = build_cabin(cabin_interior());
-    reject_cabin_id(map, cabin->get_name());
+    std::unique_ptr<Interior> market = build_market(market_interior());
+    reject_interior_id(map, cabin->get_name());
+    reject_interior_id(map, market->get_name());
     std::set<std::string> passages = passage_ids(map);
 
     std::unique_ptr<Farm> farm = build_farm(map, farm_area, passages, std::move(cabin));
-    std::unique_ptr<Town> town =
-            std::make_unique<Town>(town_area.id, build_grid(map, town_area, passages));
+    std::unique_ptr<Town> town = build_town(map, town_area, passages, std::move(market));
     LocationsById locations{{farm_area.id, farm.get()}, {town_area.id, town.get()}};
     Dungeon dungeon = build_dungeon(map, passages, locations);
 

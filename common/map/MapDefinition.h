@@ -38,6 +38,9 @@ enum class ElementType {
     RugLeft,  // la alfombra espejada: va a la izquierda de Rug
     Plant,
     HouseDoor,  // la puerta de salida de un interior: se ve y se pisa para salir
+    // Muebles del interior del mercado
+    MarketCounter,
+    MarketShelf,
 };
 
 enum class ElementLayer {
@@ -313,6 +316,10 @@ inline std::optional<ElementType> elementTypeFromString(std::string_view value) 
         return ElementType::Plant;
     if (value == "house_door")
         return ElementType::HouseDoor;
+    if (value == "market_counter")
+        return ElementType::MarketCounter;
+    if (value == "market_shelf")
+        return ElementType::MarketShelf;
     return std::nullopt;
 }
 
@@ -372,6 +379,10 @@ inline std::string_view toString(ElementType type) {
             return "plant";
         case ElementType::HouseDoor:
             return "house_door";
+        case ElementType::MarketCounter:
+            return "market_counter";
+        case ElementType::MarketShelf:
+            return "market_shelf";
     }
     return "unknown_element";
 }
@@ -405,6 +416,8 @@ inline std::vector<ElementType> allElementTypes() {
             ElementType::RugLeft,
             ElementType::Plant,
             ElementType::HouseDoor,
+            ElementType::MarketCounter,
+            ElementType::MarketShelf,
     };
 }
 
@@ -470,6 +483,8 @@ inline ElementTraits elementTraits(ElementType type) {
         case ElementType::Rug:
         case ElementType::RugLeft:
         case ElementType::Plant:
+        case ElementType::MarketCounter:
+        case ElementType::MarketShelf:
             return {.hasDoor = false, .travel = false};
     }
     return {.hasDoor = false, .travel = false};

@@ -76,42 +76,6 @@ required = true
 
 [[elements]]
 area_type = "village"
-type = "merchant_marnie"
-layer = "npc"
-width = 1
-height = 1
-max_per_area = 1
-required = true
-
-[[elements]]
-area_type = "village"
-type = "merchant_clint"
-layer = "npc"
-width = 1
-height = 1
-max_per_area = 1
-required = true
-
-[[elements]]
-area_type = "village"
-type = "merchant_pierre"
-layer = "npc"
-width = 1
-height = 1
-max_per_area = 1
-required = true
-
-[[elements]]
-area_type = "village"
-type = "merchant_robin"
-layer = "npc"
-width = 1
-height = 1
-max_per_area = 1
-required = true
-
-[[elements]]
-area_type = "village"
 type = "door"
 layer = "structure"
 width = 1
