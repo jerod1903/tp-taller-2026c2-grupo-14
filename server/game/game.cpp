@@ -118,9 +118,15 @@ void Game::process_events() {
     }
 }
 
-Player* Game::find_player(uint32_t player_id) {
+PlayerSessions& Game::sessions() { return *this; }
+
+PlayerMovement& Game::movement() { return *this; }
+
+void Game::move_player(uint32_t player_id, Direction dir) {
     auto player = players.find(player_id);
-    return player == players.end() ? nullptr : player->second.character.get();
+    if (player != players.end()) {
+        player->second.character->set_direction(dir);
+    }
 }
 
 void Game::add_player(uint32_t player_id, const GameMember& member,

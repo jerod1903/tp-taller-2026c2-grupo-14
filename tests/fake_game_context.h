@@ -7,11 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "server/game/characters/player.h"
 #include "server/game/commands/game_context.h"
 #include "tests/world_helpers.h"
 
 // GameContext sin Game: tiene un jugador ya conectado y anota lo que le piden los comandos.
-class FakeGameContext: public GameContext {
+class FakeGameContext: public GameContext, public PlayerSessions, public PlayerMovement {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -21,8 +22,13 @@ public:
         std::shared_ptr<Outbox> outbox;
     };
 
-    Player* find_player(uint32_t player_id) override {
-        return player_id == PLAYER_ID ? &player : nullptr;
+    PlayerSessions& sessions() override { return *this; }
+    PlayerMovement& movement() override { return *this; }
+
+    void move_player(uint32_t player_id, Direction dir) override {
+        if (player_id == PLAYER_ID) {
+            player.set_direction(dir);
+        }
     }
 
     void add_player(uint32_t player_id, const GameMember& member,

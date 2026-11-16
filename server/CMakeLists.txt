@@ -48,6 +48,8 @@ target_sources(taller_server
     game/commands/join_command.h
     game/commands/leave_command.h
     game/commands/move_command.h
+    game/commands/player_movement.h
+    game/commands/player_sessions.h
     game/game_registry.h
     game/characters/animals/animal.h
     game/characters/creature.h

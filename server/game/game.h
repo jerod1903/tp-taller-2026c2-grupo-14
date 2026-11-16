@@ -13,14 +13,17 @@
 #include "server/game/game_event.h"
 #include "server/game/world/world.h"
 
-class Game: public Thread, public GameContext {
+class Game: public Thread, public GameContext, public PlayerSessions, public PlayerMovement {
 public:
     // Arma el World a partir del mapa, que tiene que estar validado.
     Game(std::string world_id, const stardew::maps::MapDefinition& map);
 
     Inbox& get_inbox();
 
-    Player* find_player(uint32_t player_id) override;
+    PlayerSessions& sessions() override;
+    PlayerMovement& movement() override;
+
+    void move_player(uint32_t player_id, Direction dir) override;
     void add_player(uint32_t player_id, const GameMember& member,
                     std::shared_ptr<Outbox> outbox) override;
     void remove_player(uint32_t player_id) override;
