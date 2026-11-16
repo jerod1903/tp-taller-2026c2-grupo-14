@@ -10,7 +10,7 @@ namespace stardew::maps {
 struct AreaRequirement {
     AreaType type{};
     int count = 0;
-    std::vector<int> floorNumbers;
+    std::vector<int> levelNumbers;
 };
 
 // Donde puede ir un tipo de elemento, cuanto mide y cuantos puede haber. Un tipo que puede ir en
@@ -30,9 +30,9 @@ struct ElementRule {
 struct TransitionRequirement {
     // Un piso ausente aplica la regla a todos los pisos del tipo indicado.
     AreaType fromAreaType{};
-    std::optional<int> fromFloor;
+    std::optional<int> fromLevel;
     AreaType toAreaType{};
-    std::optional<int> toFloor;
+    std::optional<int> toLevel;
 };
 
 struct MapRequirements {

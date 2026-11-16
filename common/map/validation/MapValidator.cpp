@@ -18,7 +18,7 @@ using Issues = std::vector<MapValidationIssue>;
 struct AreaIndex {
     std::map<std::string, const MapArea*> byId;
     std::map<std::string, AreaType> typeById;
-    std::map<std::string, std::optional<int>> floorById;
+    std::map<std::string, std::optional<int>> levelById;
 };
 
 // Los elementos con id unico y los que ademas caen dentro de su area.
@@ -65,32 +65,32 @@ void validateHeader(const MapDefinition& map, const MapRequirements& requirement
 }
 
 // Comprueba los numeros de piso usando las reglas configuradas para cada tipo de area.
-void validateFloorNumber(const MapArea& area, const MapRequirements& requirements,
-                         std::map<AreaType, std::set<int>>& floorNumbersByType, Issues& errors) {
+void validateLevelNumber(const MapArea& area, const MapRequirements& requirements,
+                         std::map<AreaType, std::set<int>>& levelNumbersByType, Issues& errors) {
     const auto* requirement = findAreaRequirement(requirements, *area.type);
-    if (!area.floorNumber.has_value()) {
-        if (requirement != nullptr && !requirement->floorNumbers.empty()) {
+    if (!area.levelNumber.has_value()) {
+        if (requirement != nullptr && !requirement->levelNumbers.empty()) {
             errors.push_back({
-                    .code = MapIssueCode::MissingAreaFloorNumber,
+                    .code = MapIssueCode::MissingAreaLevelNumber,
                     .areaId = area.id,
                     .areaType = *area.type,
             });
         }
-    } else if (requirement == nullptr || requirement->floorNumbers.empty() ||
-               std::find(requirement->floorNumbers.begin(), requirement->floorNumbers.end(),
-                         *area.floorNumber) == requirement->floorNumbers.end()) {
+    } else if (requirement == nullptr || requirement->levelNumbers.empty() ||
+               std::find(requirement->levelNumbers.begin(), requirement->levelNumbers.end(),
+                         *area.levelNumber) == requirement->levelNumbers.end()) {
         errors.push_back({
-                .code = MapIssueCode::UnexpectedAreaFloorNumber,
+                .code = MapIssueCode::UnexpectedAreaLevelNumber,
                 .areaId = area.id,
                 .areaType = *area.type,
-                .floorNumber = *area.floorNumber,
+                .levelNumber = *area.levelNumber,
         });
-    } else if (!floorNumbersByType[*area.type].insert(*area.floorNumber).second) {
+    } else if (!levelNumbersByType[*area.type].insert(*area.levelNumber).second) {
         errors.push_back({
-                .code = MapIssueCode::DuplicateFloorNumber,
+                .code = MapIssueCode::DuplicateLevelNumber,
                 .areaId = area.id,
                 .areaType = *area.type,
-                .floorNumber = *area.floorNumber,
+                .levelNumber = *area.levelNumber,
         });
     }
 }
@@ -101,7 +101,7 @@ AreaIndex validateAreas(const MapDefinition& map, const MapRequirements& require
     AreaIndex index;
     std::set<std::string> areaIds;
     std::map<AreaType, int> areaCounts;
-    std::map<AreaType, std::set<int>> floorNumbersByType;
+    std::map<AreaType, std::set<int>> levelNumbersByType;
 
     for (const auto& area: map.areas) {
         if (area.id.empty()) {
@@ -118,7 +118,7 @@ AreaIndex validateAreas(const MapDefinition& map, const MapRequirements& require
             ++areaCounts[*area.type];
             if (!area.id.empty()) {
                 index.typeById.try_emplace(area.id, *area.type);
-                index.floorById.try_emplace(area.id, area.floorNumber);
+                index.levelById.try_emplace(area.id, area.levelNumber);
             }
         }
 
@@ -138,7 +138,7 @@ AreaIndex validateAreas(const MapDefinition& map, const MapRequirements& require
         }
 
         if (area.type.has_value()) {
-            validateFloorNumber(area, requirements, floorNumbersByType, errors);
+            validateLevelNumber(area, requirements, levelNumbersByType, errors);
         }
     }
 
@@ -153,13 +153,13 @@ AreaIndex validateAreas(const MapDefinition& map, const MapRequirements& require
                     .actual = actualCount,
             });
         }
-        for (const int floorNumber: requirement.floorNumbers) {
-            if (floorNumbersByType[requirement.type].find(floorNumber) ==
-                floorNumbersByType[requirement.type].end()) {
+        for (const int levelNumber: requirement.levelNumbers) {
+            if (levelNumbersByType[requirement.type].find(levelNumber) ==
+                levelNumbersByType[requirement.type].end()) {
                 errors.push_back({
-                        .code = MapIssueCode::MissingRequiredFloorNumber,
+                        .code = MapIssueCode::MissingRequiredLevelNumber,
                         .areaType = requirement.type,
-                        .floorNumber = floorNumber,
+                        .levelNumber = levelNumber,
                 });
             }
         }
@@ -359,8 +359,8 @@ void validateRoutes(const MapRequirements& requirements, const AreaIndex& areas,
     for (const auto& requirement: requirements.transitions) {
         for (const auto& [sourceId, sourceType]: areas.typeById) {
             if (sourceType != requirement.fromAreaType ||
-                (requirement.fromFloor.has_value() &&
-                 areas.floorById.at(sourceId) != requirement.fromFloor)) {
+                (requirement.fromLevel.has_value() &&
+                 areas.levelById.at(sourceId) != requirement.fromLevel)) {
                 continue;
             }
 
@@ -373,8 +373,8 @@ void validateRoutes(const MapRequirements& requirements, const AreaIndex& areas,
                         targetTypeIt->second != requirement.toAreaType) {
                         continue;
                     }
-                    if (requirement.toFloor.has_value() &&
-                        areas.floorById.at(transition->toAreaId) != requirement.toFloor) {
+                    if (requirement.toLevel.has_value() &&
+                        areas.levelById.at(transition->toAreaId) != requirement.toLevel) {
                         continue;
                     }
                     hasRequiredRoute = true;
@@ -386,7 +386,7 @@ void validateRoutes(const MapRequirements& requirements, const AreaIndex& areas,
                         .code = MapIssueCode::MissingRequiredTransition,
                         .areaId = sourceId,
                         .targetAreaType = requirement.toAreaType,
-                        .targetFloor = requirement.toFloor,
+                        .targetLevel = requirement.toLevel,
                 });
             }
         }

@@ -129,12 +129,12 @@ std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::Map
 Dungeon build_dungeon(const maps::MapDefinition& map, LocationsById& locations) {
     std::vector<const maps::MapArea*> floors;
     for (const maps::MapArea& area: map.areas) {
-        if (area.type == maps::AreaType::DungeonFloor) {
+        if (area.type == maps::AreaType::DungeonLevel) {
             floors.push_back(&area);
         }
     }
     std::sort(floors.begin(), floors.end(), [](const maps::MapArea* a, const maps::MapArea* b) {
-        return a->floorNumber.value_or(0) < b->floorNumber.value_or(0);
+        return a->levelNumber.value_or(0) < b->levelNumber.value_or(0);
     });
     std::vector<std::unique_ptr<DungeonLevel>> levels;
     for (const maps::MapArea* floor: floors) {

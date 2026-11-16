@@ -201,7 +201,7 @@ TEST_F(MapEditingTest, TheEntranceCreatesTheFloorsOfTheMineWhenThereAreNone) {
 
     const maps::MapDefinition& map = editing.map();
     EXPECT_EQ(std::count_if(map.areas.begin(), map.areas.end(),
-                            [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; }),
+                            [](const auto& a) { return a.type == maps::AreaType::DungeonLevel; }),
               10);
     EXPECT_NE(elementById(map, "mina-10-salida"), nullptr);
     EXPECT_EQ(elementById(map, "mina-10-escalera"), nullptr);
@@ -257,7 +257,7 @@ TEST_F(MapEditingTest, RemovingAFloorRemovesTheWholeMineButNotTheEntrance) {
 
     const maps::MapDefinition& map = editing.map();
     EXPECT_TRUE(std::none_of(map.areas.begin(), map.areas.end(),
-                             [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; }));
+                             [](const auto& a) { return a.type == maps::AreaType::DungeonLevel; }));
     EXPECT_NE(elementById(map, "entrada-mina"), nullptr);
     EXPECT_FALSE(triggers(map, "entrada-mina"));
 }

@@ -10,7 +10,7 @@ namespace stardew::maps {
 enum class AreaType {
     Farm,
     Village,
-    DungeonFloor,
+    DungeonLevel,
 };
 
 enum class ElementType {
@@ -118,8 +118,8 @@ inline std::optional<AreaType> areaTypeFromString(std::string_view value) {
         return AreaType::Farm;
     if (value == "village")
         return AreaType::Village;
-    if (value == "dungeon_floor")
-        return AreaType::DungeonFloor;
+    if (value == "dungeon_level")
+        return AreaType::DungeonLevel;
     return std::nullopt;
 }
 
@@ -129,8 +129,8 @@ inline std::string_view toString(AreaType type) {
             return "farm";
         case AreaType::Village:
             return "village";
-        case AreaType::DungeonFloor:
-            return "dungeon_floor";
+        case AreaType::DungeonLevel:
+            return "dungeon_level";
     }
     return "unknown_area";
 }
@@ -285,7 +285,7 @@ struct MapArea {
     std::optional<AreaType> type;
     int width = 0;
     int height = 0;
-    std::optional<int> floorNumber;
+    std::optional<int> levelNumber;
     std::vector<std::vector<TileType>> tiles;
     // Posicion del area en el mapa general, en casillas. La usan el editor y el minimapa: el
     // servidor la ignora.

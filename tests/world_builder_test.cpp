@@ -40,7 +40,7 @@ maps::MapDefinition make_map() {
     map.areas.back().tiles[3][0] = TileType::Water;
     for (int floor = 10; floor >= 1; --floor) {
         map.areas.push_back(
-                area(floor_id(floor), AreaType::DungeonFloor, 3, 1, TileType::CaveFloor, floor));
+                area(floor_id(floor), AreaType::DungeonLevel, 3, 1, TileType::CaveFloor, floor));
     }
     map.elements = {
             element("cabin", "farm", ElementType::Cabin, ElementLayer::Structure, 1, 1, 3, 2),
@@ -156,7 +156,7 @@ TEST(WorldBuilderErrorsTest, FarmWithoutCabinIsRejected) {
     EXPECT_THROW(build_world(map), std::invalid_argument);
 }
 
-TEST(WorldBuilderErrorsTest, MissingDungeonFloorIsRejected) {
+TEST(WorldBuilderErrorsTest, MissingDungeonLevelIsRejected) {
     maps::MapDefinition map = make_map();
     map.areas.erase(std::find_if(map.areas.begin(), map.areas.end(),
                                  [](const maps::MapArea& a) { return a.id == floor_id(10); }));

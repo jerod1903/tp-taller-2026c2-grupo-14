@@ -112,8 +112,8 @@ QString describe(const maps::MapValidationIssue& issue) {
         data << "tipo de área " +
                         QString::fromStdString(std::string(maps::toString(*issue.areaType)));
     }
-    if (issue.floorNumber) {
-        data << QString("piso %1").arg(*issue.floorNumber);
+    if (issue.levelNumber) {
+        data << QString("piso %1").arg(*issue.levelNumber);
     }
     if (issue.elementType) {
         data << "tipo de elemento " +
@@ -299,7 +299,7 @@ void MapEditorScreen::connectPlacing(PlaceTool& tool) {
 
 void MapEditorScreen::chooseEntrance() {
     std::optional<AreaSize> floorSize;
-    if (!hasDungeonFloors(editing.map())) {
+    if (!hasDungeonLevels(editing.map())) {
         SizeDialog dialog(FLOOR_SIZE, this);
         if (dialog.exec() != QDialog::Accepted) {
             backToSelect();

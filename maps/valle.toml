@@ -63,8 +63,8 @@ tiles = [
 
 [[areas]]
 id = "mina-1"
-type = "dungeon_floor"
-floor = 1
+type = "dungeon_level"
+level = 1
 width = 20
 height = 15
 offset_x = 0
@@ -89,8 +89,8 @@ tiles = [
 
 [[areas]]
 id = "mina-2"
-type = "dungeon_floor"
-floor = 2
+type = "dungeon_level"
+level = 2
 width = 20
 height = 15
 offset_x = 20
@@ -115,8 +115,8 @@ tiles = [
 
 [[areas]]
 id = "mina-3"
-type = "dungeon_floor"
-floor = 3
+type = "dungeon_level"
+level = 3
 width = 20
 height = 15
 offset_x = 40
@@ -141,8 +141,8 @@ tiles = [
 
 [[areas]]
 id = "mina-4"
-type = "dungeon_floor"
-floor = 4
+type = "dungeon_level"
+level = 4
 width = 20
 height = 15
 offset_x = 60
@@ -167,8 +167,8 @@ tiles = [
 
 [[areas]]
 id = "mina-5"
-type = "dungeon_floor"
-floor = 5
+type = "dungeon_level"
+level = 5
 width = 20
 height = 15
 offset_x = 80
@@ -193,8 +193,8 @@ tiles = [
 
 [[areas]]
 id = "mina-6"
-type = "dungeon_floor"
-floor = 6
+type = "dungeon_level"
+level = 6
 width = 20
 height = 15
 offset_x = 0
@@ -219,8 +219,8 @@ tiles = [
 
 [[areas]]
 id = "mina-7"
-type = "dungeon_floor"
-floor = 7
+type = "dungeon_level"
+level = 7
 width = 20
 height = 15
 offset_x = 20
@@ -245,8 +245,8 @@ tiles = [
 
 [[areas]]
 id = "mina-8"
-type = "dungeon_floor"
-floor = 8
+type = "dungeon_level"
+level = 8
 width = 20
 height = 15
 offset_x = 40
@@ -271,8 +271,8 @@ tiles = [
 
 [[areas]]
 id = "mina-9"
-type = "dungeon_floor"
-floor = 9
+type = "dungeon_level"
+level = 9
 width = 20
 height = 15
 offset_x = 60
@@ -297,8 +297,8 @@ tiles = [
 
 [[areas]]
 id = "mina-10"
-type = "dungeon_floor"
-floor = 10
+type = "dungeon_level"
+level = 10
 width = 20
 height = 15
 offset_x = 80

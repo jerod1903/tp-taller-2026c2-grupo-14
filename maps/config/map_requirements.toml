@@ -11,9 +11,9 @@ type = "village"
 count = 1
 
 [[required_areas]]
-type = "dungeon_floor"
+type = "dungeon_level"
 count = 10
-floor_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+level_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 # Reglas de cada tipo de elemento: en que tipo de area puede ir, cuanto mide en casillas, cuantos
 # puede haber por area (sin max_per_area no hay limite) y si es obligatorio. Un tipo que va en
@@ -119,7 +119,7 @@ height = 1
 required = false
 
 [[elements]]
-area_type = "dungeon_floor"
+area_type = "dungeon_level"
 type = "exit"
 layer = "structure"
 width = 1
@@ -128,7 +128,7 @@ max_per_area = 1
 required = false
 
 [[elements]]
-area_type = "dungeon_floor"
+area_type = "dungeon_level"
 type = "stairs"
 layer = "structure"
 width = 1
@@ -137,7 +137,7 @@ max_per_area = 1
 required = false
 
 [[elements]]
-area_type = "dungeon_floor"
+area_type = "dungeon_level"
 type = "ore_node"
 layer = "object"
 width = 1
@@ -186,63 +186,63 @@ to_area_type = "farm"
 
 [[required_transitions]]
 from_area_type = "village"
-to_area_type = "dungeon_floor"
-to_floor = 1
+to_area_type = "dungeon_level"
+to_level = 1
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
+from_area_type = "dungeon_level"
 to_area_type = "village"
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 1
-to_area_type = "dungeon_floor"
-to_floor = 2
+from_area_type = "dungeon_level"
+from_level = 1
+to_area_type = "dungeon_level"
+to_level = 2
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 2
-to_area_type = "dungeon_floor"
-to_floor = 3
+from_area_type = "dungeon_level"
+from_level = 2
+to_area_type = "dungeon_level"
+to_level = 3
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 3
-to_area_type = "dungeon_floor"
-to_floor = 4
+from_area_type = "dungeon_level"
+from_level = 3
+to_area_type = "dungeon_level"
+to_level = 4
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 4
-to_area_type = "dungeon_floor"
-to_floor = 5
+from_area_type = "dungeon_level"
+from_level = 4
+to_area_type = "dungeon_level"
+to_level = 5
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 5
-to_area_type = "dungeon_floor"
-to_floor = 6
+from_area_type = "dungeon_level"
+from_level = 5
+to_area_type = "dungeon_level"
+to_level = 6
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 6
-to_area_type = "dungeon_floor"
-to_floor = 7
+from_area_type = "dungeon_level"
+from_level = 6
+to_area_type = "dungeon_level"
+to_level = 7
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 7
-to_area_type = "dungeon_floor"
-to_floor = 8
+from_area_type = "dungeon_level"
+from_level = 7
+to_area_type = "dungeon_level"
+to_level = 8
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 8
-to_area_type = "dungeon_floor"
-to_floor = 9
+from_area_type = "dungeon_level"
+from_level = 8
+to_area_type = "dungeon_level"
+to_level = 9
 
 [[required_transitions]]
-from_area_type = "dungeon_floor"
-from_floor = 9
-to_area_type = "dungeon_floor"
-to_floor = 10
+from_area_type = "dungeon_level"
+from_level = 9
+to_area_type = "dungeon_level"
+to_level = 10

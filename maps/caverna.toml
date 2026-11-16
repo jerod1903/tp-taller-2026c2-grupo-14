@@ -3,8 +3,8 @@ name = "Caverna"
 
 [[areas]]
 id = "caverna"
-type = "dungeon_floor"
-floor = 1
+type = "dungeon_level"
+level = 1
 width = 29
 height = 20
 tiles = [

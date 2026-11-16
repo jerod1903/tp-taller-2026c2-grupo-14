@@ -52,7 +52,7 @@ struct Section {
 const Section SECTIONS[] = {
         {maps::AreaType::Farm, "Granja"},
         {maps::AreaType::Village, "Pueblo"},
-        {maps::AreaType::DungeonFloor, "Mina"},
+        {maps::AreaType::DungeonLevel, "Mina"},
 };
 
 // Los que pone el editor solo: los portones con la herramienta Pasaje y la salida y la escalera al

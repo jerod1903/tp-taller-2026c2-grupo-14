@@ -17,10 +17,10 @@ namespace stardew::maps {
 namespace {
 
 /// Lee un numero de piso opcional y comprueba que sea positivo y representable como int.
-std::optional<int> optionalFloor(const detail::TomlTableReader& table, std::string_view key) {
+std::optional<int> optionalLevel(const detail::TomlTableReader& table, std::string_view key) {
     const auto value = table.optionalInt(key);
     if (value.has_value() && *value < 1) {
-        throw std::runtime_error("transition floor must be a positive integer");
+        throw std::runtime_error("transition level must be a positive integer");
     }
     return value;
 }
@@ -69,24 +69,24 @@ MapRequirements loadMapRequirements(const std::string& path) {
         }
 
         // Los pisos deben ser positivos, unicos y coincidir con la cantidad declarada.
-        std::vector<int> floorNumbers;
-        if (const auto* floors = areaReader.optionalArray("floor_numbers")) {
-            std::set<int> uniqueFloors;
-            for (const auto& floorNode: *floors) {
-                const auto floor = floorNode.value<std::int64_t>();
-                if (!floor.has_value() || *floor < 1 || *floor > std::numeric_limits<int>::max() ||
-                    !uniqueFloors.insert(static_cast<int>(*floor)).second) {
+        std::vector<int> levelNumbers;
+        if (const auto* levels = areaReader.optionalArray("level_numbers")) {
+            std::set<int> uniqueLevels;
+            for (const auto& levelNode: *levels) {
+                const auto level = levelNode.value<std::int64_t>();
+                if (!level.has_value() || *level < 1 || *level > std::numeric_limits<int>::max() ||
+                    !uniqueLevels.insert(static_cast<int>(*level)).second) {
                     throw std::runtime_error(
-                            "required area has an invalid or duplicate floor number");
+                            "required area has an invalid or duplicate level number");
                 }
-                floorNumbers.push_back(static_cast<int>(*floor));
+                levelNumbers.push_back(static_cast<int>(*level));
             }
-            if (!floorNumbers.empty() && floorNumbers.size() != static_cast<std::size_t>(count)) {
-                throw std::runtime_error("required floor_numbers count does not match area count");
+            if (!levelNumbers.empty() && levelNumbers.size() != static_cast<std::size_t>(count)) {
+                throw std::runtime_error("required level_numbers count does not match area count");
             }
         }
 
-        requirements.areas.push_back({type, count, std::move(floorNumbers)});
+        requirements.areas.push_back({type, count, std::move(levelNumbers)});
     }
 
     // Una regla por tipo de elemento y tipo de area: donde va, cuanto mide y cuantos puede haber.
@@ -121,18 +121,18 @@ MapRequirements loadMapRequirements(const std::string& path) {
         const detail::TomlTableReader transitionReader(table, "required transition");
         const auto fromType =
                 transitionReader.requiredEnum<AreaType>("from_area_type", areaTypeFromString);
-        const auto fromFloor = optionalFloor(transitionReader, "from_floor");
+        const auto fromLevel = optionalLevel(transitionReader, "from_level");
         const auto toType =
                 transitionReader.requiredEnum<AreaType>("to_area_type", areaTypeFromString);
-        const auto toFloor = optionalFloor(transitionReader, "to_floor");
-        if ((fromFloor.has_value() && fromType != AreaType::DungeonFloor) ||
-            (toFloor.has_value() && toType != AreaType::DungeonFloor)) {
-            throw std::runtime_error("only dungeon transition endpoints can specify a floor");
+        const auto toLevel = optionalLevel(transitionReader, "to_level");
+        if ((fromLevel.has_value() && fromType != AreaType::DungeonLevel) ||
+            (toLevel.has_value() && toType != AreaType::DungeonLevel)) {
+            throw std::runtime_error("only dungeon transition endpoints can specify a level");
         }
-        if (!transitionRequirements.emplace(fromType, fromFloor, toType, toFloor).second) {
+        if (!transitionRequirements.emplace(fromType, fromLevel, toType, toLevel).second) {
             throw std::runtime_error("duplicate required transition rule");
         }
-        requirements.transitions.push_back({fromType, fromFloor, toType, toFloor});
+        requirements.transitions.push_back({fromType, fromLevel, toType, toLevel});
     }
 
     return requirements;
