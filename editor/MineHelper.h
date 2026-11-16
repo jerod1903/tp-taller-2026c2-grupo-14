@@ -8,10 +8,10 @@
 // Consultas sobre la mina: sus pisos y sus entradas. Ninguna cambia el mapa.
 
 // Si el mapa ya tiene algun piso de la mina
-bool hasDungeonFloors(const stardew::maps::MapDefinition& map);
+bool hasDungeonLevels(const stardew::maps::MapDefinition& map);
 
 // El piso de la mina con el numero mas bajo, o nullptr si no hay pisos
-const stardew::maps::MapArea* firstDungeonFloor(const stardew::maps::MapDefinition& map);
+const stardew::maps::MapArea* firstDungeonLevel(const stardew::maps::MapDefinition& map);
 
 // Las entradas a la mina, en el orden del mapa
 std::vector<const stardew::maps::MapElement*> dungeonEntrances(

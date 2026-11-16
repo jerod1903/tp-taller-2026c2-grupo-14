@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "common/game_dto.h"
-#include "server/consts.h"
+#include "server/config/server_config.h"
 #include "server/game/characters/animals/animal.h"
 #include "server/game/characters/player.h"
 #include "server/game/commands/game_context.h"
@@ -19,14 +19,14 @@ constexpr const char* INVENTORY_FULL = "El inventario está lleno";
 Animal* nearest_ready_cow(const std::vector<std::unique_ptr<Animal>>& animals,
                           const Player& player) {
     Animal* nearest = nullptr;
-    float nearest_distance = ServerConstants::MILKING_REACH;
+    float nearest_distance = server_config().animals.milking_reach;
     for (const std::unique_ptr<Animal>& animal: animals) {
         if (animal->get_kind() != AnimalKind::Cow || !animal->is_ready() ||
             &animal->get_location() != &player.get_location()) {
             continue;
         }
-        float distance = std::hypot(animal->get_x() - player.get_x(),
-                                    animal->get_y() - player.get_y());
+        float distance =
+                std::hypot(animal->get_x() - player.get_x(), animal->get_y() - player.get_y());
         if (distance <= nearest_distance) {
             nearest = animal.get();
             nearest_distance = distance;
@@ -40,18 +40,18 @@ Animal* nearest_ready_cow(const std::vector<std::unique_ptr<Animal>>& animals,
 InteractCommand::InteractCommand(uint32_t player_id): GameCommand(player_id) {}
 
 void InteractCommand::execute(GameContext& context) {
-    Player* player = context.find_player(player_id);
+    Player* player = context.characters().find_player(player_id);
     if (player == nullptr) {
         return;
     }
-    Animal* cow = nearest_ready_cow(context.farm_animals(), *player);
+    Animal* cow = nearest_ready_cow(context.characters().farm_animals(), *player);
     if (cow == nullptr) {
         return;
     }
     if (player->receive(ItemType::Milk, 1) > 0) {
-        context.send_to(player_id, ChatMessage{ChatKind::System, "", INVENTORY_FULL});
+        context.sessions().send_to(player_id, ChatMessage{ChatKind::System, "", INVENTORY_FULL});
         return;
     }
     cow->milk();
-    context.send_to(player_id, player->get_inventory_state());
+    context.sessions().send_to(player_id, player->get_inventory_state());
 }

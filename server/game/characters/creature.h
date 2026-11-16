@@ -5,6 +5,7 @@
 
 #include "server/game/characters/entity.h"
 #include "server/game/world/direction.h"
+#include "server/game/world/point.h"
 
 // Una entidad con vida que camina libremente, no de a una celda: (x, y) es su centro, en celdas y
 // con decimales. `pos` es la celda en la que está ese centro, la que usan portales y herramientas.
@@ -30,9 +31,15 @@ public:
     // true si en el último advance() entró a una celda nueva. Los portales se disparan al entrar,
     // no por estar parado encima: si no, quien llega sobre un portal de vuelta rebota.
     bool has_stepped() const;
+    // true si su caja de colisión pisa una celda que no se puede pisar (por ejemplo, si apareció
+    // una cama donde estaba parado).
+    bool is_trapped() const;
 
     // Llega parado en el centro de `arrival`.
     void relocate(Location& target, const Position& arrival) override;
+    // Pone su centro en `point`, dentro de la misma Location, aunque no caiga en el centro de una
+    // celda.
+    void place_at(const Point& point);
 
 protected:
     int health;

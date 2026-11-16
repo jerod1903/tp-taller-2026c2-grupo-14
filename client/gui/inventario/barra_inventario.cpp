@@ -11,7 +11,7 @@ namespace {
 void pintar(SDL2pp::Renderer& renderer, const SDL_Color& color) {
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
 }
-}
+}  // namespace
 
 BarraInventario::BarraInventario(SDL2pp::Renderer& renderer) {
     for (const auto& [item, ruta]: RUTAS_ICONOS) {

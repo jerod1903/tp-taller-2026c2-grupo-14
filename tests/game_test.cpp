@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <iterator>
 #include <memory>
 #include <thread>
 #include <utility>
@@ -12,7 +13,8 @@
 #include <gtest/gtest.h>
 
 #include "common/logger.h"
-#include "server/consts.h"
+#include "common/map/CabinInterior.h"
+#include "server/config/server_config.h"
 #include "server/game/commands/join_command.h"
 #include "server/game/commands/leave_command.h"
 #include "server/game/commands/move_command.h"
@@ -105,9 +107,8 @@ TEST_F(GameTest, SecondPlayerReceivesTheInfoOfBoth) {
     outbox->pop();
     // Llegan juntos, antes de cualquier snapshot: el orden entre ellos no está definido.
     std::vector<PlayerInfo> infos{next<PlayerInfo>(*outbox), next<PlayerInfo>(*outbox)};
-    std::sort(infos.begin(), infos.end(), [](const PlayerInfo& a, const PlayerInfo& b) {
-        return a.playerId < b.playerId;
-    });
+    std::sort(infos.begin(), infos.end(),
+              [](const PlayerInfo& a, const PlayerInfo& b) { return a.playerId < b.playerId; });
     EXPECT_EQ(infos, (std::vector<PlayerInfo>{{0, "Martu", first.appearance},
                                               {1, "Santu", second.appearance}}));
 }
@@ -152,12 +153,32 @@ TEST_F(GameTest, SnapshotsHaveTheAnimalsOfTheFarm) {
     for (const EntityState& entity: snapshot.entities) {
         cows += entity.type == EntityType::Cow ? 1 : 0;
         chickens += entity.type == EntityType::Chicken ? 1 : 0;
-        if (entity.type != EntityType::Player) {
+        if (entity.type == EntityType::Cow || entity.type == EntityType::Chicken) {
             EXPECT_EQ(entity.areaId, "granja");
         }
     }
-    EXPECT_EQ(cows, ServerConstants::INITIAL_COWS);
-    EXPECT_EQ(chickens, ServerConstants::INITIAL_CHICKENS);
+    EXPECT_EQ(cows, server_config().animals.cows);
+    EXPECT_EQ(chickens, server_config().animals.chickens);
+}
+
+TEST_F(GameTest, EachPlayerGetsItsOwnBedInTheCabinWhenJoining) {
+    std::shared_ptr<Outbox> first = join(0);
+    join(1);
+    Snapshot snapshot =
+            wait_snapshot(*first, [](const Snapshot& s) { return s.players.size() == 2; });
+    std::vector<EntityState> beds;
+    std::copy_if(snapshot.entities.begin(), snapshot.entities.end(), std::back_inserter(beds),
+                 [](const EntityState& e) { return e.type == EntityType::Bed; });
+    ASSERT_EQ(beds.size(), 2u);
+    EXPECT_EQ(beds[0].entityId, 0u);
+    EXPECT_EQ(beds[1].entityId, 1u);
+    EXPECT_EQ(beds[0].areaId, "cabin");
+    EXPECT_NE(std::make_pair(beds[0].x, beds[0].y), std::make_pair(beds[1].x, beds[1].y));
+}
+
+TEST_F(GameTest, LocationDataCarriesTheTickRate) {
+    std::shared_ptr<Outbox> outbox = join(0);
+    EXPECT_EQ(next<LocationData>(*outbox).tickRate, server_config().game.tick_rate);
 }
 
 TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
@@ -171,17 +192,33 @@ TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
 
 // En el mapa de ejemplo el spawn_point de la granja está en (14, 7), frente a la puerta de la
 // cabaña, con pasto a la derecha.
-TEST_F(GameTest, JoinedPlayerStartsStillOnTheSpawnOfTheFarm) {
+TEST_F(GameTest, JoinedPlayerStartsStillInItsBed) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
     PlayerState player = next_snapshot(*outbox).players.at(0);
-    EXPECT_EQ(player.areaId, "granja");
-    EXPECT_EQ(player.x, 14 * POSITION_SCALE + POSITION_SCALE / 2);  // centro de la celda
-    EXPECT_EQ(player.y, 7 * POSITION_SCALE + POSITION_SCALE / 2);
+    // El primero ocupa el primer tile sleepable y aparece en la fila de la frazada
+    const stardew::maps::MapDefinition interior =
+            stardew::maps::loadCabinInterior(server_config().game.max_players);
+    const auto& tiles = interior.areas.front().tiles;
+    int bed_x = 0;
+    int bed_y = 0;
+    for (int y = static_cast<int>(tiles.size()) - 1; y >= 0; --y) {
+        for (int x = static_cast<int>(tiles[y].size()) - 1; x >= 0; --x) {
+            if (tiles[y][x] == stardew::maps::TileType::Sleepable) {
+                bed_x = x;
+                bed_y = y;
+            }
+        }
+    }
+    EXPECT_EQ(player.areaId, "cabin");
+    // En el medio de la cama, que ocupa BED_WIDTH celdas
+    EXPECT_EQ(player.x, bed_x * POSITION_SCALE + stardew::maps::BED_WIDTH * POSITION_SCALE / 2);
+    EXPECT_EQ(player.y,
+              (bed_y + stardew::maps::BED_HEAD_HEIGHT) * POSITION_SCALE + POSITION_SCALE / 2);
     EXPECT_EQ(player.dirX, 0);
     EXPECT_EQ(player.dirY, 0);
-    EXPECT_EQ(player.health, ServerConstants::INITIAL_HEALTH);
-    EXPECT_EQ(player.gold, static_cast<uint32_t>(ServerConstants::INITIAL_GOLD));
+    EXPECT_EQ(player.health, server_config().player.health);
+    EXPECT_EQ(player.gold, static_cast<uint32_t>(server_config().player.gold));
 }
 
 TEST_F(GameTest, APlayerWithTheChatOpenTravelsWithTheTypingEmote) {

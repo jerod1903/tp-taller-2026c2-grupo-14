@@ -24,7 +24,7 @@ public:
     const std::string& get_name() const;
     const Grid& get_grid() const;
 
-    bool is_walkable(const Position& pos) const;
+    virtual bool is_walkable(const Position& pos) const;
 
     // std::nullopt si no hay portal en esa posición.
     std::optional<Portal> portal_at(const Position& pos) const;

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "server/consts.h"
+#include "server/config/server_config.h"
 
 Inventory::Inventory() {
     slots[0] = {ItemType::Pickaxe, 1};
@@ -21,8 +21,9 @@ void Inventory::select_slot(uint8_t slot) {
 uint8_t Inventory::add(ItemType item, uint8_t quantity) {
     // Primero completa las pilas que ya hay de ese objeto
     for (InventorySlot& slot: slots) {
-        if (quantity > 0 && slot.item == item && slot.quantity < ServerConstants::MAX_STACK) {
-            uint8_t added = std::min<uint8_t>(quantity, ServerConstants::MAX_STACK - slot.quantity);
+        if (quantity > 0 && slot.item == item && slot.quantity < server_config().player.max_stack) {
+            uint8_t added =
+                    std::min<uint8_t>(quantity, server_config().player.max_stack - slot.quantity);
             slot.quantity += added;
             quantity -= added;
         }
@@ -30,7 +31,7 @@ uint8_t Inventory::add(ItemType item, uint8_t quantity) {
     // Lo que sobra va a slots vacios, de a una pila por slot
     for (InventorySlot& slot: slots) {
         if (quantity > 0 && slot.item == ItemType::Empty) {
-            uint8_t added = std::min<uint8_t>(quantity, ServerConstants::MAX_STACK);
+            uint8_t added = std::min<uint8_t>(quantity, server_config().player.max_stack);
             slot = InventorySlot{item, added};
             quantity -= added;
         }

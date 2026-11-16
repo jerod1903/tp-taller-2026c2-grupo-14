@@ -4,6 +4,7 @@ target_sources(taller_tests
     creature_test.cpp
     dungeon_test.cpp
     client_protocol_test.cpp
+    config_test.cpp
     animador_sprites_test.cpp
     animal_test.cpp
     character_sheets_test.cpp
@@ -33,6 +34,7 @@ target_sources(taller_tests
     inventory_test.cpp
     select_slot_command_test.cpp
     # Código del servidor bajo test (sin main.cpp)
+    ../server/config/server_config.cpp
     ../server/game/characters/animals/animal.cpp
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
@@ -43,9 +45,11 @@ target_sources(taller_tests
     ../server/game/world/dungeon/dungeon.cpp
     ../server/game/world/dungeon/dungeon_level.cpp
     ../server/game/world/farm/cabin.cpp
+    ../server/game/world/interior.cpp
     ../server/game/world/farm/farm.cpp
     ../server/game/world/grid.cpp
     ../server/game/world/location.cpp
+    ../server/game/world/movement.cpp
     ../server/game/world/tile.cpp
     ../server/game/world/town/town.cpp
     ../server/game/world/world.cpp
@@ -53,12 +57,15 @@ target_sources(taller_tests
     ../server/game/world/world_loader.cpp
     ../server/game/game_registry.cpp
     ../server/game/game.cpp
+    ../server/game/sessions.cpp
+    ../server/game/snapshot_builder.cpp
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
     ../server/game/commands/typing_command.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
+    ../server/game/commands/enter_portal_command.cpp
     ../server/game/commands/move_command.cpp
     ../server/lobby/lobby_session.cpp
     ../server/net/receiver.cpp
@@ -78,6 +85,7 @@ target_sources(taller_tests
     ../editor/tools/PlaceTool.cpp
     ../editor/tools/SelectTool.cpp
     # Código del cliente bajo test (sin Qt)
+    ../client/config/client_config.cpp
     ../client/network/ClientProtocol.cpp
     ../client/gui/sprites/animador_sprites.cpp
     # Inventario

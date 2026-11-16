@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "common/map/persistence/MapRepository.h"
+#include "server/config/server_config.h"
 
 namespace {
 
@@ -40,7 +41,7 @@ maps::MapDefinition make_map() {
     map.areas.back().tiles[3][0] = TileType::Water;
     for (int floor = 10; floor >= 1; --floor) {
         map.areas.push_back(
-                area(floor_id(floor), AreaType::DungeonFloor, 3, 1, TileType::CaveFloor, floor));
+                area(floor_id(floor), AreaType::DungeonLevel, 3, 1, TileType::CaveFloor, floor));
     }
     map.elements = {
             element("cabin", "farm", ElementType::Cabin, ElementLayer::Structure, 1, 1, 3, 2),
@@ -101,9 +102,10 @@ TEST_F(WorldBuilderTest, StructuresAndNpcsBlockTheirCells) {
     EXPECT_TRUE(town().is_walkable(Position{2, 0}));
 }
 
-TEST_F(WorldBuilderTest, TriggersOfTransitionsStayWalkable) {
-    EXPECT_TRUE(town().is_walkable(Position{5, 0}));
-    EXPECT_TRUE(level(0).is_walkable(Position{1, 0}));
+TEST_F(WorldBuilderTest, PassagesStayWalkableButDoorsBlock) {
+    EXPECT_TRUE(farm().is_walkable(Position{5, 4}));
+    EXPECT_FALSE(town().is_walkable(Position{5, 0}));
+    EXPECT_FALSE(level(0).is_walkable(Position{1, 0}));
 }
 
 TEST_F(WorldBuilderTest, TransitionIsAPortalOnEveryCellOfItsTrigger) {
@@ -111,7 +113,7 @@ TEST_F(WorldBuilderTest, TransitionIsAPortalOnEveryCellOfItsTrigger) {
         std::optional<Portal> portal = level(0).portal_at(stairs);
         ASSERT_TRUE(portal.has_value());
         EXPECT_EQ(portal->target, &level(1));
-        EXPECT_EQ(portal->arrival, (Position{0, 0}));
+        EXPECT_EQ(cell_of(portal->arrival), (Position{0, 0}));
     }
 }
 
@@ -119,35 +121,28 @@ TEST_F(WorldBuilderTest, EveryLevelExitLeadsToTheTown) {
     std::optional<Portal> portal = level(Dungeon::LEVEL_COUNT - 1).portal_at(Position{0, 0});
     ASSERT_TRUE(portal.has_value());
     EXPECT_EQ(portal->target, &town());
-    EXPECT_EQ(portal->arrival, (Position{5, 1}));
+    EXPECT_EQ(cell_of(portal->arrival), (Position{5, 1}));
     EXPECT_EQ(town().portal_at(Position{5, 0})->target, &level(0));
 }
 
-TEST_F(WorldBuilderTest, CabinBlocksItsCellsExceptTheDoor) {
+TEST_F(WorldBuilderTest, CabinBlocksAllItsCells) {
     EXPECT_FALSE(farm().is_walkable(Position{1, 1}));
     EXPECT_FALSE(farm().is_walkable(Position{3, 2}));
-    EXPECT_TRUE(farm().is_walkable(Position{2, 2}));
+    EXPECT_FALSE(farm().is_walkable(Position{2, 2}));
     EXPECT_EQ(farm().get_cabin_pos(), (Position{2, 2}));
 }
 
 TEST_F(WorldBuilderTest, CabinDoorLeadsToTheInteriorAndBack) {
     std::optional<Portal> in = farm().portal_at(Position{2, 2});
     ASSERT_TRUE(in.has_value());
-    EXPECT_EQ(in->target, &farm().get_cabin());
-    EXPECT_EQ(in->arrival, CabinInterior::DOOR);
-    EXPECT_EQ(farm().get_cabin().portal_at(CabinInterior::DOOR)->target, &farm());
-    EXPECT_EQ(farm().get_cabin().get_grid().get_width(), CabinInterior::WIDTH);
+    Cabin& cabin = farm().get_cabin();
+    EXPECT_EQ(in->target, &cabin);
+    EXPECT_EQ(cell_of(in->arrival), cabin.get_door_pos());
+    EXPECT_EQ(cabin.portal_at(cabin.get_door_pos())->target, &farm());
 }
 
-TEST_F(WorldBuilderTest, PlayersSpawnOnTheSpawnPointOfTheFarm) {
-    EXPECT_EQ(world->get_spawn(), (Position{0, 4}));
-}
-
-TEST(WorldBuilderSpawnTest, WithoutSpawnPointPlayersSpawnOnTheCabinDoor) {
-    maps::MapDefinition map = make_map();
-    map.elements.erase(std::find_if(map.elements.begin(), map.elements.end(),
-                                    [](const maps::MapElement& e) { return e.id == "spawn"; }));
-    EXPECT_EQ(build_world(map)->get_spawn(), (Position{2, 2}));
+TEST_F(WorldBuilderTest, CabinHasABedSlotForEachPlayer) {
+    EXPECT_EQ(farm().get_cabin().bed_slot_count(), server_config().game.max_players);
 }
 
 TEST(WorldBuilderErrorsTest, FarmWithoutCabinIsRejected) {
@@ -156,7 +151,7 @@ TEST(WorldBuilderErrorsTest, FarmWithoutCabinIsRejected) {
     EXPECT_THROW(build_world(map), std::invalid_argument);
 }
 
-TEST(WorldBuilderErrorsTest, MissingDungeonFloorIsRejected) {
+TEST(WorldBuilderErrorsTest, MissingDungeonLevelIsRejected) {
     maps::MapDefinition map = make_map();
     map.areas.erase(std::find_if(map.areas.begin(), map.areas.end(),
                                  [](const maps::MapArea& a) { return a.id == floor_id(10); }));

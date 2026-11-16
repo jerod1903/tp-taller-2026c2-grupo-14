@@ -7,7 +7,7 @@ TypingCommand::TypingCommand(uint32_t player_id, const TypingRequest& request):
         GameCommand(player_id), typing(request.typing) {}
 
 void TypingCommand::execute(GameContext& context) {
-    if (Player* player = context.find_player(player_id)) {
+    if (Player* player = context.characters().find_player(player_id)) {
         player->set_typing(typing);
     }
 }

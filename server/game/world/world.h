@@ -1,24 +1,27 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include <cstdint>
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "server/game/characters/player.h"
+#include "server/game/commands/player_characters.h"
+#include "server/game/world/direction.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/farm.h"
-#include "server/game/world/portal.h"
+#include "server/game/world/movement.h"
 #include "server/game/world/town/town.h"
 
-class Player;
-
-// El mapa completo de una partida. Es dueño de las tres zonas. Los portales entre zonas (pueblo <->
-// granja, pueblo <-> mazmorra) los enlaza quien arma el mundo a partir del mapa, porque las
-// posiciones de origen y llegada salen de ahí.
-class World {
+// El mapa completo de una partida. Es dueño de las tres zonas y de los personajes de los
+// jugadores, que se piden por id. Los portales entre zonas (pueblo <-> granja, pueblo <-> mazmorra)
+// los enlaza quien arma el mundo a partir del mapa, porque las posiciones de origen y llegada salen
+// de ahí. Atiende a los comandos que usan los personajes (PlayerCharacters).
+class World: public PlayerCharacters {
 public:
-    // `spawn` es la celda de la granja donde aparece un jugador al entrar.
-    World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon,
-          const Position& spawn);
+    World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon);
 
     World(const World&) = delete;
     World& operator=(const World&) = delete;
@@ -28,30 +31,35 @@ public:
     Farm& get_farm();
     Town& get_town();
     Dungeon& get_dungeon();
-    const Position& get_spawn() const;
 
-    // Lo da de alta (o de baja) también en su Location actual.
-    void add_player(Player& player);
-    void remove_player(const Player& player);
+    // Crea su personaje en su cama de la cabaña, con los valores de server_config.toml. Si ya
+    // estaba, lo reemplaza.
+    void spawn_player(uint32_t player_id, std::string name);
+    // Lo da de alta en su Location actual, reemplazando al que tenga su mismo id.
+    Player& add_player(std::unique_ptr<Player> player);
+    // Si no está, no hace nada.
+    void remove_player(uint32_t player_id);
+    Player* find_player(uint32_t player_id) override;
+    const std::vector<std::unique_ptr<Animal>>& farm_animals() override;
+    // Atiende a MoveCommand.
+    Movement& get_movement();
 
-    Location& location_of(const Player& player) const;
+    // Lanza std::out_of_range si el jugador no está.
+    const Location& location_of(uint32_t player_id) const;
+    const std::map<uint32_t, std::unique_ptr<Player>>& get_players() const;
+    const std::vector<std::unique_ptr<Animal>>& get_animals() const;
+    // Con las camas que ya tienen dueño.
+    const Cabin& get_cabin() const;
 
-    // Saca al jugador de su Location actual y lo deja en portal.arrival dentro de portal.target
-    // (debe estar parado sobre portal.origin).
-    void travel(Player& player, const Portal& portal);
-
-    // Actualiza las tres zonas y después llama a check_portals().
+    // Actualiza las tres zonas y después hace viajar a los que pisaron un portal.
     void update(float dt);
 
 private:
     std::unique_ptr<Farm> farm;
     std::unique_ptr<Town> town;
     Dungeon dungeon;
-    Position spawn;
-    std::vector<Player*> players;
-
-    // Para cada jugador que en este tick entró a la celda de un portal, llama a travel().
-    void check_portals();
+    std::map<uint32_t, std::unique_ptr<Player>> players;
+    Movement movement;
 };
 
 #endif  // WORLD_H

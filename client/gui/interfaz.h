@@ -11,19 +11,20 @@
 #include <vector>
 
 #include <SDL2pp/SDL2pp.hh>
+
 #include "client/audio/reproductor_sonidos.h"
 #include "client/game/entrada.h"
 #include "client/game/estado_juego.h"
-#include "common/game_dto.h"
-#include "client/gui/sprites/constructor_capas.h"
 #include "client/gui/calculadores/calculador_camara.h"
-#include "client/gui/sprites/capa.h"
 #include "client/gui/chat/fuente.h"
 #include "client/gui/chat/panel_chat.h"
 #include "client/gui/inventario/barra_inventario.h"
-#include "client/gui/sprites/globo.h"
-#include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/mapa/mapa.h"
+#include "client/gui/sprites/capa.h"
+#include "client/gui/sprites/constructor_capas.h"
+#include "client/gui/sprites/entidad_grafica.h"
+#include "client/gui/sprites/globo.h"
+#include "common/game_dto.h"
 
 class Interfaz {
 public:
@@ -37,8 +38,11 @@ private:
                               std::chrono::steady_clock::time_point ahora);
     void vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
                 bool recien_creado);
+    // El mundo se dibuja en pixeles del tileset sobre el lienzo, que despues se estira a la
+    // ventana. Se rehace si cambia el tamaño de la ventana o si el area que se muestra es mas chica
+    // que la vista (como la cabaña): ahi se acerca hasta que la llene. 0 si no hay area
+    void ajustar_lienzo(int ancho_area, int alto_area);
     void leer_chat(const SDL_Event& evento, Entrada& entrada);
-    void ajustar_lienzo();
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio);
@@ -64,11 +68,14 @@ private:
     std::optional<Mapa> mapa;
     std::string mundo_del_mapa;
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
+    // Las camas de los jugadores que ya entraron: no se animan, se dibujan como un elemento
+    std::vector<EntityState> camas;
     BarraInventario barra;
     Fuente fuente;
     PanelChat panel_chat;
     std::optional<std::string> borrador;
     Globo globo;
+    // Los jugadores que ya se dibujan con su apariencia
     std::set<uint32_t> vestidos;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;

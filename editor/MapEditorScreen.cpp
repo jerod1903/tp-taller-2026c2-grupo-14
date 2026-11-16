@@ -112,8 +112,8 @@ QString describe(const maps::MapValidationIssue& issue) {
         data << "tipo de área " +
                         QString::fromStdString(std::string(maps::toString(*issue.areaType)));
     }
-    if (issue.floorNumber) {
-        data << QString("piso %1").arg(*issue.floorNumber);
+    if (issue.levelNumber) {
+        data << QString("piso %1").arg(*issue.levelNumber);
     }
     if (issue.elementType) {
         data << "tipo de elemento " +
@@ -226,6 +226,10 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
 QVBoxLayout* MapEditorScreen::createTiles(QButtonGroup* group) {
     auto* tiles = new QVBoxLayout();
     for (maps::TileType tile: maps::allTileTypes()) {
+        // Los sleepable son del ala este de la cabaña, que arma el juego
+        if (tile == maps::TileType::Sleepable) {
+            continue;
+        }
         auto* button = new QToolButton(this);
         // El tile mide una casilla: se agranda al tamano del icono (el icono no agranda solo)
         button->setIcon(QIcon(sprites.tile(tile).scaled(TILE_ICON_SIZE, TILE_ICON_SIZE)));
@@ -299,7 +303,7 @@ void MapEditorScreen::connectPlacing(PlaceTool& tool) {
 
 void MapEditorScreen::chooseEntrance() {
     std::optional<AreaSize> floorSize;
-    if (!hasDungeonFloors(editing.map())) {
+    if (!hasDungeonLevels(editing.map())) {
         SizeDialog dialog(FLOOR_SIZE, this);
         if (dialog.exec() != QDialog::Accepted) {
             backToSelect();

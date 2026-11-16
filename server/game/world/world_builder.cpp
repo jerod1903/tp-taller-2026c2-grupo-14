@@ -3,12 +3,15 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "server/consts.h"
+#include "common/map/CabinInterior.h"
+#include "common/map/MarketInterior.h"
+#include "server/config/server_config.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/cabin.h"
 #include "server/game/world/farm/farm.h"
@@ -32,17 +35,13 @@ std::vector<Position> cells_of(const maps::MapElement& element) {
     return cells;
 }
 
-Position cabin_door(const maps::MapElement& cabin) {
-    maps::MapCell door = maps::doorCell(cabin);
+Position building_door(const maps::MapElement& building) {
+    maps::MapCell door = maps::doorCell(building);
     return Position{door.x, door.y};
 }
 
-bool is_trigger(const maps::MapDefinition& map, const maps::MapElement& element) {
-    return std::any_of(map.transitions.begin(), map.transitions.end(),
-                       [&element](const maps::MapTransition& transition) {
-                           return transition.triggerElementId == element.id;
-                       });
-}
+// Los portones de los pasajes se cruzan caminando; la mina, sus escaleras y salidas, con la tecla
+bool is_passage(const maps::MapElement& trigger) { return trigger.type == maps::ElementType::Door; }
 
 const maps::MapArea& area_of_type(const maps::MapDefinition& map, maps::AreaType type) {
     auto area = std::find_if(map.areas.begin(), map.areas.end(),
@@ -71,9 +70,21 @@ Location* location_by_id(const LocationsById& locations, const std::string& id) 
     return location->second;
 }
 
+std::set<std::string> passage_ids(const maps::MapDefinition& map) {
+    std::set<std::string> ids;
+    for (const maps::MapTransition& transition: map.transitions) {
+        if (is_passage(element_by_id(map, transition.triggerElementId))) {
+            ids.insert(transition.triggerElementId);
+        }
+    }
+    return ids;
+}
+
 // El terreno decide qué se camina; además, las estructuras y los NPCs tapan sus celdas salvo
-// las que hay que pisar para viajar.
-Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area) {
+// las de los elementos de `passable`, que hay que pisar para viajar. Las puertas que se usan con
+// la tecla, como la de la cabaña, también se tapan: se usan desde al lado.
+Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area,
+                const std::set<std::string>& passable) {
     std::vector<Tile> tiles;
     for (const std::vector<maps::TileType>& row: area.tiles) {
         for (maps::TileType type: row) {
@@ -81,27 +92,63 @@ Grid build_grid(const maps::MapDefinition& map, const maps::MapArea& area) {
         }
     }
     for (const maps::MapElement& element: map.elements) {
-        if (element.areaId != area.id || !maps::isSolid(element) || is_trigger(map, element)) {
+        if (element.areaId != area.id || !maps::isSolid(element) || passable.contains(element.id)) {
             continue;
         }
         for (const Position& cell: cells_of(element)) {
-            bool is_door = element.type == maps::ElementType::Cabin && cell == cabin_door(element);
-            if (!is_door) {
-                Tile& tile = tiles.at(cell.y * area.width + cell.x);
-                tile = Tile(tile.get_type(), false);
-            }
+            Tile& tile = tiles.at(cell.y * area.width + cell.x);
+            tile = Tile(tile.get_type(), false);
         }
     }
     return Grid(area.width, area.height, std::move(tiles));
 }
 
-Grid cabin_interior() {
-    std::vector<Tile> tiles(CabinInterior::WIDTH * CabinInterior::HEIGHT,
-                            Tile(maps::TileType::WoodFloor, true));
-    return Grid(CabinInterior::WIDTH, CabinInterior::HEIGHT, std::move(tiles));
+// El primer elemento de ese tipo en el área; lanza std::invalid_argument si no hay ninguno.
+const maps::MapElement& element_of_type(const maps::MapDefinition& map, const maps::MapArea& area,
+                                        maps::ElementType type) {
+    auto element = std::find_if(map.elements.begin(), map.elements.end(),
+                                [&area, type](const maps::MapElement& candidate) {
+                                    return candidate.areaId == area.id && candidate.type == type;
+                                });
+    if (element == map.elements.end()) {
+        throw std::invalid_argument("al área " + area.id + " le falta un " +
+                                    std::string(maps::toString(type)));
+    }
+    return *element;
 }
 
-// El primer spawn_point de la granja; sin uno, el jugador aparece en la puerta de la cabaña.
+// La puerta es la primera house_door del área: se aparece ahí al entrar. Las camas van en los tiles
+// sleepable del cuarto, que se ocupan por filas de arriba a abajo y de izquierda a derecha.
+std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
+    const maps::MapArea& area = area_of_type(map, maps::AreaType::CabinArea);
+    const maps::MapElement& door = element_of_type(map, area, maps::ElementType::HouseDoor);
+    std::vector<Position> bed_slots;
+    for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
+        for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
+            if (area.tiles[y][x] == maps::TileType::Sleepable) {
+                bed_slots.push_back(Position{x, y});
+            }
+        }
+    }
+    if (bed_slots.size() != server_config().game.max_players) {
+        throw std::invalid_argument("la cabaña tiene " + std::to_string(bed_slots.size()) +
+                                    " tiles sleepable y tiene que tener " +
+                                    std::to_string(server_config().game.max_players));
+    }
+    return std::make_unique<Cabin>(area.id, build_grid(map, area, {door.id}),
+                                   Position{door.x, door.y}, std::move(bed_slots));
+}
+
+// Los comerciantes son elementos del interior: tapan su celda como cualquier NPC.
+std::unique_ptr<Interior> build_market(const maps::MapDefinition& map) {
+    const maps::MapArea& area = area_of_type(map, maps::AreaType::MarketArea);
+    const maps::MapElement& door = element_of_type(map, area, maps::ElementType::HouseDoor);
+    return std::make_unique<Interior>(area.id, build_grid(map, area, {door.id}),
+                                      Position{door.x, door.y});
+}
+
+// El primer spawn_point de la granja (donde arrancan los animales); sin uno, la puerta de la
+// cabaña.
 Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area,
                   const Farm& farm) {
     auto spawn = std::find_if(map.elements.begin(), map.elements.end(),
@@ -112,35 +159,42 @@ Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area
     return spawn != map.elements.end() ? Position{spawn->x, spawn->y} : farm.get_cabin_pos();
 }
 
-std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::MapArea& area) {
-    auto cabin = std::find_if(
-            map.elements.begin(), map.elements.end(), [&area](const maps::MapElement& element) {
-                return element.areaId == area.id && element.type == maps::ElementType::Cabin;
-            });
-    if (cabin == map.elements.end()) {
-        throw std::invalid_argument("la granja no tiene cabaña");
-    }
-    return std::make_unique<Farm>(
-            area.id, build_grid(map, area), cabin_door(*cabin),
-            std::make_unique<Cabin>("cabin", cabin_interior(), CabinInterior::DOOR));
+std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::MapArea& area,
+                                 const std::set<std::string>& passages,
+                                 std::unique_ptr<Cabin> cabin_interior) {
+    const maps::MapElement& cabin = element_of_type(map, area, maps::ElementType::Cabin);
+    return std::make_unique<Farm>(area.id, build_grid(map, area, passages), building_door(cabin),
+                                  std::move(cabin_interior));
 }
 
-// Los pisos se ordenan por su número: el piso 1 es la entrada, sin importar el orden del archivo.
-Dungeon build_dungeon(const maps::MapDefinition& map, LocationsById& locations) {
-    std::vector<const maps::MapArea*> floors;
+std::unique_ptr<Town> build_town(const maps::MapDefinition& map, const maps::MapArea& area,
+                                 const std::set<std::string>& passages,
+                                 std::unique_ptr<Interior> market_interior) {
+    const maps::MapElement& market = element_of_type(map, area, maps::ElementType::Market);
+    return std::make_unique<Town>(area.id, build_grid(map, area, passages), building_door(market),
+                                  std::move(market_interior));
+}
+
+// Los niveles se ordenan por su número: el nivel 1 es la entrada, sin importar el orden del
+// archivo.
+Dungeon build_dungeon(const maps::MapDefinition& map, const std::set<std::string>& passages,
+                      LocationsById& locations) {
+    std::vector<const maps::MapArea*> level_areas;
     for (const maps::MapArea& area: map.areas) {
-        if (area.type == maps::AreaType::DungeonFloor) {
-            floors.push_back(&area);
+        if (area.type == maps::AreaType::DungeonLevel) {
+            level_areas.push_back(&area);
         }
     }
-    std::sort(floors.begin(), floors.end(), [](const maps::MapArea* a, const maps::MapArea* b) {
-        return a->floorNumber.value_or(0) < b->floorNumber.value_or(0);
-    });
+    std::sort(level_areas.begin(), level_areas.end(),
+              [](const maps::MapArea* a, const maps::MapArea* b) {
+                  return a->levelNumber.value_or(0) < b->levelNumber.value_or(0);
+              });
     std::vector<std::unique_ptr<DungeonLevel>> levels;
-    for (const maps::MapArea* floor: floors) {
+    for (const maps::MapArea* level_area: level_areas) {
         int depth = static_cast<int>(levels.size());
-        levels.push_back(std::make_unique<DungeonLevel>(floor->id, build_grid(map, *floor), depth));
-        locations[floor->id] = levels.back().get();
+        levels.push_back(std::make_unique<DungeonLevel>(
+                level_area->id, build_grid(map, *level_area, passages), depth));
+        locations[level_area->id] = levels.back().get();
     }
     return Dungeon(std::move(levels));
 }
@@ -150,9 +204,31 @@ void add_portals(const maps::MapDefinition& map, const LocationsById& locations)
     for (const maps::MapTransition& transition: map.transitions) {
         Location* from = location_by_id(locations, transition.fromAreaId);
         Location* to = location_by_id(locations, transition.toAreaId);
-        Position arrival{transition.targetX, transition.targetY};
-        for (const Position& cell: cells_of(element_by_id(map, transition.triggerElementId))) {
-            from->add_portal(Portal{cell, to, arrival});
+        Point arrival = center_of(Position{transition.targetX, transition.targetY});
+        const maps::MapElement& trigger = element_by_id(map, transition.triggerElementId);
+        PortalTrigger kind = is_passage(trigger) ? PortalTrigger::Step : PortalTrigger::Action;
+        for (const Position& cell: cells_of(trigger)) {
+            from->add_portal(Portal{cell, to, arrival, kind});
+        }
+    }
+}
+
+// Los interiores se leen una sola vez: son los mismos para todas las partidas.
+const maps::MapDefinition& cabin_interior() {
+    static const maps::MapDefinition interior =
+            maps::loadCabinInterior(server_config().game.max_players);
+    return interior;
+}
+
+const maps::MapDefinition& market_interior() {
+    static const maps::MapDefinition interior = maps::loadMarketInterior();
+    return interior;
+}
+
+void reject_interior_id(const maps::MapDefinition& map, const std::string& interior_id) {
+    for (const maps::MapArea& area: map.areas) {
+        if (area.id == interior_id) {
+            throw std::invalid_argument("el mapa usa el id de un interior: " + interior_id);
         }
     }
 }
@@ -162,28 +238,33 @@ void add_portals(const maps::MapDefinition& map, const LocationsById& locations)
 std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     const maps::MapArea& farm_area = area_of_type(map, maps::AreaType::Farm);
     const maps::MapArea& town_area = area_of_type(map, maps::AreaType::Village);
+    std::unique_ptr<Cabin> cabin = build_cabin(cabin_interior());
+    std::unique_ptr<Interior> market = build_market(market_interior());
+    reject_interior_id(map, cabin->get_name());
+    reject_interior_id(map, market->get_name());
+    std::set<std::string> passages = passage_ids(map);
 
-    std::unique_ptr<Farm> farm = build_farm(map, farm_area);
-    std::unique_ptr<Town> town = std::make_unique<Town>(town_area.id, build_grid(map, town_area));
+    std::unique_ptr<Farm> farm = build_farm(map, farm_area, passages, std::move(cabin));
+    std::unique_ptr<Town> town = build_town(map, town_area, passages, std::move(market));
     LocationsById locations{{farm_area.id, farm.get()}, {town_area.id, town.get()}};
-    Dungeon dungeon = build_dungeon(map, locations);
+    Dungeon dungeon = build_dungeon(map, passages, locations);
 
     // Los portales van al final: apuntan a Locations que tienen que existir.
     add_portals(map, locations);
     Position spawn = spawn_of(map, farm_area, *farm);
-    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo de donde aparece el
-    // jugador (o ahi mismo si esa celda no se puede pisar).
+    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo del spawn_point (o ahi
+    // mismo si esa celda no se puede pisar).
     int next = 0;
     auto add_animal = [&](AnimalKind kind) {
-        Position pos{spawn.x + ServerConstants::ANIMALS_OFFSET_X + next++,
-                     spawn.y + ServerConstants::ANIMALS_OFFSET_Y};
+        Position pos{spawn.x + server_config().animals.offset_x + next++,
+                     spawn.y + server_config().animals.offset_y};
         farm->add_animal(kind, farm->is_walkable(pos) ? pos : spawn);
     };
-    for (int i = 0; i < ServerConstants::INITIAL_COWS; ++i) {
+    for (int i = 0; i < server_config().animals.cows; ++i) {
         add_animal(AnimalKind::Cow);
     }
-    for (int i = 0; i < ServerConstants::INITIAL_CHICKENS; ++i) {
+    for (int i = 0; i < server_config().animals.chickens; ++i) {
         add_animal(AnimalKind::Chicken);
     }
-    return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon), spawn);
+    return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon));
 }

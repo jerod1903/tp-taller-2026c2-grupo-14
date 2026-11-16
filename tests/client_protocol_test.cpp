@@ -189,10 +189,12 @@ TEST_F(ClientGameProtocolTest, SendLeaveGameSendsOnlyTheTag) {
 
 TEST_F(ClientGameProtocolTest, RecvsLocationData) {
     ServerProtocol server(std::move(*server_socket));
-    ASSERT_TRUE(server.send_location_data(LocationData{"granja"}));
+    ASSERT_TRUE(server.send_location_data(LocationData{"granja", 30, 4}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<LocationData>(message));
     EXPECT_EQ(std::get<LocationData>(message).worldId, "granja");
+    EXPECT_EQ(std::get<LocationData>(message).tickRate, 30);
+    EXPECT_EQ(std::get<LocationData>(message).maxPlayers, 4);
 }
 
 TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {

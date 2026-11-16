@@ -1,0 +1,26 @@
+# Valores del juego que ajusta el servidor. El cliente recibe lo que necesita por el protocolo.
+
+[game]
+max_players = 5
+tick_rate = 30           # ticks por segundo
+outbox_size = 64         # mensajes pendientes por jugador; con la outbox llena se descartan snapshots
+
+[player]
+health = 100
+energy = 100
+gold = 500
+speed = 4.0              # celdas por segundo
+max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
+
+# Provisorio: hasta que se compren a Marnie, la granja arranca con estos.
+[animals]
+cows = 2
+chickens = 3
+offset_x = -2            # donde arranca la fila de animales, respecto de donde aparece el jugador
+offset_y = 3
+health = 100
+speed = 1.0              # celdas por segundo
+min_walk = 1.0           # segundos que camina (o se queda quieto) antes de elegir otra direccion
+max_walk = 3.0
+cow_ready_seconds = 20.0 # provisorio, hasta el ciclo de dias: cada cuanto da leche una vaca
+milking_reach = 1.5      # hasta donde llega el jugador para ordeñar, en casillas

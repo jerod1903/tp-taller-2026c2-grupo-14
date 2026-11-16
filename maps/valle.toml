@@ -63,8 +63,8 @@ tiles = [
 
 [[areas]]
 id = "mina-1"
-type = "dungeon_floor"
-floor = 1
+type = "dungeon_level"
+level = 1
 width = 20
 height = 15
 offset_x = 0
@@ -89,8 +89,8 @@ tiles = [
 
 [[areas]]
 id = "mina-2"
-type = "dungeon_floor"
-floor = 2
+type = "dungeon_level"
+level = 2
 width = 20
 height = 15
 offset_x = 20
@@ -115,8 +115,8 @@ tiles = [
 
 [[areas]]
 id = "mina-3"
-type = "dungeon_floor"
-floor = 3
+type = "dungeon_level"
+level = 3
 width = 20
 height = 15
 offset_x = 40
@@ -141,8 +141,8 @@ tiles = [
 
 [[areas]]
 id = "mina-4"
-type = "dungeon_floor"
-floor = 4
+type = "dungeon_level"
+level = 4
 width = 20
 height = 15
 offset_x = 60
@@ -167,8 +167,8 @@ tiles = [
 
 [[areas]]
 id = "mina-5"
-type = "dungeon_floor"
-floor = 5
+type = "dungeon_level"
+level = 5
 width = 20
 height = 15
 offset_x = 80
@@ -193,8 +193,8 @@ tiles = [
 
 [[areas]]
 id = "mina-6"
-type = "dungeon_floor"
-floor = 6
+type = "dungeon_level"
+level = 6
 width = 20
 height = 15
 offset_x = 0
@@ -219,8 +219,8 @@ tiles = [
 
 [[areas]]
 id = "mina-7"
-type = "dungeon_floor"
-floor = 7
+type = "dungeon_level"
+level = 7
 width = 20
 height = 15
 offset_x = 20
@@ -245,8 +245,8 @@ tiles = [
 
 [[areas]]
 id = "mina-8"
-type = "dungeon_floor"
-floor = 8
+type = "dungeon_level"
+level = 8
 width = 20
 height = 15
 offset_x = 40
@@ -271,8 +271,8 @@ tiles = [
 
 [[areas]]
 id = "mina-9"
-type = "dungeon_floor"
-floor = 9
+type = "dungeon_level"
+level = 9
 width = 20
 height = 15
 offset_x = 60
@@ -297,8 +297,8 @@ tiles = [
 
 [[areas]]
 id = "mina-10"
-type = "dungeon_floor"
-floor = 10
+type = "dungeon_level"
+level = 10
 width = 20
 height = 15
 offset_x = 80
@@ -389,46 +389,6 @@ layer = "structure"
 x = 24
 y = 2
 width = 2
-height = 1
-
-[[elements]]
-id = "marnie"
-area = "pueblo"
-type = "merchant_marnie"
-layer = "npc"
-x = 5
-y = 12
-width = 1
-height = 1
-
-[[elements]]
-id = "clint"
-area = "pueblo"
-type = "merchant_clint"
-layer = "npc"
-x = 9
-y = 12
-width = 1
-height = 1
-
-[[elements]]
-id = "pierre"
-area = "pueblo"
-type = "merchant_pierre"
-layer = "npc"
-x = 15
-y = 12
-width = 1
-height = 1
-
-[[elements]]
-id = "robin"
-area = "pueblo"
-type = "merchant_robin"
-layer = "npc"
-x = 20
-y = 12
-width = 1
 height = 1
 
 [[elements]]
@@ -1164,8 +1124,8 @@ id = "pueblo-a-mina"
 from_area = "pueblo"
 trigger_element = "entrada-mina"
 to_area = "mina-1"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-1-salida-ruta"
@@ -1173,15 +1133,15 @@ from_area = "mina-1"
 trigger_element = "mina-1-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-1-escalera-ruta"
 from_area = "mina-1"
 trigger_element = "mina-1-escalera"
 to_area = "mina-2"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-2-salida-ruta"
@@ -1189,15 +1149,15 @@ from_area = "mina-2"
 trigger_element = "mina-2-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-2-escalera-ruta"
 from_area = "mina-2"
 trigger_element = "mina-2-escalera"
 to_area = "mina-3"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-3-salida-ruta"
@@ -1205,15 +1165,15 @@ from_area = "mina-3"
 trigger_element = "mina-3-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-3-escalera-ruta"
 from_area = "mina-3"
 trigger_element = "mina-3-escalera"
 to_area = "mina-4"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-4-salida-ruta"
@@ -1221,15 +1181,15 @@ from_area = "mina-4"
 trigger_element = "mina-4-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-4-escalera-ruta"
 from_area = "mina-4"
 trigger_element = "mina-4-escalera"
 to_area = "mina-5"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-5-salida-ruta"
@@ -1237,15 +1197,15 @@ from_area = "mina-5"
 trigger_element = "mina-5-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-5-escalera-ruta"
 from_area = "mina-5"
 trigger_element = "mina-5-escalera"
 to_area = "mina-6"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-6-salida-ruta"
@@ -1253,15 +1213,15 @@ from_area = "mina-6"
 trigger_element = "mina-6-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-6-escalera-ruta"
 from_area = "mina-6"
 trigger_element = "mina-6-escalera"
 to_area = "mina-7"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-7-salida-ruta"
@@ -1269,15 +1229,15 @@ from_area = "mina-7"
 trigger_element = "mina-7-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-7-escalera-ruta"
 from_area = "mina-7"
 trigger_element = "mina-7-escalera"
 to_area = "mina-8"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-8-salida-ruta"
@@ -1285,15 +1245,15 @@ from_area = "mina-8"
 trigger_element = "mina-8-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-8-escalera-ruta"
 from_area = "mina-8"
 trigger_element = "mina-8-escalera"
 to_area = "mina-9"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-9-salida-ruta"
@@ -1301,15 +1261,15 @@ from_area = "mina-9"
 trigger_element = "mina-9-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3
 
 [[transitions]]
 id = "mina-9-escalera-ruta"
 from_area = "mina-9"
 trigger_element = "mina-9-escalera"
 to_area = "mina-10"
-target_x = 2
-target_y = 1
+target_x = 1
+target_y = 2
 
 [[transitions]]
 id = "mina-10-salida-ruta"
@@ -1317,4 +1277,4 @@ from_area = "mina-10"
 trigger_element = "mina-10-salida"
 to_area = "pueblo"
 target_x = 25
-target_y = 5
+target_y = 3

@@ -1,6 +1,7 @@
 #ifndef FARM_H
 #define FARM_H
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,6 +10,7 @@
 #include "server/game/world/farm/cabin.h"
 #include "server/game/world/location.h"
 #include "server/game/world/position.h"
+#include "server/game/world/spawn_point.h"
 
 class Farm: public Location {
 public:
@@ -19,6 +21,10 @@ public:
     // Posición de la puerta de la cabaña en la grilla de la granja.
     const Position& get_cabin_pos() const;
     Cabin& get_cabin();
+    const Cabin& get_cabin() const;
+
+    // La cama del jugador en la cabaña.
+    SpawnPoint bed_spawn(uint32_t player_id);
 
     // La granja es dueña de sus animales y los registra como entidades de la Location.
     void add_animal(AnimalKind kind, const Position& pos);

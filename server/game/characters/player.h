@@ -3,9 +3,10 @@
 
 #include <cstdint>
 #include <string>
+
 #include "common/game_dto.h"
-#include "server/game/characters/inventory.h"
 #include "server/game/characters/creature.h"
+#include "server/game/characters/inventory.h"
 
 class Player: public Creature {
 public:

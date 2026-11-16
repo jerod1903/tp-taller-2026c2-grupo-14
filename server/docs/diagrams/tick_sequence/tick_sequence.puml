@@ -1,0 +1,21 @@
+@startuml tick_sequence
+participant "Game::run" as G
+participant World as W
+participant "Farm / Town / Dungeon" as L
+participant Movement as M
+participant SnapshotBuilder as S
+participant Sessions as SS
+queue "Outbox de cada jugador" as O
+
+loop tick_rate veces por segundo (server_config.toml)
+  G -> G : process_events: ejecuta los comandos de la Inbox
+  G -> W : update(dt)
+  W -> L : update(dt): cada Creature hace advance()
+  W -> M : travel_through_portals()\nsolo los pasajes (Step); las puertas van por EnterPortalCommand
+  G -> S : build(tick, world)
+  S --> G : Snapshot
+  G -> SS : broadcast(snapshot)
+  SS -> O : try_push(snapshot)
+  G -> G : sleep_until(próximo tick)\nsi va atrasado, no recupera ticks
+end
+@enduml

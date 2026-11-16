@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include "server/consts.h"
+#include "server/config/server_config.h"
 #include "tests/fake_game_context.h"
 
 namespace {
@@ -19,7 +19,7 @@ protected:
                 std::make_unique<Animal>(next_id++, kind, cell, context.location));
         Animal& animal = *context.animals.back();
         if (ready) {
-            animal.update(ServerConstants::COW_READY_SECONDS);
+            animal.update(server_config().animals.cow_ready_seconds);
             animal.relocate(context.location, cell);
         }
         return animal;
@@ -92,7 +92,7 @@ TEST_F(InteractCommandTest, ChickensAreNotMilked) {
 TEST_F(InteractCommandTest, ACowInAnotherAreaIsIgnored) {
     TestLocation other;
     context.animals.push_back(std::make_unique<Animal>(0, AnimalKind::Cow, Position{0, 0}, other));
-    context.animals.back()->update(ServerConstants::COW_READY_SECONDS);
+    context.animals.back()->update(server_config().animals.cow_ready_seconds);
     context.animals.back()->relocate(other, Position{0, 0});
     interact();
     EXPECT_TRUE(context.animals.back()->is_ready());

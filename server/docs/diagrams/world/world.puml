@@ -1,0 +1,151 @@
+@startuml world
+!pragma layout smetana
+hide empty members
+skinparam classAttributeIconSize 0
+
+package Mundo {
+  interface PlayerMovement {
+    + move_player(id, Direction)
+    + enter_portal(id)
+  }
+  class World {
+    - farm: Farm
+    - town: Town
+    - dungeon: Dungeon
+    - movement: Movement
+    - players: map<id, Player>
+    + spawn_player(id, name)
+    + remove_player(id)
+    + get_movement(): Movement&
+    + update(dt)
+  }
+  class Movement {
+    - farm: Farm&
+    - players: map<id, Player>&
+    + spawn_point(player_id): SpawnPoint
+    + move_player(id, Direction)
+    + enter_portal(id)
+    + travel_through_portals()
+    + free_trapped()
+  }
+  class SpawnPoint <<struct>> {
+    + location: Location&
+    + point: Point
+  }
+  class Point <<struct>> {
+    + x, y: float
+  }
+  abstract class Location {
+    # name: string
+    # grid: Grid
+    # portals: vector<Portal>
+    # entities: vector<Entity*>
+    + is_walkable(Position): bool
+    + portal_at(Position): Portal
+    + {abstract} update(dt)
+  }
+  class Farm {
+    - cabin_pos: Position
+    - animals: vector<Animal>
+    + bed_spawn(player_id): SpawnPoint
+  }
+  class Cabin {
+    - door_pos: Position
+    - bed_slots: vector<Position>
+    - beds: map<player_id, Position>
+    + assign_bed(player_id): Position
+    + bed_spawn(player_id): SpawnPoint
+    + is_walkable(Position): bool
+  }
+  class Town
+  class Dungeon {
+    + entry_level(): DungeonLevel
+    + level(depth): DungeonLevel
+  }
+  class DungeonLevel {
+    - depth: int
+    - enemies: vector<Enemy>
+  }
+  class Grid {
+    + at(Position): Tile
+    + in_bounds(Position): bool
+  }
+  class Tile {
+    - type: TileType
+    - walkable: bool
+  }
+  class Portal <<struct>> {
+    + origin: Position
+    + target: Location*
+    + arrival: Point
+    + trigger: PortalTrigger
+  }
+  enum PortalTrigger {
+    Step
+    Action
+  }
+}
+
+package Personajes {
+  abstract class Entity {
+    # id: uint32_t
+    # pos: Position
+    # location: Location*
+    + relocate(Location, Position)
+    + {abstract} update(dt)
+  }
+  abstract class Creature {
+    # health: int
+    # direction: Direction
+    # x, y: float
+    + set_direction(Direction)
+    + place_at(Point)
+    + has_stepped(): bool
+    + is_trapped(): bool
+    # advance(dt): bool
+  }
+  class Player {
+    - name: string
+    - gold: int
+    - energy: int
+  }
+  class Animal {
+    - kind: AnimalKind
+  }
+  abstract class Enemy {
+    + on_death()
+  }
+  class Skeleton
+}
+
+PlayerMovement <|.. Movement
+World *-- Farm
+World *-- Town
+World *-- Dungeon
+World *-- Movement
+World *-- "0..*" Player
+Movement --> Farm : pide la cama
+Movement ..> SpawnPoint
+SpawnPoint *-- Point
+Portal *-- PortalTrigger
+Location <|-- Farm
+Location <|-- Cabin
+Location <|-- Town
+Location <|-- DungeonLevel
+Farm *-- Cabin
+Farm *-- "0..*" Animal
+Dungeon *-- "10" DungeonLevel
+DungeonLevel *-- "0..*" Enemy
+Location *-- Grid
+Location *-- "0..*" Portal
+Grid *-- "0..*" Tile
+Portal --> Location : target
+
+Entity <|-- Creature
+Creature <|-- Player
+Creature <|-- Animal
+Creature <|-- Enemy
+Enemy <|-- Skeleton
+Location o-- "0..*" Entity : las que están adentro
+Entity --> Location : dónde está
+@enduml

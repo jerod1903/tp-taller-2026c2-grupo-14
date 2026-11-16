@@ -1,8 +1,8 @@
+#include "server/game/characters/inventory.h"
+
 #include <cstddef>
 
 #include <gtest/gtest.h>
-
-#include "server/game/characters/inventory.h"
 
 TEST(InventoryTest, StartsWithTheFourToolsAndTheRestEmpty) {
     Inventory inventory;
