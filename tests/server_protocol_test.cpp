@@ -206,3 +206,50 @@ TEST_F(ServerProtocolTest, RecvTypingClosedWithoutDataIsNullopt) {
     client->shutdown();
     EXPECT_FALSE(server->recv_typing().has_value());
 }
+
+
+TEST_F(ServerProtocolTest, FarmStateGoesWithTagAreaAndEachTile) {
+    const FarmState farm{"granja",
+                         {{10, 5, CropType::None, 0, false, false},
+                          {11, 5, CropType::Strawberry, 2, true, false}}};
+    ASSERT_TRUE(server->send_farm_state(farm));
+    expect_msg(GameMsg::FarmState);
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(2));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(10));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(CropType::None)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(11));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(CropType::Strawberry)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(2));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
+}
+
+TEST_F(ServerProtocolTest, EmptyFarmStateHasNoTiles) {
+    ASSERT_TRUE(server->send_farm_state(FarmState{"granja", {}}));
+    expect_msg(GameMsg::FarmState);
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
+}
+
+TEST_F(ServerProtocolTest, InventoryStateGoesWithSelectedSlotAndEachSlotWithItsQuality) {
+    const InventoryState inventory{1,
+                                   {{ItemType::Shovel, 1},
+                                    {ItemType::Potato, 4, ItemQuality::Incredible}}};
+    ASSERT_TRUE(server->send_inventory_state(inventory));
+    expect_msg(GameMsg::InventoryState);
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(2));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(ItemType::Shovel)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(ItemQuality::Base)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(ItemType::Potato)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(4));
+    EXPECT_EQ(client->recv_u8(),
+              std::optional<uint8_t>(static_cast<uint8_t>(ItemQuality::Incredible)));
+}

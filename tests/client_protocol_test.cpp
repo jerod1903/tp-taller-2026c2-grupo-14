@@ -258,12 +258,16 @@ TEST_F(ClientGameProtocolTest, SendSelectSlotSendsTagAndSlot) {
 
 TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
     ServerProtocol server(std::move(*server_socket));
-    const InventoryState inventory{2, {{ItemType::Pickaxe, 1}, {ItemType::Empty, 0}}};
+    const InventoryState inventory{2,
+                                   {{ItemType::Pickaxe, 1},
+                                    {ItemType::Strawberry, 3, ItemQuality::Excellent},
+                                    {ItemType::Empty, 0}}};
     ASSERT_TRUE(server.send_inventory_state(inventory));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
     EXPECT_EQ(std::get<InventoryState>(message), inventory);
 }
+
 TEST_F(ClientGameProtocolTest, SendChatSendsTagAndText) {
     BaseProtocol server(std::move(*server_socket));
     client->sendChat("hola");
@@ -296,4 +300,26 @@ TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
     EXPECT_EQ(server.recv_u8(), 1);
     EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Typing));
     EXPECT_EQ(server.recv_u8(), 0);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsFarmState) {
+    ServerProtocol server(std::move(*server_socket));
+    const FarmState farm{"granja",
+                         {{10, 5, CropType::None, 0, false, false},
+                          {11, 5, CropType::Strawberry, 2, true, false},
+                          {12, 5, CropType::Potato, 4, false, true}}};
+    ASSERT_TRUE(server.send_farm_state(farm));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<FarmState>(message));
+    EXPECT_EQ(std::get<FarmState>(message), farm);
+}
+
+// Si recvFarmState leyera de más o de menos, el mensaje siguiente quedaría desalineado.
+TEST_F(ClientGameProtocolTest, RecvFarmStateConsumesExactlyItsPayload) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_farm_state(FarmState{"granja", {{1, 2, CropType::Pumpkin, 3, true, true}}}));
+    ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
+    EXPECT_TRUE(std::holds_alternative<FarmState>(client->recvGameMessage()));
+    ServerGameMessage next = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<GameEnded>(next));
 }

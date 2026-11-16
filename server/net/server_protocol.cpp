@@ -200,6 +200,7 @@ bool ServerProtocol::send_inventory_state(const InventoryState& inventory) {
                        [this](const InventorySlot& slot) {
                            return baseProtocol.send_u8(static_cast<uint8_t>(slot.item)) &&
                                   baseProtocol.send_u8(slot.quantity);
+                                  baseProtocol.send_u8(static_cast<uint8_t>(slot.quality));
                        });
 }
 
@@ -208,6 +209,18 @@ bool ServerProtocol::send_chat_message(const ChatMessage& message) {
     return send_game_msg(GameMsg::ChatMessage) &&
            baseProtocol.send_u8(static_cast<uint8_t>(message.kind)) &&
            baseProtocol.send_string(message.from) && baseProtocol.send_string(message.text);
+}
+
+bool ServerProtocol::send_farm_state(const FarmState& farm) {
+    return send_game_msg(GameMsg::FarmState) && baseProtocol.send_string(farm.areaId) &&
+           send_count(farm.tiles.size()) &&
+           std::all_of(farm.tiles.begin(), farm.tiles.end(), [this](const FarmTile& tile) {
+               return baseProtocol.send_u16(tile.col) && baseProtocol.send_u16(tile.row) &&
+                      baseProtocol.send_u8(static_cast<uint8_t>(tile.crop)) &&
+                      baseProtocol.send_u8(tile.stage) &&
+                      baseProtocol.send_u8(tile.watered ? 1 : 0) &&
+                      baseProtocol.send_u8(tile.needsWater ? 1 : 0);
+           });
 }
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {

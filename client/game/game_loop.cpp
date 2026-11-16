@@ -93,6 +93,8 @@ void GameLoop::procesar_mensajes() {
             if (estado.chat.size() > MAX_MENSAJES_GUARDADOS) {
                 estado.chat.erase(estado.chat.begin());
             }
+        } else if (const auto* granja = std::get_if<FarmState>(&*mensaje)) {
+            estado.granja = *granja;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;

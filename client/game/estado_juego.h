@@ -28,6 +28,7 @@ struct EstadoJuego {
     int max_jugadores = 0;
     InventoryState inventario{};
     std::vector<MensajeChat> chat = {};
+    FarmState granja{};
 };
 
 #endif

@@ -36,6 +36,7 @@ enum class GameMsg : uint8_t {
     PlayerInfo,
     InventoryState,
     ChatMessage,
+    FarmState,
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor y el máximo de jugadores
@@ -182,24 +183,75 @@ enum class ItemType : uint8_t {
     Shovel,
     Sword,
     Milk,
+    StrawberrySeeds,
+    ScallionSeeds,
+    PotatoSeeds,
+    PumpkinSeeds,
+    Strawberry,
+    Scallion,
+    Potato,
+    Pumpkin,
 };
 
 struct InventorySlot {
     ItemType item;
     uint8_t quantity;
+    ItemQuality quality = ItemQuality::Base;
 
     bool operator==(const InventorySlot&) const = default;
 };
 
+enum class ItemQuality : uint8_t {
+    Base,
+    Good,
+    Excellent,
+    Incredible,
+    Perfect,
+};
+
+
 // Inventario de un jugador. Se manda al entrar y cada vez que cambia, no en cada tick.
 // En el cable: tag GameMsg::InventoryState, u8 selectedSlot, u16 cantidad de slots y, por cada
-// slot, u8 item y u8 quantity. Con selectedSlot de 0 a slots.size() - 1.
+// slot, u8 item, u8 quantity y u8 quality. Con selectedSlot de 0 a slots.size() - 1.
 struct InventoryState {
     uint8_t selectedSlot = 0;
     std::vector<InventorySlot> slots = {};
 
     bool operator==(const InventoryState&) const = default;
 };
+
+enum class CropType : uint8_t {
+    None = 0,  // tierra cavada sin plantar
+    Strawberry,
+    Scallion,
+    Potato,
+    Pumpkin,
+};
+
+
+// Una celda cavada de la granja. col y row son celdas, no milésimas.
+struct FarmTile {
+    uint16_t col;
+    uint16_t row;
+    CropType crop = CropType::None;
+    uint8_t stage = 0;        // etapa de crecimiento; la última es "lista para cosechar"
+    bool watered = false;     // se dibuja la tierra mojada
+    bool needsWater = false;  // se dibuja el icono de riego
+
+    bool operator==(const FarmTile&) const = default;
+};
+
+// Todas las celdas cavadas del área areaId. Se manda completo cada vez que algo cambia, a todos los
+// jugadores de la partida. Una celda que no está en la lista no está cavada.
+// En el cable: tag GameMsg::FarmState, areaId, u16 cantidad y, por cada celda,
+// u16 col, u16 row, u8 crop, u8 stage, u8 watered, u8 needsWater.
+struct FarmState {
+    std::string areaId;
+    std::vector<FarmTile> tiles = {};
+
+    bool operator==(const FarmState&) const = default;
+};
+
 
 
 #endif  // GAME_DTO_H

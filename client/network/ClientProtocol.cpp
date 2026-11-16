@@ -18,6 +18,8 @@
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
 //   LoadGame:        op, gameId u32                              -> status u8
 //   EnableMultiplayer: op, gameId u32                            -> status u8, inviteCode
+//   FarmState:     areaId, count u16, (col u16, row u16, crop u8, stage u8, watered u8,
+//                    needsWater u8)*
 //
 // Durante la partida:
 //   Acciones del jugador: tag GameOp u8 y su payload, ver la tabla de GameOp en common/game_dto.h
@@ -151,6 +153,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvInventoryState();
         case GameMsg::ChatMessage:
             return recvChatMessage();
+        case GameMsg::FarmState:
+          return recvFarmState();    
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -259,6 +263,23 @@ ChatMessage ClientProtocol::recvChatMessage() {
     return mensaje;
 }
 
+FarmState ClientProtocol::recvFarmState() {
+    FarmState farm{};
+    farm.areaId = ensure(baseProtocol.recv_string());
+    uint16_t count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < count; ++i) {
+        FarmTile tile{};
+        tile.col = ensure(baseProtocol.recv_u16());
+        tile.row = ensure(baseProtocol.recv_u16());
+        tile.crop = static_cast<CropType>(ensure(baseProtocol.recv_u8()));
+        tile.stage = ensure(baseProtocol.recv_u8());
+        tile.watered = ensure(baseProtocol.recv_u8()) != 0;
+        tile.needsWater = ensure(baseProtocol.recv_u8()) != 0;
+        farm.tiles.push_back(tile);
+    }
+    return farm;
+}
+
 InventoryState ClientProtocol::recvInventoryState() {
     InventoryState inventory{};
     inventory.selectedSlot = ensure(baseProtocol.recv_u8());
@@ -267,6 +288,7 @@ InventoryState ClientProtocol::recvInventoryState() {
         InventorySlot slot{};
         slot.item = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
         slot.quantity = ensure(baseProtocol.recv_u8());
+        slot.quality = static_cast<ItemQuality>(ensure(baseProtocol.recv_u8()));
         inventory.slots.push_back(slot);
     }
     return inventory;
