@@ -36,6 +36,7 @@ inline const char* const SHEET_BARREL = "Misc/spr_deco_barrel_closed.png";
 inline const char* const SHEET_CRATE = "Misc/spr_deco_crate_01.png";
 inline const char* const SHEET_FLOWERS = "Misc/spr_deco_flowers_house_02.png";
 inline const char* const SHEET_FARM_OBJECTS = "Farm/Environment/objects_01_16x16.png";
+inline const char* const SHEET_BASKET = "Misc/basket.png";
 
 struct SpriteRect {
     int x;
@@ -159,6 +160,11 @@ inline const std::map<ElementType, ElementSprite> ELEMENT_SPRITES = {
         // Interior del mercado: el mostrador con la caja y la vitrina, y el estante con mercaderia
         {ElementType::MarketCounter, {SHEET_TOWN_INTERIORS, {304, 480, 48, 32}, false}},
         {ElementType::MarketShelf, {SHEET_TOWN_INTERIORS, {416, 464, 96, 48}, false}},
+        // Interior del centro comunitario: un objeto por set, donde se entrega
+        {ElementType::CropsBundle, {SHEET_FARM_OBJECTS, {48, 112, 16, 15}, false}},  // cartel
+        {ElementType::MetalsBundle, {SHEET_ORE, {4, 98, 26, 25}, false}},  // piedra con oro
+        {ElementType::AnimalBundle, {SHEET_BASKET, {0, 0, 12, 12}, false}},
+        {ElementType::MoneyBundle, {SHEET_FARM_OBJECTS, {2, 50, 12, 13}, false}},  // bolsa
 };
 
 }  // namespace stardew::maps

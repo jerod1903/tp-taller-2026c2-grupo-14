@@ -50,6 +50,11 @@ enum class ElementType {
     // Muebles del interior del mercado
     MarketCounter,
     MarketShelf,
+    // Interior del centro comunitario: donde se entrega cada set (bundle)
+    CropsBundle,
+    MetalsBundle,
+    AnimalBundle,
+    MoneyBundle,
 };
 
 enum class ElementLayer {
@@ -345,6 +350,14 @@ inline std::optional<ElementType> elementTypeFromString(std::string_view value) 
         return ElementType::MarketCounter;
     if (value == "market_shelf")
         return ElementType::MarketShelf;
+    if (value == "crops_bundle")
+        return ElementType::CropsBundle;
+    if (value == "metals_bundle")
+        return ElementType::MetalsBundle;
+    if (value == "animal_bundle")
+        return ElementType::AnimalBundle;
+    if (value == "money_bundle")
+        return ElementType::MoneyBundle;
     return std::nullopt;
 }
 
@@ -424,6 +437,14 @@ inline std::string_view toString(ElementType type) {
             return "market_counter";
         case ElementType::MarketShelf:
             return "market_shelf";
+        case ElementType::CropsBundle:
+            return "crops_bundle";
+        case ElementType::MetalsBundle:
+            return "metals_bundle";
+        case ElementType::AnimalBundle:
+            return "animal_bundle";
+        case ElementType::MoneyBundle:
+            return "money_bundle";
     }
     return "unknown_element";
 }
@@ -467,6 +488,10 @@ inline std::vector<ElementType> allElementTypes() {
             ElementType::HouseDoor,
             ElementType::MarketCounter,
             ElementType::MarketShelf,
+            ElementType::CropsBundle,
+            ElementType::MetalsBundle,
+            ElementType::AnimalBundle,
+            ElementType::MoneyBundle,
     };
 }
 
@@ -542,6 +567,10 @@ inline ElementTraits elementTraits(ElementType type) {
         case ElementType::Plant:
         case ElementType::MarketCounter:
         case ElementType::MarketShelf:
+        case ElementType::CropsBundle:
+        case ElementType::MetalsBundle:
+        case ElementType::AnimalBundle:
+        case ElementType::MoneyBundle:
             return {.hasDoor = false, .travel = false};
     }
     return {.hasDoor = false, .travel = false};

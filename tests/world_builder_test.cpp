@@ -32,7 +32,8 @@ maps::MapElement element(const std::string& id, const std::string& area_id, Elem
 
 std::string floor_id(int floor) { return "dungeon-" + std::to_string(floor); }
 
-// Granja con cabaña de 3x2 en (1,1), pueblo con mercado, mercader y agua, y los 10 pisos cargados
+// Granja con cabaña de 3x2 en (1,1), pueblo con mercado, centro comunitario de 2x1 en (2,2),
+// mercader y agua, y los 10 pisos cargados
 // del más profundo al primero. Cada piso tiene la salida en (0,0) y una escalera de 2x1 en (1,0).
 maps::MapDefinition make_map() {
     maps::MapDefinition map{1, "Test", {}, {}, {}};
@@ -48,6 +49,8 @@ maps::MapDefinition make_map() {
             element("farm-gate", "farm", ElementType::Door, ElementLayer::Structure, 5, 4),
             element("animals", "farm", ElementType::AnimalSpawn, ElementLayer::Object, 0, 4),
             element("market", "village", ElementType::Market, ElementLayer::Structure, 0, 0, 2, 1),
+            element("center", "village", ElementType::CommunityCenter, ElementLayer::Structure, 2,
+                    2, 2, 1),
             element("marnie", "village", ElementType::MerchantMarnie, ElementLayer::Npc, 3, 0),
             element("mine", "village", ElementType::DungeonEntrance, ElementLayer::Structure, 5, 0),
     };
