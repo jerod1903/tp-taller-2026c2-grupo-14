@@ -17,8 +17,12 @@ public:
     int get_gold() const;
     int get_energy() const;
 
-    // Usa la herramienta equipada sobre `target`.
-    void use_tool(const Position& target);
+    // Le resta energía, sin bajar de 0: la última acción se hace aunque no le alcance.
+    void spend_energy(int amount);
+    // Sin energía no puede hacer nada más en el día.
+    bool is_exhausted() const;
+    // Lo que tiene en el slot elegido del inventario.
+    ItemType selected_item() const;
 
     void update(float dt) override;
 

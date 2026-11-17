@@ -9,6 +9,9 @@ target_sources(taller_server
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
     game/commands/typing_command.cpp
+    game/commands/use_tool_command.cpp
+    game/tools/tool.cpp
+    game/tools/shovel.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/enter_portal_command.cpp
@@ -61,6 +64,9 @@ target_sources(taller_server
     game/commands/command_factory.h
     game/commands/interact_command.h
     game/commands/typing_command.h
+    game/commands/use_tool_command.h
+    game/tools/tool.h
+    game/tools/shovel.h
     game/commands/game_command.h
     game/commands/game_context.h
     game/commands/join_command.h

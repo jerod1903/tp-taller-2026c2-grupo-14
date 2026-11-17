@@ -40,6 +40,8 @@ uint8_t Inventory::add(ItemType item, uint8_t quantity, ItemQuality quality) {
     return quantity;
 }
 
+ItemType Inventory::selected_item() const { return slots[selected_slot].item; }
+
 InventoryState Inventory::get_state() const {
     return InventoryState{selected_slot, std::vector<InventorySlot>(slots.begin(), slots.end())};
 }

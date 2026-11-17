@@ -40,7 +40,7 @@ InteractCommand::InteractCommand(uint32_t player_id): GameCommand(player_id) {}
 
 void InteractCommand::execute(GameContext& context) {
     Player* player = context.characters().find_player(player_id);
-    if (player == nullptr) {
+    if (player == nullptr || player->is_exhausted()) {
         return;
     }
     Cow* cow = nearest_ready_cow(context.characters().farm_animals(), *player);
@@ -52,5 +52,6 @@ void InteractCommand::execute(GameContext& context) {
         return;
     }
     cow->milk();
+    player->spend_energy(server_config().energy.milk);
     context.sessions().send_to(player_id, player->get_inventory_state());
 }

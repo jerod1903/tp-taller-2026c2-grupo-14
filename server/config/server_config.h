@@ -20,6 +20,17 @@ struct ServerConfig {
         // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
         uint8_t max_stack;
     };
+    // Lo que cansa cada acción.
+    struct Energy {
+        int dig;
+        int water;
+        int plant;
+        int harvest;
+        int milk;
+        int attack;
+        int mine;
+        int talk;
+    };
     struct Species {
         int price;            // lo que cuesta el animal
         int product_price;    // lo que se paga por la leche o el huevo
@@ -44,6 +55,7 @@ struct ServerConfig {
 
     Game game;
     Player player;
+    Energy energy;
     Animals animals;
 };
 

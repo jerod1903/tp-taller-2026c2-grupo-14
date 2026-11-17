@@ -43,6 +43,7 @@ public:
     void remove_player(uint32_t player_id);
     Player* find_player(uint32_t player_id) override;
     const std::vector<std::unique_ptr<Animal>>& farm_animals() override;
+    Farm* find_farm() override;
     // Atiende a MoveCommand.
     Movement& get_movement();
 

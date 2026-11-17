@@ -77,6 +77,19 @@ ServerConfig::Player read_player(const toml::table& root) {
             positive(required_float(player, "speed"), "speed"), static_cast<uint8_t>(max_stack)};
 }
 
+ServerConfig::Energy read_energy(const toml::table& root) {
+    TomlTableReader energy = section(root, "energy");
+    auto cost = [&energy](const std::string& key) {
+        int value = energy.requiredInt(key);
+        if (value < 0) {
+            throw std::runtime_error(std::string(FILE_NAME) + ": '" + key + "' can't be negative");
+        }
+        return value;
+    };
+    return ServerConfig::Energy{cost("dig"),  cost("water"),  cost("plant"), cost("harvest"),
+                                cost("milk"), cost("attack"), cost("mine"),  cost("talk")};
+}
+
 ServerConfig::Species read_species(const toml::table& root, const std::string& name) {
     const toml::table* table = root["animals"][name].as_table();
     if (table == nullptr) {
@@ -120,7 +133,7 @@ ServerConfig load_server_config(const std::string& path) {
     } catch (const toml::parse_error& e) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
-    return ServerConfig{read_game(root), read_player(root), read_animals(root)};
+    return ServerConfig{read_game(root), read_player(root), read_energy(root), read_animals(root)};
 }
 
 const ServerConfig& server_config() {

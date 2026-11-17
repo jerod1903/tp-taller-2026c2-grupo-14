@@ -53,6 +53,8 @@ Player* World::find_player(uint32_t player_id) {
 
 const std::vector<std::unique_ptr<Animal>>& World::farm_animals() { return farm->get_animals(); }
 
+Farm* World::find_farm() { return farm.get(); }
+
 Movement& World::get_movement() { return movement; }
 
 const Location& World::location_of(uint32_t player_id) const {

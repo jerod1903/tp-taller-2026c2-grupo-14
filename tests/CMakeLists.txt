@@ -67,6 +67,9 @@ target_sources(taller_tests
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
     ../server/game/commands/typing_command.cpp
+    ../server/game/commands/use_tool_command.cpp
+    ../server/game/tools/tool.cpp
+    ../server/game/tools/shovel.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
     ../server/game/commands/enter_portal_command.cpp

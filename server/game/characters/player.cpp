@@ -1,5 +1,6 @@
 #include "server/game/characters/player.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -16,8 +17,11 @@ int Player::get_gold() const { return gold; }
 
 int Player::get_energy() const { return energy; }
 
-// TODO: herramientas e inventario.
-void Player::use_tool(const Position&) {}
+void Player::spend_energy(int amount) { energy = std::max(0, energy - amount); }
+
+bool Player::is_exhausted() const { return energy == 0; }
+
+ItemType Player::selected_item() const { return inventory.selected_item(); }
 
 void Player::update(float dt) { advance(dt); }
 

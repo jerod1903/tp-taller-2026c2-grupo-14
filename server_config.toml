@@ -15,6 +15,16 @@ gold = 500
 speed = 4.0              # celdas por segundo
 max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
 
+[energy]                 # lo que cansa cada acción
+dig = 2                  # cada golpe de pala
+water = 2
+plant = 1
+harvest = 1
+milk = 1
+attack = 2               # cada golpe de espada
+mine = 3                 # cada golpe de pico
+talk = 1                 # hablar con un comerciante
+
 # Provisorio: hasta que se compren a Marnie, la granja arranca con estos.
 [animals]
 cows = 2

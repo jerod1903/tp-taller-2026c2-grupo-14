@@ -18,6 +18,7 @@ enum class GameOp : uint8_t {
     Interact = 0x05,     // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
     Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
+    UseTool = 0x08,      // sin payload: usa lo del slot elegido sobre la celda que tiene adelante
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
