@@ -1,6 +1,10 @@
 #include "common/map/InteriorWalls.h"
 
+#include <stdexcept>
+#include <string>
 #include <vector>
+
+#include "common/map/persistence/MapRepository.h"
 
 namespace stardew::maps {
 namespace {
@@ -136,5 +140,14 @@ private:
 }  // namespace
 
 void addWalls(MapArea& area) { area.tiles = Walls(area).build(); }
+
+MapDefinition loadInterior(const std::string& path) {
+    MapDefinition interior = TomlMapRepository().loadMap(path);
+    if (interior.areas.size() != 1) {
+        throw std::runtime_error("el interior " + path + " tiene que tener una sola área");
+    }
+    addWalls(interior.areas.front());
+    return interior;
+}
 
 }  // namespace stardew::maps

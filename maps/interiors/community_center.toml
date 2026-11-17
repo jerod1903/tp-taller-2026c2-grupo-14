@@ -1,0 +1,80 @@
+format_version = 1
+name = "Interior del centro comunitario"
+
+# El centro comunitario, igual en todos los mundos. Solo se marca el piso: las paredes las arma el
+# juego alrededor (common/map/InteriorWalls.h), asi que arriba quedan cuatro filas para la pared
+# del fondo. Abajo sale el pasillo de entrada: su ultima casilla es la puerta, que lleva a la del
+# centro comunitario en el pueblo. Hay un objeto por set, contra cada pared, donde se entrega: los
+# cultivos y los metales en el fondo, los productos animales a la izquierda y el dinero a la
+# derecha. El set de pelea no tiene objeto: se completa peleando.
+[[areas]]
+id = "community_center"
+type = "community_center_area"
+width = 18
+height = 14
+tiles = [
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "house_floor", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "house_floor", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+]
+
+[[elements]]
+id = "community-center-door"
+area = "community_center"
+type = "house_door"
+layer = "structure"
+x = 8
+y = 13
+width = 1
+height = 1
+
+[[elements]]
+id = "community-center-crops"
+area = "community_center"
+type = "crops_bundle"
+layer = "structure"
+x = 4
+y = 4
+width = 1
+height = 1
+
+[[elements]]
+id = "community-center-metals"
+area = "community_center"
+type = "metals_bundle"
+layer = "structure"
+x = 12
+y = 4
+width = 2
+height = 2
+
+[[elements]]
+id = "community-center-animals"
+area = "community_center"
+type = "animal_bundle"
+layer = "structure"
+x = 1
+y = 8
+width = 1
+height = 1
+
+[[elements]]
+id = "community-center-money"
+area = "community_center"
+type = "money_bundle"
+layer = "structure"
+x = 16
+y = 8
+width = 1
+height = 1

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "common/map/CabinInterior.h"
+#include "common/map/CommunityCenterInterior.h"
 #include "common/map/MarketInterior.h"
 #include "server/config/server_config.h"
 #include "server/game/world/dungeon/dungeon.h"
@@ -139,9 +140,10 @@ std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
                                    Position{door.x, door.y}, std::move(bed_slots));
 }
 
-// Los comerciantes son elementos del interior: tapan su celda como cualquier NPC.
-std::unique_ptr<Interior> build_market(const maps::MapDefinition& map) {
-    const maps::MapArea& area = area_of_type(map, maps::AreaType::MarketArea);
+// Un edificio por dentro (el mercado, el centro comunitario), del area de ese tipo. Lo que hay
+// adentro (los comerciantes, los objetos de los sets) tapa su celda.
+std::unique_ptr<Interior> build_interior(const maps::MapDefinition& map, maps::AreaType type) {
+    const maps::MapArea& area = area_of_type(map, type);
     const maps::MapElement& door = element_of_type(map, area, maps::ElementType::HouseDoor);
     return std::make_unique<Interior>(area.id, build_grid(map, area, {door.id}),
                                       Position{door.x, door.y});
@@ -169,10 +171,14 @@ std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::Map
 
 std::unique_ptr<Town> build_town(const maps::MapDefinition& map, const maps::MapArea& area,
                                  const std::set<std::string>& passages,
-                                 std::unique_ptr<Interior> market_interior) {
+                                 std::unique_ptr<Interior> market_interior,
+                                 std::unique_ptr<Interior> community_center_interior) {
     const maps::MapElement& market = element_of_type(map, area, maps::ElementType::Market);
+    const maps::MapElement& community_center =
+            element_of_type(map, area, maps::ElementType::CommunityCenter);
     return std::make_unique<Town>(area.id, build_grid(map, area, passages), building_door(market),
-                                  std::move(market_interior));
+                                  std::move(market_interior), building_door(community_center),
+                                  std::move(community_center_interior));
 }
 
 // Los niveles se ordenan por su número: el nivel 1 es la entrada, sin importar el orden del
@@ -225,6 +231,11 @@ const maps::MapDefinition& market_interior() {
     return interior;
 }
 
+const maps::MapDefinition& community_center_interior() {
+    static const maps::MapDefinition interior = maps::loadCommunityCenterInterior();
+    return interior;
+}
+
 void reject_interior_id(const maps::MapDefinition& map, const std::string& interior_id) {
     for (const maps::MapArea& area: map.areas) {
         if (area.id == interior_id) {
@@ -239,13 +250,18 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     const maps::MapArea& farm_area = area_of_type(map, maps::AreaType::Farm);
     const maps::MapArea& town_area = area_of_type(map, maps::AreaType::Village);
     std::unique_ptr<Cabin> cabin = build_cabin(cabin_interior());
-    std::unique_ptr<Interior> market = build_market(market_interior());
+    std::unique_ptr<Interior> market =
+            build_interior(market_interior(), maps::AreaType::MarketArea);
+    std::unique_ptr<Interior> community_center =
+            build_interior(community_center_interior(), maps::AreaType::CommunityCenterArea);
     reject_interior_id(map, cabin->get_name());
     reject_interior_id(map, market->get_name());
+    reject_interior_id(map, community_center->get_name());
     std::set<std::string> passages = passage_ids(map);
 
     std::unique_ptr<Farm> farm = build_farm(map, farm_area, passages, std::move(cabin));
-    std::unique_ptr<Town> town = build_town(map, town_area, passages, std::move(market));
+    std::unique_ptr<Town> town =
+            build_town(map, town_area, passages, std::move(market), std::move(community_center));
     LocationsById locations{{farm_area.id, farm.get()}, {town_area.id, town.get()}};
     Dungeon dungeon = build_dungeon(map, passages, locations);
 
