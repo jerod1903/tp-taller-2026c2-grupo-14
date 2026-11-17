@@ -29,6 +29,13 @@ inline const char* const SHEET_FARMHOUSE = "Farm/Environment/Tilesets_Farmhouse.
 inline const char* const SHEET_CHEST = "Misc/chest.png";
 inline const char* const SHEET_TOWN_INTERIORS =
         "Market/World/StradewValley/Tilesets_Town_Interiors.png";
+inline const char* const SHEET_FENCE = "Farm/Environment/Fence's copiar.png";
+inline const char* const SHEET_WELL = "Misc/spr_deco_well.png";
+inline const char* const SHEET_STATUE = "Misc/statue.png";
+inline const char* const SHEET_BARREL = "Misc/spr_deco_barrel_closed.png";
+inline const char* const SHEET_CRATE = "Misc/spr_deco_crate_01.png";
+inline const char* const SHEET_FLOWERS = "Misc/spr_deco_flowers_house_02.png";
+inline const char* const SHEET_FARM_OBJECTS = "Farm/Environment/objects_01_16x16.png";
 
 struct SpriteRect {
     int x;
@@ -94,7 +101,8 @@ inline const std::map<TileType, TileSprite> TILE_SPRITES = {
         {TileType::Void, {SHEET_FARMHOUSE, 0, 0}},
 };
 
-// Los elementos que no estan aca no se ven en el juego: el spawn y los portones de los pasajes
+// Los elementos que no estan aca no se ven en el juego: donde arrancan los animales y los portones
+// de los pasajes
 inline const std::map<ElementType, ElementSprite> ELEMENT_SPRITES = {
         {ElementType::Cabin, {SHEET_CABINS, {0, 0, 80, 112}, false}},
         {ElementType::Market, {SHEET_TOWN_BUILDINGS, {80, 176, 160, 144}, false}},  // el de Pierre
@@ -108,12 +116,25 @@ inline const std::map<ElementType, ElementSprite> ELEMENT_SPRITES = {
         // La puerta simple del tileset de la caverna; se pisa para salir
         {ElementType::Exit,
          {SHEET_CAVE, {8 * TILE_SIZE, 3 * TILE_SIZE, TILE_SIZE, TILE_SIZE}, true}},
-        // La piedra chica, sin mineral a la vista: cual sale lo decide el servidor
-        {ElementType::OreNode, {SHEET_ORE, {72, 11, 18, 16}, false}},
+        // La piedra chica, sin mineral a la vista. Es un obstaculo: los minerales los pone el
+        // servidor, no el mapa
+        {ElementType::Rock, {SHEET_ORE, {72, 11, 18, 16}, false}},
         // El pino, hasta la sombra del tronco: la copa sobresale hacia arriba
         {ElementType::Tree, {SHEET_TREE, {0, 0, 28, 40}, false}},
         // El arbusto chico
         {ElementType::Bush, {SHEET_BUSHES, {1, 32, 30, 32}, false}},
+        // Decoracion. El tramo de cerco con el poste al medio, que empalma con el de al lado
+        {ElementType::Fence, {SHEET_FENCE, {16, 32, 16, 16}, false}},
+        {ElementType::Well, {SHEET_WELL, {0, 0, 20, 25}, false}},
+        // La del rey, la de la izquierda de la hoja
+        {ElementType::Statue, {SHEET_STATUE, {6, 1, 32, 55}, false}},
+        {ElementType::Barrel, {SHEET_BARREL, {0, 0, 13, 16}, false}},
+        {ElementType::Crate, {SHEET_CRATE, {0, 0, 16, 21}, false}},
+        {ElementType::Flowers, {SHEET_FLOWERS, {0, 0, 12, 19}, false}},
+        // El farol rojo
+        {ElementType::Lamp, {SHEET_FARM_OBJECTS, {48, 80, 16, 32}, false}},
+        // La antorcha encendida del tileset de la caverna
+        {ElementType::Torch, {SHEET_CAVE, {0, 144, 16, 16}, false}},
         // Mirando hacia abajo
         {ElementType::MerchantMarnie, {SHEET_MARNIE, {0, 0, 16, 32}, false}},
         {ElementType::MerchantClint, {SHEET_CLINT, {0, 0, 16, 32}, false}},

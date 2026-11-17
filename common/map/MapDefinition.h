@@ -20,13 +20,22 @@ enum class ElementType {
     MerchantClint,
     MerchantPierre,
     MerchantRobin,
-    OreNode,
+    Rock,
     Door,
     Exit,
     Stairs,
-    SpawnPoint,
+    AnimalSpawn,  // donde arrancan los animales de la granja; el jugador aparece en su cama
     Tree,
     Bush,
+    // Decoracion del exterior y de la mina: la pone el editor y choca
+    Fence,
+    Well,
+    Statue,
+    Barrel,
+    Crate,
+    Flowers,
+    Lamp,
+    Torch,
     // Muebles del interior de la cabaña
     Fireplace,
     Chest,
@@ -282,20 +291,36 @@ inline std::optional<ElementType> elementTypeFromString(std::string_view value) 
         return ElementType::MerchantPierre;
     if (value == "merchant_robin")
         return ElementType::MerchantRobin;
-    if (value == "ore_node")
-        return ElementType::OreNode;
+    if (value == "rock")
+        return ElementType::Rock;
     if (value == "door")
         return ElementType::Door;
     if (value == "exit")
         return ElementType::Exit;
     if (value == "stairs")
         return ElementType::Stairs;
-    if (value == "spawn_point")
-        return ElementType::SpawnPoint;
+    if (value == "animal_spawn")
+        return ElementType::AnimalSpawn;
     if (value == "tree")
         return ElementType::Tree;
     if (value == "bush")
         return ElementType::Bush;
+    if (value == "fence")
+        return ElementType::Fence;
+    if (value == "well")
+        return ElementType::Well;
+    if (value == "statue")
+        return ElementType::Statue;
+    if (value == "barrel")
+        return ElementType::Barrel;
+    if (value == "crate")
+        return ElementType::Crate;
+    if (value == "flowers")
+        return ElementType::Flowers;
+    if (value == "lamp")
+        return ElementType::Lamp;
+    if (value == "torch")
+        return ElementType::Torch;
     if (value == "fireplace")
         return ElementType::Fireplace;
     if (value == "chest")
@@ -345,20 +370,36 @@ inline std::string_view toString(ElementType type) {
             return "merchant_pierre";
         case ElementType::MerchantRobin:
             return "merchant_robin";
-        case ElementType::OreNode:
-            return "ore_node";
+        case ElementType::Rock:
+            return "rock";
         case ElementType::Door:
             return "door";
         case ElementType::Exit:
             return "exit";
         case ElementType::Stairs:
             return "stairs";
-        case ElementType::SpawnPoint:
-            return "spawn_point";
+        case ElementType::AnimalSpawn:
+            return "animal_spawn";
         case ElementType::Tree:
             return "tree";
         case ElementType::Bush:
             return "bush";
+        case ElementType::Fence:
+            return "fence";
+        case ElementType::Well:
+            return "well";
+        case ElementType::Statue:
+            return "statue";
+        case ElementType::Barrel:
+            return "barrel";
+        case ElementType::Crate:
+            return "crate";
+        case ElementType::Flowers:
+            return "flowers";
+        case ElementType::Lamp:
+            return "lamp";
+        case ElementType::Torch:
+            return "torch";
         case ElementType::Fireplace:
             return "fireplace";
         case ElementType::Chest:
@@ -399,13 +440,21 @@ inline std::vector<ElementType> allElementTypes() {
             ElementType::MerchantClint,
             ElementType::MerchantPierre,
             ElementType::MerchantRobin,
-            ElementType::OreNode,
+            ElementType::Rock,
             ElementType::Door,
             ElementType::Exit,
             ElementType::Stairs,
-            ElementType::SpawnPoint,
+            ElementType::AnimalSpawn,
             ElementType::Tree,
             ElementType::Bush,
+            ElementType::Fence,
+            ElementType::Well,
+            ElementType::Statue,
+            ElementType::Barrel,
+            ElementType::Crate,
+            ElementType::Flowers,
+            ElementType::Lamp,
+            ElementType::Torch,
             ElementType::Fireplace,
             ElementType::Chest,
             ElementType::Window,
@@ -470,10 +519,18 @@ inline ElementTraits elementTraits(ElementType type) {
         case ElementType::MerchantClint:
         case ElementType::MerchantPierre:
         case ElementType::MerchantRobin:
-        case ElementType::OreNode:
-        case ElementType::SpawnPoint:
+        case ElementType::Rock:
+        case ElementType::AnimalSpawn:
         case ElementType::Tree:
         case ElementType::Bush:
+        case ElementType::Fence:
+        case ElementType::Well:
+        case ElementType::Statue:
+        case ElementType::Barrel:
+        case ElementType::Crate:
+        case ElementType::Flowers:
+        case ElementType::Lamp:
+        case ElementType::Torch:
         case ElementType::Fireplace:
         case ElementType::Chest:
         case ElementType::Window:
@@ -528,7 +585,7 @@ inline MapCell doorCell(const MapElement& building) {
     return {building.x + building.width / 2, building.y + building.height - 1};
 }
 
-// Las estructuras y los NPCs tapan sus celdas; los objetos (rocas, cofres) no
+// Las estructuras (edificios, arboles, rocas) y los NPCs tapan sus celdas; los objetos no
 inline bool isSolid(const MapElement& element) {
     return element.layer == ElementLayer::Structure || element.layer == ElementLayer::Npc;
 }

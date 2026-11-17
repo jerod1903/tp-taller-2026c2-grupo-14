@@ -12,7 +12,7 @@
 class SpriteSheets {
 public:
     QPixmap tile(stardew::maps::TileType type);
-    // Vacio para los elementos que no tienen dibujo (spawn, puertas, rocas)
+    // Vacio para los elementos que no tienen dibujo (donde arrancan los animales, puertas)
     std::optional<QPixmap> element(stardew::maps::ElementType type);
 
 private:

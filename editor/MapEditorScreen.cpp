@@ -12,6 +12,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/styles/StyleManager.h"
@@ -31,6 +32,20 @@ constexpr int PALETTE_BUTTON_PADDING = 8;
 // Los tiles, en una columna con su nombre al lado
 constexpr int TILE_ICON_SIZE = 40;
 constexpr int TILE_BUTTON_WIDTH = 160;
+// Los tiles del pincel: los que alguna regla deja pintar, en el orden de las reglas y sin repetir.
+// Los de los interiores no estan en ninguna: van en los .toml de cada interior, que el editor no
+// toca.
+std::vector<maps::TileType> paintableTiles(const maps::MapRequirements& requirements) {
+    std::vector<maps::TileType> tiles;
+    for (const maps::TileRule& rule: requirements.tiles) {
+        for (maps::TileType tile: rule.types) {
+            if (std::find(tiles.begin(), tiles.end(), tile) == tiles.end()) {
+                tiles.push_back(tile);
+            }
+        }
+    }
+    return tiles;
+}
 
 // Los pisos de la mina: lo justo para la pared, la salida, la escalera y algo de piso, y mas de 30
 // es tedioso de editar. Por defecto, los de valle.toml.
@@ -225,11 +240,7 @@ MapEditorScreen::MapEditorScreen(const maps::MapService& service, QWidget* paren
 
 QVBoxLayout* MapEditorScreen::createTiles(QButtonGroup* group) {
     auto* tiles = new QVBoxLayout();
-    for (maps::TileType tile: maps::allTileTypes()) {
-        // Los sleepable son del ala este de la cabaña, que arma el juego
-        if (tile == maps::TileType::Sleepable) {
-            continue;
-        }
+    for (maps::TileType tile: paintableTiles(service.requirements())) {
         auto* button = new QToolButton(this);
         // El tile mide una casilla: se agranda al tamano del icono (el icono no agranda solo)
         button->setIcon(QIcon(sprites.tile(tile).scaled(TILE_ICON_SIZE, TILE_ICON_SIZE)));

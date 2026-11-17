@@ -48,7 +48,7 @@ enum class MapIssueCode {
     ElementInWrongArea,
     WrongElementSize,
     TooManyElements,
-    SleepableTileInMap,
+    TileInWrongArea,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -133,8 +133,8 @@ inline std::string_view toString(MapIssueCode code) {
             return "WrongElementSize";
         case MapIssueCode::TooManyElements:
             return "TooManyElements";
-        case MapIssueCode::SleepableTileInMap:
-            return "SleepableTileInMap";
+        case MapIssueCode::TileInWrongArea:
+            return "TileInWrongArea";
     }
     return "UnknownMapIssue";
 }
