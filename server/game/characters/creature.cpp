@@ -11,6 +11,20 @@ constexpr float CELL_CENTER = 0.5f;
 // Tramo máximo por paso de la simulación: menos de una celda, así nunca atraviesa una pared
 // aunque dt sea grande.
 constexpr float MAX_SUBSTEP = 0.25f;
+
+// En diagonal mira hacia el costado, como lo dibuja el cliente (AnimadorSprites).
+Direction facing_of(Direction dir) {
+    switch (dir) {
+        case Direction::UP_LEFT:
+        case Direction::DOWN_LEFT:
+            return Direction::LEFT;
+        case Direction::UP_RIGHT:
+        case Direction::DOWN_RIGHT:
+            return Direction::RIGHT;
+        default:
+            return dir;
+    }
+}
 }  // namespace
 
 Creature::Creature(uint32_t id, const Position& pos, Location& location, int health,
@@ -29,9 +43,18 @@ bool Creature::is_alive() const { return health > 0; }
 
 float Creature::speed() const { return base_speed; }
 
-void Creature::set_direction(Direction dir) { direction = dir; }
+void Creature::set_direction(Direction dir) {
+    direction = dir;
+    if (dir != Direction::NONE) {
+        facing = facing_of(dir);
+    }
+}
 
 Direction Creature::get_direction() const { return direction; }
+
+Direction Creature::get_facing() const { return facing; }
+
+Position Creature::facing_cell() const { return step(get_position(), facing); }
 
 float Creature::get_x() const { return x; }
 
