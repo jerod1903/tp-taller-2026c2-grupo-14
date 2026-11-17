@@ -7,7 +7,7 @@ namespace {
 void pintar(SDL2pp::Renderer& renderer, const SDL_Color& color) {
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
 }
-}  // namespace
+}
 
 Globo::Globo(SDL2pp::Renderer& renderer):
         puntos(renderer, RUTA_GLOBO_ESCRIBIENDO), leche(renderer, RUTA_ICONO_LECHE) {}

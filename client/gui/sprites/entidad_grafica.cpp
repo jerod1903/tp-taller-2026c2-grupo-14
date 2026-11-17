@@ -40,7 +40,6 @@ std::vector<Sprite> EntidadGrafica::sprites() const {
             espejado = espejada;
             bajada = cuadro.bajada_cabeza;
         }
-        // Si el cuerpo esta espejado, lo que lleva encima queda del otro lado del cuadro
         int x = cuadro.espejado ? ancho_cuadro - capa.desplazamiento.x - capa.tamano.x :
                                   capa.desplazamiento.x;
         SDL2pp::Rect destino(esquina.x + x, esquina.y + capa.desplazamiento.y + bajada,
