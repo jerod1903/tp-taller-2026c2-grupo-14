@@ -19,6 +19,7 @@ target_sources(taller_client
     gui/sprites/constructor_capas.cpp
     gui/calculadores/calculador_camara.cpp
     gui/mapa/mapa.cpp
+    gui/mapa/transicion_area.cpp
     gui/inventario/barra_inventario.cpp
     gui/chat/fuente.cpp
     gui/chat/panel_chat.cpp
@@ -49,6 +50,7 @@ target_sources(taller_client
     gui/sprites/constructor_capas.h
     gui/calculadores/calculador_camara.h
     gui/mapa/mapa.h
+    gui/mapa/transicion_area.h
     gui/inventario/barra_inventario.h
     gui/chat/fuente.h
     gui/chat/panel_chat.h

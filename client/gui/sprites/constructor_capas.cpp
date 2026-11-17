@@ -65,7 +65,7 @@ std::map<uint32_t, uint32_t> colores_de_manga(SDL2pp::Surface& camisas, uint16_t
     return reemplazos;
 }
 
-}  // namespace
+}
 
 ConstructorCapas::ConstructorCapas(SDL2pp::Renderer& renderer):
         renderer(renderer),

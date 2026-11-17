@@ -64,7 +64,6 @@ std::map<ElementType, ElementoGrafico> Mapa::armar_graficos_elementos() {
 
 std::map<std::string, Mapa::Area> Mapa::cargar_areas(const std::string& world_id,
                                                      int max_jugadores) const {
-    // El id viene del servidor: se valida para que no pueda apuntar a un archivo fuera de maps/
     if (world_id.empty() || world_id.find_first_not_of(CARACTERES_WORLD_ID) != std::string::npos) {
         throw std::runtime_error("world id invalido: " + world_id);
     }
@@ -89,7 +88,7 @@ void Mapa::agregar_areas(stardew::maps::MapDefinition definicion,
                                                 elemento.width, elemento.height) :
                                 std::nullopt;
         if (area == cargadas.end() || !sprite) {
-            continue;  // los que no se ven (spawn, puertas) o todavia no tienen dibujo
+            continue;
         }
         if (graficos_elementos.at(*elemento.type).es_suelo) {
             area->second.suelo.push_back(*sprite);
@@ -105,7 +104,6 @@ std::optional<Sprite> Mapa::sprite_elemento(ElementType tipo, int x, int y, int 
     if (grafico == graficos_elementos.end()) {
         return std::nullopt;
     }
-    // Se estira al ancho del elemento y se apoya en su borde de abajo: lo que sobra sobresale
     const SDL2pp::Rect& origen = grafico->second.origen;
     int ancho_px = ancho * TAMANO_TILE;
     int alto_px = origen.h * ancho_px / origen.w;
@@ -122,7 +120,7 @@ void Mapa::dibujar_tile(SDL2pp::Renderer& renderer, TileType tipo, int columna, 
                         const SDL2pp::Rect& camara) {
     auto grafico = graficos.find(tipo);
     if (grafico == graficos.end()) {
-        return;  // todavia no hay grafico para ese tipo
+        return;
     }
     if (grafico->second.debajo) {
         dibujar_tile(renderer, *grafico->second.debajo, columna, fila, camara);
