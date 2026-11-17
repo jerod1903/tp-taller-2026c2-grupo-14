@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "common/game_dto.h"
+
 enum class CropType : uint8_t {
     None = 0,  // tierra cavada sin plantar
     Strawberry,
@@ -13,17 +15,9 @@ enum class CropType : uint8_t {
     Pumpkin,
 };
 
-enum class CropQuality : uint8_t {
-    Base,
-    Good,
-    Excellent,
-    Incredible,
-    Perfect,
-};
-
 struct CropHarvest {
     CropType type;
-    CropQuality quality;
+    ItemQuality quality;
 
     bool operator==(const CropHarvest&) const = default;
 };

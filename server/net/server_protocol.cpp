@@ -201,7 +201,8 @@ bool ServerProtocol::send_inventory_state(const InventoryState& inventory) {
            std::all_of(inventory.slots.begin(), inventory.slots.end(),
                        [this](const InventorySlot& slot) {
                            return baseProtocol.send_u8(static_cast<uint8_t>(slot.item)) &&
-                                  baseProtocol.send_u8(slot.quantity);
+                                  baseProtocol.send_u8(slot.quantity) &&
+                                  baseProtocol.send_u8(static_cast<uint8_t>(slot.quality));
                        });
 }
 

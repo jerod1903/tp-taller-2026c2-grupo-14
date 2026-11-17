@@ -28,7 +28,7 @@ public:
     void set_typing(bool typing);
     bool is_typing() const;
     // Agrega objetos a su inventario. Devuelve cuantos no entraron (0 si entraron todos).
-    uint8_t receive(ItemType item, uint8_t quantity);
+    uint8_t receive(ItemType item, uint8_t quantity, ItemQuality quality = ItemQuality::Base);
 
 private:
     std::string name;

@@ -199,9 +199,18 @@ enum class ItemType : uint8_t {
     Egg,
 };
 
+enum class ItemQuality : uint8_t {
+    Base,
+    Good,
+    Excellent,
+    Incredible,
+    Perfect,
+};
+
 struct InventorySlot {
     ItemType item;
     uint8_t quantity;
+    ItemQuality quality;
 
     bool operator==(const InventorySlot&) const = default;
 };
