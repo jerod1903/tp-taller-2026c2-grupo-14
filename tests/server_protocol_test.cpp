@@ -37,19 +37,22 @@ protected:
     std::unique_ptr<BaseProtocol> client;
 };
 
-TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagWorldIdTickRateAndMaxPlayers) {
-    ASSERT_TRUE(server->send_location_data(LocationData{"granja", 30, 4}));
+TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagWorldIdTickRateMaxPlayersAndMaxEnergy) {
+    ASSERT_TRUE(server->send_location_data(LocationData{"granja", 30, 4, 270}));
     expect_msg(GameMsg::LocationData);
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(30));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(4));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(270));
 }
 
 TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
     PlayerState player{3, "granja", 14250, 6500, -1, 0, 90, 80, 500};
-    ASSERT_TRUE(server->send_snapshot(Snapshot{42, {player}, {}}));
+    ASSERT_TRUE(server->send_snapshot(Snapshot{42, 3, 125, {player}, {}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(42));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(3));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(125));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(3));
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
@@ -65,9 +68,11 @@ TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
 
 TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
     EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1, Emote::CowMilkReady};
-    ASSERT_TRUE(server->send_snapshot(Snapshot{7, {}, {cow}}));
+    ASSERT_TRUE(server->send_snapshot(Snapshot{7, 1, 0, {}, {cow}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(7));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(2));
@@ -100,9 +105,11 @@ TEST_F(ServerProtocolTest, GameEndedGoesWithItsTagAndReason) {
 }
 
 TEST_F(ServerProtocolTest, EmptySnapshotHasNoPlayers) {
-    ASSERT_TRUE(server->send_snapshot(Snapshot{0, {}, {}}));
+    ASSERT_TRUE(server->send_snapshot(Snapshot{0, 1, 0, {}, {}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(0));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(1));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
 }
@@ -237,19 +244,14 @@ TEST_F(ServerProtocolTest, EmptyFarmStateHasNoTiles) {
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(0));
 }
 
-TEST_F(ServerProtocolTest, InventoryStateGoesWithSelectedSlotAndEachSlotWithItsQuality) {
-    const InventoryState inventory{1,
-                                   {{ItemType::Shovel, 1},
-                                    {ItemType::Potato, 4, ItemQuality::Incredible}}};
+TEST_F(ServerProtocolTest, InventoryStateGoesWithSelectedSlotAndEachSlot) {
+    const InventoryState inventory{1, {{ItemType::Shovel, 1}, {ItemType::Potato, 4}}};
     ASSERT_TRUE(server->send_inventory_state(inventory));
     expect_msg(GameMsg::InventoryState);
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(2));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(ItemType::Shovel)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
-    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(ItemQuality::Base)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(ItemType::Potato)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(4));
-    EXPECT_EQ(client->recv_u8(),
-              std::optional<uint8_t>(static_cast<uint8_t>(ItemQuality::Incredible)));
 }

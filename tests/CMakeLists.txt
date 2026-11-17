@@ -36,15 +36,19 @@ target_sources(taller_tests
     # Código del servidor bajo test (sin main.cpp)
     ../server/config/server_config.cpp
     ../server/game/characters/animals/animal.cpp
+    ../server/game/characters/animals/chicken/chicken.cpp
+    ../server/game/characters/animals/cow/cow.cpp
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
     ../server/game/characters/enemies/skeleton.cpp
     ../server/game/characters/entity.cpp
     ../server/game/characters/player.cpp
     ../server/game/world/direction.cpp
+    ../server/game/world/game_clock.cpp
     ../server/game/world/dungeon/dungeon.cpp
     ../server/game/world/dungeon/dungeon_level.cpp
     ../server/game/world/farm/cabin.cpp
+    ../server/game/world/farm/crop.cpp
     ../server/game/world/interior.cpp
     ../server/game/world/farm/farm.cpp
     ../server/game/world/grid.cpp
