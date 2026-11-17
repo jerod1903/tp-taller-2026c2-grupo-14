@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "server/config/server_config.h"
 #include "server/game/characters/player.h"
 #include "server/game/commands/player_characters.h"
 #include "server/game/world/direction.h"
@@ -14,6 +15,7 @@
 #include "server/game/world/farm/farm.h"
 #include "server/game/world/movement.h"
 #include "server/game/world/town/town.h"
+#include "server/game/world/game_clock.h"
 
 // El mapa completo de una partida. Es dueño de las tres zonas y de los personajes de los
 // jugadores, que se piden por id. Los portales entre zonas (pueblo <-> granja, pueblo <-> mazmorra)
@@ -50,6 +52,7 @@ public:
     const std::vector<std::unique_ptr<Animal>>& get_animals() const;
     // Con las camas que ya tienen dueño.
     const Cabin& get_cabin() const;
+    const GameClock& get_clock() const;
 
     // Actualiza las tres zonas y después hace viajar a los que pisaron un portal.
     void update(float dt);
@@ -60,6 +63,9 @@ private:
     Dungeon dungeon;
     std::map<uint32_t, std::unique_ptr<Player>> players;
     Movement movement;
+    GameClock clock{server_config().game.day_speed};
+
+    void start_new_day();
 };
 
 #endif  // WORLD_H

@@ -67,9 +67,18 @@ const std::vector<std::unique_ptr<Animal>>& World::get_animals() const {
 
 const Cabin& World::get_cabin() const { return farm->get_cabin(); }
 
+const GameClock& World::get_clock() const { return clock; }
+
+void World::start_new_day() {
+    farm->start_new_day();
+}
+
 void World::update(float dt) {
     farm->update(dt);
     town->update(dt);
     dungeon.update(dt);
     movement.travel_through_portals();
+    if (clock.update(dt)) {
+        start_new_day();
+    }
 }
