@@ -22,6 +22,7 @@ target_sources(taller_client
     gui/inventario/barra_inventario.cpp
     gui/chat/fuente.cpp
     gui/chat/panel_chat.cpp
+    gui/hud/hud.cpp
     network/enviador.cpp
     network/recibidor.cpp
     audio/reproductor_sonidos.cpp
@@ -52,6 +53,7 @@ target_sources(taller_client
     gui/inventario/barra_inventario.h
     gui/chat/fuente.h
     gui/chat/panel_chat.h
+    gui/hud/hud.h
     gui/rutas.h
     gui/sprites/sprite.h
     network/enviador.h

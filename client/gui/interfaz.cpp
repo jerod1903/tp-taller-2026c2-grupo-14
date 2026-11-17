@@ -34,6 +34,7 @@ Interfaz::Interfaz():
         barra(renderer),
         fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
         panel_chat(fuente),
+        hud(renderer),
         globo(renderer) {}
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
@@ -263,6 +264,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
+    hud.dibujar(renderer, estado, escala);
     renderer.Present();
 }
 
