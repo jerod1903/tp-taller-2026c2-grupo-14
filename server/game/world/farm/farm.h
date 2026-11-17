@@ -17,13 +17,19 @@
 #include "server/game/world/position.h"
 #include "server/game/world/spawn_point.h"
 
+// Una celda trabajada con la pala: Dirt si era pasto y se cavó una vez, Tilled si ya se puede plantar.
+struct Plot {
+    SoilType soil;
+    Crop crop;
+};
+
 class Farm: public Location {
 public:
     // La Farm es dueña de la Cabin. Va en unique_ptr porque una Location no se puede mover.
     // Enlaza las dos puertas: cabin_pos en la granja <-> door_pos en la cabaña.
-    // plots: los tiles tilled_soil, donde se puede cavar.
+    // tilled: los tiles tilled_soil del mapa, que arrancan cavados.
     Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin,
-         std::set<Position> plots = {});
+         const std::set<Position>& tilled = {});
 
     // Posición de la puerta de la cabaña en la grilla de la granja.
     const Position& get_cabin_pos() const;
@@ -46,14 +52,17 @@ public:
     // Los animales producen; lo que dejan en el piso queda en su celda.
     void start_new_day();
 
-    // Cava la celda. false si no es un plot o ya estaba cavada.
-    bool till(const Position& pos);
-    // Planta en una celda cavada y vacía. false si no se puede.
+    // Un golpe de pala: pasto -> dirt -> tilled. false si la celda no se puede cavar (fuera de la
+    // grilla, tapada, otro terreno) o ya estaba tilled.
+    bool dig(const Position& pos);
+    // Planta en una celda tilled y vacía. false si no se puede.
     bool plant(const Position& pos, CropType type);
-    // Cosecha un cultivo listo y deja la celda cavada y vacía. nullopt si no hay nada para cosechar.
+    // Cosecha un cultivo listo y deja la celda tilled y vacía. nullopt si no hay nada para cosechar.
     std::optional<CropHarvest> harvest(const Position& pos);
-    // Las celdas cavadas, por posición.
-    const std::map<Position, Crop>& get_crops() const;
+    // Las celdas trabajadas, por posición.
+    const std::map<Position, Plot>& get_plots() const;
+    // true si los plots cambiaron desde la última vez que se preguntó (para mandar el FarmState).
+    bool take_changes();
 
     // Actualiza también la Cabin.
     void update(float dt) override;
@@ -62,10 +71,10 @@ private:
     Position cabin_pos;
     std::unique_ptr<Cabin> cabin;
     std::vector<std::unique_ptr<Animal>> animals;
-    std::set<Position> plots;
-    std::map<Position, Crop> crops;
+    std::map<Position, Plot> plots;
     std::map<Position, ItemType> ground_items;
     uint32_t next_animal_id = 0;
+    bool changed = false;
 
     int count_of(AnimalKind kind) const;
 };

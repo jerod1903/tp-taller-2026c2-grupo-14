@@ -217,20 +217,22 @@ TEST_F(ServerProtocolTest, RecvTypingClosedWithoutDataIsNullopt) {
 
 TEST_F(ServerProtocolTest, FarmStateGoesWithTagAreaAndEachTile) {
     const FarmState farm{"granja",
-                         {{10, 5, CropType::None, 0, false, false},
-                          {11, 5, CropType::Strawberry, 2, true, false}}};
+                         {{10, 5, SoilType::Dirt, CropType::None, 0, false, false},
+                          {11, 5, SoilType::Tilled, CropType::Strawberry, 2, true, false}}};
     ASSERT_TRUE(server->send_farm_state(farm));
     expect_msg(GameMsg::FarmState);
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(2));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(10));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(SoilType::Dirt)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(CropType::None)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(11));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(SoilType::Tilled)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(CropType::Strawberry)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(2));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));

@@ -14,12 +14,12 @@
 #include "server/game/characters/animals/cow/cow.h"
 
 Farm::Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin,
-           std::set<Position> plots):
-        Location(std::move(name), std::move(grid)),
-        cabin_pos(cabin_pos),
-        cabin(std::move(cabin)),
-        plots(std::move(plots)) {
+           const std::set<Position>& tilled):
+        Location(std::move(name), std::move(grid)), cabin_pos(cabin_pos), cabin(std::move(cabin)) {
     this->cabin->link_to(*this, cabin_pos);
+    for (const Position& pos: tilled) {
+        plots.emplace(pos, Plot{SoilType::Tilled, Crop{}});
+    }
 }
 
 const Position& Farm::get_cabin_pos() const { return cabin_pos; }
@@ -81,34 +81,59 @@ int Farm::count_of(AnimalKind kind) const {
             }));
 }
 
-bool Farm::till(const Position& pos) {
-    if (plots.count(pos) == 0) {
+bool Farm::dig(const Position& pos) {
+    auto plot = plots.find(pos);
+    if (plot != plots.end()) {
+        if (plot->second.soil != SoilType::Dirt) {
+            return false;
+        }
+        plot->second.soil = SoilType::Tilled;
+        changed = true;
+        return true;
+    }
+    if (!grid.in_bounds(pos) || !is_walkable(pos)) {
         return false;
     }
-    return crops.emplace(pos, Crop{}).second;
+    switch (grid.at(pos).get_type()) {
+        case TileType::Grass:
+            plots.emplace(pos, Plot{SoilType::Dirt, Crop{}});
+            break;
+        case TileType::Dirt:
+            plots.emplace(pos, Plot{SoilType::Tilled, Crop{}});
+            break;
+        default:
+            return false;
+    }
+    changed = true;
+    return true;
 }
 
 bool Farm::plant(const Position& pos, CropType type) {
-    auto crop = crops.find(pos);
-    if (type == CropType::None || crop == crops.end() || crop->second.is_planted()) {
+    auto plot = plots.find(pos);
+    if (type == CropType::None || plot == plots.end() || plot->second.soil != SoilType::Tilled ||
+        plot->second.crop.is_planted()) {
         return false;
     }
-    crop->second = Crop{type};
+    plot->second.crop = Crop{type};
+    changed = true;
     return true;
 }
 
 std::optional<CropHarvest> Farm::harvest(const Position& pos) {
-    auto crop = crops.find(pos);
-    if (crop == crops.end() || !crop->second.is_ready()) {
+    auto plot = plots.find(pos);
+    if (plot == plots.end() || !plot->second.crop.is_ready()) {
         return std::nullopt;
     }
     // La calidad todavía no se calcula.
-    CropHarvest harvested{crop->second.get_type(), CropQuality::Base};
-    crop->second = Crop{};
+    CropHarvest harvested{plot->second.crop.get_type(), ItemQuality::Base};
+    plot->second.crop = Crop{};
+    changed = true;
     return harvested;
 }
 
-const std::map<Position, Crop>& Farm::get_crops() const { return crops; }
+const std::map<Position, Plot>& Farm::get_plots() const { return plots; }
+
+bool Farm::take_changes() { return std::exchange(changed, false); }
 
 void Farm::update(float dt) {
     update_entities(dt);

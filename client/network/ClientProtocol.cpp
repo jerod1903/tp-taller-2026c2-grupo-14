@@ -18,7 +18,7 @@
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
 //   LoadGame:        op, gameId u32                              -> status u8
 //   EnableMultiplayer: op, gameId u32                            -> status u8, inviteCode
-//   FarmState:     areaId, count u16, (x u16, y u16, crop u8, stage u8, needsWater u8,
+//   FarmState:     areaId, count u16, (x u16, y u16, soil u8, crop u8, stage u8, needsWater u8,
 //                    readyToHarvest u8)*
 //
 // Durante la partida:
@@ -274,6 +274,7 @@ FarmState ClientProtocol::recvFarmState() {
         FarmTile tile{};
         tile.x = ensure(baseProtocol.recv_u16());
         tile.y = ensure(baseProtocol.recv_u16());
+        tile.soil = static_cast<SoilType>(ensure(baseProtocol.recv_u8()));
         tile.crop = static_cast<CropType>(ensure(baseProtocol.recv_u8()));
         tile.stage = ensure(baseProtocol.recv_u8());
         tile.needsWater = ensure(baseProtocol.recv_u8()) != 0;

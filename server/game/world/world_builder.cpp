@@ -163,16 +163,16 @@ std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::Map
                                  const std::set<std::string>& passages,
                                  std::unique_ptr<Cabin> cabin_interior) {
     const maps::MapElement& cabin = element_of_type(map, area, maps::ElementType::Cabin);
-    std::set<Position> plots;
+    std::set<Position> tilled;
     for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
         for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
             if (area.tiles[y][x] == maps::TileType::TilledSoil) {
-                plots.insert(Position{x, y});
+                tilled.insert(Position{x, y});
             }
         }
     }
     return std::make_unique<Farm>(area.id, build_grid(map, area, passages), building_door(cabin),
-                                  std::move(cabin_interior), std::move(plots));
+                                  std::move(cabin_interior), tilled);
 }
 
 std::unique_ptr<Town> build_town(const maps::MapDefinition& map, const maps::MapArea& area,

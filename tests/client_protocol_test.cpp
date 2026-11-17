@@ -308,9 +308,9 @@ TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
 TEST_F(ClientGameProtocolTest, RecvsFarmState) {
     ServerProtocol server(std::move(*server_socket));
     const FarmState farm{"granja",
-                         {{10, 5, CropType::None, 0, false, false},
-                          {11, 5, CropType::Strawberry, 2, true, false},
-                          {12, 5, CropType::Potato, 4, false, true}}};
+                         {{10, 5, SoilType::Dirt, CropType::None, 0, false, false},
+                          {11, 5, SoilType::Tilled, CropType::Strawberry, 2, true, false},
+                          {12, 5, SoilType::Tilled, CropType::Potato, 4, false, true}}};
     ASSERT_TRUE(server.send_farm_state(farm));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<FarmState>(message));
@@ -320,7 +320,7 @@ TEST_F(ClientGameProtocolTest, RecvsFarmState) {
 // Si recvFarmState leyera de más o de menos, el mensaje siguiente quedaría desalineado.
 TEST_F(ClientGameProtocolTest, RecvFarmStateConsumesExactlyItsPayload) {
     ServerProtocol server(std::move(*server_socket));
-    ASSERT_TRUE(server.send_farm_state(FarmState{"granja", {{1, 2, CropType::Pumpkin, 3, true, true}}}));
+    ASSERT_TRUE(server.send_farm_state(FarmState{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}}));
     ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
     EXPECT_TRUE(std::holds_alternative<FarmState>(client->recvGameMessage()));
     ServerGameMessage next = client->recvGameMessage();

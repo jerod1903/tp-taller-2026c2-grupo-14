@@ -218,10 +218,11 @@ bool ServerProtocol::send_farm_state(const FarmState& farm) {
            send_count(farm.tiles.size()) &&
            std::all_of(farm.tiles.begin(), farm.tiles.end(), [this](const FarmTile& tile) {
                return baseProtocol.send_u16(tile.x) && baseProtocol.send_u16(tile.y) &&
-                      baseProtocol.send_u8(static_cast<uint8_t>(tile.crop)) &&
-                      baseProtocol.send_u8(tile.stage) &&
-                      baseProtocol.send_u8(tile.needsWater ? 1 : 0) &&
-                      baseProtocol.send_u8(tile.readyToHarvest ? 1 : 0);
+                    baseProtocol.send_u8(static_cast<uint8_t>(tile.soil)) &&
+                    baseProtocol.send_u8(static_cast<uint8_t>(tile.crop)) &&
+                    baseProtocol.send_u8(tile.stage) &&
+                    baseProtocol.send_u8(tile.needsWater ? 1 : 0) &&
+                    baseProtocol.send_u8(tile.readyToHarvest ? 1 : 0);
            });
 }
 
