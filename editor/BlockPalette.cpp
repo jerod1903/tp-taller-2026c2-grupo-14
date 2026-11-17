@@ -44,15 +44,10 @@ const NewArea NEW_AREAS[] = {
         {maps::AreaType::Village, maps::TileType::Path},
 };
 
+// Una fila del panel: su titulo y los tipos que muestra
 struct Section {
-    maps::AreaType areaType;
-    const char* title;
-};
-
-const Section SECTIONS[] = {
-        {maps::AreaType::Farm, "Granja"},
-        {maps::AreaType::Village, "Pueblo"},
-        {maps::AreaType::DungeonLevel, "Mina"},
+    QString title;
+    std::vector<maps::ElementType> types;
 };
 
 // Los que pone el editor solo: los portones con la herramienta Pasaje y la salida y la escalera al
@@ -74,6 +69,31 @@ std::vector<maps::ElementType> placeableIn(const maps::MapRequirements& requirem
     }
     return types;
 }
+
+bool contains(const std::vector<maps::ElementType>& types, maps::ElementType type) {
+    return std::find(types.begin(), types.end(), type) != types.end();
+}
+
+// Lo que va en la granja y en el pueblo (arboles, decoracion) va en una fila propia, para que no
+// aparezca dos veces; las filas de la granja y del pueblo quedan con lo de cada una
+std::vector<Section> sectionsOf(const maps::MapRequirements& requirements) {
+    const std::vector<maps::ElementType> farm = placeableIn(requirements, maps::AreaType::Farm);
+    const std::vector<maps::ElementType> village =
+            placeableIn(requirements, maps::AreaType::Village);
+    Section onlyFarm{"Granja", {}};
+    Section shared{"Granja y pueblo", {}};
+    for (maps::ElementType type: farm) {
+        (contains(village, type) ? shared : onlyFarm).types.push_back(type);
+    }
+    Section onlyVillage{"Pueblo", {}};
+    for (maps::ElementType type: village) {
+        if (!contains(farm, type)) {
+            onlyVillage.types.push_back(type);
+        }
+    }
+    const Section mine{"Mina", placeableIn(requirements, maps::AreaType::DungeonLevel)};
+    return {onlyFarm, onlyVillage, shared, mine};
+}
 }  // namespace
 
 BlockPalette::BlockPalette(const maps::MapRequirements& requirements, SpriteSheets& sprites,
@@ -94,17 +114,16 @@ BlockPalette::BlockPalette(const maps::MapRequirements& requirements, SpriteShee
                 [this, type = area.type]() { emit areaChosen(type); });
     }
 
-    for (const Section& section: SECTIONS) {
-        const std::vector<maps::ElementType> types = placeableIn(requirements, section.areaType);
-        if (types.empty()) {
+    for (const Section& section: sectionsOf(requirements)) {
+        if (section.types.empty()) {
             continue;
         }
         layout->addWidget(new QLabel(section.title, this));
         QHBoxLayout* cards = addRow(layout);
-        for (maps::ElementType type: types) {
+        for (maps::ElementType type: section.types) {
             std::optional<QPixmap> sprite = sprites.element(type);
             if (!sprite) {
-                // El spawn no tiene dibujo: el mismo recuadro que en el lienzo
+                // Donde arrancan los animales no tiene dibujo: el mismo recuadro que en el lienzo
                 sprite = QPixmap(CARD_ICON_SIZE, CARD_ICON_SIZE);
                 sprite->fill(UNDRAWN_ELEMENT);
             }

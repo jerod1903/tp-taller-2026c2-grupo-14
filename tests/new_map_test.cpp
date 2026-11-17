@@ -6,6 +6,7 @@
 #include "common/logger.h"
 #include "common/map/persistence/MapRepository.h"
 #include "common/map/service/MapService.h"
+#include "editor/Guidelines.h"
 #include "editor/MapEditing.h"
 #include "editor/NewMap.h"
 #include "server/game/world/world_loader.h"
@@ -50,6 +51,15 @@ TEST_F(NewMapTest, TheTemplateHasAFarmAndAVillageJoinedByAPassage) {
     // Un porton de cada lado y una transicion en cada sentido
     EXPECT_EQ(map.elements.size(), 2U);
     EXPECT_EQ(map.transitions.size(), 2U);
+}
+
+TEST_F(NewMapTest, TheGuidelinesComeFromTheRules) {
+    const std::string text = mapGuidelines(example_requirements());
+
+    EXPECT_NE(text.find("1 granja, 1 pueblo y una mina de 10 pisos"), std::string::npos);
+    EXPECT_NE(text.find("La granja necesita la cabaña"), std::string::npos);
+    EXPECT_NE(text.find("el mercado, el centro comunitario y la entrada a la mina"),
+              std::string::npos);
 }
 
 TEST_F(NewMapTest, ANewMapCompletedInTheEditorIsOfferedByTheServer) {

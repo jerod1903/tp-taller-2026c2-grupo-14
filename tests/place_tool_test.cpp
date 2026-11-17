@@ -12,8 +12,8 @@ namespace {
 
 namespace maps = stardew::maps;
 
-// En valle.toml la mina-1 empieza en la fila 20 y tiene un mineral en (4, 11)
-constexpr maps::MapCell MINERAL{4, 31};
+// En valle.toml la mina-1 empieza en la fila 20 y tiene una roca en (4, 11)
+constexpr maps::MapCell ROCK{4, 31};
 constexpr maps::MapCell FREE_IN_DUNGEON{5, 25};
 constexpr maps::MapCell OUTSIDE_EVERY_AREA{200, 200};
 
@@ -21,7 +21,7 @@ class PlaceToolTest: public ::testing::Test {
 protected:
     void SetUp() override {
         editing.load(example_map());
-        tool.setType(maps::ElementType::OreNode);
+        tool.setType(maps::ElementType::Rock);
         tool.onGhostChanged([this](const std::optional<Ghost>& ghost) { ghosts.push_back(ghost); });
         tool.onDone([this]() { ++doneCount; });
     }
@@ -37,22 +37,22 @@ protected:
 TEST_F(PlaceToolTest, ClickingWhereItFitsPlacesItAndFinishes) {
     tool.onPress(FREE_IN_DUNGEON);
 
-    EXPECT_NE(elementById(editing.map(), "ore_node-1"), nullptr);
+    EXPECT_NE(elementById(editing.map(), "rock-1"), nullptr);
     EXPECT_EQ(doneCount, 1);
     ASSERT_FALSE(ghosts.empty());
     EXPECT_FALSE(ghosts.back().has_value());
 }
 
 TEST_F(PlaceToolTest, ClickingWhereItDoesNotFitDoesNothing) {
-    tool.onPress(MINERAL);
+    tool.onPress(ROCK);
 
-    EXPECT_EQ(elementById(editing.map(), "ore_node-1"), nullptr);
+    EXPECT_EQ(elementById(editing.map(), "rock-1"), nullptr);
     EXPECT_EQ(doneCount, 0);
 }
 
 TEST_F(PlaceToolTest, TheGhostSaysWhetherItFitsAndHidesOutsideEveryArea) {
     tool.onHover(FREE_IN_DUNGEON);
-    tool.onHover(MINERAL);
+    tool.onHover(ROCK);
     tool.onHover(OUTSIDE_EVERY_AREA);
 
     ASSERT_EQ(ghosts.size(), 3U);

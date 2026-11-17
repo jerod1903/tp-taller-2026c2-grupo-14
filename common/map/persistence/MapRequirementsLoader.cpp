@@ -51,6 +51,7 @@ MapRequirements loadMapRequirements(const std::string& path) {
             {},
             {},
             {},
+            {},
     };
     if (requirements.formatVersion <= 0) {
         throw std::runtime_error("requirements format_version must be positive");
@@ -133,6 +134,28 @@ MapRequirements loadMapRequirements(const std::string& path) {
             throw std::runtime_error("duplicate required transition rule");
         }
         requirements.transitions.push_back({fromType, fromLevel, toType, toLevel});
+    }
+
+    // Los tiles que se pueden pintar en cada tipo de area: una regla por tipo de area.
+    std::set<AreaType> tileRules;
+    const auto* tiles = reader.requiredArray("tiles");
+    for (const auto& node: *tiles) {
+        const auto& table = detail::requiredTable(node, "each tiles entry");
+        const detail::TomlTableReader tileReader(table, "tile rule");
+        TileRule rule;
+        rule.areaType = tileReader.requiredEnum<AreaType>("area_type", areaTypeFromString);
+        for (const auto& typeNode: *tileReader.requiredArray("types")) {
+            const auto name = typeNode.value<std::string>();
+            const auto type = name ? tileTypeFromString(*name) : std::nullopt;
+            if (!type) {
+                throw std::runtime_error("tile rule types must be known tile IDs");
+            }
+            rule.types.push_back(*type);
+        }
+        if (!tileRules.insert(rule.areaType).second) {
+            throw std::runtime_error("duplicate tile rule");
+        }
+        requirements.tiles.push_back(std::move(rule));
     }
 
     return requirements;

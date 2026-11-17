@@ -588,19 +588,38 @@ void validateRequiredElements(const MapDefinition& map, const MapRequirements& r
     }
 }
 
-// Los tiles sleepable son del ala este de la cabaña, que arma el juego: no van en un mapa
-void validateNoSleepables(const MapDefinition& map, Issues& errors) {
+// Cada tipo de area acepta solo los tiles de su regla (los de los interiores, como el sleepable de
+// las camas, no van en ninguna). Se informa una vez por tile no permitido en cada area: su primera
+// casilla y cuantas hay.
+void validateTiles(const MapDefinition& map, const MapRequirements& requirements, Issues& errors) {
     for (const MapArea& area: map.areas) {
-        int count = 0;
-        for (const auto& row: area.tiles) {
-            count += static_cast<int>(std::count(row.begin(), row.end(), TileType::Sleepable));
+        auto rule = std::find_if(
+                requirements.tiles.begin(), requirements.tiles.end(),
+                [&area](const TileRule& r) { return area.type && r.areaType == *area.type; });
+        if (rule == requirements.tiles.end()) {
+            continue;
         }
-        if (count > 0) {
-            errors.push_back({
-                    .code = MapIssueCode::SleepableTileInMap,
-                    .areaId = area.id,
-                    .actual = count,
-            });
+        std::map<TileType, MapValidationIssue> wrong;
+        for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
+            for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
+                const TileType tile = area.tiles[y][x];
+                if (std::find(rule->types.begin(), rule->types.end(), tile) != rule->types.end()) {
+                    continue;
+                }
+                const MapValidationIssue firstCell{
+                        .code = MapIssueCode::TileInWrongArea,
+                        .areaId = area.id,
+                        .areaType = area.type,
+                        .actual = 0,
+                        .x = x,
+                        .y = y,
+                };
+                MapValidationIssue& issue = wrong.try_emplace(tile, firstCell).first->second;
+                ++*issue.actual;
+            }
+        }
+        for (const auto& [tile, issue]: wrong) {
+            errors.push_back(issue);
         }
     }
 }
@@ -625,7 +644,7 @@ std::vector<MapValidationIssue> validateMap(const MapDefinition& map,
     validateSprites(elements, errors);
     validateElementRules(requirements, areas, elements, errors);
     validateRequiredElements(map, requirements, areas, elements, errors);
-    validateNoSleepables(map, errors);
+    validateTiles(map, requirements, errors);
     return errors;
 }
 

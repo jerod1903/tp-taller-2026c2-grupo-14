@@ -190,8 +190,6 @@ TEST_F(GameTest, SnapshotsListTheConnectedPlayers) {
     EXPECT_EQ(ids_of(snapshot), (std::vector<uint32_t>{0, 1}));
 }
 
-// En el mapa de ejemplo el spawn_point de la granja está en (14, 7), frente a la puerta de la
-// cabaña, con pasto a la derecha.
 TEST_F(GameTest, JoinedPlayerStartsStillInItsBed) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
@@ -232,14 +230,17 @@ TEST_F(GameTest, APlayerWithTheChatOpenTravelsWithTheTypingEmote) {
     wait_snapshot(*outbox, [](const Snapshot& s) { return s.entities.at(0).emote == Emote::None; });
 }
 
+// El jugador arranca en su cama, en la cabaña; a la derecha de la cama hay una casilla libre
 TEST_F(GameTest, MoveMakesThePlayerWalkThatWay) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
+    const PlayerState start = next_snapshot(*outbox).players.at(0);
     move(0, 1, 0);
-    Snapshot snapshot = wait_snapshot(
-            *outbox, [](const Snapshot& s) { return s.players.at(0).x / POSITION_SCALE == 15; });
+    Snapshot snapshot = wait_snapshot(*outbox, [&start](const Snapshot& s) {
+        return s.players.at(0).x / POSITION_SCALE == start.x / POSITION_SCALE + 1;
+    });
     EXPECT_EQ(snapshot.players.at(0).dirX, 1);
-    EXPECT_EQ(snapshot.players.at(0).y, 7 * POSITION_SCALE + POSITION_SCALE / 2);
+    EXPECT_EQ(snapshot.players.at(0).y, start.y);
 }
 
 TEST_F(GameTest, MoveCanGoDiagonally) {
@@ -256,9 +257,11 @@ TEST_F(GameTest, MoveCanGoDiagonally) {
 TEST_F(GameTest, MoveZeroStopsThePlayer) {
     std::shared_ptr<Outbox> outbox = join(0);
     outbox->pop();
+    const PlayerState start = next_snapshot(*outbox).players.at(0);
     move(0, 1, 0);
-    wait_snapshot(*outbox,
-                  [](const Snapshot& s) { return s.players.at(0).x / POSITION_SCALE == 15; });
+    wait_snapshot(*outbox, [&start](const Snapshot& s) {
+        return s.players.at(0).x / POSITION_SCALE == start.x / POSITION_SCALE + 1;
+    });
     move(0, 0, 0);
     PlayerState stopped = wait_snapshot(*outbox, [](const Snapshot& s) {
                               return s.players.at(0).dirX == 0;

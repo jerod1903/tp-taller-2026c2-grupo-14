@@ -147,14 +147,14 @@ std::unique_ptr<Interior> build_market(const maps::MapDefinition& map) {
                                       Position{door.x, door.y});
 }
 
-// El primer spawn_point de la granja (donde arrancan los animales); sin uno, la puerta de la
+// El primer animal_spawn de la granja (donde arrancan los animales); sin uno, la puerta de la
 // cabaña.
 Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area,
                   const Farm& farm) {
     auto spawn = std::find_if(map.elements.begin(), map.elements.end(),
                               [&farm_area](const maps::MapElement& element) {
                                   return element.areaId == farm_area.id &&
-                                         element.type == maps::ElementType::SpawnPoint;
+                                         element.type == maps::ElementType::AnimalSpawn;
                               });
     return spawn != map.elements.end() ? Position{spawn->x, spawn->y} : farm.get_cabin_pos();
 }
@@ -252,7 +252,7 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
     // Los portales van al final: apuntan a Locations que tienen que existir.
     add_portals(map, locations);
     Position spawn = spawn_of(map, farm_area, *farm);
-    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo del spawn_point (o ahi
+    // Provisorio, hasta que se compren a Marnie: en fila, un poco mas abajo del animal_spawn (o ahi
     // mismo si esa celda no se puede pisar).
     int next = 0;
     auto add_animal = [&](AnimalKind kind) {

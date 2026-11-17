@@ -27,6 +27,12 @@ struct ElementRule {
     bool required = false;
 };
 
+// Los tiles que se pueden pintar en un tipo de area. Un tipo de area sin regla acepta cualquiera.
+struct TileRule {
+    AreaType areaType{};
+    std::vector<TileType> types;
+};
+
 struct TransitionRequirement {
     // Un piso ausente aplica la regla a todos los pisos del tipo indicado.
     AreaType fromAreaType{};
@@ -43,6 +49,7 @@ struct MapRequirements {
     std::vector<AreaRequirement> areas;
     std::vector<ElementRule> elements;
     std::vector<TransitionRequirement> transitions;
+    std::vector<TileRule> tiles;
 };
 
 }  // namespace stardew::maps

@@ -76,6 +76,7 @@ target_sources(taller_tests
     ../editor/Areas.cpp
     ../editor/ElementHelper.cpp
     ../editor/Elements.cpp
+    ../editor/Guidelines.cpp
     ../editor/MapEditing.cpp
     ../editor/MapHelper.cpp
     ../editor/Mine.cpp

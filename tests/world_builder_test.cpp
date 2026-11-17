@@ -46,7 +46,7 @@ maps::MapDefinition make_map() {
     map.elements = {
             element("cabin", "farm", ElementType::Cabin, ElementLayer::Structure, 1, 1, 3, 2),
             element("farm-gate", "farm", ElementType::Door, ElementLayer::Structure, 5, 4),
-            element("spawn", "farm", ElementType::SpawnPoint, ElementLayer::Object, 0, 4),
+            element("animals", "farm", ElementType::AnimalSpawn, ElementLayer::Object, 0, 4),
             element("market", "village", ElementType::Market, ElementLayer::Structure, 0, 0, 2, 1),
             element("marnie", "village", ElementType::MerchantMarnie, ElementLayer::Npc, 3, 0),
             element("mine", "village", ElementType::DungeonEntrance, ElementLayer::Structure, 5, 0),
