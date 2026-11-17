@@ -26,7 +26,7 @@ namespace {
 constexpr int TILE = maps::TILE_SIZE;
 constexpr double INITIAL_ZOOM = 2.0;
 constexpr double ZOOM_STEP = 1.25;
-// Los elementos sin dibujo (spawn, puertas, rocas) se marcan con un recuadro
+// Los elementos sin dibujo (donde arrancan los animales, puertas) se marcan con un recuadro
 const QColor UNDRAWN_ELEMENT(255, 235, 173, 120);
 // Encima del piso; entre elementos, el de mas abajo tapa al de mas arriba
 constexpr double ELEMENTS_Z = 1;

@@ -17,6 +17,7 @@
 #include "common/lobby_dto.h"
 #include "common/logger.h"
 #include "common/net/socket.h"
+#include "server/config/server_config.h"
 #include "server/consts.h"
 #include "server/game/game_registry.h"
 #include "server/persistence/in_memory_game_store.h"
@@ -171,6 +172,9 @@ protected:
         EXPECT_EQ(client->recv_u8(),
                   std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::LocationData)));
         EXPECT_EQ(client->recv_string(), std::optional<std::string>(world_id));
+        EXPECT_EQ(client->recv_u16(),
+                  std::optional<uint16_t>(static_cast<uint16_t>(server_config().game.tick_rate)));
+        EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(server_config().game.max_players));
     }
 
     Snapshot recv_snapshot() {

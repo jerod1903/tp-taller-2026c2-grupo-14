@@ -52,12 +52,12 @@ TEST(MapValidatorDoorTest, WaterInFrontOfTheDoorIsRejected) {
     EXPECT_TRUE(has_blocked_door(maps::validateMap(map, requirements()), "cabana"));
 }
 
-TEST(MapValidatorDoorTest, AnNpcInFrontOfTheDoorIsRejected) {
+TEST(MapValidatorDoorTest, ATreeInFrontOfTheDoorIsRejected) {
     maps::MapDefinition map = example_map();
     const maps::MapElement market = element_by_id(map, "mercado");
-    maps::MapElement& marnie = element_by_id(map, "marnie");
-    marnie.x = market.x + market.width / 2;
-    marnie.y = market.y + market.height;
+    map.elements.push_back({"arbol-en-la-puerta", market.areaId, maps::ElementType::Tree,
+                            maps::ElementLayer::Structure, market.x + market.width / 2,
+                            market.y + market.height, 2, 1});
 
     EXPECT_TRUE(has_blocked_door(maps::validateMap(map, requirements()), "mercado"));
 }
@@ -121,21 +121,29 @@ TEST(MapValidatorRulesTest, ABuildingWithAnotherSizeIsRejected) {
                           maps::MapIssueCode::WrongElementSize));
 }
 
-TEST(MapValidatorRulesTest, ASecondMarnieIsRejected) {
+TEST(MapValidatorRulesTest, ASecondMarketIsRejected) {
     maps::MapDefinition map = example_map();
-    maps::MapElement copy = element_by_id(map, "marnie");
-    copy.id = "otra-marnie";
-    copy.x += 2;
+    maps::MapElement copy = element_by_id(map, "mercado");
+    copy.id = "otro-mercado";
+    copy.y += copy.height + 1;
     map.elements.push_back(copy);
 
     EXPECT_TRUE(
             has_issue(maps::validateMap(map, requirements()), maps::MapIssueCode::TooManyElements));
 }
 
-TEST(MapValidatorRulesTest, OresHaveNoLimit) {
+TEST(MapValidatorRulesTest, ACaveFloorInTheFarmIsRejected) {
     maps::MapDefinition map = example_map();
-    maps::MapElement copy = element_by_id(map, "mina-1-mineral-1");
-    copy.id = "mina-1-mineral-3";
+    area_by_id(map, "granja").tiles[0][0] = maps::TileType::CaveFloor;
+
+    EXPECT_TRUE(
+            has_issue(maps::validateMap(map, requirements()), maps::MapIssueCode::TileInWrongArea));
+}
+
+TEST(MapValidatorRulesTest, RocksHaveNoLimit) {
+    maps::MapDefinition map = example_map();
+    maps::MapElement copy = element_by_id(map, "mina-1-roca-1");
+    copy.id = "mina-1-roca-3";
     copy.x += 2;
     map.elements.push_back(copy);
 

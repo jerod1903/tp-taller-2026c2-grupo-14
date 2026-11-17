@@ -9,6 +9,7 @@ target_sources(taller_editor
     ElementHelper.cpp
     Elements.cpp
     GameDialog.cpp
+    Guidelines.cpp
     MapEditing.cpp
     MapHelper.cpp
     MapEditorScreen.cpp
@@ -40,6 +41,7 @@ target_sources(taller_editor
     ElementHelper.h
     Elements.h
     GameDialog.h
+    Guidelines.h
     MapEditing.h
     MapHelper.h
     MapEditorScreen.h

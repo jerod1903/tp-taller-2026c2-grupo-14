@@ -74,7 +74,7 @@ MapArea readArea(const toml::node& node) {
     area.height = areaReader.requiredInt("height");
     area.offsetX = areaReader.optionalInt("offset_x").value_or(0);
     area.offsetY = areaReader.optionalInt("offset_y").value_or(0);
-    area.floorNumber = areaReader.optionalInt("floor");
+    area.levelNumber = areaReader.optionalInt("level");
     area.tiles = readTiles(table, area.id);
     return area;
 }
@@ -119,7 +119,7 @@ toml::table serializeArea(const MapArea& area) {
     table.insert_or_assign("height", area.height);
     table.insert_or_assign("offset_x", area.offsetX);
     table.insert_or_assign("offset_y", area.offsetY);
-    insertOptionalInt(table, "floor", area.floorNumber);
+    insertOptionalInt(table, "level", area.levelNumber);
 
     toml::array rows;
     for (const auto& tileRow: area.tiles) {

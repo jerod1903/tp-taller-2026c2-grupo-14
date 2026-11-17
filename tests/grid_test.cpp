@@ -64,13 +64,15 @@ TEST(TileTest, WaterWallsAndStoneAreNotWalkable) {
     EXPECT_FALSE(is_walkable_terrain(TileType::Water));
     EXPECT_FALSE(is_walkable_terrain(TileType::CaveWall));
     EXPECT_FALSE(is_walkable_terrain(TileType::Stone));
+    EXPECT_FALSE(is_walkable_terrain(TileType::Wall));
+    EXPECT_FALSE(is_walkable_terrain(TileType::Void));
 }
 
-TEST(TileTest, TheRestOfTheTerrainIsWalkable) {
-    for (TileType type: stardew::maps::allTileTypes()) {
-        if (type != TileType::Water && type != TileType::CaveWall && type != TileType::Stone) {
-            EXPECT_TRUE(is_walkable_terrain(type)) << stardew::maps::toString(type);
-        }
+TEST(TileTest, FloorsAreWalkable) {
+    for (TileType type:
+         {TileType::Grass, TileType::Dirt, TileType::TilledSoil, TileType::Path, TileType::Sand,
+          TileType::WoodFloor, TileType::CaveFloor, TileType::HouseFloor, TileType::Sleepable}) {
+        EXPECT_TRUE(is_walkable_terrain(type)) << stardew::maps::toString(type);
     }
 }
 

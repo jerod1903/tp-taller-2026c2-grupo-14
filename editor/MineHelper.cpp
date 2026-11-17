@@ -7,18 +7,18 @@
 namespace maps = stardew::maps;
 
 namespace {
-bool isFloor(const maps::MapArea& area) { return area.type == maps::AreaType::DungeonFloor; }
+bool isFloor(const maps::MapArea& area) { return area.type == maps::AreaType::DungeonLevel; }
 }  // namespace
 
-bool hasDungeonFloors(const maps::MapDefinition& map) {
+bool hasDungeonLevels(const maps::MapDefinition& map) {
     return std::any_of(map.areas.begin(), map.areas.end(), isFloor);
 }
 
-const maps::MapArea* firstDungeonFloor(const maps::MapDefinition& map) {
+const maps::MapArea* firstDungeonLevel(const maps::MapDefinition& map) {
     const maps::MapArea* first = nullptr;
     for (const maps::MapArea& area: map.areas) {
-        if (isFloor(area) && area.floorNumber &&
-            (!first || *area.floorNumber < *first->floorNumber)) {
+        if (isFloor(area) && area.levelNumber &&
+            (!first || *area.levelNumber < *first->levelNumber)) {
             first = &area;
         }
     }

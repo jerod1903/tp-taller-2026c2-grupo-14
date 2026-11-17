@@ -3,8 +3,8 @@ name = "Caverna"
 
 [[areas]]
 id = "caverna"
-type = "dungeon_floor"
-floor = 1
+type = "dungeon_level"
+level = 1
 width = 29
 height = 20
 tiles = [
@@ -33,7 +33,7 @@ tiles = [
 [[elements]]
 id = "spawn"
 area = "caverna"
-type = "spawn_point"
+type = "animal_spawn"
 layer = "object"
 x = 12
 y = 17

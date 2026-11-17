@@ -1,0 +1,130 @@
+format_version = 1
+name = "Interior de la cabaña"
+
+# La sala, igual en todos los mundos. Solo se marca el piso: las paredes las arma el juego alrededor
+# (common/map/InteriorWalls.h), asi que arriba quedan cuatro filas para la pared del fondo. La
+# columna 13 es la pared que la separa del cuarto de las camas, que el juego agrega a la derecha
+# segun max_players (common/map/CabinInterior.h); su piso en la fila 9 es la puerta. Abajo sale el
+# pasillo de entrada: su ultima
+# casilla es la puerta, que lleva a la de la cabaña en la granja.
+[[areas]]
+id = "cabin"
+type = "cabin_area"
+width = 14
+height = 14
+tiles = [
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "void", "void", "void", "void", "void", "house_floor", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "house_floor", "void", "void", "void", "void", "void", "void", "void"],
+]
+
+[[elements]]
+id = "cabin-door"
+area = "cabin"
+type = "house_door"
+layer = "structure"
+x = 6
+y = 13
+width = 1
+height = 1
+
+[[elements]]
+id = "cabin-kitchen"
+area = "cabin"
+type = "kitchen"
+layer = "structure"
+x = 1
+y = 4
+width = 5
+height = 1
+
+[[elements]]
+id = "cabin-chest"
+area = "cabin"
+type = "chest"
+layer = "structure"
+x = 6
+y = 4
+width = 1
+height = 1
+
+[[elements]]
+id = "cabin-window"
+area = "cabin"
+type = "window"
+layer = "object"
+x = 7
+y = 1
+width = 1
+height = 2
+
+[[elements]]
+id = "cabin-shelf"
+area = "cabin"
+type = "shelf"
+layer = "object"
+x = 8
+y = 1
+width = 2
+height = 2
+
+[[elements]]
+id = "cabin-fireplace"
+area = "cabin"
+type = "fireplace"
+layer = "structure"
+x = 11
+y = 4
+width = 2
+height = 1
+
+[[elements]]
+id = "cabin-tv"
+area = "cabin"
+type = "tv"
+layer = "structure"
+x = 1
+y = 8
+width = 2
+height = 1
+
+[[elements]]
+id = "cabin-rug-left"
+area = "cabin"
+type = "rug_left"
+layer = "object"
+x = 6
+y = 8
+width = 2
+height = 2
+
+[[elements]]
+id = "cabin-rug"
+area = "cabin"
+type = "rug"
+layer = "object"
+x = 8
+y = 8
+width = 2
+height = 2
+
+[[elements]]
+id = "cabin-plant"
+area = "cabin"
+type = "plant"
+layer = "structure"
+x = 1
+y = 11
+width = 1
+height = 1

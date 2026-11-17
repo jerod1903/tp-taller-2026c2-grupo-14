@@ -24,8 +24,5 @@ MoveCommand::MoveCommand(uint32_t player_id, const MoveRequest& request):
         GameCommand(player_id), request(request) {}
 
 void MoveCommand::execute(GameContext& context) {
-    Player* player = context.find_player(player_id);
-    if (player) {
-        player->set_direction(direction_of(request));
-    }
+    context.movement().move_player(player_id, direction_of(request));
 }

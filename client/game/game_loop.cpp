@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 
+#include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/menu/backend/ILobbyProtocol.h"
 
@@ -30,7 +31,7 @@ std::optional<EndReason> GameLoop::ejecutar() {
             procesar_entrada(interfaz.leer_entrada());
             procesar_mensajes();
             interfaz.dibujar(estado);
-            std::this_thread::sleep_until(inicio + DURACION_FRAME);
+            std::this_thread::sleep_until(inicio + client_config().ventana.duracion_frame);
         }
     } catch (const LobbyConnectionError&) {
         return std::nullopt;
@@ -52,7 +53,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
         ultima_dir_x = entrada.dir_x;
         ultima_dir_y = entrada.dir_y;
     }
-
+    if (entrada.cruzar_puerta) {
+        enviador.cruzar_puerta();
+    }
     if (entrada.slot_seleccionado) {
         enviador.seleccionar_slot(*entrada.slot_seleccionado);
     }
@@ -73,6 +76,10 @@ void GameLoop::procesar_mensajes() {
     while ((mensaje = recibidor.recibir())) {
         if (const auto* ubicacion = std::get_if<LocationData>(&*mensaje)) {
             estado.mundo = ubicacion->worldId;
+            estado.max_jugadores = ubicacion->maxPlayers;
+            if (ubicacion->tickRate > 0) {
+                estado.duracion_tick = std::chrono::duration<float>(1.0f / ubicacion->tickRate);
+            }
         } else if (const auto* snapshot = std::get_if<Snapshot>(&*mensaje)) {
             estado.jugadores = snapshot->players;
             estado.entidades = snapshot->entities;

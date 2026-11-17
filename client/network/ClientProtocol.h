@@ -32,6 +32,7 @@ public:
 
     void sendMove(int8_t dir_x, int8_t dir_y) override;
     void sendLeaveGame() override;
+    void sendEnterPortal() override;
     void sendSelectSlot(uint8_t slot) override;
     void sendChat(const std::string& texto) override;
     void sendInteract() override;
@@ -49,6 +50,7 @@ private:
     LobbyStatus recvStatus();
     GameEnteredResponse recvGameEntered();
     CharacterAppearance recvAppearance();
+    LocationData recvLocationData();
     Snapshot recvSnapshot();
     PlayerState recvPlayerState();
     EntityState recvEntityState();

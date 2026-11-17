@@ -1,8 +1,9 @@
+#include "server/game/commands/select_slot_command.h"
+
 #include <variant>
 
 #include <gtest/gtest.h>
 
-#include "server/game/commands/select_slot_command.h"
 #include "tests/fake_game_context.h"
 
 TEST(SelectSlotCommandTest, ChangesTheSlotAndSendsTheInventoryToThePlayer) {

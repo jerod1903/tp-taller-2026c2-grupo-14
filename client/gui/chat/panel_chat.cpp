@@ -15,7 +15,7 @@ std::string texto_de(const ChatMessage& mensaje) {
     std::string privado = mensaje.kind == ChatKind::Private ? MARCA_PRIVADO : "";
     return mensaje.from + privado + ": " + mensaje.text;
 }
-}
+}  // namespace
 
 PanelChat::PanelChat(Fuente& fuente): fuente(fuente) {}
 
@@ -24,7 +24,8 @@ void PanelChat::dibujar(SDL2pp::Renderer& renderer, const std::vector<MensajeCha
                         const SDL2pp::Point& tamano_ventana,
                         std::chrono::steady_clock::time_point ahora) {
     int ancho_maximo = tamano_ventana.x * PORCENTAJE_ANCHO_CHAT / 100;
-    std::vector<Linea> lineas = lineas_visibles(mensajes, borrador.has_value(), ancho_maximo, ahora);
+    std::vector<Linea> lineas =
+            lineas_visibles(mensajes, borrador.has_value(), ancho_maximo, ahora);
     if (borrador) {
         lineas.emplace_back(PROMPT_CHAT + *borrador + CURSOR_CHAT, COLOR_BORRADOR_CHAT);
     }

@@ -17,11 +17,11 @@ enum class MapIssueCode {
     InvalidAreaDimensions,
     TileGridHeightMismatch,
     TileGridWidthMismatch,
-    MissingAreaFloorNumber,
-    UnexpectedAreaFloorNumber,
-    DuplicateFloorNumber,
+    MissingAreaLevelNumber,
+    UnexpectedAreaLevelNumber,
+    DuplicateLevelNumber,
     AreaCountMismatch,
-    MissingRequiredFloorNumber,
+    MissingRequiredLevelNumber,
     EmptyElementId,
     DuplicateElementId,
     MissingElementType,
@@ -48,6 +48,7 @@ enum class MapIssueCode {
     ElementInWrongArea,
     WrongElementSize,
     TooManyElements,
+    TileInWrongArea,
 };
 
 inline std::string_view toString(MapIssueCode code) {
@@ -70,16 +71,16 @@ inline std::string_view toString(MapIssueCode code) {
             return "TileGridHeightMismatch";
         case MapIssueCode::TileGridWidthMismatch:
             return "TileGridWidthMismatch";
-        case MapIssueCode::MissingAreaFloorNumber:
-            return "MissingAreaFloorNumber";
-        case MapIssueCode::UnexpectedAreaFloorNumber:
-            return "UnexpectedAreaFloorNumber";
-        case MapIssueCode::DuplicateFloorNumber:
-            return "DuplicateFloorNumber";
+        case MapIssueCode::MissingAreaLevelNumber:
+            return "MissingAreaLevelNumber";
+        case MapIssueCode::UnexpectedAreaLevelNumber:
+            return "UnexpectedAreaLevelNumber";
+        case MapIssueCode::DuplicateLevelNumber:
+            return "DuplicateLevelNumber";
         case MapIssueCode::AreaCountMismatch:
             return "AreaCountMismatch";
-        case MapIssueCode::MissingRequiredFloorNumber:
-            return "MissingRequiredFloorNumber";
+        case MapIssueCode::MissingRequiredLevelNumber:
+            return "MissingRequiredLevelNumber";
         case MapIssueCode::EmptyElementId:
             return "EmptyElementId";
         case MapIssueCode::DuplicateElementId:
@@ -132,6 +133,8 @@ inline std::string_view toString(MapIssueCode code) {
             return "WrongElementSize";
         case MapIssueCode::TooManyElements:
             return "TooManyElements";
+        case MapIssueCode::TileInWrongArea:
+            return "TileInWrongArea";
     }
     return "UnknownMapIssue";
 }
@@ -147,8 +150,8 @@ struct MapValidationIssue {
     std::optional<ElementType> elementType = std::nullopt;
     std::optional<ElementLayer> expectedLayer = std::nullopt;
     std::optional<ElementLayer> actualLayer = std::nullopt;
-    std::optional<int> floorNumber = std::nullopt;
-    std::optional<int> targetFloor = std::nullopt;
+    std::optional<int> levelNumber = std::nullopt;
+    std::optional<int> targetLevel = std::nullopt;
     std::optional<int> expected = std::nullopt;
     std::optional<int> actual = std::nullopt;
     std::optional<int> x = std::nullopt;

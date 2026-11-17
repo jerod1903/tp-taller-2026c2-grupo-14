@@ -1,0 +1,65 @@
+@startuml overview
+!pragma layout smetana
+hide empty members
+skinparam classAttributeIconSize 0
+
+class Server {
+  - store: InMemoryGameStore
+  - registry: GameRegistry
+  - acceptor: Acceptor
+  + execute()
+}
+class Acceptor <<Thread>> {
+  - sessions: list<LobbySession>
+}
+class LobbySession <<Thread>> {
+  - protocol: ServerProtocol
+  - play(player_id, member): bool
+}
+class GameRegistry {
+  - games: map<id, GameRecord>
+  - running: map<id, Game>
+  - mutex
+  + create_game() / join_game() / load_game()
+  + attach(game_id): Inbox&
+}
+class Game <<Thread>> {
+  - inbox: Inbox
+  - world: World
+  - player_sessions: Sessions
+}
+class Sessions {
+  - players: map<id, ConnectedPlayer>
+  + broadcast(GameMessage)
+}
+class Receiver <<Thread>> {
+  - factory: CommandFactory
+}
+class Sender <<Thread>> {
+  - outbox: shared_ptr<Outbox>
+}
+class ServerProtocol
+interface GameStore {
+  + load_all(): vector<GameRecord>
+  + save(GameRecord)
+}
+class InMemoryGameStore
+
+Server *-- GameRegistry
+Server *-- Acceptor
+Server *-- InMemoryGameStore
+GameStore <|.. InMemoryGameStore
+GameRegistry --> GameStore
+Acceptor *-- "0..*" LobbySession
+Acceptor --> GameRegistry
+LobbySession --> GameRegistry
+LobbySession *-- ServerProtocol
+GameRegistry *-- "0..*" Game
+LobbySession ..> Receiver : crea al jugar
+LobbySession ..> Sender : crea al jugar
+Receiver --> ServerProtocol : lee
+Sender --> ServerProtocol : escribe
+Receiver --> Game : push a la Inbox
+Game *-- Sessions
+Sessions --> Sender : push a la Outbox
+@enduml

@@ -39,15 +39,15 @@ TEST_F(LocationTest, OutOfBoundsIsNotWalkable) {
 }
 
 TEST_F(LocationTest, PortalAtFindsThePortalByOrigin) {
-    location.add_portal(Portal{Position{4, 4}, &other, Position{2, 2}});
+    location.add_portal(Portal{Position{4, 4}, &other, Point{2.5f, 2.5f}});
     std::optional<Portal> portal = location.portal_at(Position{4, 4});
     ASSERT_TRUE(portal.has_value());
     EXPECT_EQ(portal->target, &other);
-    EXPECT_EQ(portal->arrival, (Position{2, 2}));
+    EXPECT_EQ(cell_of(portal->arrival), (Position{2, 2}));
 }
 
 TEST_F(LocationTest, PortalAtWithoutPortalIsEmpty) {
-    location.add_portal(Portal{Position{4, 4}, &other, Position{2, 2}});
+    location.add_portal(Portal{Position{4, 4}, &other, Point{2.5f, 2.5f}});
     EXPECT_FALSE(location.portal_at(Position{2, 2}).has_value());
 }
 

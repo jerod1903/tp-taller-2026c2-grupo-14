@@ -46,6 +46,13 @@ QString fileNameFor(const QString& name) {
     }
     return file;
 }
+
+// Los interiores (la cabaña, el mercado) son iguales en todos los mundos y los arma el juego: estan
+// en maps/interiors y no se editan aca
+bool isInterior(const QString& path) {
+    const QString interiors = QFileInfo(TALLER_MAPS_DIR "/interiors").canonicalFilePath();
+    return !interiors.isEmpty() && QFileInfo(path).canonicalFilePath().startsWith(interiors + "/");
+}
 }  // namespace
 
 EditorWindow::EditorWindow(QWidget* parent):
@@ -98,7 +105,7 @@ QWidget* EditorWindow::createMenu() {
 }
 
 void EditorWindow::newMap() {
-    NameDialog dialog(stack);
+    NameDialog dialog(service.requirements(), stack);
     while (dialog.exec() == QDialog::Accepted) {
         const QString file = fileNameFor(dialog.name());
         const QString path = QString(TALLER_MAPS_DIR) + "/" + file + ".toml";
@@ -126,6 +133,11 @@ void EditorWindow::openMap() {
     const QString path =
             QFileDialog::getOpenFileName(this, "Abrir mapa", TALLER_MAPS_DIR, "Mapas (*.toml)");
     if (path.isEmpty()) {
+        return;
+    }
+    if (isInterior(path)) {
+        tell(stack, QMessageBox::Warning, "Abrir mapa",
+             "Los interiores no se editan desde el editor. Por favor, elija un mapa.");
         return;
     }
     try {

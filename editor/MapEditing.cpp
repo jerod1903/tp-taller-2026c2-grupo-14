@@ -201,7 +201,7 @@ bool MapEditing::placeEntrance(const maps::MapCell& bottomLeft,
     if (!id) {
         return false;
     }
-    if (!hasDungeonFloors(definition) && floorSize) {
+    if (!hasDungeonLevels(definition) && floorSize) {
         createMine(definition, requirements, *floorSize, *id);
     }
     linkEntrance(definition, *id);

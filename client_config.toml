@@ -1,0 +1,15 @@
+# Valores del cliente. Lo que depende del servidor (como su tick rate) llega por el protocolo.
+
+[window]
+width = 800
+height = 600
+# En pixeles del tileset: la escala se elige para que entre mas o menos esto de alto (12 casillas y
+# media), sea cual sea el tamaño de la ventana
+visible_world_height = 200
+fps = 60
+
+[audio]
+channels = 16            # cuantos efectos pueden sonar a la vez
+# Muestras por bloque: mas chico suena antes (1024 a 44100 Hz son 23 ms), mas grande corta menos
+buffer_size = 1024
+step_interval_ms = 300   # mientras el jugador camina suena un paso cada tanto

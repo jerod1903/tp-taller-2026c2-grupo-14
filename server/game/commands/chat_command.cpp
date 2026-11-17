@@ -40,7 +40,7 @@ ChatCommand::ChatCommand(uint32_t player_id, const ChatRequest& request):
         GameCommand(player_id), text(request.text) {}
 
 void ChatCommand::execute(GameContext& context) {
-    Player* author = context.find_player(player_id);
+    Player* author = context.characters().find_player(player_id);
     std::string message = trim(limit_length(text));
     if (author == nullptr || message.empty()) {
         return;
@@ -49,7 +49,7 @@ void ChatCommand::execute(GameContext& context) {
         send_private(context, author->get_name(), message.substr(1));
         return;
     }
-    context.broadcast(ChatMessage{ChatKind::Public, author->get_name(), message});
+    context.sessions().broadcast(ChatMessage{ChatKind::Public, author->get_name(), message});
 }
 
 void ChatCommand::send_private(GameContext& context, const std::string& author,
@@ -58,19 +58,20 @@ void ChatCommand::send_private(GameContext& context, const std::string& author,
     std::size_t space = message.find(' ');
     std::string target_name = message.substr(0, space);
     std::string body = space == std::string::npos ? "" : trim(message.substr(space + 1));
-    std::optional<uint32_t> target = context.find_player_by_name(target_name);
+    std::optional<uint32_t> target = context.sessions().find_player_by_name(target_name);
     if (!target) {
-        context.send_to(player_id, ChatMessage{ChatKind::System, "",
-                                               target_name + ServerConstants::NOT_CONNECTED});
+        context.sessions().send_to(
+                player_id,
+                ChatMessage{ChatKind::System, "", target_name + ServerConstants::NOT_CONNECTED});
         return;
     }
     if (body.empty()) {
         return;
     }
     ChatMessage private_message{ChatKind::Private, author, body};
-    context.send_to(*target, private_message);
+    context.sessions().send_to(*target, private_message);
     // Una copia para el que lo mando, asi ve lo que escribio (salvo que se lo mande a si mismo)
     if (*target != player_id) {
-        context.send_to(player_id, private_message);
+        context.sessions().send_to(player_id, private_message);
     }
 }

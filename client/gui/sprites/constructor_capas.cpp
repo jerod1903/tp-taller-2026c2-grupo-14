@@ -8,10 +8,9 @@
 #include <SDL2/SDL.h>
 
 #include "client/constants.h"
+#include "client/gui/rutas.h"
 #include "client/menu/styles/CharacterColors.h"
 #include "common/character/CharacterSheets.h"
-
-#include "client/gui/rutas.h"
 
 namespace hojas = stardew::character;
 
@@ -33,14 +32,16 @@ SDL_Color color_de_pelo(uint8_t indice) {
 
 Capa por_cuadro(SDL2pp::Texture& hoja, hojas::Point celda, SDL_Color tinte = SIN_TINTE) {
     SDL2pp::Point sin_desplazar(0, 0);
-    return Capa{&hoja, TipoCapa::PorCuadro, punto(celda), punto(hojas::FRAME_SIZE), sin_desplazar,
-                {}, tinte};
+    return Capa{
+            &hoja, TipoCapa::PorCuadro, punto(celda), punto(hojas::FRAME_SIZE), sin_desplazar, {},
+            tinte};
 }
 
 Capa por_vista(SDL2pp::Texture& hoja, hojas::Point celda, hojas::Point tamano,
                hojas::Point desplazamiento, const Vistas& vistas, SDL_Color tinte = SIN_TINTE) {
-    return Capa{&hoja,  TipoCapa::PorVista, punto(celda), punto(tamano), punto(desplazamiento),
-                vistas, tinte};
+    return Capa{&hoja,         TipoCapa::PorVista,    punto(celda),
+                punto(tamano), punto(desplazamiento), vistas,
+                tinte};
 }
 
 uint32_t& pixel(SDL2pp::Surface& superficie, int x, int y) {
@@ -64,7 +65,7 @@ std::map<uint32_t, uint32_t> colores_de_manga(SDL2pp::Surface& camisas, uint16_t
     return reemplazos;
 }
 
-}
+}  // namespace
 
 ConstructorCapas::ConstructorCapas(SDL2pp::Renderer& renderer):
         renderer(renderer),
@@ -78,7 +79,7 @@ ConstructorCapas::ConstructorCapas(SDL2pp::Renderer& renderer):
         sombreros(renderer, ruta(hojas::SHEET_HATS)) {}
 
 std::vector<Capa> ConstructorCapas::capas(uint32_t player_id,
-                                             const std::optional<CharacterAppearance>& apariencia) {
+                                          const std::optional<CharacterAppearance>& apariencia) {
     const hojas::Point brazos_en_hoja{hojas::ARMS_COLUMNS * hojas::FRAME_SIZE.x, 0};
     if (!apariencia) {
         return {por_cuadro(cuerpo, {0, 0}), por_cuadro(cuerpo, brazos_en_hoja)};

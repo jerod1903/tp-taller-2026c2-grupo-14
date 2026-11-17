@@ -22,7 +22,7 @@
 // Durante la partida:
 //   Acciones del jugador: tag GameOp u8 y su payload, ver la tabla de GameOp en common/game_dto.h
 //   Mensajes del servidor, con su tag GameMsg u8 adelante:
-//     LocationData:  worldId
+//     LocationData:  worldId, tickRate u16, maxPlayers u8
 //     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
 //                    health u16, energy u16, gold u32)*,
 //                    count u16, (entityId u32, type u8, areaId, x u32, y u32, dirX u8, dirY u8)*
@@ -130,16 +130,17 @@ void ClientProtocol::sendMove(int8_t dir_x, int8_t dir_y) {
 
 void ClientProtocol::sendLeaveGame() { ensure(sendGameOp(GameOp::LeaveGame)); }
 
+void ClientProtocol::sendEnterPortal() { ensure(sendGameOp(GameOp::EnterPortal)); }
+
 void ClientProtocol::sendSelectSlot(uint8_t slot) {
     ensure(sendGameOp(GameOp::SelectSlot) && baseProtocol.send_u8(slot));
 }
-
 
 ServerGameMessage ClientProtocol::recvGameMessage() {
     auto msg = static_cast<GameMsg>(ensure(baseProtocol.recv_u8()));
     switch (msg) {
         case GameMsg::LocationData:
-            return LocationData{ensure(baseProtocol.recv_string())};
+            return recvLocationData();
         case GameMsg::Snapshot:
             return recvSnapshot();
         case GameMsg::GameEnded:
@@ -182,6 +183,12 @@ CharacterAppearance ClientProtocol::recvAppearance() {
     appearance.pants = ensure(baseProtocol.recv_u16());
     appearance.hat = ensure(baseProtocol.recv_u16());
     return appearance;
+}
+
+LocationData ClientProtocol::recvLocationData() {
+    std::string worldId = ensure(baseProtocol.recv_string());
+    uint16_t tickRate = ensure(baseProtocol.recv_u16());
+    return LocationData{std::move(worldId), tickRate, ensure(baseProtocol.recv_u8())};
 }
 
 Snapshot ClientProtocol::recvSnapshot() {

@@ -3,6 +3,7 @@ target_sources(taller_server
     # .cpp files
     main.cpp
     server.cpp
+    config/server_config.cpp
     game/game.cpp
     game/commands/chat_command.cpp
     game/commands/command_factory.cpp
@@ -10,10 +11,13 @@ target_sources(taller_server
     game/commands/typing_command.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
+    game/commands/enter_portal_command.cpp
     game/commands/move_command.cpp
     game/commands/select_slot_command.cpp
     game/characters/inventory.cpp
     game/game_registry.cpp
+    game/sessions.cpp
+    game/snapshot_builder.cpp
     game/characters/animals/animal.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
@@ -25,9 +29,11 @@ target_sources(taller_server
     game/world/dungeon/dungeon.cpp
     game/world/dungeon/dungeon_level.cpp
     game/world/farm/cabin.cpp
+    game/world/interior.cpp
     game/world/farm/farm.cpp
     game/world/grid.cpp
     game/world/location.cpp
+    game/world/movement.cpp
     game/world/tile.cpp
     game/world/town/town.cpp
     game/world/world.cpp
@@ -42,6 +48,7 @@ target_sources(taller_server
     PUBLIC
     # .h files
     consts.h
+    config/server_config.h
     server.h
     game/game_event.h
     game/game.h
@@ -54,8 +61,14 @@ target_sources(taller_server
     game/commands/game_context.h
     game/commands/join_command.h
     game/commands/leave_command.h
+    game/commands/enter_portal_command.h
     game/commands/move_command.h
+    game/commands/player_characters.h
+    game/commands/player_movement.h
+    game/commands/player_sessions.h
     game/game_registry.h
+    game/sessions.h
+    game/snapshot_builder.h
     game/characters/animals/animal.h
     game/characters/creature.h
     game/characters/enemies/enemy.h
@@ -66,11 +79,15 @@ target_sources(taller_server
     game/world/dungeon/dungeon.h
     game/world/dungeon/dungeon_level.h
     game/world/farm/cabin.h
+    game/world/interior.h
     game/world/farm/farm.h
     game/world/grid.h
     game/world/location.h
+    game/world/movement.h
     game/world/portal.h
     game/world/position.h
+    game/world/point.h
+    game/world/spawn_point.h
     game/world/tile.h
     game/world/town/town.h
     game/world/world.h

@@ -13,9 +13,10 @@ enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
     SelectSlot = 0x03,
-    Chat = 0x04,  // payload: string con el texto tal cual lo escribio el jugador
-    Interact = 0x05,  // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
-    Typing = 0x06,    // payload: u8, 1 si abrio el chat y 0 si lo cerro
+    Chat = 0x04,         // payload: string con el texto tal cual lo escribio el jugador
+    Interact = 0x05,     // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
+    Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
+    EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -25,8 +26,6 @@ struct MoveRequest {
 
     bool operator==(const MoveRequest&) const = default;
 };
-
-
 
 
 // Mensajes del servidor durante la partida: cada uno va precedido por su tag.
@@ -39,9 +38,12 @@ enum class GameMsg : uint8_t {
     ChatMessage,
 };
 
-// El área en la que está el jugador. Se manda al entrar y cada vez que cambia.
+// El mundo de la partida, cuántos Snapshots por segundo manda el servidor y el máximo de jugadores
+// (el ala este de la cabaña tiene una cama por jugador). Se manda al entrar.
 struct LocationData {
     std::string worldId;
+    uint16_t tickRate;
+    uint8_t maxPlayers;
 };
 
 // Las posiciones van en milésimas de celda: x = 14500 es el centro de la columna 14.
@@ -73,6 +75,7 @@ enum class EntityType : uint8_t {
     Player,
     Cow,
     Chicken,
+    Bed,  // la de cada jugador, con su playerId como entityId; aparece cuando entra a la partida
 };
 
 // Lo que se muestra arriba de la cabeza de una entidad.

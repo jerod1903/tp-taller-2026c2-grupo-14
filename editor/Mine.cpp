@@ -17,14 +17,14 @@ namespace {
 constexpr int FLOORS_PER_ROW = 5;
 
 // Los numeros de piso que piden las reglas, de menor a mayor
-std::vector<int> floorNumbers(const maps::MapRequirements& requirements) {
+std::vector<int> levelNumbers(const maps::MapRequirements& requirements) {
     auto floors =
             std::find_if(requirements.areas.begin(), requirements.areas.end(),
-                         [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; });
+                         [](const auto& a) { return a.type == maps::AreaType::DungeonLevel; });
     if (floors == requirements.areas.end()) {
         return {};
     }
-    std::vector<int> numbers = floors->floorNumbers;
+    std::vector<int> numbers = floors->levelNumbers;
     if (numbers.empty()) {
         numbers.resize(floors->count);
         std::iota(numbers.begin(), numbers.end(), 1);
@@ -40,8 +40,8 @@ std::string floorId(int number) { return "mina-" + std::to_string(number); }
 maps::MapArea floorArea(int number, const AreaSize& size, int index, int top) {
     maps::MapArea area;
     area.id = floorId(number);
-    area.type = maps::AreaType::DungeonFloor;
-    area.floorNumber = number;
+    area.type = maps::AreaType::DungeonLevel;
+    area.levelNumber = number;
     area.width = size.width;
     area.height = size.height;
     area.offsetX = (index % FLOORS_PER_ROW) * (size.width + AREA_GAP);
@@ -78,7 +78,7 @@ maps::MapTransition toFloor(const maps::MapDefinition& map, const std::string& i
     return {id, from, triggerId, floor, arrival.x, arrival.y};
 }
 
-bool isFloor(const maps::MapArea& area) { return area.type == maps::AreaType::DungeonFloor; }
+bool isFloor(const maps::MapArea& area) { return area.type == maps::AreaType::DungeonLevel; }
 
 // Donde quedaria, dentro de su piso, la esquina de arriba a la izquierda de un elemento de ese
 // tipo apoyado en bottomLeft, y cuanto mide. Vacio si no cae en un piso o no hay ninguno de ese
@@ -108,7 +108,7 @@ std::optional<FloorSpot> floorSpotOf(const maps::MapDefinition& map, maps::Eleme
 
 void createMine(maps::MapDefinition& map, const maps::MapRequirements& requirements,
                 const AreaSize& size, const std::string& entranceId) {
-    const std::vector<int> numbers = floorNumbers(requirements);
+    const std::vector<int> numbers = levelNumbers(requirements);
     const int count = static_cast<int>(numbers.size());
     const int top = bottomOfAreas(map) + AREA_GAP;
     for (int index = 0; index < count; ++index) {
@@ -201,7 +201,7 @@ bool moveInEveryFloor(maps::MapDefinition& map, maps::ElementType type,
 
 void linkEntrance(maps::MapDefinition& map, const std::string& entranceId) {
     const maps::MapElement* entrance = elementById(map, entranceId);
-    const maps::MapArea* first = firstDungeonFloor(map);
+    const maps::MapArea* first = firstDungeonLevel(map);
     if (!entrance || !first) {
         return;
     }

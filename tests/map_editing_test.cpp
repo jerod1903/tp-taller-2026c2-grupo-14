@@ -175,16 +175,16 @@ TEST_F(MapEditingTest, AnElementIsPlacedWithTheSizeOfItsRuleAndItsBaseCornerOnTh
 }
 
 TEST_F(MapEditingTest, TheIdTakesTheFirstFreeNumber) {
-    ASSERT_TRUE(editing.placeElement(maps::ElementType::OreNode, {5, 25}));
-    ASSERT_TRUE(editing.placeElement(maps::ElementType::OreNode, {6, 25}));
+    ASSERT_TRUE(editing.placeElement(maps::ElementType::Rock, {5, 25}));
+    ASSERT_TRUE(editing.placeElement(maps::ElementType::Rock, {6, 25}));
 
-    EXPECT_NE(elementById(editing.map(), "ore_node-1"), nullptr);
-    EXPECT_NE(elementById(editing.map(), "ore_node-2"), nullptr);
+    EXPECT_NE(elementById(editing.map(), "rock-1"), nullptr);
+    EXPECT_NE(elementById(editing.map(), "rock-2"), nullptr);
 }
 
 TEST_F(MapEditingTest, AnElementIsNotPlacedOverAnotherOne) {
-    // mina-1 empieza en la fila 20: su mineral de (4, 11) esta en (4, 31) del mapa general
-    EXPECT_FALSE(editing.placeElement(maps::ElementType::OreNode, {4, 31}));
+    // mina-1 empieza en la fila 20: su roca de (4, 11) esta en (4, 31) del mapa general
+    EXPECT_FALSE(editing.placeElement(maps::ElementType::Rock, {4, 31}));
     EXPECT_EQ(mapChanges, 1);
 }
 
@@ -201,7 +201,7 @@ TEST_F(MapEditingTest, TheEntranceCreatesTheFloorsOfTheMineWhenThereAreNone) {
 
     const maps::MapDefinition& map = editing.map();
     EXPECT_EQ(std::count_if(map.areas.begin(), map.areas.end(),
-                            [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; }),
+                            [](const auto& a) { return a.type == maps::AreaType::DungeonLevel; }),
               10);
     EXPECT_NE(elementById(map, "mina-10-salida"), nullptr);
     EXPECT_EQ(elementById(map, "mina-10-escalera"), nullptr);
@@ -257,7 +257,7 @@ TEST_F(MapEditingTest, RemovingAFloorRemovesTheWholeMineButNotTheEntrance) {
 
     const maps::MapDefinition& map = editing.map();
     EXPECT_TRUE(std::none_of(map.areas.begin(), map.areas.end(),
-                             [](const auto& a) { return a.type == maps::AreaType::DungeonFloor; }));
+                             [](const auto& a) { return a.type == maps::AreaType::DungeonLevel; }));
     EXPECT_NE(elementById(map, "entrada-mina"), nullptr);
     EXPECT_FALSE(triggers(map, "entrada-mina"));
 }

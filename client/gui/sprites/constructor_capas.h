@@ -8,9 +8,8 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
-#include "common/lobby_dto.h"
-
 #include "client/gui/sprites/capa.h"
+#include "common/lobby_dto.h"
 
 class ConstructorCapas {
 public:

@@ -7,14 +7,12 @@
 
 namespace stardew::maps {
 
-enum class AreaType {
-    Farm,
-    Village,
-    DungeonFloor,
-};
+enum class AreaType { Farm, Village, DungeonLevel, CabinArea, MarketArea, CommunityCenterArea };
 
 enum class ElementType {
     Cabin,
+    Bed,
+    BedBlanket,  // La cama se divide en dos elementos para dar ilusión de profundidad.
     Market,
     CommunityCenter,
     DungeonEntrance,
@@ -22,13 +20,36 @@ enum class ElementType {
     MerchantClint,
     MerchantPierre,
     MerchantRobin,
-    OreNode,
+    Rock,
     Door,
     Exit,
     Stairs,
-    SpawnPoint,
+    AnimalSpawn,  // donde arrancan los animales de la granja; el jugador aparece en su cama
     Tree,
     Bush,
+    // Decoracion del exterior y de la mina: la pone el editor y choca
+    Fence,
+    Well,
+    Statue,
+    Barrel,
+    Crate,
+    Flowers,
+    Lamp,
+    Torch,
+    // Muebles del interior de la cabaña
+    Fireplace,
+    Chest,
+    Window,
+    Shelf,
+    Tv,
+    Kitchen,
+    Rug,
+    RugLeft,  // la alfombra espejada: va a la izquierda de Rug
+    Plant,
+    HouseDoor,  // la puerta de salida de un interior: se ve y se pisa para salir
+    // Muebles del interior del mercado
+    MarketCounter,
+    MarketShelf,
 };
 
 enum class ElementLayer {
@@ -48,6 +69,21 @@ enum class TileType {
     CaveWall,
     WoodFloor,
     Sand,
+    Sleepable,  // donde va la cama de un jugador: se camina hasta que aparece la cama.
+    HouseFloor,
+    WallTop,
+    WallUpper,
+    Wall,
+    WallBase,
+    WallLeft,
+    WallRight,
+    WallBottom,
+    WallBottomLeft,
+    WallBottomRight,
+    CorridorLeft,
+    CorridorRight,
+    WallDivider,
+    Void,
 };
 
 inline std::optional<TileType> tileTypeFromString(std::string_view value) {
@@ -71,6 +107,36 @@ inline std::optional<TileType> tileTypeFromString(std::string_view value) {
         return TileType::WoodFloor;
     if (value == "sand")
         return TileType::Sand;
+    if (value == "sleepable")
+        return TileType::Sleepable;
+    if (value == "house_floor")
+        return TileType::HouseFloor;
+    if (value == "wall_top")
+        return TileType::WallTop;
+    if (value == "wall_upper")
+        return TileType::WallUpper;
+    if (value == "wall")
+        return TileType::Wall;
+    if (value == "wall_base")
+        return TileType::WallBase;
+    if (value == "wall_left")
+        return TileType::WallLeft;
+    if (value == "wall_right")
+        return TileType::WallRight;
+    if (value == "wall_bottom")
+        return TileType::WallBottom;
+    if (value == "wall_bottom_left")
+        return TileType::WallBottomLeft;
+    if (value == "wall_bottom_right")
+        return TileType::WallBottomRight;
+    if (value == "corridor_left")
+        return TileType::CorridorLeft;
+    if (value == "corridor_right")
+        return TileType::CorridorRight;
+    if (value == "wall_divider")
+        return TileType::WallDivider;
+    if (value == "void")
+        return TileType::Void;
     return std::nullopt;
 }
 
@@ -96,20 +162,77 @@ inline std::string_view toString(TileType type) {
             return "wood_floor";
         case TileType::Sand:
             return "sand";
+        case TileType::Sleepable:
+            return "sleepable";
+        case TileType::HouseFloor:
+            return "house_floor";
+        case TileType::WallTop:
+            return "wall_top";
+        case TileType::WallUpper:
+            return "wall_upper";
+        case TileType::Wall:
+            return "wall";
+        case TileType::WallBase:
+            return "wall_base";
+        case TileType::WallLeft:
+            return "wall_left";
+        case TileType::WallRight:
+            return "wall_right";
+        case TileType::WallBottom:
+            return "wall_bottom";
+        case TileType::WallBottomLeft:
+            return "wall_bottom_left";
+        case TileType::WallBottomRight:
+            return "wall_bottom_right";
+        case TileType::CorridorLeft:
+            return "corridor_left";
+        case TileType::CorridorRight:
+            return "corridor_right";
+        case TileType::WallDivider:
+            return "wall_divider";
+        case TileType::Void:
+            return "void";
     }
     return "unknown_tile";
 }
 
-// Agua, paredes de cueva y piedra no se pueden pisar. Lo usan el servidor y el validador.
+// Agua, paredes de cueva, piedra y las paredes de los interiores no se pueden pisar. Lo usan el
+// servidor y el validador.
 inline bool isWalkableTerrain(TileType type) {
-    return type != TileType::Water && type != TileType::CaveWall && type != TileType::Stone;
+    switch (type) {
+        case TileType::Water:
+        case TileType::CaveWall:
+        case TileType::Stone:
+        case TileType::WallTop:
+        case TileType::WallUpper:
+        case TileType::Wall:
+        case TileType::WallBase:
+        case TileType::WallLeft:
+        case TileType::WallRight:
+        case TileType::WallBottom:
+        case TileType::WallBottomLeft:
+        case TileType::WallBottomRight:
+        case TileType::CorridorLeft:
+        case TileType::CorridorRight:
+        case TileType::WallDivider:
+        case TileType::Void:
+            return false;
+        default:
+            return true;
+    }
 }
 
 inline std::vector<TileType> allTileTypes() {
     return {
-            TileType::Grass,     TileType::Dirt,  TileType::TilledSoil, TileType::Water,
-            TileType::Path,      TileType::Stone, TileType::CaveFloor,  TileType::CaveWall,
-            TileType::WoodFloor, TileType::Sand,
+            TileType::Grass,        TileType::Dirt,           TileType::TilledSoil,
+            TileType::Water,        TileType::Path,           TileType::Stone,
+            TileType::CaveFloor,    TileType::CaveWall,       TileType::WoodFloor,
+            TileType::Sand,         TileType::Sleepable,      TileType::HouseFloor,
+            TileType::WallTop,      TileType::WallUpper,      TileType::Wall,
+            TileType::WallBase,     TileType::WallLeft,       TileType::WallRight,
+            TileType::WallBottom,   TileType::WallBottomLeft, TileType::WallBottomRight,
+            TileType::CorridorLeft, TileType::CorridorRight,  TileType::WallDivider,
+            TileType::Void,
     };
 }
 
@@ -118,8 +241,14 @@ inline std::optional<AreaType> areaTypeFromString(std::string_view value) {
         return AreaType::Farm;
     if (value == "village")
         return AreaType::Village;
-    if (value == "dungeon_floor")
-        return AreaType::DungeonFloor;
+    if (value == "dungeon_level")
+        return AreaType::DungeonLevel;
+    if (value == "cabin_area")
+        return AreaType::CabinArea;
+    if (value == "market_area")
+        return AreaType::MarketArea;
+    if (value == "community_center_area")
+        return AreaType::CommunityCenterArea;
     return std::nullopt;
 }
 
@@ -129,8 +258,14 @@ inline std::string_view toString(AreaType type) {
             return "farm";
         case AreaType::Village:
             return "village";
-        case AreaType::DungeonFloor:
-            return "dungeon_floor";
+        case AreaType::DungeonLevel:
+            return "dungeon_level";
+        case AreaType::CabinArea:
+            return "cabin_area";
+        case AreaType::MarketArea:
+            return "market_area";
+        case AreaType::CommunityCenterArea:
+            return "community_center_area";
     }
     return "unknown_area";
 }
@@ -138,6 +273,10 @@ inline std::string_view toString(AreaType type) {
 inline std::optional<ElementType> elementTypeFromString(std::string_view value) {
     if (value == "cabin")
         return ElementType::Cabin;
+    if (value == "bed")
+        return ElementType::Bed;
+    if (value == "bed_blanket")
+        return ElementType::BedBlanket;
     if (value == "market")
         return ElementType::Market;
     if (value == "community_center")
@@ -152,20 +291,60 @@ inline std::optional<ElementType> elementTypeFromString(std::string_view value) 
         return ElementType::MerchantPierre;
     if (value == "merchant_robin")
         return ElementType::MerchantRobin;
-    if (value == "ore_node")
-        return ElementType::OreNode;
+    if (value == "rock")
+        return ElementType::Rock;
     if (value == "door")
         return ElementType::Door;
     if (value == "exit")
         return ElementType::Exit;
     if (value == "stairs")
         return ElementType::Stairs;
-    if (value == "spawn_point")
-        return ElementType::SpawnPoint;
+    if (value == "animal_spawn")
+        return ElementType::AnimalSpawn;
     if (value == "tree")
         return ElementType::Tree;
     if (value == "bush")
         return ElementType::Bush;
+    if (value == "fence")
+        return ElementType::Fence;
+    if (value == "well")
+        return ElementType::Well;
+    if (value == "statue")
+        return ElementType::Statue;
+    if (value == "barrel")
+        return ElementType::Barrel;
+    if (value == "crate")
+        return ElementType::Crate;
+    if (value == "flowers")
+        return ElementType::Flowers;
+    if (value == "lamp")
+        return ElementType::Lamp;
+    if (value == "torch")
+        return ElementType::Torch;
+    if (value == "fireplace")
+        return ElementType::Fireplace;
+    if (value == "chest")
+        return ElementType::Chest;
+    if (value == "window")
+        return ElementType::Window;
+    if (value == "shelf")
+        return ElementType::Shelf;
+    if (value == "tv")
+        return ElementType::Tv;
+    if (value == "kitchen")
+        return ElementType::Kitchen;
+    if (value == "rug")
+        return ElementType::Rug;
+    if (value == "rug_left")
+        return ElementType::RugLeft;
+    if (value == "plant")
+        return ElementType::Plant;
+    if (value == "house_door")
+        return ElementType::HouseDoor;
+    if (value == "market_counter")
+        return ElementType::MarketCounter;
+    if (value == "market_shelf")
+        return ElementType::MarketShelf;
     return std::nullopt;
 }
 
@@ -173,6 +352,10 @@ inline std::string_view toString(ElementType type) {
     switch (type) {
         case ElementType::Cabin:
             return "cabin";
+        case ElementType::Bed:
+            return "bed";
+        case ElementType::BedBlanket:
+            return "bed_blanket";
         case ElementType::Market:
             return "market";
         case ElementType::CommunityCenter:
@@ -187,20 +370,60 @@ inline std::string_view toString(ElementType type) {
             return "merchant_pierre";
         case ElementType::MerchantRobin:
             return "merchant_robin";
-        case ElementType::OreNode:
-            return "ore_node";
+        case ElementType::Rock:
+            return "rock";
         case ElementType::Door:
             return "door";
         case ElementType::Exit:
             return "exit";
         case ElementType::Stairs:
             return "stairs";
-        case ElementType::SpawnPoint:
-            return "spawn_point";
+        case ElementType::AnimalSpawn:
+            return "animal_spawn";
         case ElementType::Tree:
             return "tree";
         case ElementType::Bush:
             return "bush";
+        case ElementType::Fence:
+            return "fence";
+        case ElementType::Well:
+            return "well";
+        case ElementType::Statue:
+            return "statue";
+        case ElementType::Barrel:
+            return "barrel";
+        case ElementType::Crate:
+            return "crate";
+        case ElementType::Flowers:
+            return "flowers";
+        case ElementType::Lamp:
+            return "lamp";
+        case ElementType::Torch:
+            return "torch";
+        case ElementType::Fireplace:
+            return "fireplace";
+        case ElementType::Chest:
+            return "chest";
+        case ElementType::Window:
+            return "window";
+        case ElementType::Shelf:
+            return "shelf";
+        case ElementType::Tv:
+            return "tv";
+        case ElementType::Kitchen:
+            return "kitchen";
+        case ElementType::Rug:
+            return "rug";
+        case ElementType::RugLeft:
+            return "rug_left";
+        case ElementType::Plant:
+            return "plant";
+        case ElementType::HouseDoor:
+            return "house_door";
+        case ElementType::MarketCounter:
+            return "market_counter";
+        case ElementType::MarketShelf:
+            return "market_shelf";
     }
     return "unknown_element";
 }
@@ -208,6 +431,8 @@ inline std::string_view toString(ElementType type) {
 inline std::vector<ElementType> allElementTypes() {
     return {
             ElementType::Cabin,
+            ElementType::Bed,
+            ElementType::BedBlanket,
             ElementType::Market,
             ElementType::CommunityCenter,
             ElementType::DungeonEntrance,
@@ -215,13 +440,33 @@ inline std::vector<ElementType> allElementTypes() {
             ElementType::MerchantClint,
             ElementType::MerchantPierre,
             ElementType::MerchantRobin,
-            ElementType::OreNode,
+            ElementType::Rock,
             ElementType::Door,
             ElementType::Exit,
             ElementType::Stairs,
-            ElementType::SpawnPoint,
+            ElementType::AnimalSpawn,
             ElementType::Tree,
             ElementType::Bush,
+            ElementType::Fence,
+            ElementType::Well,
+            ElementType::Statue,
+            ElementType::Barrel,
+            ElementType::Crate,
+            ElementType::Flowers,
+            ElementType::Lamp,
+            ElementType::Torch,
+            ElementType::Fireplace,
+            ElementType::Chest,
+            ElementType::Window,
+            ElementType::Shelf,
+            ElementType::Tv,
+            ElementType::Kitchen,
+            ElementType::Rug,
+            ElementType::RugLeft,
+            ElementType::Plant,
+            ElementType::HouseDoor,
+            ElementType::MarketCounter,
+            ElementType::MarketShelf,
     };
 }
 
@@ -266,15 +511,37 @@ inline ElementTraits elementTraits(ElementType type) {
         case ElementType::Door:
         case ElementType::Exit:
         case ElementType::Stairs:
+        case ElementType::HouseDoor:
             return {.hasDoor = false, .travel = true};
+        case ElementType::Bed:
+        case ElementType::BedBlanket:
         case ElementType::MerchantMarnie:
         case ElementType::MerchantClint:
         case ElementType::MerchantPierre:
         case ElementType::MerchantRobin:
-        case ElementType::OreNode:
-        case ElementType::SpawnPoint:
+        case ElementType::Rock:
+        case ElementType::AnimalSpawn:
         case ElementType::Tree:
         case ElementType::Bush:
+        case ElementType::Fence:
+        case ElementType::Well:
+        case ElementType::Statue:
+        case ElementType::Barrel:
+        case ElementType::Crate:
+        case ElementType::Flowers:
+        case ElementType::Lamp:
+        case ElementType::Torch:
+        case ElementType::Fireplace:
+        case ElementType::Chest:
+        case ElementType::Window:
+        case ElementType::Shelf:
+        case ElementType::Tv:
+        case ElementType::Kitchen:
+        case ElementType::Rug:
+        case ElementType::RugLeft:
+        case ElementType::Plant:
+        case ElementType::MarketCounter:
+        case ElementType::MarketShelf:
             return {.hasDoor = false, .travel = false};
     }
     return {.hasDoor = false, .travel = false};
@@ -285,7 +552,7 @@ struct MapArea {
     std::optional<AreaType> type;
     int width = 0;
     int height = 0;
-    std::optional<int> floorNumber;
+    std::optional<int> levelNumber;
     std::vector<std::vector<TileType>> tiles;
     // Posicion del area en el mapa general, en casillas. La usan el editor y el minimapa: el
     // servidor la ignora.
@@ -318,7 +585,7 @@ inline MapCell doorCell(const MapElement& building) {
     return {building.x + building.width / 2, building.y + building.height - 1};
 }
 
-// Las estructuras y los NPCs tapan sus celdas; los objetos (rocas, cofres) no
+// Las estructuras (edificios, arboles, rocas) y los NPCs tapan sus celdas; los objetos no
 inline bool isSolid(const MapElement& element) {
     return element.layer == ElementLayer::Structure || element.layer == ElementLayer::Npc;
 }
