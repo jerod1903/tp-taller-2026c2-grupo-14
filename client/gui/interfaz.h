@@ -25,6 +25,7 @@
 #include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/sprites/globo.h"
 #include "common/game_dto.h"
+#include "client/gui/mapa/transicion_area.h"
 
 class Interfaz {
 public:
@@ -38,15 +39,14 @@ private:
                               std::chrono::steady_clock::time_point ahora);
     void vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
                 bool recien_creado);
-    // El mundo se dibuja en pixeles del tileset sobre el lienzo, que despues se estira a la
-    // ventana. Se rehace si cambia el tamaño de la ventana o si el area que se muestra es mas chica
-    // que la vista (como la cabaña): ahi se acerca hasta que la llene. 0 si no hay area
     void ajustar_lienzo(int ancho_area, int alto_area);
     void leer_chat(const SDL_Event& evento, Entrada& entrada);
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio);
     void dibujar_inventario(const InventoryState& inventario);
+    void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
+    void oscurecer(uint8_t opacidad);
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
     SDL2pp::SDL sdl;
     ReproductorSonidos reproductor;
@@ -68,14 +68,15 @@ private:
     std::optional<Mapa> mapa;
     std::string mundo_del_mapa;
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
-    // Las camas de los jugadores que ya entraron: no se animan, se dibujan como un elemento
     std::vector<EntityState> camas;
     BarraInventario barra;
     Fuente fuente;
     PanelChat panel_chat;
     std::optional<std::string> borrador;
     Globo globo;
-    // Los jugadores que ya se dibujan con su apariencia
+    TransicionArea transicion;
+    std::optional<SDL2pp::Texture> congelado;
+    std::string area_anterior;
     std::set<uint32_t> vestidos;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;
