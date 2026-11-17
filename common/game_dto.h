@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "common/lobby_dto.h"
+#include "common/farm_dto.h"
 
 // Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
@@ -39,12 +40,14 @@ enum class GameMsg : uint8_t {
     FarmState,
 };
 
-// El mundo de la partida, cuántos Snapshots por segundo manda el servidor y el máximo de jugadores
-// (el ala este de la cabaña tiene una cama por jugador). Se manda al entrar.
+// El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
+// (el ala este de la cabaña tiene una cama por jugador) y la energía máxima de un jugador (para la
+// barra del HUD). Se manda al entrar.
 struct LocationData {
     std::string worldId;
     uint16_t tickRate;
     uint8_t maxPlayers;
+    uint16_t maxEnergy;
 };
 
 // Las posiciones van en milésimas de celda: x = 14500 es el centro de la columna 14.
@@ -106,6 +109,8 @@ struct EntityState {
 // cualquier área.
 struct Snapshot {
     uint32_t tick;
+    uint16_t day;          // día 1, 2, ...
+    uint16_t minuteOfDay;  // minutos de juego desde las 6:00 (0..1199)
     std::vector<PlayerState> players;
     std::vector<EntityState> entities;
 };
@@ -191,22 +196,14 @@ enum class ItemType : uint8_t {
     Scallion,
     Potato,
     Pumpkin,
+    Egg,
 };
 
 struct InventorySlot {
     ItemType item;
     uint8_t quantity;
-    ItemQuality quality = ItemQuality::Base;
 
     bool operator==(const InventorySlot&) const = default;
-};
-
-enum class ItemQuality : uint8_t {
-    Base,
-    Good,
-    Excellent,
-    Incredible,
-    Perfect,
 };
 
 
@@ -219,39 +216,6 @@ struct InventoryState {
 
     bool operator==(const InventoryState&) const = default;
 };
-
-enum class CropType : uint8_t {
-    None = 0,  // tierra cavada sin plantar
-    Strawberry,
-    Scallion,
-    Potato,
-    Pumpkin,
-};
-
-
-// Una celda cavada de la granja. col y row son celdas, no milésimas.
-struct FarmTile {
-    uint16_t col;
-    uint16_t row;
-    CropType crop = CropType::None;
-    uint8_t stage = 0;        // etapa de crecimiento; la última es "lista para cosechar"
-    bool watered = false;     // se dibuja la tierra mojada
-    bool needsWater = false;  // se dibuja el icono de riego
-
-    bool operator==(const FarmTile&) const = default;
-};
-
-// Todas las celdas cavadas del área areaId. Se manda completo cada vez que algo cambia, a todos los
-// jugadores de la partida. Una celda que no está en la lista no está cavada.
-// En el cable: tag GameMsg::FarmState, areaId, u16 cantidad y, por cada celda,
-// u16 col, u16 row, u8 crop, u8 stage, u8 watered, u8 needsWater.
-struct FarmState {
-    std::string areaId;
-    std::vector<FarmTile> tiles = {};
-
-    bool operator==(const FarmState&) const = default;
-};
-
 
 
 #endif  // GAME_DTO_H
