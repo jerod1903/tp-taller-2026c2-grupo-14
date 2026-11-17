@@ -1,6 +1,7 @@
 #include "server/game/world/location.h"
 
 #include <optional>
+#include <random>
 
 #include <gtest/gtest.h>
 
@@ -77,6 +78,45 @@ TEST_F(LocationTest, UpdateUpdatesEveryEntity) {
     location.update(1.0f);
     EXPECT_EQ(first.updates, 1);
     EXPECT_EQ(second.updates, 1);
+}
+
+// Una fila de 4: pared en 0, portal en 1, criatura en 2. Solo queda libre la 3.
+TEST(RandomFreeCellTest, SkipsWallsPortalsAndOccupiedCells) {
+    TestLocation row(make_grid(4, 1, {Position{0, 0}}));
+    TestLocation other;
+    row.add_portal(Portal{Position{1, 0}, &other, Point{0.5f, 0.5f}});
+    TestCreature creature(row, Position{2, 0});
+    row.add_entity(creature);
+    std::mt19937 rng(7);
+    for (int i = 0; i < 10; ++i) {
+        EXPECT_EQ(row.random_free_cell(rng), (Position{3, 0}));
+    }
+}
+
+TEST(RandomFreeCellTest, OnlyReturnsCellsThatPassTheFilter) {
+    TestLocation location;
+    std::mt19937 rng(7);
+    for (int i = 0; i < 20; ++i) {
+        std::optional<Position> cell =
+                location.random_free_cell(rng, [](const Position& pos) { return pos.x >= 3; });
+        ASSERT_TRUE(cell.has_value());
+        EXPECT_GE(cell->x, 3);
+    }
+}
+
+TEST(RandomFreeCellTest, WithoutRoomItReturnsNothing) {
+    TestLocation location(make_grid(1, 1, {Position{0, 0}}));
+    std::mt19937 rng(7);
+    EXPECT_FALSE(location.random_free_cell(rng).has_value());
+}
+
+TEST(RandomFreeCellTest, TheSameSeedGivesTheSameCells) {
+    TestLocation location;
+    std::mt19937 first(42);
+    std::mt19937 second(42);
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_EQ(location.random_free_cell(first), location.random_free_cell(second));
+    }
 }
 
 TEST_F(LocationTest, AnEntityCanLeaveDuringTheUpdate) {
