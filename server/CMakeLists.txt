@@ -19,6 +19,8 @@ target_sources(taller_server
     game/sessions.cpp
     game/snapshot_builder.cpp
     game/characters/animals/animal.cpp
+    game/characters/animals/chicken/chicken.cpp
+    game/characters/animals/cow/cow.cpp
     game/characters/creature.cpp
     game/characters/enemies/enemy.cpp
     game/characters/enemies/skeleton.cpp
@@ -26,9 +28,11 @@ target_sources(taller_server
     game/characters/player.cpp
     game/characters/inventory.cpp
     game/world/direction.cpp
+    game/world/game_clock.cpp
     game/world/dungeon/dungeon.cpp
     game/world/dungeon/dungeon_level.cpp
     game/world/farm/cabin.cpp
+    game/world/farm/crop.cpp
     game/world/interior.cpp
     game/world/farm/farm.cpp
     game/world/grid.cpp
@@ -70,12 +74,15 @@ target_sources(taller_server
     game/sessions.h
     game/snapshot_builder.h
     game/characters/animals/animal.h
+    game/characters/animals/chicken/chicken.h
+    game/characters/animals/cow/cow.h
     game/characters/creature.h
     game/characters/enemies/enemy.h
     game/characters/enemies/skeleton.h
     game/characters/entity.h
     game/characters/player.h
     game/world/direction.h
+    game/world/game_clock.h
     game/world/dungeon/dungeon.h
     game/world/dungeon/dungeon_level.h
     game/world/farm/cabin.h

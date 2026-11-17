@@ -7,7 +7,9 @@ uint8_t Crop::stage_count() const {
     return COUNTS[static_cast<uint8_t>(type)];
 }
 
-bool Crop::is_ready() const { return stage == stage_count() - 1; }
+bool Crop::is_ready() const { return is_planted() && stage == stage_count() - 1; }
+
+bool Crop::is_planted() const { return type != CropType::None; }
 
 CropType Crop::get_type() const { return type; }
 

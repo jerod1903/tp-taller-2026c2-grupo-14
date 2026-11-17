@@ -7,6 +7,7 @@
 #include "common/game_dto.h"
 #include "server/config/server_config.h"
 #include "server/game/characters/animals/animal.h"
+#include "server/game/characters/animals/cow/cow.h"
 #include "server/game/characters/player.h"
 #include "server/game/commands/game_context.h"
 
@@ -16,19 +17,17 @@ constexpr const char* INVENTORY_FULL = "El inventario está lleno";
 
 // La vaca lista mas cercana al jugador dentro del alcance, o nullptr si no hay ninguna.
 // Solo cuenta las de su misma area: las posiciones de areas distintas no se comparan.
-Animal* nearest_ready_cow(const std::vector<std::unique_ptr<Animal>>& animals,
-                          const Player& player) {
-    Animal* nearest = nullptr;
+Cow* nearest_ready_cow(const std::vector<std::unique_ptr<Animal>>& animals, const Player& player) {
+    Cow* nearest = nullptr;
     float nearest_distance = server_config().animals.milking_reach;
     for (const std::unique_ptr<Animal>& animal: animals) {
-        if (animal->get_kind() != AnimalKind::Cow || !animal->is_ready() ||
-            &animal->get_location() != &player.get_location()) {
+        Cow* cow = dynamic_cast<Cow*>(animal.get());
+        if (cow == nullptr || !cow->is_ready() || &cow->get_location() != &player.get_location()) {
             continue;
         }
-        float distance =
-                std::hypot(animal->get_x() - player.get_x(), animal->get_y() - player.get_y());
+        float distance = std::hypot(cow->get_x() - player.get_x(), cow->get_y() - player.get_y());
         if (distance <= nearest_distance) {
-            nearest = animal.get();
+            nearest = cow;
             nearest_distance = distance;
         }
     }
@@ -44,7 +43,7 @@ void InteractCommand::execute(GameContext& context) {
     if (player == nullptr) {
         return;
     }
-    Animal* cow = nearest_ready_cow(context.characters().farm_animals(), *player);
+    Cow* cow = nearest_ready_cow(context.characters().farm_animals(), *player);
     if (cow == nullptr) {
         return;
     }
