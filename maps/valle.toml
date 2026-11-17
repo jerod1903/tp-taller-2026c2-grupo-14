@@ -342,9 +342,9 @@ width = 1
 height = 1
 
 [[elements]]
-id = "granja-spawn"
+id = "granja-animales"
 area = "granja"
-type = "spawn_point"
+type = "animal_spawn"
 layer = "object"
 x = 14
 y = 7
@@ -402,20 +402,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-1-mineral-1"
+id = "mina-1-roca-1"
 area = "mina-1"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-1-mineral-2"
+id = "mina-1-roca-2"
 area = "mina-1"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -442,20 +442,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-2-mineral-1"
+id = "mina-2-roca-1"
 area = "mina-2"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-2-mineral-2"
+id = "mina-2-roca-2"
 area = "mina-2"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -482,20 +482,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-3-mineral-1"
+id = "mina-3-roca-1"
 area = "mina-3"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-3-mineral-2"
+id = "mina-3-roca-2"
 area = "mina-3"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -522,20 +522,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-4-mineral-1"
+id = "mina-4-roca-1"
 area = "mina-4"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-4-mineral-2"
+id = "mina-4-roca-2"
 area = "mina-4"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -562,20 +562,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-5-mineral-1"
+id = "mina-5-roca-1"
 area = "mina-5"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-5-mineral-2"
+id = "mina-5-roca-2"
 area = "mina-5"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -602,20 +602,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-6-mineral-1"
+id = "mina-6-roca-1"
 area = "mina-6"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-6-mineral-2"
+id = "mina-6-roca-2"
 area = "mina-6"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -642,20 +642,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-7-mineral-1"
+id = "mina-7-roca-1"
 area = "mina-7"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-7-mineral-2"
+id = "mina-7-roca-2"
 area = "mina-7"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -682,20 +682,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-8-mineral-1"
+id = "mina-8-roca-1"
 area = "mina-8"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-8-mineral-2"
+id = "mina-8-roca-2"
 area = "mina-8"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -722,20 +722,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-9-mineral-1"
+id = "mina-9-roca-1"
 area = "mina-9"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-9-mineral-2"
+id = "mina-9-roca-2"
 area = "mina-9"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1
@@ -762,20 +762,20 @@ width = 1
 height = 1
 
 [[elements]]
-id = "mina-10-mineral-1"
+id = "mina-10-roca-1"
 area = "mina-10"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 4
 y = 11
 width = 1
 height = 1
 
 [[elements]]
-id = "mina-10-mineral-2"
+id = "mina-10-roca-2"
 area = "mina-10"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 x = 16
 y = 2
 width = 1

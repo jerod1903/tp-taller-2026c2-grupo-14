@@ -32,7 +32,7 @@ required = true
 
 [[elements]]
 area_type = "farm"
-type = "spawn_point"
+type = "animal_spawn"
 layer = "object"
 width = 1
 height = 1
@@ -102,8 +102,8 @@ required = false
 
 [[elements]]
 area_type = "dungeon_level"
-type = "ore_node"
-layer = "object"
+type = "rock"
+layer = "structure"
 width = 1
 height = 1
 required = false
@@ -137,6 +137,152 @@ area_type = "village"
 type = "bush"
 layer = "structure"
 width = 2
+height = 1
+required = false
+
+# Decoracion: la pone el editor y choca. Ninguna es obligatoria ni tiene limite.
+
+[[elements]]
+area_type = "farm"
+type = "rock"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "rock"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "fence"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "fence"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "well"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "well"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "barrel"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "barrel"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "dungeon_level"
+type = "barrel"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "crate"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "crate"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "dungeon_level"
+type = "crate"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "flowers"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "flowers"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "statue"
+layer = "structure"
+width = 2
+height = 2
+required = false
+
+[[elements]]
+area_type = "farm"
+type = "lamp"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "village"
+type = "lamp"
+layer = "structure"
+width = 1
+height = 1
+required = false
+
+[[elements]]
+area_type = "dungeon_level"
+type = "torch"
+layer = "structure"
+width = 1
 height = 1
 required = false
 
@@ -210,3 +356,18 @@ from_area_type = "dungeon_level"
 from_level = 9
 to_area_type = "dungeon_level"
 to_level = 10
+
+# Los tiles que se pueden pintar en cada tipo de area. Los de los interiores (pisos y paredes de la
+# casa) no van en los mapas: estan en los .toml de cada interior.
+
+[[tiles]]
+area_type = "farm"
+types = ["grass", "dirt", "tilled_soil", "water", "path", "sand", "wood_floor", "stone"]
+
+[[tiles]]
+area_type = "village"
+types = ["grass", "dirt", "tilled_soil", "water", "path", "sand", "wood_floor", "stone"]
+
+[[tiles]]
+area_type = "dungeon_level"
+types = ["cave_floor", "cave_wall", "stone"]
