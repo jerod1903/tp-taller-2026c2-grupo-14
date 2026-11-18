@@ -18,6 +18,7 @@ struct Entrada {
     bool interactuar = false;
     std::optional<bool> escribiendo;
     std::optional<ClickRequest> click;
+    bool invitar = false;
 };
 
 #endif

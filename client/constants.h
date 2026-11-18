@@ -157,7 +157,7 @@ inline constexpr int TAMANO_FUENTE_TITULO = 32;
 inline const char* const TITULO_PAUSA = "Pausa";
 inline const std::vector<BotonPausa> BOTONES_PAUSA = {
         {OpcionPausa::Reanudar, "Reanudar", true},
-        {OpcionPausa::Invitar, "Invitar", false},
+        {OpcionPausa::Invitar, "Invitar", true},
         {OpcionPausa::Salir, "Salir", true}};
 inline constexpr int SEPARACION_BOTONES = 12;
 inline constexpr int SEPARACION_TITULO_PAUSA = 40;

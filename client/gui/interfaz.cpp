@@ -118,8 +118,11 @@ Entrada Interfaz::leer_entrada() {
 }
 
 void Interfaz::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
-    if (menu_pausa.leer(evento, renderer.GetOutputSize()) == OpcionPausa::Salir) {
+    std::optional<OpcionPausa> opcion = menu_pausa.leer(evento, renderer.GetOutputSize());
+    if (opcion == OpcionPausa::Salir) {
         entrada.salir = true;
+    } else if (opcion == OpcionPausa::Invitar) {
+        entrada.invitar = true;
     }
 }
 
