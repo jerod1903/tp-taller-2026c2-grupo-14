@@ -19,6 +19,7 @@ enum class GameOp : uint8_t {
     Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
     Click = 0x08,        // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
+    Invite = 0x09,       // sin payload: pide el código de invitación; llega por el chat
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.

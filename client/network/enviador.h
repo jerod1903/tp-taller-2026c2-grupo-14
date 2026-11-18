@@ -20,6 +20,7 @@ public:
     void interactuar() { protocolo.sendInteract(); }
     void escribiendo(bool valor) { protocolo.sendTyping(valor); }
     void clickear(const ClickRequest& click) { protocolo.sendClick(click.x, click.y); }
+    void invitar() { protocolo.sendInvite(); }
 
 private:
     IGameProtocol& protocolo;

@@ -303,6 +303,14 @@ TEST_F(ClientGameProtocolTest, SendClickSendsTagAndCell) {
     EXPECT_EQ(server.recv_u16(), 3);
 }
 
+TEST_F(ClientGameProtocolTest, SendInviteSendsOnlyTheTag) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendInvite();
+    client->shutdown();
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Invite));
+    EXPECT_EQ(server.recv_u8(), std::nullopt);
+}
+
 TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
     BaseProtocol server(std::move(*server_socket));
     client->sendTyping(true);

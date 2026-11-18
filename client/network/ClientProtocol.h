@@ -38,6 +38,7 @@ public:
     void sendInteract() override;
     void sendTyping(bool escribiendo) override;
     void sendClick(uint16_t x, uint16_t y) override;
+    void sendInvite() override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;

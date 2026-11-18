@@ -134,6 +134,8 @@ void ClientProtocol::sendLeaveGame() { ensure(sendGameOp(GameOp::LeaveGame)); }
 
 void ClientProtocol::sendEnterPortal() { ensure(sendGameOp(GameOp::EnterPortal)); }
 
+void ClientProtocol::sendInvite() { ensure(sendGameOp(GameOp::Invite)); }
+
 void ClientProtocol::sendSelectSlot(uint8_t slot) {
     ensure(sendGameOp(GameOp::SelectSlot) && baseProtocol.send_u8(slot));
 }
