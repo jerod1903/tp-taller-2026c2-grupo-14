@@ -223,6 +223,11 @@ bool ServerProtocol::send_farm_state(const FarmState& farm) {
                     baseProtocol.send_u8(tile.stage) &&
                     baseProtocol.send_u8(tile.needsWater ? 1 : 0) &&
                     baseProtocol.send_u8(tile.readyToHarvest ? 1 : 0);
+           }) &&
+           send_count(farm.items.size()) &&
+           std::all_of(farm.items.begin(), farm.items.end(), [this](const GroundItem& item) {
+               return baseProtocol.send_u16(item.x) && baseProtocol.send_u16(item.y) &&
+                      baseProtocol.send_u8(static_cast<uint8_t>(item.item));
            });
 }
 

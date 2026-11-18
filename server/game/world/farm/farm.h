@@ -44,11 +44,6 @@ public:
     bool add_animal(AnimalKind kind, const Position& pos);
     const std::vector<std::unique_ptr<Animal>>& get_animals() const;
 
-    // Los objetos tirados en el piso (los huevos), uno por celda.
-    const std::map<Position, ItemType>& get_ground_items() const;
-    // Levanta el objeto de la celda, si hay uno.
-    std::optional<ItemType> pick_up(const Position& pos);
-
     // Los animales cuentan un día más; lo que dejan en el piso queda en su celda.
     void start_new_day();
 
@@ -61,8 +56,6 @@ public:
     std::optional<CropHarvest> harvest(const Position& pos);
     // Las celdas trabajadas, por posición.
     const std::map<Position, Plot>& get_plots() const;
-    // true si los plots cambiaron desde la última vez que se preguntó (para mandar el FarmState).
-    bool take_changes();
 
     // Actualiza también la Cabin y levanta lo que dejaron los animales en el tick.
     void update(float dt) override;
@@ -72,9 +65,7 @@ private:
     std::unique_ptr<Cabin> cabin;
     std::vector<std::unique_ptr<Animal>> animals;
     std::map<Position, Plot> plots;
-    std::map<Position, ItemType> ground_items;
     uint32_t next_animal_id = 0;
-    bool changed = false;
 
     int count_of(AnimalKind kind) const;
     // Pone en el piso, en su celda, lo que dejó cada animal.

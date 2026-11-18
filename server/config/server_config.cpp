@@ -97,8 +97,9 @@ ServerConfig::Energy read_energy(const toml::table& root) {
         }
         return value;
     };
-    return ServerConfig::Energy{cost("dig"),  cost("water"),  cost("plant"), cost("harvest"),
-                                cost("milk"), cost("attack"), cost("mine"),  cost("talk")};
+    return ServerConfig::Energy{cost("dig"),    cost("water"),   cost("plant"),
+                                cost("harvest"), cost("milk"),    cost("pick_up"),
+                                cost("attack"),  cost("mine"),    cost("talk")};
 }
 
 ServerConfig::Species read_species(const toml::table& root, const std::string& name) {

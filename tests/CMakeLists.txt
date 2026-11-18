@@ -76,6 +76,7 @@ target_sources(taller_tests
     ../server/game/interactions/outcome.cpp
     ../server/game/interactions/interaction.cpp
     ../server/game/interactions/milk.cpp
+    ../server/game/interactions/pick_up.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
     ../server/game/commands/enter_portal_command.cpp

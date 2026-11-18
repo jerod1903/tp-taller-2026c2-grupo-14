@@ -27,6 +27,7 @@ struct ServerConfig {
         int plant;
         int harvest;
         int milk;
+        int pick_up;
         int attack;
         int mine;
         int talk;

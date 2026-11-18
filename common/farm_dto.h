@@ -15,6 +15,25 @@ enum class ItemQuality : uint8_t {
     Perfect,
 };
 
+// Lo que puede haber en un slot del inventario o tirado en el piso de la granja.
+enum class ItemType : uint8_t {
+    Empty = 0,
+    Pickaxe,
+    WateringCan,
+    Shovel,
+    Sword,
+    Milk,
+    StrawberrySeeds,
+    ScallionSeeds,
+    PotatoSeeds,
+    PumpkinSeeds,
+    Strawberry,
+    Scallion,
+    Potato,
+    Pumpkin,
+    Egg,
+};
+
 enum class SoilType : uint8_t { Dirt, Tilled };
 
 enum class CropType : uint8_t {
@@ -46,13 +65,25 @@ struct FarmTile {
     bool operator==(const FarmTile&) const = default;
 };
 
-// Todas las celdas trabajadas con la pala del área areaId. Se manda completo cada vez que algo
-// cambia, a todos los jugadores de la partida. Una celda que no está en la lista no se cavó.
+// Un objeto tirado en el piso de la granja (un huevo), en la celda x, y.
+struct GroundItem {
+    uint16_t x;
+    uint16_t y;
+    ItemType item;
+
+    bool operator==(const GroundItem&) const = default;
+};
+
+// Las celdas trabajadas con la pala y los objetos del piso del área areaId. Se manda completo cada
+// vez que algo cambia, a todos los jugadores de la partida. Una celda que no está en la lista no
+// se cavó.
 // En el cable: tag GameMsg::FarmState, areaId, u16 cantidad y, por cada celda,
-// u16 x, u16 y, u8 soil, u8 crop, u8 stage, u8 needsWater, u8 readyToHarvest.
+// u16 x, u16 y, u8 soil, u8 crop, u8 stage, u8 needsWater, u8 readyToHarvest; después u16
+// cantidad y, por cada objeto, u16 x, u16 y, u8 item.
 struct FarmState {
     std::string areaId;
     std::vector<FarmTile> tiles = {};
+    std::vector<GroundItem> items = {};
 
     bool operator==(const FarmState&) const = default;
 };

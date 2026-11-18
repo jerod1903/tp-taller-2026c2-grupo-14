@@ -15,6 +15,7 @@ target_sources(taller_server
     game/interactions/outcome.cpp
     game/interactions/interaction.cpp
     game/interactions/milk.cpp
+    game/interactions/pick_up.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/enter_portal_command.cpp
@@ -74,6 +75,7 @@ target_sources(taller_server
     game/interactions/outcome.h
     game/interactions/interaction.h
     game/interactions/milk.h
+    game/interactions/pick_up.h
     game/commands/game_command.h
     game/commands/game_context.h
     game/commands/player_farming.h

@@ -87,5 +87,9 @@ FarmState SnapshotBuilder::farm_state(const Farm& farm) {
                                        plot.soil, plot.crop.get_type(), plot.crop.get_stage(),
                                        false, plot.crop.is_ready()});
     }
+    for (const auto& [pos, item]: farm.get_ground_items()) {
+        state.items.push_back(
+                GroundItem{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), item});
+    }
     return state;
 }

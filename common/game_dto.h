@@ -182,23 +182,6 @@ struct ChatMessage {
 // Cantidad de slots del inventario de un jugador.
 constexpr uint8_t INVENTORY_SIZE = 9;
 
-enum class ItemType : uint8_t {
-    Empty = 0,
-    Pickaxe,
-    WateringCan,
-    Shovel,
-    Sword,
-    Milk,
-    StrawberrySeeds,
-    ScallionSeeds,
-    PotatoSeeds,
-    PumpkinSeeds,
-    Strawberry,
-    Scallion,
-    Potato,
-    Pumpkin,
-    Egg,
-};
 
 struct InventorySlot {
     ItemType item;

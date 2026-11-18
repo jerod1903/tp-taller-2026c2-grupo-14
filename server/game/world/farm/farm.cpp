@@ -52,18 +52,6 @@ bool Farm::add_animal(AnimalKind kind, const Position& pos) {
 
 const std::vector<std::unique_ptr<Animal>>& Farm::get_animals() const { return animals; }
 
-const std::map<Position, ItemType>& Farm::get_ground_items() const { return ground_items; }
-
-std::optional<ItemType> Farm::pick_up(const Position& pos) {
-    auto item = ground_items.find(pos);
-    if (item == ground_items.end()) {
-        return std::nullopt;
-    }
-    ItemType picked = item->second;
-    ground_items.erase(item);
-    return picked;
-}
-
 void Farm::start_new_day() {
     for (const std::unique_ptr<Animal>& animal: animals) {
         animal->start_new_day();
@@ -75,7 +63,7 @@ void Farm::collect_drops() {
     for (const std::unique_ptr<Animal>& animal: animals) {
         if (std::optional<ItemType> dropped = animal->take_drop()) {
             // Si la celda ya tiene algo, el nuevo se pierde
-            ground_items.emplace(animal->get_position(), *dropped);
+            drop(animal->get_position(), *dropped);
         }
     }
 }
@@ -139,7 +127,6 @@ std::optional<CropHarvest> Farm::harvest(const Position& pos) {
 
 const std::map<Position, Plot>& Farm::get_plots() const { return plots; }
 
-bool Farm::take_changes() { return std::exchange(changed, false); }
 
 void Farm::update(float dt) {
     update_entities(dt);
