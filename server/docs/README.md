@@ -118,6 +118,10 @@ Pendiente: que todos los jugadores den el Ok antes de empezar el día siguiente.
 
 ## La granja
 
+![Herramientas, interacciones y cheats](diagrams/farming/farming.svg)
+
+Fuente: [diagrams/farming/farming.puml](diagrams/farming/farming.puml)
+
 **Dos formas de actuar**, cada una con su mensaje del cliente:
 
 - **Herramientas**, con el click (`GameOp::UseTool`): depende de lo que tiene en el slot elegido. `tool_for(ItemType)` da la `Tool` de ese objeto, o ninguna. Cada una sabe qué hace (`use`) y cuánto cansa (`energy_cost`):

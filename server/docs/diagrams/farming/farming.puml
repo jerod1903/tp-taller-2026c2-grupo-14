@@ -1,0 +1,100 @@
+@startuml farming
+!pragma layout smetana
+hide empty members
+skinparam classAttributeIconSize 0
+
+interface PlayerFarming {
+  + dig(Player): bool
+  + plant(Player, CropType): bool
+  + water(Player): bool
+  + harvest(Player): Outcome&
+  + milk(Player): Outcome&
+}
+
+package "Click: herramientas" {
+  class UseToolCommand {
+    + execute(GameContext&)
+  }
+  abstract class Tool {
+    + {abstract} use(Player, GameContext): bool
+    + {abstract} energy_cost(): int
+  }
+  class Shovel
+  class WateringCan
+  class Seed {
+    - crop: CropType
+  }
+  class "tool_for(ItemType)" as tool_for << (F,#AAAAAA) >>
+}
+
+package "E: interacciones" {
+  class InteractCommand {
+    + execute(GameContext&)
+  }
+  abstract class Interaction {
+    + {abstract} try_with(Player, GameContext): Outcome&
+    + {abstract} energy_cost(): int
+  }
+  class Milk
+  class Harvest
+  class PickUp
+  class "interactions()" as interactions << (F,#AAAAAA) >> {
+    Milk, Harvest, PickUp
+  }
+  abstract class Outcome {
+    + {abstract} apply(Player, GameContext, energy_cost): bool
+    + {static} not_here(): Outcome&
+    + {static} inventory_full(): Outcome&
+    + {static} done(): Outcome&
+  }
+  class NotHere
+  class InventoryFull
+  class Done
+}
+
+package "Chat: cheats" {
+  class ChatCommand {
+    - run_cheat(GameContext, Player, message)
+  }
+  abstract class Cheat {
+    + {abstract} apply(Player, GameContext, payload)
+    # {static} amount(payload, fallback): optional<int>
+    # {static} tell(Player, GameContext, text)
+  }
+  class SeedsCheat
+  class GoldCheat
+  class "cheat_for(name)" as cheat_for << (F,#AAAAAA) >>
+}
+
+class World
+class Location
+
+UseToolCommand ..> tool_for : el ítem elegido
+tool_for ..> Tool
+Tool <|-- Shovel
+Tool <|-- WateringCan
+Tool <|-- Seed
+Shovel ..> PlayerFarming : dig
+WateringCan ..> PlayerFarming : water
+Seed ..> PlayerFarming : plant
+
+InteractCommand ..> interactions : prueba en orden
+interactions o-- Interaction
+Interaction <|-- Milk
+Interaction <|-- Harvest
+Interaction <|-- PickUp
+Milk ..> PlayerFarming : milk
+Harvest ..> PlayerFarming : harvest
+PickUp ..> Location : pick_up
+Interaction ..> Outcome : devuelve
+Outcome <|-- NotHere
+Outcome <|-- InventoryFull
+Outcome <|-- Done
+
+ChatCommand ..> cheat_for : "$nombre [payload]"
+cheat_for ..> Cheat
+Cheat <|-- SeedsCheat
+Cheat <|-- GoldCheat
+
+PlayerFarming <|.. World
+@enduml
