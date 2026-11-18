@@ -7,6 +7,7 @@ interface GameContext {
   + sessions(): PlayerSessions&
   + movement(): PlayerMovement&
   + characters(): PlayerCharacters&
+  + farming(): PlayerFarming&
 }
 interface PlayerSessions {
   + add_player(player_id, GameMember, Outbox)
@@ -17,7 +18,13 @@ interface PlayerSessions {
 }
 interface PlayerCharacters {
   + find_player(player_id): Player*
-  + farm_animals(): vector<Animal>
+}
+interface PlayerFarming {
+  + dig(Player, Position): bool
+  + plant(Player, Position, CropType): bool
+  + water(Player, Position): bool
+  + harvest(Player): Outcome&
+  + milk(Player): Outcome&
 }
 interface PlayerMovement {
   + move_player(player_id, Direction)
@@ -42,6 +49,9 @@ class LeaveCommand
 class EnterPortalCommand
 class ChatCommand
 class InteractCommand
+class ClickCommand {
+  - cell: Position
+}
 class SelectSlotCommand
 class TypingCommand
 class CommandFactory {
@@ -55,17 +65,23 @@ GameContext <|.. Game
 PlayerSessions <|.. Sessions
 PlayerMovement <|.. Movement
 PlayerCharacters <|.. World
+PlayerFarming <|.. World
 GameContext ..> PlayerCharacters
-Game ..> World : characters()
+GameContext ..> PlayerFarming
+Game ..> World : characters() y farming()
 ChatCommand ..> PlayerSessions : usa
 ChatCommand ..> PlayerCharacters : usa
 InteractCommand ..> PlayerSessions : usa
 InteractCommand ..> PlayerCharacters : usa
+InteractCommand ..> PlayerFarming : por las Interaction
+ClickCommand ..> PlayerCharacters : usa
+ClickCommand ..> PlayerFarming : por las ClickAction
 SelectSlotCommand ..> PlayerSessions : usa
 SelectSlotCommand ..> PlayerCharacters : usa
 TypingCommand ..> PlayerCharacters : usa
 GameCommand <|-- ChatCommand
 GameCommand <|-- InteractCommand
+GameCommand <|-- ClickCommand
 GameCommand <|-- SelectSlotCommand
 GameCommand <|-- TypingCommand
 GameContext ..> PlayerSessions

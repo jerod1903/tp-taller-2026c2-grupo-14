@@ -8,7 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "server/game/characters/entity.h"
+#include "server/game/characters/player.h"
+#include "server/game/interactions/outcome.h"
 
 Location::Location(std::string name, Grid grid): name(std::move(name)), grid(std::move(grid)) {}
 
@@ -76,3 +77,29 @@ void Location::update_entities(float dt) {
         entity->update(dt);
     }
 }
+
+bool Location::drop(const Position& pos, ItemType item) {
+    bool dropped = ground_items.emplace(pos, item).second;
+    changed |= dropped;
+    return dropped;
+}
+
+const std::map<Position, ItemType>& Location::get_ground_items() const { return ground_items; }
+
+const Outcome& Location::pick_up(Player& player) {
+    for (const Position& cell: {player.get_position(), player.facing_cell()}) {
+        auto item = ground_items.find(cell);
+        if (item == ground_items.end()) {
+            continue;
+        }
+        if (player.receive(item->second, 1) > 0) {
+            return Outcome::inventory_full();
+        }
+        ground_items.erase(item);
+        changed = true;
+        return Outcome::done();
+    }
+    return Outcome::not_here();
+}
+
+bool Location::take_changes() { return std::exchange(changed, false); }

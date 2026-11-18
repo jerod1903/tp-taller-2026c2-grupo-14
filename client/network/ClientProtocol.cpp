@@ -18,17 +18,19 @@
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
 //   LoadGame:        op, gameId u32                              -> status u8
 //   EnableMultiplayer: op, gameId u32                            -> status u8, inviteCode
+//   FarmState:     areaId, count u16, (x u16, y u16, soil u8, crop u8, stage u8, needsWater u8,
+//                    readyToHarvest u8)*
 //
 // Durante la partida:
 //   Acciones del jugador: tag GameOp u8 y su payload, ver la tabla de GameOp en common/game_dto.h
 //   Mensajes del servidor, con su tag GameMsg u8 adelante:
-//     LocationData:  worldId, tickRate u16, maxPlayers u8
-//     Snapshot:      tick u32, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
+//     LocationData:  worldId, tickRate u16, maxPlayers u8, maxEnergy u16
+//     Snapshot:      tick u32, day u16, minuteOfDay u16, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
 //                    health u16, energy u16, gold u32)*,
 //                    count u16, (entityId u32, type u8, areaId, x u32, y u32, dirX u8, dirY u8)*
 //     GameEnded:     reason u8
 //     PlayerInfo:    playerId u32, characterName, apariencia
-//     InventoryState: selectedSlot u8, count u16, (item u8, quantity u8)*
+//     InventoryState: selectedSlot u8, count u16, (item u8, quantity u8, quality u8)*
 //
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
@@ -151,6 +153,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvInventoryState();
         case GameMsg::ChatMessage:
             return recvChatMessage();
+        case GameMsg::FarmState:
+          return recvFarmState();    
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -171,6 +175,10 @@ bool ClientProtocol::sendAppearance(const CharacterAppearance& appearance) {
            baseProtocol.send_u16(appearance.pants) && baseProtocol.send_u16(appearance.hat);
 }
 
+void ClientProtocol::sendClick(uint16_t x, uint16_t y) {
+    ensure(sendGameOp(GameOp::Click) && baseProtocol.send_u16(x) && baseProtocol.send_u16(y));
+}
+
 LobbyStatus ClientProtocol::recvStatus() {
     return static_cast<LobbyStatus>(ensure(baseProtocol.recv_u8()));
 }
@@ -188,12 +196,15 @@ CharacterAppearance ClientProtocol::recvAppearance() {
 LocationData ClientProtocol::recvLocationData() {
     std::string worldId = ensure(baseProtocol.recv_string());
     uint16_t tickRate = ensure(baseProtocol.recv_u16());
-    return LocationData{std::move(worldId), tickRate, ensure(baseProtocol.recv_u8())};
+    uint8_t maxPlayers = ensure(baseProtocol.recv_u8());
+    return LocationData{std::move(worldId), tickRate, maxPlayers, ensure(baseProtocol.recv_u16())};
 }
 
 Snapshot ClientProtocol::recvSnapshot() {
     Snapshot snapshot{};
     snapshot.tick = ensure(baseProtocol.recv_u32());
+    snapshot.day = ensure(baseProtocol.recv_u16());
+    snapshot.minuteOfDay = ensure(baseProtocol.recv_u16());
     uint16_t count = ensure(baseProtocol.recv_u16());
     for (uint16_t i = 0; i < count; ++i) {
         snapshot.players.push_back(recvPlayerState());
@@ -216,6 +227,7 @@ PlayerState ClientProtocol::recvPlayerState() {
     player.health = ensure(baseProtocol.recv_u16());
     player.energy = ensure(baseProtocol.recv_u16());
     player.gold = ensure(baseProtocol.recv_u32());
+    player.unconscious = ensure(baseProtocol.recv_u8()) != 0;
     return player;
 }
 
@@ -259,6 +271,32 @@ ChatMessage ClientProtocol::recvChatMessage() {
     return mensaje;
 }
 
+FarmState ClientProtocol::recvFarmState() {
+    FarmState farm{};
+    farm.areaId = ensure(baseProtocol.recv_string());
+    uint16_t count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < count; ++i) {
+        FarmTile tile{};
+        tile.x = ensure(baseProtocol.recv_u16());
+        tile.y = ensure(baseProtocol.recv_u16());
+        tile.soil = static_cast<SoilType>(ensure(baseProtocol.recv_u8()));
+        tile.crop = static_cast<CropType>(ensure(baseProtocol.recv_u8()));
+        tile.stage = ensure(baseProtocol.recv_u8());
+        tile.needsWater = ensure(baseProtocol.recv_u8()) != 0;
+        tile.readyToHarvest = ensure(baseProtocol.recv_u8()) != 0;
+        farm.tiles.push_back(tile);
+    }
+    uint16_t item_count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < item_count; ++i) {
+        GroundItem item{};
+        item.x = ensure(baseProtocol.recv_u16());
+        item.y = ensure(baseProtocol.recv_u16());
+        item.item = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
+        farm.items.push_back(item);
+    }
+    return farm;
+}
+
 InventoryState ClientProtocol::recvInventoryState() {
     InventoryState inventory{};
     inventory.selectedSlot = ensure(baseProtocol.recv_u8());
@@ -267,6 +305,7 @@ InventoryState ClientProtocol::recvInventoryState() {
         InventorySlot slot{};
         slot.item = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
         slot.quantity = ensure(baseProtocol.recv_u8());
+        slot.quality = static_cast<ItemQuality>(ensure(baseProtocol.recv_u8()));
         inventory.slots.push_back(slot);
     }
     return inventory;

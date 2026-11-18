@@ -1,5 +1,7 @@
 #include "server/game/world/world.h"
 
+#include <algorithm>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
@@ -51,7 +53,32 @@ Player* World::find_player(uint32_t player_id) {
     return player == players.end() ? nullptr : player->second.get();
 }
 
-const std::vector<std::unique_ptr<Animal>>& World::farm_animals() { return farm->get_animals(); }
+bool World::reaches(const Player& player, const Position& cell) const {
+    const Position& here = player.get_position();
+    return &player.get_location() == farm.get() && std::abs(cell.x - here.x) <= 1 &&
+           std::abs(cell.y - here.y) <= 1;
+}
+
+bool World::dig(const Player& player, const Position& cell) {
+    return reaches(player, cell) && farm->dig(cell);
+}
+
+bool World::plant(const Player& player, const Position& cell, CropType crop) {
+    return reaches(player, cell) && farm->plant(cell, crop);
+}
+
+bool World::water(const Player& player, const Position& cell) {
+    return reaches(player, cell) && farm->water(cell);
+}
+
+const Outcome& World::harvest(Player& player) {
+    if (&player.get_location() != farm.get()) {
+        return Outcome::not_here();
+    }
+    return farm->harvest(player.facing_cell(), player);
+}
+
+const Outcome& World::milk(Player& player) { return milk_nearest_cow(farm->get_animals(), player); }
 
 Movement& World::get_movement() { return movement; }
 
@@ -67,6 +94,22 @@ const std::vector<std::unique_ptr<Animal>>& World::get_animals() const {
 
 const Cabin& World::get_cabin() const { return farm->get_cabin(); }
 
+const GameClock& World::get_clock() const { return clock; }
+
+void World::start_new_day() {
+    farm->start_new_day();
+    for (const auto& [player_id, player]: players) {
+        bool slept = !player->is_unconscious() && farm->get_cabin().is_in_bed(*player);
+        player->wake_up(farm->bed_spawn(player_id), slept);
+    }
+}
+
+bool World::everyone_unconscious() const {
+    return !players.empty() && std::all_of(players.begin(), players.end(), [](const auto& entry) {
+        return entry.second->is_unconscious();
+    });
+}
+
 void World::update(float dt) {
     farm->update(dt);
     town->update(dt);
@@ -77,4 +120,13 @@ void World::update(float dt) {
     dungeon.set_visitors(characters);
     dungeon.update(dt);
     movement.travel_through_portals();
+    bool day_over = clock.update(dt);
+    if (!day_over && everyone_unconscious()) {
+        clock.end_day();
+        day_over = true;
+    }
+    if (day_over) {
+        start_new_day();
+    }
+    farm->update_time(clock.get_minute_of_day());
 }

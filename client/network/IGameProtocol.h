@@ -8,7 +8,7 @@
 
 // Lo que manda el servidor durante la partida.
 using ServerGameMessage =
-        std::variant<LocationData, Snapshot, GameEnded, PlayerInfo, InventoryState, ChatMessage>;
+        std::variant<LocationData, Snapshot, GameEnded, PlayerInfo, InventoryState, ChatMessage, FarmState>;
 
 // Lo que la partida necesita del servidor: un send por cada accion del jugador y el recv de lo que
 // manda el servidor. Los send tiran LobbyConnectionError si se corto la conexion.
@@ -30,4 +30,5 @@ public:
     virtual void sendChat(const std::string& texto) = 0;
     virtual void sendInteract() = 0;
     virtual void sendTyping(bool escribiendo) = 0;
+    virtual void sendClick(uint16_t x, uint16_t y) = 0;
 };

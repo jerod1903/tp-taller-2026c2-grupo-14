@@ -2,6 +2,7 @@
 
 #include <string>
 #include <variant>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -97,4 +98,22 @@ TEST(ChatCommandTest, UnknownPlayerSendsNothing) {
 
     EXPECT_TRUE(context.broadcasted.empty());
     EXPECT_TRUE(context.sent.empty());
+}
+
+TEST(ChatCommandTest, ASlashGoesToTheMerchantAndNotToEveryone) {
+    FakeGameContext context;
+    say(context, "/comprar vaca 2");
+    EXPECT_TRUE(context.broadcasted.empty());
+    EXPECT_EQ(context.commands, std::vector<std::string>{"/comprar vaca 2"});
+    ASSERT_EQ(context.sent.size(), 1u);
+    EXPECT_EQ(context.sent[0].first, FakeGameContext::PLAYER_ID);
+    EXPECT_EQ(chat_of(context.sent[0].second), context.trade_reply.message);
+}
+
+TEST(ChatCommandTest, IfTheTradeChangedTheInventoryItIsSentToo) {
+    FakeGameContext context;
+    context.trade_reply.inventory_changed = true;
+    say(context, "/vender leche");
+    ASSERT_EQ(context.sent.size(), 2u);
+    EXPECT_TRUE(std::holds_alternative<InventoryState>(context.sent[1].second));
 }

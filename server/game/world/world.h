@@ -7,19 +7,23 @@
 #include <string>
 #include <vector>
 
+#include "server/config/server_config.h"
 #include "server/game/characters/player.h"
 #include "server/game/commands/player_characters.h"
+#include "server/game/commands/player_farming.h"
 #include "server/game/world/direction.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/farm.h"
 #include "server/game/world/movement.h"
 #include "server/game/world/town/town.h"
+#include "server/game/world/game_clock.h"
 
 // El mapa completo de una partida. Es dueño de las tres zonas y de los personajes de los
 // jugadores, que se piden por id. Los portales entre zonas (pueblo <-> granja, pueblo <-> mazmorra)
 // los enlaza quien arma el mundo a partir del mapa, porque las posiciones de origen y llegada salen
-// de ahí. Atiende a los comandos que usan los personajes (PlayerCharacters).
-class World: public PlayerCharacters {
+// de ahí. Atiende a los comandos que usan los personajes (PlayerCharacters) y la granja
+// (PlayerFarming).
+class World: public PlayerCharacters, public PlayerFarming {
 public:
     World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon);
 
@@ -40,7 +44,11 @@ public:
     // Si no está, no hace nada.
     void remove_player(uint32_t player_id);
     Player* find_player(uint32_t player_id) override;
-    const std::vector<std::unique_ptr<Animal>>& farm_animals() override;
+    bool dig(const Player& player, const Position& cell) override;
+    bool plant(const Player& player, const Position& cell, CropType crop) override;
+    bool water(const Player& player, const Position& cell) override;
+    const Outcome& harvest(Player& player) override;
+    const Outcome& milk(Player& player) override;
     // Atiende a MoveCommand.
     Movement& get_movement();
 
@@ -50,8 +58,10 @@ public:
     const std::vector<std::unique_ptr<Animal>>& get_animals() const;
     // Con las camas que ya tienen dueño.
     const Cabin& get_cabin() const;
+    const GameClock& get_clock() const;
 
-    // Actualiza las tres zonas y después hace viajar a los que pisaron un portal.
+    // Actualiza las tres zonas, hace viajar a los que pisaron un portal y termina el día a las
+    // 2:00 o cuando caen todos inconscientes.
     void update(float dt);
 
 private:
@@ -60,6 +70,14 @@ private:
     Dungeon dungeon;
     std::map<uint32_t, std::unique_ptr<Player>> players;
     Movement movement;
+    GameClock clock{server_config().game.day_speed};
+
+    // Si está en la granja y `cell` está pegada a la suya (también en diagonal).
+    bool reaches(const Player& player, const Position& cell) const;
+    // Despierta a todos en su cama: enteros los que durmieron en ella, a medias los demás.
+    void start_new_day();
+    // El día termina antes si cayeron todos.
+    bool everyone_unconscious() const;
 };
 
 #endif  // WORLD_H

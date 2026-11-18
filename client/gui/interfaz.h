@@ -20,6 +20,7 @@
 #include "client/gui/chat/panel_chat.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/mapa/mapa.h"
+#include "client/gui/hud/hud.h"
 #include "client/gui/sprites/capa.h"
 #include "client/gui/sprites/constructor_capas.h"
 #include "client/gui/sprites/entidad_grafica.h"
@@ -43,6 +44,7 @@ private:
     void ajustar_lienzo(int ancho_area, int alto_area);
     void leer_chat(const SDL_Event& evento, Entrada& entrada);
     void leer_pausa(const SDL_Event& evento, Entrada& entrada);
+    ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio);
@@ -65,6 +67,7 @@ private:
     std::map<EntityType, Aspecto> aspectos;
     CalculadorCamara calculador_camara;
     std::optional<SDL2pp::Texture> lienzo;
+    std::optional<SDL2pp::Rect> camara;
     int escala = 1;
     bool pantalla_completa = false;
     std::optional<Mapa> mapa;
@@ -76,6 +79,7 @@ private:
     Fuente fuente_titulo;
     PanelChat panel_chat;
     MenuPausa menu_pausa;
+    Hud hud;
     std::optional<std::string> borrador;
     Globo globo;
     TransicionArea transicion;

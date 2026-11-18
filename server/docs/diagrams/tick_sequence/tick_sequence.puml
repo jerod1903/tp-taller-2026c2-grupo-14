@@ -12,10 +12,19 @@ loop tick_rate veces por segundo (server_config.toml)
   G -> W : update(dt)
   W -> L : update(dt): cada Creature hace advance()
   W -> M : travel_through_portals()\nsolo los pasajes (Step); las puertas van por EnterPortalCommand
+  alt son las 2:00 o están todos inconscientes
+    W -> L : start_new_day(): animales y cultivos cuentan un día
+    W -> W : cada Player::wake_up en su cama\nentero si durmió en ella, a medias si no
+  end
+  W -> L : Farm::update_time(minuto del día)\nabre y cierra las ventanas de riego
   G -> S : build(tick, world)
   S --> G : Snapshot
   G -> SS : broadcast(snapshot)
   SS -> O : try_push(snapshot)
+  opt la granja cambió (take_changes)
+    G -> S : farm_state(farm)
+    G -> SS : broadcast(FarmState)
+  end
   G -> G : sleep_until(próximo tick)\nsi va atrasado, no recupera ticks
 end
 @enduml

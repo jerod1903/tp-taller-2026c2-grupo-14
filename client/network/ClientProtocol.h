@@ -37,6 +37,7 @@ public:
     void sendChat(const std::string& texto) override;
     void sendInteract() override;
     void sendTyping(bool escribiendo) override;
+    void sendClick(uint16_t x, uint16_t y) override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;
@@ -57,6 +58,7 @@ private:
     PlayerInfo recvPlayerInfo();
     InventoryState recvInventoryState();
     ChatMessage recvChatMessage();
+    FarmState recvFarmState();
 
     BaseProtocol baseProtocol;
 };

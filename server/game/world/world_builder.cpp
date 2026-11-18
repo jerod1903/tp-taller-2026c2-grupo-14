@@ -165,8 +165,16 @@ std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::Map
                                  const std::set<std::string>& passages,
                                  std::unique_ptr<Cabin> cabin_interior) {
     const maps::MapElement& cabin = element_of_type(map, area, maps::ElementType::Cabin);
+    std::set<Position> tilled;
+    for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
+        for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
+            if (area.tiles[y][x] == maps::TileType::TilledSoil) {
+                tilled.insert(Position{x, y});
+            }
+        }
+    }
     return std::make_unique<Farm>(area.id, build_grid(map, area, passages), building_door(cabin),
-                                  std::move(cabin_interior));
+                                  std::move(cabin_interior), tilled);
 }
 
 std::unique_ptr<Town> build_town(const maps::MapDefinition& map, const maps::MapArea& area,
@@ -236,6 +244,34 @@ const maps::MapDefinition& community_center_interior() {
     return interior;
 }
 
+const std::map<maps::ElementType, std::string> MERCHANT_NAMES = {
+        {maps::ElementType::MerchantMarnie, "Marnie"},
+        {maps::ElementType::MerchantClint, "Clint"},
+        {maps::ElementType::MerchantPierre, "Pierre"},
+        {maps::ElementType::MerchantRobin, "Robin"}};
+
+// Lo que vende y compra cada uno. Clint y Robin todavía no tienen nada: faltan los minerales y
+// los muebles. Pierre todavía no vende semillas ni compra cosechas.
+Merchant build_merchant(maps::ElementType type, const Position& pos) {
+    const ServerConfig::Species& cow = server_config().animals.cow;
+    const ServerConfig::Species& chicken = server_config().animals.chicken;
+    const ServerConfig::Market& market = server_config().market;
+    const std::string& name = MERCHANT_NAMES.at(type);
+    if (type == maps::ElementType::MerchantMarnie) {
+        return Merchant(name, pos,
+                        {{"vaca", AnimalKind::Cow, cow.price},
+                         {"gallina", AnimalKind::Chicken, chicken.price}},
+                        {{"vaca", AnimalKind::Cow, market.cow_buyback},
+                         {"gallina", AnimalKind::Chicken, market.chicken_buyback}});
+    }
+    if (type == maps::ElementType::MerchantPierre) {
+        return Merchant(name, pos, {},
+                        {{"leche", ItemType::Milk, cow.product_price},
+                         {"huevo", ItemType::Egg, chicken.product_price}});
+    }
+    return Merchant(name, pos, {}, {});
+}
+
 void reject_interior_id(const maps::MapDefinition& map, const std::string& interior_id) {
     for (const maps::MapArea& area: map.areas) {
         if (area.id == interior_id) {
@@ -283,4 +319,16 @@ std::unique_ptr<World> build_world(const maps::MapDefinition& map) {
         add_animal(AnimalKind::Chicken);
     }
     return std::make_unique<World>(std::move(farm), std::move(town), std::move(dungeon));
+}
+
+Market build_market(const maps::MapDefinition& map, World& world) {
+    std::vector<Merchant> merchants;
+    for (const maps::MapElement& element: market_interior().elements) {
+        if (element.type && MERCHANT_NAMES.count(*element.type) > 0) {
+            merchants.push_back(build_merchant(*element.type, Position{element.x, element.y}));
+        }
+    }
+    const maps::MapArea& farm_area = area_of_type(map, maps::AreaType::Farm);
+    return Market(world.get_town().get_market(), std::move(merchants), world.get_farm(),
+                  spawn_of(map, farm_area, world.get_farm()));
 }

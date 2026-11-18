@@ -36,6 +36,7 @@ Interfaz::Interfaz():
         fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
         panel_chat(fuente),
         menu_pausa(renderer, fuente, fuente_titulo),
+        hud(renderer),
         globo(renderer),
         transicion(DURACION_TRANSICION) {}
 
@@ -68,6 +69,11 @@ Entrada Interfaz::leer_entrada() {
         }
         if (borrador) {
             leer_chat(evento, entrada);
+            continue;
+        }
+        if (evento.type == SDL_MOUSEBUTTONDOWN && evento.button.button == SDL_BUTTON_LEFT &&
+            camara) {
+            entrada.click = casilla_clickeada(evento.button.x, evento.button.y);
             continue;
         }
         if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
@@ -115,6 +121,13 @@ void Interfaz::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
     if (menu_pausa.leer(evento, renderer.GetOutputSize()) == OpcionPausa::Salir) {
         entrada.salir = true;
     }
+}
+
+ClickRequest Interfaz::casilla_clickeada(int x, int y) const {
+    int x_mundo = x / escala + camara->x;
+    int y_mundo = y / escala + camara->y;
+    return ClickRequest{static_cast<uint16_t>(x_mundo / TAMANO_TILE),
+                        static_cast<uint16_t>(y_mundo / TAMANO_TILE)};
 }
 
 void Interfaz::leer_chat(const SDL_Event& evento, Entrada& entrada) {
@@ -283,6 +296,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
+    hud.dibujar(renderer, estado, escala);
     if (menu_pausa.abierto()) {
         menu_pausa.dibujar(renderer, renderer.GetOutputSize());
     }
@@ -319,6 +333,7 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
     SDL2pp::Rect camara = calculador_camara.calcular(propio.centro(), ancho_mapa, alto_mapa);
+    this->camara = camara;
     std::vector<Sprite> sprites;
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);

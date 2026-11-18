@@ -38,6 +38,7 @@ public:
     std::optional<SelectSlotRequest> recv_select_slot();
     std::optional<ChatRequest> recv_chat();
     std::optional<TypingRequest> recv_typing();
+    std::optional<ClickRequest> recv_click();
 
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);
@@ -46,6 +47,7 @@ public:
     bool send_inventory_state(const InventoryState& inventory);
     bool send_chat_message(const ChatMessage& message);
     bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
+    bool send_farm_state(const FarmState& farm);
 
     void shutdown();
 

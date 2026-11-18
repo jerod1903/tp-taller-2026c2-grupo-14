@@ -156,11 +156,13 @@ std::optional<TypingRequest> ServerProtocol::recv_typing() {
 
 bool ServerProtocol::send_location_data(const LocationData& location) {
     return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId) &&
-           baseProtocol.send_u16(location.tickRate) && baseProtocol.send_u8(location.maxPlayers);
+           baseProtocol.send_u16(location.tickRate) && baseProtocol.send_u8(location.maxPlayers) &&
+           baseProtocol.send_u16(location.maxEnergy);
 }
 
 bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
     return send_game_msg(GameMsg::Snapshot) && baseProtocol.send_u32(snapshot.tick) &&
+           baseProtocol.send_u16(snapshot.day) && baseProtocol.send_u16(snapshot.minuteOfDay) &&
            send_count(snapshot.players.size()) &&
            std::all_of(snapshot.players.begin(), snapshot.players.end(),
                        [this](const PlayerState& player) { return send_player_state(player); }) &&
@@ -175,7 +177,8 @@ bool ServerProtocol::send_player_state(const PlayerState& player) {
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirX)) &&
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirY)) &&
            baseProtocol.send_u16(player.health) && baseProtocol.send_u16(player.energy) &&
-           baseProtocol.send_u32(player.gold);
+           baseProtocol.send_u32(player.gold) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(player.unconscious));
 }
 
 bool ServerProtocol::send_entity_state(const EntityState& entity) {
@@ -199,7 +202,8 @@ bool ServerProtocol::send_inventory_state(const InventoryState& inventory) {
            std::all_of(inventory.slots.begin(), inventory.slots.end(),
                        [this](const InventorySlot& slot) {
                            return baseProtocol.send_u8(static_cast<uint8_t>(slot.item)) &&
-                                  baseProtocol.send_u8(slot.quantity);
+                                  baseProtocol.send_u8(slot.quantity) &&
+                                  baseProtocol.send_u8(static_cast<uint8_t>(slot.quality));
                        });
 }
 
@@ -208,6 +212,24 @@ bool ServerProtocol::send_chat_message(const ChatMessage& message) {
     return send_game_msg(GameMsg::ChatMessage) &&
            baseProtocol.send_u8(static_cast<uint8_t>(message.kind)) &&
            baseProtocol.send_string(message.from) && baseProtocol.send_string(message.text);
+}
+
+bool ServerProtocol::send_farm_state(const FarmState& farm) {
+    return send_game_msg(GameMsg::FarmState) && baseProtocol.send_string(farm.areaId) &&
+           send_count(farm.tiles.size()) &&
+           std::all_of(farm.tiles.begin(), farm.tiles.end(), [this](const FarmTile& tile) {
+               return baseProtocol.send_u16(tile.x) && baseProtocol.send_u16(tile.y) &&
+                    baseProtocol.send_u8(static_cast<uint8_t>(tile.soil)) &&
+                    baseProtocol.send_u8(static_cast<uint8_t>(tile.crop)) &&
+                    baseProtocol.send_u8(tile.stage) &&
+                    baseProtocol.send_u8(tile.needsWater ? 1 : 0) &&
+                    baseProtocol.send_u8(tile.readyToHarvest ? 1 : 0);
+           }) &&
+           send_count(farm.items.size()) &&
+           std::all_of(farm.items.begin(), farm.items.end(), [this](const GroundItem& item) {
+               return baseProtocol.send_u16(item.x) && baseProtocol.send_u16(item.y) &&
+                      baseProtocol.send_u8(static_cast<uint8_t>(item.item));
+           });
 }
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
@@ -238,6 +260,16 @@ std::optional<CharacterAppearance> ServerProtocol::recv_appearance() {
     if (!hat)
         return std::nullopt;
     return CharacterAppearance{*hair_style, *hair_color, *shirt, *pants, *hat};
+}
+
+std::optional<ClickRequest> ServerProtocol::recv_click() {
+    std::optional<uint16_t> x = baseProtocol.recv_u16();
+    if (!x)
+        return std::nullopt;
+    std::optional<uint16_t> y = baseProtocol.recv_u16();
+    if (!y)
+        return std::nullopt;
+    return ClickRequest{*x, *y};
 }
 
 void ServerProtocol::shutdown() { baseProtocol.shutdown(); }

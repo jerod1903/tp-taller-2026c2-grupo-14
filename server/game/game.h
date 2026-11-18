@@ -9,6 +9,7 @@
 #include "common/lib/thread.h"
 #include "common/map/MapDefinition.h"
 #include "server/game/commands/game_context.h"
+#include "server/game/commerce/market.h"
 #include "server/game/game_event.h"
 #include "server/game/sessions.h"
 #include "server/game/world/world.h"
@@ -25,6 +26,10 @@ public:
     PlayerMovement& movement() override;
     // El World, dueño de los personajes y los animales.
     PlayerCharacters& characters() override;
+    // Los comerciantes del mercado.
+    PlayerCommerce& commerce() override;
+    // El World, dueño de la granja.
+    PlayerFarming& farming() override;
 
     void start() override;
     void run() override;
@@ -36,6 +41,7 @@ private:
     bool started = false;
     Inbox inbox;
     std::unique_ptr<World> world;
+    Market market;  // después de world: usa su granja y su mercado
     Sessions player_sessions;
     uint32_t tick = 0;
 

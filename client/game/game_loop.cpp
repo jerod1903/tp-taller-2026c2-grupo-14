@@ -68,6 +68,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.escribiendo) {
         enviador.escribiendo(*entrada.escribiendo);
     }
+    if (entrada.click) {
+        enviador.clickear(*entrada.click);
+    }
 }
 
 void GameLoop::procesar_mensajes() {
@@ -77,6 +80,7 @@ void GameLoop::procesar_mensajes() {
         if (const auto* ubicacion = std::get_if<LocationData>(&*mensaje)) {
             estado.mundo = ubicacion->worldId;
             estado.max_jugadores = ubicacion->maxPlayers;
+            estado.energia_maxima = ubicacion->maxEnergy;
             if (ubicacion->tickRate > 0) {
                 estado.duracion_tick = std::chrono::duration<float>(1.0f / ubicacion->tickRate);
             }
@@ -84,6 +88,8 @@ void GameLoop::procesar_mensajes() {
             estado.jugadores = snapshot->players;
             estado.entidades = snapshot->entities;
             estado.tick = snapshot->tick;
+            estado.dia = snapshot->day;
+            estado.minuto_del_dia = snapshot->minuteOfDay;
         } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
             estado.info_jugadores.insert_or_assign(info->playerId, *info);
         } else if (const auto* inv = std::get_if<InventoryState>(&*mensaje)) {
@@ -93,6 +99,8 @@ void GameLoop::procesar_mensajes() {
             if (estado.chat.size() > MAX_MENSAJES_GUARDADOS) {
                 estado.chat.erase(estado.chat.begin());
             }
+        } else if (const auto* granja = std::get_if<FarmState>(&*mensaje)) {
+            estado.granja = *granja;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;

@@ -38,6 +38,9 @@ bool Sender::send(const GameMessage& message) {
     if (const ChatMessage* chat = std::get_if<ChatMessage>(&message)) {
         return protocol.send_chat_message(*chat);
     }
+    if (const FarmState* farm = std::get_if<FarmState>(&message)) {
+        return protocol.send_farm_state(*farm);
+    }
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 
