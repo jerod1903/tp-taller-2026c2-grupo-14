@@ -18,6 +18,7 @@
 #include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
+#include "client/gui/menu-pausa/menu_pausa.h"
 
 inline constexpr int CANTIDAD_ARGUMENTOS = 4;
 inline const char* const MUNDO_PRUEBA = "valle";
@@ -119,5 +120,20 @@ inline constexpr uint32_t MASCARA_COLOR = 0x00FFFFFF;
 inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
 inline const char* const CARACTERES_WORLD_ID =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
+
+inline constexpr int TAMANO_FUENTE_TITULO = 32;
+inline const char* const TITULO_PAUSA = "Pausa";
+inline const std::vector<BotonPausa> BOTONES_PAUSA = {
+        {OpcionPausa::Reanudar, "Reanudar", true},
+        {OpcionPausa::Invitar, "Invitar", false},
+        {OpcionPausa::Salir, "Salir", true}};
+inline constexpr int SEPARACION_BOTONES = 12;
+inline constexpr int SEPARACION_TITULO_PAUSA = 40;
+inline constexpr Uint8 BRILLO_SELECCIONADO = 255;
+inline constexpr Uint8 BRILLO_NO_SELECCIONADO = 170;
+inline constexpr SDL_Color COLOR_FONDO_PAUSA = {30, 18, 10, 190};
+inline constexpr SDL_Color COLOR_TITULO_PAUSA = {255, 235, 173, 255};
+inline constexpr SDL_Color COLOR_TEXTO_BOTON = {255, 243, 205, 255};
+inline constexpr SDL_Color COLOR_TEXTO_DESHABILITADO = {90, 58, 34, 255};
 
 #endif

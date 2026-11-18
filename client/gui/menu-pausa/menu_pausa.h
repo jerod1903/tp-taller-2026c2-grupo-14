@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <string>
 
 #include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
@@ -10,6 +11,12 @@
 #include "client/gui/chat/fuente.h"
 
 enum class OpcionPausa { Reanudar, Invitar, Salir };
+
+struct BotonPausa {
+    OpcionPausa opcion;
+    const char* texto;
+    bool habilitado;
+};
 
 class MenuPausa {
 public:
@@ -23,10 +30,12 @@ private:
     SDL2pp::Rect boton(std::size_t indice, const SDL2pp::Point& tamano_ventana) const;
     std::optional<std::size_t> boton_en(const SDL2pp::Point& punto,
                                         const SDL2pp::Point& tamano_ventana) const;
+    void mover(bool hacia_abajo);
     std::optional<OpcionPausa> elegir();
     void dibujar_texto(SDL2pp::Renderer& renderer, Fuente& fuente, const std::string& texto,
                        const SDL_Color& color, const SDL2pp::Point& centro);
     SDL2pp::Texture textura_boton;
+    SDL2pp::Texture textura_deshabilitado;
     Fuente& fuente_botones;
     Fuente& fuente_titulo;
     bool visible = false;
