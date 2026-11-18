@@ -10,7 +10,7 @@ class Seed: public Tool {
 public:
     explicit Seed(CropType crop);
 
-    bool use(Player& player, GameContext& context) const override;
+    bool use(Player& player, GameContext& context, const Position& cell) const override;
     int energy_cost() const override;
 
 private:

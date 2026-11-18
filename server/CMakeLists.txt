@@ -9,7 +9,7 @@ target_sources(taller_server
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
     game/commands/typing_command.cpp
-    game/commands/use_tool_command.cpp
+    game/commands/click_command.cpp
     game/tools/tool.cpp
     game/tools/shovel.cpp
     game/tools/seed.cpp
@@ -22,6 +22,8 @@ target_sources(taller_server
     game/interactions/milk.cpp
     game/interactions/harvest.cpp
     game/interactions/pick_up.cpp
+    game/clicks/click_action.cpp
+    game/clicks/use_tool.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/enter_portal_command.cpp
@@ -75,7 +77,7 @@ target_sources(taller_server
     game/commands/command_factory.h
     game/commands/interact_command.h
     game/commands/typing_command.h
-    game/commands/use_tool_command.h
+    game/commands/click_command.h
     game/tools/tool.h
     game/tools/shovel.h
     game/tools/seed.h
@@ -88,6 +90,8 @@ target_sources(taller_server
     game/interactions/milk.h
     game/interactions/harvest.h
     game/interactions/pick_up.h
+    game/clicks/click_action.h
+    game/clicks/use_tool.h
     game/commands/game_command.h
     game/commands/game_context.h
     game/commands/player_farming.h

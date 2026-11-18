@@ -12,7 +12,7 @@ package Mundo {
     + find_player(id): Player*
   }
   interface PlayerFarming {
-    + dig / plant / water(Player)
+    + dig / plant / water(Player, Position)
     + harvest / milk(Player): Outcome&
   }
   class GameClock {

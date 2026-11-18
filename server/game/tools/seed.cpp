@@ -6,8 +6,8 @@
 
 Seed::Seed(CropType crop): crop(crop) {}
 
-bool Seed::use(Player& player, GameContext& context) const {
-    if (!context.farming().plant(player, crop)) {
+bool Seed::use(Player& player, GameContext& context, const Position& cell) const {
+    if (!context.farming().plant(player, cell, crop)) {
         return false;
     }
     player.remove_selected(1);

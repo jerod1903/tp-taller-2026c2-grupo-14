@@ -67,11 +67,11 @@ public:
         return found->second;
     }
 
-    bool dig(const Player&) override { return false; }
+    bool dig(const Player&, const Position&) override { return false; }
 
-    bool plant(const Player&, CropType) override { return false; }
+    bool plant(const Player&, const Position&, CropType) override { return false; }
 
-    bool water(const Player&) override { return false; }
+    bool water(const Player&, const Position&) override { return false; }
 
     const Outcome& harvest(Player&) override { return Outcome::not_here(); }
 

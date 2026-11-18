@@ -5,7 +5,7 @@
 
 #include "server/game/characters/player.h"
 
-// Los personajes de la partida: lo que usan Chat, Interact, SelectSlot, Typing y UseTool.
+// Los personajes de la partida: lo que usan Chat, Interact, SelectSlot, Typing y Click.
 class PlayerCharacters {
 public:
     // nullptr si el jugador no está en la partida.

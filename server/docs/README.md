@@ -48,8 +48,8 @@ Los comandos solo conocen `GameContext`, no `Game`. `GameContext` no tiene las a
 
 - `sessions()` → `PlayerSessions`: entrar, salir y mandarles mensajes a los conectados (`send_to`, `broadcast`, `find_player_by_name`). La implementa `Sessions`, que tiene los jugadores conectados: su outbox y su info.
 - `movement()` → `PlayerMovement` (caminar y cruzar puertas). La implementa `Movement`, el del `World`.
-- `characters()` → `PlayerCharacters`: solo los personajes por id (`find_player`). La implementa el `World`. La usan `ChatCommand`, `InteractCommand`, `UseToolCommand`, `SelectSlotCommand` y `TypingCommand`.
-- `farming()` → `PlayerFarming`: las acciones de la granja (`dig`, `plant`, `water`, `harvest`, `milk`). Reciben al jugador y el dueño de los datos resuelve todo: si está en la granja, qué celda tiene adelante, qué vaca está más cerca. La implementa el `World`. La usan las herramientas y las interacciones (ver [La granja](#la-granja)).
+- `characters()` → `PlayerCharacters`: solo los personajes por id (`find_player`). La implementa el `World`. La usan `ChatCommand`, `InteractCommand`, `ClickCommand`, `SelectSlotCommand` y `TypingCommand`.
+- `farming()` → `PlayerFarming`: las acciones de la granja (`dig`, `plant`, `water`, `harvest`, `milk`). Reciben al jugador y el dueño de los datos resuelve todo: si está en la granja, si la celda le queda al alcance, qué vaca está más cerca. La implementa el `World`. La usan las herramientas y las interacciones (ver [La granja](#la-granja)).
 
 `Game` queda con la inbox, el loop de ticks, el `World` y sus `Sessions`.
 
@@ -110,7 +110,7 @@ El día dura 1200 minutos de juego (de 6:00 a 2:00), y `GameClock` los reparte e
 
 - Cada acción cansa lo suyo: los costos están en `[energy]` de `server_config.toml`. Los gasta `Player::spend_energy`, que no baja de 0, así que la última acción se hace aunque no le alcance.
 - Con `tired_energy` (10%) o menos de su energía, el jugador camina a mitad de velocidad (`Player::speed`).
-- Sin energía o sin vida queda **inconsciente** (`is_unconscious`): no camina, y `UseToolCommand` e `InteractCommand` no hacen nada hasta el día siguiente.
+- Sin energía o sin vida queda **inconsciente** (`is_unconscious`): no camina, y `ClickCommand` e `InteractCommand` no hacen nada hasta el día siguiente.
 - El día termina a las 2:00, o antes si todos los conectados están inconscientes (`World::everyone_unconscious`, que adelanta el reloj con `GameClock::end_day`).
 - Al empezar el día, `World::start_new_day` despierta a todos en su cama (`Player::wake_up`). Los que estaban parados sobre su propia cama (`Cabin::is_in_bed`) y conscientes recuperan toda la vida y la energía. Los demás despiertan con `bad_night_recovery` (la mitad).
 
@@ -124,13 +124,14 @@ Fuente: [diagrams/farming/farming.puml](diagrams/farming/farming.puml)
 
 **Dos formas de actuar**, cada una con su mensaje del cliente:
 
-- **Herramientas**, con el click (`GameOp::UseTool`): depende de lo que tiene en el slot elegido. `tool_for(ItemType)` da la `Tool` de ese objeto, o ninguna. Cada una sabe qué hace (`use`) y cuánto cansa (`energy_cost`):
-  - `Shovel`: cava la celda de adelante. Pasto → `Dirt` → `Tilled`.
-  - `WateringCan`: riega el cultivo de adelante.
+- **Click** (`GameOp::Click`, con la celda clickeada): depende de lo que hay en esa celda. `click_actions()` prueba cada `ClickAction` en orden hasta que una aplica (`try_at` devuelve true), y cada una cobra su energía. Hoy solo está `UseTool`, que va última: el saludo del comerciante y el regalo a otro jugador van antes, para ganarle a la herramienta que tenga en la mano.
+- **Herramientas** (`UseTool`): depende de lo que tiene en el slot elegido. `tool_for(ItemType)` da la `Tool` de ese objeto, o ninguna. Cada una sabe qué hace (`use`) y cuánto cansa (`energy_cost`). Solo actúan si el jugador está en la granja y la celda está pegada a la suya, también en diagonal (`World::reaches`); si no, no pasa nada y no cansa.
+  - `Shovel`: cava la celda. Pasto → `Dirt` → `Tilled`.
+  - `WateringCan`: riega su cultivo.
   - `Seed`: planta en tierra `Tilled` vacía y gasta una semilla. Hay una por cada tipo de semilla.
-- **Interacciones**, con la E (`GameOp::Interact`): depende de lo que hay cerca. `interactions()` las prueba en orden (`Milk`, `Harvest`, `PickUp`) hasta que una aplica. Cada una devuelve un `Outcome` (`not_here`, `inventory_full`, `done`), y es el `Outcome` el que cobra la energía y le avisa al jugador. Por eso `InteractCommand` no tiene ifs.
+- **Interacciones**, con la E (`GameOp::Interact`): depende de lo que hay cerca, y actúan sobre la celda de adelante o lo más cercano. `interactions()` las prueba en orden (`Milk`, `Harvest`, `PickUp`) hasta que una aplica. Cada una devuelve un `Outcome` (`not_here`, `inventory_full`, `done`), y es el `Outcome` el que cobra la energía y le avisa al jugador. Por eso `InteractCommand` no tiene ifs.
 
-Las dos son objetos sin estado. Para sumar una herramienta o una interacción nueva, se agrega su clase y se registra en `tool_for` o en `interactions()`. Si necesita tocar la granja, su acción va en `PlayerFarming`.
+Todas son objetos sin estado. Para sumar una nueva, se agrega su clase y se registra en `click_actions()`, `tool_for` o `interactions()`. Si necesita tocar la granja, su acción va en `PlayerFarming`.
 
 **Cultivos** (`Crop`, en cada `Plot` de la `Farm`). Los datos de cada tipo están en `[crops.<tipo>]`:
 

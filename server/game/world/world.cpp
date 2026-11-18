@@ -1,6 +1,7 @@
 #include "server/game/world/world.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
@@ -52,16 +53,22 @@ Player* World::find_player(uint32_t player_id) {
     return player == players.end() ? nullptr : player->second.get();
 }
 
-bool World::dig(const Player& player) {
-    return &player.get_location() == farm.get() && farm->dig(player.facing_cell());
+bool World::reaches(const Player& player, const Position& cell) const {
+    const Position& here = player.get_position();
+    return &player.get_location() == farm.get() && std::abs(cell.x - here.x) <= 1 &&
+           std::abs(cell.y - here.y) <= 1;
 }
 
-bool World::plant(const Player& player, CropType crop) {
-    return &player.get_location() == farm.get() && farm->plant(player.facing_cell(), crop);
+bool World::dig(const Player& player, const Position& cell) {
+    return reaches(player, cell) && farm->dig(cell);
 }
 
-bool World::water(const Player& player) {
-    return &player.get_location() == farm.get() && farm->water(player.facing_cell());
+bool World::plant(const Player& player, const Position& cell, CropType crop) {
+    return reaches(player, cell) && farm->plant(cell, crop);
+}
+
+bool World::water(const Player& player, const Position& cell) {
+    return reaches(player, cell) && farm->water(cell);
 }
 
 const Outcome& World::harvest(Player& player) {

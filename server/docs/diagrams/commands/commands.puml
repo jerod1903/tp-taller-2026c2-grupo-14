@@ -20,9 +20,9 @@ interface PlayerCharacters {
   + find_player(player_id): Player*
 }
 interface PlayerFarming {
-  + dig(Player): bool
-  + plant(Player, CropType): bool
-  + water(Player): bool
+  + dig(Player, Position): bool
+  + plant(Player, Position, CropType): bool
+  + water(Player, Position): bool
   + harvest(Player): Outcome&
   + milk(Player): Outcome&
 }
@@ -49,7 +49,9 @@ class LeaveCommand
 class EnterPortalCommand
 class ChatCommand
 class InteractCommand
-class UseToolCommand
+class ClickCommand {
+  - cell: Position
+}
 class SelectSlotCommand
 class TypingCommand
 class CommandFactory {
@@ -72,14 +74,14 @@ ChatCommand ..> PlayerCharacters : usa
 InteractCommand ..> PlayerSessions : usa
 InteractCommand ..> PlayerCharacters : usa
 InteractCommand ..> PlayerFarming : por las Interaction
-UseToolCommand ..> PlayerCharacters : usa
-UseToolCommand ..> PlayerFarming : por las Tool
+ClickCommand ..> PlayerCharacters : usa
+ClickCommand ..> PlayerFarming : por las ClickAction
 SelectSlotCommand ..> PlayerSessions : usa
 SelectSlotCommand ..> PlayerCharacters : usa
 TypingCommand ..> PlayerCharacters : usa
 GameCommand <|-- ChatCommand
 GameCommand <|-- InteractCommand
-GameCommand <|-- UseToolCommand
+GameCommand <|-- ClickCommand
 GameCommand <|-- SelectSlotCommand
 GameCommand <|-- TypingCommand
 GameContext ..> PlayerSessions

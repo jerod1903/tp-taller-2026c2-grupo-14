@@ -4,19 +4,27 @@ hide empty members
 skinparam classAttributeIconSize 0
 
 interface PlayerFarming {
-  + dig(Player): bool
-  + plant(Player, CropType): bool
-  + water(Player): bool
+  + dig(Player, Position): bool
+  + plant(Player, Position, CropType): bool
+  + water(Player, Position): bool
   + harvest(Player): Outcome&
   + milk(Player): Outcome&
 }
 
-package "Click: herramientas" {
-  class UseToolCommand {
+package "Click: según la celda" {
+  class ClickCommand {
+    - cell: Position
     + execute(GameContext&)
   }
+  abstract class ClickAction {
+    + {abstract} try_at(Player, GameContext, Position): bool
+  }
+  class "click_actions()" as click_actions << (F,#AAAAAA) >> {
+    UseTool
+  }
+  class UseTool
   abstract class Tool {
-    + {abstract} use(Player, GameContext): bool
+    + {abstract} use(Player, GameContext, Position): bool
     + {abstract} energy_cost(): int
   }
   class Shovel
@@ -69,7 +77,10 @@ package "Chat: cheats" {
 class World
 class Location
 
-UseToolCommand ..> tool_for : el ítem elegido
+ClickCommand ..> click_actions : prueba en orden
+click_actions o-- ClickAction
+ClickAction <|-- UseTool
+UseTool ..> tool_for : el ítem elegido
 tool_for ..> Tool
 Tool <|-- Shovel
 Tool <|-- WateringCan

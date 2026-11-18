@@ -44,9 +44,9 @@ public:
     // Si no está, no hace nada.
     void remove_player(uint32_t player_id);
     Player* find_player(uint32_t player_id) override;
-    bool dig(const Player& player) override;
-    bool plant(const Player& player, CropType crop) override;
-    bool water(const Player& player) override;
+    bool dig(const Player& player, const Position& cell) override;
+    bool plant(const Player& player, const Position& cell, CropType crop) override;
+    bool water(const Player& player, const Position& cell) override;
     const Outcome& harvest(Player& player) override;
     const Outcome& milk(Player& player) override;
     // Atiende a MoveCommand.
@@ -72,6 +72,8 @@ private:
     Movement movement;
     GameClock clock{server_config().game.day_speed};
 
+    // Si está en la granja y `cell` está pegada a la suya (también en diagonal).
+    bool reaches(const Player& player, const Position& cell) const;
     // Despierta a todos en su cama: enteros los que durmieron en ella, a medias los demás.
     void start_new_day();
     // El día termina antes si cayeron todos.

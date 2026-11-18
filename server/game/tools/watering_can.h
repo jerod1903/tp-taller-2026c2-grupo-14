@@ -6,7 +6,7 @@
 // Riega el cultivo de la celda de adelante, si está en la granja y lo necesita.
 class WateringCan: public Tool {
 public:
-    bool use(Player& player, GameContext& context) const override;
+    bool use(Player& player, GameContext& context, const Position& cell) const override;
     int energy_cost() const override;
 };
 
