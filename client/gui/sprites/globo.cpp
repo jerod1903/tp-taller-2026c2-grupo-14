@@ -20,13 +20,19 @@ void Globo::dibujar(SDL2pp::Renderer& renderer, Emote emote, const SDL2pp::Point
         renderer.Copy(puntos, SDL2pp::NullOpt,
                       SDL2pp::Rect(punta.x - tamano.x / 2, punta.y - tamano.y, tamano.x, tamano.y));
     } else if (emote == Emote::CowMilkReady) {
-        SDL2pp::Point tamano = leche.GetSize();
-        SDL2pp::Rect contenido(punta.x - tamano.x / 2,
-                               punta.y - ALTO_PALITO - RELLENO_GLOBO - tamano.y, tamano.x,
-                               tamano.y);
-        dibujar_ventanita(renderer, contenido);
-        renderer.Copy(leche, SDL2pp::NullOpt, contenido);
+        dibujar_icono(renderer, leche, SDL2pp::Rect(SDL2pp::Point(0, 0), leche.GetSize()), cabeza,
+                      camara);
     }
+}
+
+void Globo::dibujar_icono(SDL2pp::Renderer& renderer, SDL2pp::Texture& textura,
+                          const SDL2pp::Rect& origen, const SDL2pp::Point& cabeza,
+                          const SDL2pp::Rect& camara) {
+    SDL2pp::Point punta(cabeza.x - camara.x, cabeza.y - camara.y - SEPARACION_GLOBO);
+    SDL2pp::Rect contenido(punta.x - origen.w / 2,
+                           punta.y - ALTO_PALITO - RELLENO_GLOBO - origen.h, origen.w, origen.h);
+    dibujar_ventanita(renderer, contenido);
+    renderer.Copy(textura, origen, contenido);
 }
 
 void Globo::dibujar_ventanita(SDL2pp::Renderer& renderer, const SDL2pp::Rect& contenido) {

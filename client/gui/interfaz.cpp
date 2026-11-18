@@ -11,6 +11,7 @@
 
 #include <SDL_image.h>
 
+#include "client/audio/sonidos_granja.h"
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
@@ -27,6 +28,8 @@ Interfaz::Interfaz():
         constructor_capas(renderer),
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
+        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS),
+        icono_regadera(renderer, RUTA_ICONO_REGADERA),
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
@@ -217,6 +220,18 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
     jugador.vestir(constructor_capas.capas(player_id, elegida));
 }
 
+void Interfaz::sonar_granja(const FarmState& granja, const std::string& area_propia) {
+    if (granja_anterior == granja) {
+        return;
+    }
+    if (granja_anterior && granja.areaId == area_propia) {
+        for (Sonido sonido: sonidos_granja(*granja_anterior, granja)) {
+            reproductor.reproducir(sonido);
+        }
+    }
+    granja_anterior = granja;
+}
+
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
     for (const auto& [item, sonido]: SONIDOS_AL_RECIBIR) {
@@ -236,6 +251,7 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
     if (propio == estado.jugadores.end()) {
         return;
     }
+    sonar_granja(estado.granja, propio->areaId);
     if (estado.tick != tick_escuchado) {
         if (propio_anterior) {
             bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;
@@ -350,6 +366,34 @@ std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
                   SDL2pp::Rect(esquina, tamano)};
 }
 
+Sprite Interfaz::sprite_cultivo(const FarmTile& celda) {
+    SDL2pp::Rect origen(celda.stage * TAMANO_CUADRO_CULTIVO,
+                        FILAS_CULTIVOS.at(celda.crop) * TAMANO_CUADRO_CULTIVO,
+                        TAMANO_CUADRO_CULTIVO, TAMANO_CUADRO_CULTIVO);
+    SDL2pp::Rect destino(celda.x * TAMANO_TILE, celda.y * TAMANO_TILE, TAMANO_TILE, TAMANO_TILE);
+    return Sprite{&hoja_cultivos, origen, destino};
+}
+
+void Interfaz::dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara) {
+    SDL2pp::Point arriba(celda.x * TAMANO_TILE + TAMANO_TILE / 2, celda.y * TAMANO_TILE);
+    if (celda.readyToHarvest) {
+        SDL2pp::Rect producto(COLUMNAS_CALIDAD.at(ItemQuality::Base) * TAMANO_CUADRO_CULTIVO,
+                              FILAS_CULTIVOS.at(celda.crop) * TAMANO_CUADRO_CULTIVO,
+                              TAMANO_CUADRO_CULTIVO, TAMANO_CUADRO_CULTIVO);
+        globo.dibujar_icono(renderer, hoja_cultivos, producto, arriba, camara);
+    } else if (celda.needsWater) {
+        globo.dibujar_icono(renderer, icono_regadera,
+                            SDL2pp::Rect(SDL2pp::Point(0, 0), icono_regadera.GetSize()), arriba,
+                            camara);
+    }
+}
+
+void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara) {
+    for (const FarmTile& celda: granja.tiles) {
+        mapa->dibujar_tile(renderer, TILES_SUELO.at(celda.soil), celda.x, celda.y, camara);
+    }
+}
+
 void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
@@ -359,6 +403,9 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     std::vector<Sprite> sprites;
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);
+        if (granja.areaId == area) {
+            dibujar_tierra(granja, camara);
+        }
         sprites = mapa->elementos();
     }
     for (const EntityState& cama: camas) {
@@ -380,6 +427,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
         }
     }
     if (granja.areaId == area) {
+        for (const FarmTile& celda: granja.tiles) {
+            if (celda.crop != CropType::None) {
+                sprites.push_back(sprite_cultivo(celda));
+            }
+        }
         for (const GroundItem& objeto: granja.items) {
             if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
                 sprites.push_back(*sprite);
@@ -400,6 +452,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area && entidad.emote() != Emote::None) {
             globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+        }
+    }
+    if (granja.areaId == area) {
+        for (const FarmTile& celda: granja.tiles) {
+            dibujar_aviso(celda, camara);
         }
     }
 }

@@ -71,9 +71,47 @@ inline const char* const CURSOR_CHAT = "_";
 inline const char* const MARCA_PRIVADO = " (privado)";
 inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
 inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
+inline const std::map<SoilType, stardew::maps::TileType> TILES_SUELO = {
+        {SoilType::Dirt, stardew::maps::TileType::Dirt},
+        {SoilType::Tilled, stardew::maps::TileType::TilledSoil},
+};
+
+inline constexpr int TAMANO_CUADRO_CULTIVO = 16;
+inline const std::map<CropType, int> FILAS_CULTIVOS = {
+        {CropType::Strawberry, 1},
+        {CropType::Scallion, 3},
+        {CropType::Potato, 5},
+        {CropType::Pumpkin, 7},
+};
+
+inline constexpr int COLUMNA_SEMILLAS = 7;
+inline const std::map<ItemQuality, int> COLUMNAS_CALIDAD = {
+        {ItemQuality::Base, 8},
+        {ItemQuality::Good, 9},
+        {ItemQuality::Excellent, 10},
+        {ItemQuality::Incredible, 11},
+        {ItemQuality::Perfect, 12},
+};
+inline const std::map<ItemType, CropType> SEMILLAS = {
+        {ItemType::StrawberrySeeds, CropType::Strawberry},
+        {ItemType::ScallionSeeds, CropType::Scallion},
+        {ItemType::PotatoSeeds, CropType::Potato},
+        {ItemType::PumpkinSeeds, CropType::Pumpkin},
+};
+inline const std::map<ItemType, CropType> PRODUCTOS_CULTIVO = {
+        {ItemType::Strawberry, CropType::Strawberry},
+        {ItemType::Scallion, CropType::Scallion},
+        {ItemType::Potato, CropType::Potato},
+        {ItemType::Pumpkin, CropType::Pumpkin},
+};
+
 inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
         {ItemType::Milk, Sonido::Ordenar},
         {ItemType::Egg, Sonido::Recoger},
+        {ItemType::Strawberry, Sonido::Cosechar},
+        {ItemType::Scallion, Sonido::Cosechar},
+        {ItemType::Potato, Sonido::Cosechar},
+        {ItemType::Pumpkin, Sonido::Cosechar},
 };
 
 inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {

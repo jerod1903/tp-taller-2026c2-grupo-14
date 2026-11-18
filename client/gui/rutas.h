@@ -12,6 +12,7 @@ inline const char* const RUTA_FUENTE = "Assets/Fonts/PixelifySans.ttf";
 
 inline const char* const RUTA_GLOBO_ESCRIBIENDO = "Assets/Misc/expression_chat.png";
 inline const char* const RUTA_ICONO_LECHE = "Assets/Farm/Animals/milk.png";
+inline const char* const RUTA_ICONO_REGADERA = "Assets/Misc/watering_can.png";
 
 inline const char* const RUTA_CARTELES_HUD = "Assets/Menu/botones/botones_madera_enlazados.png";
 inline const char* const RUTA_MARCO_HUD = "Assets/Menu/botones/input_madera_panel.png";
@@ -20,6 +21,7 @@ inline const char* const RUTA_ICONO_ORO = "Assets/Caverns/items and trap_animati
 
 inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
+inline const char* const RUTA_HOJA_CULTIVOS = "Assets/Farm/Crops/Spring Crops.png";
 
 inline const char* const RUTA_BOTON_MENU = "Assets/Menu/botones/boton_320.png";
 inline const char* const RUTA_BOTON_DESHABILITADO =

@@ -48,11 +48,15 @@ private:
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio, const FarmState& granja);
+    void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
+    Sprite sprite_cultivo(const FarmTile& celda);
+    void dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara);
     void dibujar_inventario(const InventoryState& inventario);
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
+    void sonar_granja(const FarmState& granja, const std::string& area_propia);
     SDL2pp::SDL sdl;
     ReproductorSonidos reproductor;
     SDL2pp::SDLImage sdl_image;
@@ -61,6 +65,8 @@ private:
     ConstructorCapas constructor_capas;
     SDL2pp::Texture hoja_vaca;
     SDL2pp::Texture hoja_gallina;
+    SDL2pp::Texture hoja_cultivos;
+    SDL2pp::Texture icono_regadera;
     struct Aspecto {
         const FormatoAnimacion* formato;
         std::vector<Capa> capas;
@@ -93,6 +99,7 @@ private:
     bool caminando = false;
     std::chrono::steady_clock::time_point proximo_paso;
     std::map<ItemType, int> cantidades_anteriores;
+    std::optional<FarmState> granja_anterior;
 };
 
 #endif

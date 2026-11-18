@@ -13,6 +13,7 @@ target_sources(taller_tests
     click_command_test.cpp
     typing_command_test.cpp
     transicion_area_test.cpp
+    sonidos_granja_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp
@@ -122,6 +123,7 @@ target_sources(taller_tests
     ../client/network/ClientProtocol.cpp
     ../client/gui/sprites/animador_sprites.cpp
     ../client/gui/mapa/transicion_area.cpp
+    ../client/audio/sonidos_granja.cpp
     # Inventario
     ../server/game/characters/inventory.cpp
     ../server/game/commands/select_slot_command.cpp
