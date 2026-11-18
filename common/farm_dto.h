@@ -44,14 +44,6 @@ enum class CropType : uint8_t {
     Pumpkin,
 };
 
-struct CropHarvest {
-    CropType type;
-    ItemQuality quality;
-
-    bool operator==(const CropHarvest&) const = default;
-};
-
-
 // Una celda cavada/cavable de la granja. x y y son celdas, no milésimas.
 struct FarmTile {
     uint16_t x;
