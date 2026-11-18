@@ -9,6 +9,14 @@
 
 #include "server/config/server_config.h"
 
+namespace {
+// Si `cell` está pegada a la del jugador (también en diagonal), donde sea que esté.
+bool next_to(const Player& player, const Position& cell) {
+    const Position& here = player.get_position();
+    return std::abs(cell.x - here.x) <= 1 && std::abs(cell.y - here.y) <= 1;
+}
+}  // namespace
+
 World::World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon):
         farm(std::move(farm)),
         town(std::move(town)),
@@ -54,9 +62,7 @@ Player* World::find_player(uint32_t player_id) {
 }
 
 bool World::reaches(const Player& player, const Position& cell) const {
-    const Position& here = player.get_position();
-    return &player.get_location() == farm.get() && std::abs(cell.x - here.x) <= 1 &&
-           std::abs(cell.y - here.y) <= 1;
+    return &player.get_location() == farm.get() && next_to(player, cell);
 }
 
 bool World::dig(const Player& player, const Position& cell) {
@@ -79,6 +85,15 @@ const Outcome& World::harvest(Player& player) {
 }
 
 const Outcome& World::milk(Player& player) { return milk_nearest_cow(farm->get_animals(), player); }
+
+bool World::attack(Player& player, const Position& cell) {
+    DungeonLevel* level = dungeon.level_at(player.get_location());
+    if (level == nullptr || !next_to(player, cell)) {
+        return false;
+    }
+    Enemy* enemy = level->enemy_near(cell);
+    return enemy != nullptr && player.strike(*enemy);
+}
 
 Movement& World::get_movement() { return movement; }
 

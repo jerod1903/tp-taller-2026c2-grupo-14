@@ -28,6 +28,15 @@ void Dungeon::set_visitors(const std::vector<Creature*>& players) {
     }
 }
 
+DungeonLevel* Dungeon::level_at(const Location& location) {
+    for (const std::unique_ptr<DungeonLevel>& dungeon_level: levels) {
+        if (dungeon_level.get() == &location) {
+            return dungeon_level.get();
+        }
+    }
+    return nullptr;
+}
+
 void Dungeon::update(float dt) {
     for (const std::unique_ptr<DungeonLevel>& dungeon_level: levels) {
         dungeon_level->update(dt);

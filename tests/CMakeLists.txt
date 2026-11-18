@@ -20,6 +20,7 @@ target_sources(taller_tests
     grid_test.cpp
     location_test.cpp
     skeleton_test.cpp
+    sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
     map_editing_test.cpp
@@ -80,6 +81,7 @@ target_sources(taller_tests
     ../server/game/commands/click_command.cpp
     ../server/game/tools/tool.cpp
     ../server/game/tools/shovel.cpp
+    ../server/game/tools/sword.cpp
     ../server/game/tools/seed.cpp
     ../server/game/tools/watering_can.cpp
     ../server/game/cheats/cheat.cpp

@@ -14,6 +14,7 @@ target_sources(taller_server
     game/commands/click_command.cpp
     game/tools/tool.cpp
     game/tools/shovel.cpp
+    game/tools/sword.cpp
     game/tools/seed.cpp
     game/tools/watering_can.cpp
     game/cheats/cheat.cpp
@@ -83,6 +84,7 @@ target_sources(taller_server
     game/commands/click_command.h
     game/tools/tool.h
     game/tools/shovel.h
+    game/tools/sword.h
     game/tools/seed.h
     game/tools/watering_can.h
     game/cheats/cheat.h
