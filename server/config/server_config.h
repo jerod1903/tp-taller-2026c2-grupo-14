@@ -87,8 +87,6 @@ struct ServerConfig {
         int skippable_waterings;  // riegos que se pueden saltear en un día sin que deje de crecer
     };
     struct Crops {
-        // Provisorio, hasta que se compren a Pierre: semillas de cada tipo al aparecer.
-        int cheat_starting_seeds;
         CropSpec strawberry;
         CropSpec scallion;
         CropSpec potato;
@@ -104,6 +102,10 @@ struct ServerConfig {
     Animals animals;
     Enemies enemies;
     Crops crops;
+    struct Cheats {
+        int seeds;  // cuántas de cada tipo da "$seeds" sin cantidad
+        int gold;   // cuánto da "$gold" sin cantidad
+    } cheats;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

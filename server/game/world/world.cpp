@@ -26,10 +26,6 @@ void World::spawn_player(uint32_t player_id, std::string name) {
                                            std::move(name), stats.health, stats.speed, stats.gold,
                                            stats.energy);
     player->place_at(spawn.point);
-    for (ItemType seeds: {ItemType::StrawberrySeeds, ItemType::ScallionSeeds, ItemType::PotatoSeeds,
-                          ItemType::PumpkinSeeds}) {
-        player->receive(seeds, static_cast<uint8_t>(server_config().crops.cheat_starting_seeds));
-    }
     add_player(std::move(player));
     // Su cama puede haber aparecido donde estaba parado otro
     movement.free_trapped();

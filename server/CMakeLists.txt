@@ -13,6 +13,9 @@ target_sources(taller_server
     game/tools/tool.cpp
     game/tools/shovel.cpp
     game/tools/seed.cpp
+    game/cheats/cheat.cpp
+    game/cheats/seeds_cheat.cpp
+    game/cheats/gold_cheat.cpp
     game/interactions/outcome.cpp
     game/interactions/interaction.cpp
     game/interactions/milk.cpp
@@ -74,6 +77,9 @@ target_sources(taller_server
     game/tools/tool.h
     game/tools/shovel.h
     game/tools/seed.h
+    game/cheats/cheat.h
+    game/cheats/seeds_cheat.h
+    game/cheats/gold_cheat.h
     game/interactions/outcome.h
     game/interactions/interaction.h
     game/interactions/milk.h

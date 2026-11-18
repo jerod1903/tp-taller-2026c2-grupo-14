@@ -17,6 +17,8 @@ int Player::get_gold() const { return gold; }
 
 int Player::get_energy() const { return energy; }
 
+void Player::add_gold(int amount) { gold += amount; }
+
 void Player::spend_energy(int amount) { energy = std::max(0, energy - amount); }
 
 bool Player::is_exhausted() const { return energy == 0; }

@@ -178,14 +178,14 @@ ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& nam
 }
 
 ServerConfig::Crops read_crops(const toml::table& root) {
-    TomlTableReader crops = section(root, "crops");
-    int cheat = crops.requiredInt("cheat_starting_seeds");
-    if (cheat < 0) {
-        throw std::runtime_error(std::string(FILE_NAME) +
-                                 ": 'cheat_starting_seeds' can't be negative");
-    }
-    return ServerConfig::Crops{cheat, read_crop(root, "strawberry"), read_crop(root, "scallion"),
+    return ServerConfig::Crops{read_crop(root, "strawberry"), read_crop(root, "scallion"),
                                read_crop(root, "potato"), read_crop(root, "pumpkin")};
+}
+
+ServerConfig::Cheats read_cheats(const toml::table& root) {
+    TomlTableReader cheats = section(root, "cheats");
+    return ServerConfig::Cheats{positive(cheats.requiredInt("seeds"), "seeds"),
+                                positive(cheats.requiredInt("gold"), "gold")};
 }
 
 }  // namespace
@@ -214,7 +214,8 @@ ServerConfig load_server_config(const std::string& path) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
     return ServerConfig{read_game(root),    read_player(root),  read_energy(root),
-                        read_animals(root), read_enemies(root), read_crops(root)};
+                        read_animals(root), read_enemies(root), read_crops(root),
+                        read_cheats(root)};
 }
 
 const ServerConfig& server_config() {

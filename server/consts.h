@@ -26,6 +26,10 @@ public:
 
     // Chat: "@nombre texto" es un mensaje privado para ese personaje.
     static constexpr char PRIVATE_CHAT_PREFIX = '@';
+    // Chat: "$nombre [payload]" activa ese cheat; no le llega a nadie más.
+    static constexpr char CHEAT_PREFIX = '$';
+    // Aviso al que escribió un cheat que no existe: "Cheat desconocido: <nombre>".
+    static constexpr const char* UNKNOWN_CHEAT = "Cheat desconocido: ";
     // Aviso al que mando un privado a alguien que no esta: "<nombre> no está conectado".
     static constexpr const char* NOT_CONNECTED = " no está conectado";
 };

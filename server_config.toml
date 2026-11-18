@@ -64,9 +64,6 @@ reach = 1.0              # hasta donde llega su golpe, de su centro al del jugad
 cooldown = 1.0           # segundos entre golpe y golpe
 revive_seconds = 10.0    # cuanto tarda en revivir
 
-[crops]
-cheat_starting_seeds = 5  # provisorio, hasta que se compren a Pierre: semillas de cada tipo al aparecer
-
 # Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
 [crops.strawberry]
 seed_price = 10
@@ -99,3 +96,8 @@ waterings_per_day = 1
 days_to_grow = 7
 regrow_days = 0
 skippable_waterings = 0
+
+# Se escriben en el chat con un $ adelante y una cantidad opcional: "$gold 10".
+[cheats]
+seeds = 10                # cuántas semillas de cada tipo da "$seeds" sin cantidad
+gold = 100                # cuánto oro da "$gold" sin cantidad
