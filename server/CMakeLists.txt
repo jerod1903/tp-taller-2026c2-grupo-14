@@ -45,6 +45,7 @@ target_sources(taller_server
     game/characters/enemies/skeleton.cpp
     game/characters/entity.cpp
     game/characters/player.cpp
+    game/characters/wanderer.cpp
     game/characters/inventory.cpp
     game/world/direction.cpp
     game/world/game_clock.cpp
@@ -119,6 +120,7 @@ target_sources(taller_server
     game/characters/enemies/skeleton.h
     game/characters/entity.h
     game/characters/player.h
+    game/characters/wanderer.h
     game/world/direction.h
     game/world/game_clock.h
     game/world/dungeon/dungeon.h

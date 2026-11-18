@@ -9,15 +9,17 @@
 
 Enemy::Enemy(uint32_t id, const Position& pos, Location& location,
              const ServerConfig::Fighter& stats, const std::vector<Creature*>& visitors,
-             float attack_time, float hurt_time):
+             float attack_time, float hurt_time, uint32_t seed):
         Creature(id, pos, location, stats.health, stats.speed, stats.damage),
         max_health(stats.health),
+        rng(seed),
         sight(stats.sight),
         reach(stats.reach),
         cooldown(stats.cooldown),
         attack_time(attack_time),
         hurt_time(hurt_time),
-        visitors(visitors) {}
+        visitors(visitors),
+        wanderer(rng, server_config().enemies.min_walk, server_config().enemies.max_walk) {}
 
 void Enemy::take_damage(int amount) {
     bool was_alive = is_alive();
@@ -58,14 +60,14 @@ void Enemy::update(float dt) {
     cooldown_left -= dt;
     attacking_left -= dt;
     hurt_left -= dt;
-    react();
+    react(dt);
     advance(dt);
 }
 
-void Enemy::react() {
+void Enemy::react(float dt) {
     Creature* target = nearest_visible();
     if (target == nullptr) {
-        set_direction(Direction::NONE);
+        wanderer.wander(*this, dt);
         return;
     }
     if (distance_to(*target) > reach) {

@@ -53,6 +53,7 @@ target_sources(taller_tests
     ../server/game/characters/enemies/skeleton.cpp
     ../server/game/characters/entity.cpp
     ../server/game/characters/player.cpp
+    ../server/game/characters/wanderer.cpp
     ../server/game/world/direction.cpp
     ../server/game/world/game_clock.cpp
     ../server/game/world/dungeon/dungeon.cpp

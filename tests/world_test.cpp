@@ -117,7 +117,7 @@ class CombatTest: public WorldTest {
 protected:
     CombatTest() {
         player.relocate(level(), Position{1, 1});
-        auto placed = std::make_unique<Skeleton>(1000, Position{2, 1}, level(), NO_VISITORS);
+        auto placed = std::make_unique<Skeleton>(1000, Position{2, 1}, level(), NO_VISITORS, 0);
         skeleton = placed.get();
         level().spawn(std::move(placed));
     }

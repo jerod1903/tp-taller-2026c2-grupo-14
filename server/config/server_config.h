@@ -81,6 +81,9 @@ struct ServerConfig {
         // Al aparecer, ninguno queda a menos de esta distancia (en celdas) de un portal del nivel:
         // el que entra no se los encuentra encima.
         float spawn_distance;
+        // Sin nadie a la vista deambulan como los animales: cambian de dirección cada tanto
+        float min_walk;  // segundos
+        float max_walk;
         Skeleton skeleton;
     };
     // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están

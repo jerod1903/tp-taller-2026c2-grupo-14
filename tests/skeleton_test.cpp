@@ -1,5 +1,6 @@
 #include "server/game/characters/enemies/skeleton.h"
 
+#include <set>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -11,12 +12,23 @@ namespace {
 
 const ServerConfig::Skeleton& config() { return server_config().enemies.skeleton; }
 
+constexpr uint32_t SEED = 7;
+const std::vector<Creature*> NOBODY;
+
+// Hacia dónde deambula un esqueleto igual (misma semilla, en (2, 2)) que no ve a nadie: el que no
+// ve al jugador tiene que hacer lo mismo.
+Direction wandering_direction(Location& where) {
+    Skeleton alone(1, Position{2, 2}, where, NOBODY, SEED);
+    alone.update(0);
+    return alone.get_direction();
+}
+
 // El esqueleto en (2, 2) de un nivel de 20x20 sin paredes. `visitors` hace de la lista del nivel.
 class SkeletonTest: public ::testing::Test {
 protected:
     TestLocation level{make_grid(20, 20)};
     std::vector<Creature*> visitors;
-    Skeleton skeleton{1, Position{2, 2}, level, visitors};
+    Skeleton skeleton{1, Position{2, 2}, level, visitors, SEED};
 };
 
 TEST_F(SkeletonTest, WalksTowardsAPlayerItSees) {
@@ -32,18 +44,27 @@ TEST_F(SkeletonTest, DoesNotSeeThroughWalls) {
         wall.push_back(Position{4, y});
     }
     TestLocation walled(make_grid(20, 20, wall));
-    Skeleton behind_wall(1, Position{2, 2}, walled, visitors);
+    Skeleton behind_wall(1, Position{2, 2}, walled, visitors, SEED);
     TestCreature player(walled, Position{6, 2});
     visitors = {&player};
     behind_wall.update(0);
-    EXPECT_EQ(behind_wall.get_direction(), Direction::NONE);
+    EXPECT_EQ(behind_wall.get_direction(), wandering_direction(walled));
 }
 
 TEST_F(SkeletonTest, DoesNotSeeFurtherThanItsSight) {
     TestCreature player(level, Position{2 + static_cast<int>(config().fighter.sight) + 2, 2});
     visitors = {&player};
     skeleton.update(0);
-    EXPECT_EQ(skeleton.get_direction(), Direction::NONE);
+    EXPECT_EQ(skeleton.get_direction(), wandering_direction(level));
+}
+
+TEST_F(SkeletonTest, WandersWhileItSeesNobody) {
+    std::set<Direction> seen;
+    for (int i = 0; i < 60; ++i) {  // un minuto, de a un segundo
+        skeleton.update(1.0f);
+        seen.insert(skeleton.get_direction());
+    }
+    EXPECT_GT(seen.size(), 2u);
 }
 
 TEST_F(SkeletonTest, HitsRightAwayAndThenWaitsBetweenHits) {
@@ -64,7 +85,7 @@ TEST_F(SkeletonTest, LeavesAPlayerWithNoHealthAlone) {
     player.take_damage(player.get_health());
     visitors = {&player};
     skeleton.update(0);
-    EXPECT_EQ(skeleton.get_direction(), Direction::NONE);
+    EXPECT_EQ(skeleton.get_direction(), wandering_direction(level));
 }
 
 TEST_F(SkeletonTest, RevivesWithFullHealthAfterAWhile) {

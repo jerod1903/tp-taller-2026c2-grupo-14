@@ -69,7 +69,7 @@ void DungeonLevel::repopulate() {
         if (!cell) {
             return;
         }
-        spawn(std::make_unique<Skeleton>(next_enemy_id++, *cell, *this, visitors));
+        spawn(std::make_unique<Skeleton>(next_enemy_id++, *cell, *this, visitors, rng()));
     }
 }
 

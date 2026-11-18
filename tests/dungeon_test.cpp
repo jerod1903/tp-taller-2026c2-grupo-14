@@ -28,12 +28,12 @@ const std::vector<Creature*> NO_VISITORS;
 class CountingEnemy: public Enemy {
 public:
     CountingEnemy(Location& location, int* deaths):
-            Enemy(1, Position{0, 0}, location, STATS, NO_VISITORS, 1.0f, 1.0f), deaths(deaths) {}
+            Enemy(1, Position{0, 0}, location, STATS, NO_VISITORS, 1.0f, 1.0f, 0), deaths(deaths) {}
     EntityType entity_type() const override { return EntityType::Skeleton; }
     void on_death() override { ++*deaths; }
 
 protected:
-    void react() override {}
+    void react(float) override {}
 
 private:
     int* deaths;
@@ -61,7 +61,7 @@ TEST_F(DungeonLevelTest, OnDeathIsCalledOnlyOnce) {
 }
 
 TEST_F(DungeonLevelTest, SpawnRegistersTheEnemy) {
-    level.spawn(std::make_unique<Skeleton>(1, Position{1, 1}, level, NO_VISITORS));
+    level.spawn(std::make_unique<Skeleton>(1, Position{1, 1}, level, NO_VISITORS, 0));
     EXPECT_EQ(level.get_entities().size(), 1u);
 }
 
@@ -69,7 +69,7 @@ TEST_F(DungeonLevelTest, DeadEnemiesAreRemovedOnUpdate) {
     auto enemy = std::make_unique<CountingEnemy>(level, &deaths);
     CountingEnemy& ref = *enemy;
     level.spawn(std::move(enemy));
-    level.spawn(std::make_unique<Skeleton>(2, Position{1, 1}, level, NO_VISITORS));
+    level.spawn(std::make_unique<Skeleton>(2, Position{1, 1}, level, NO_VISITORS, 0));
     ref.take_damage(10);
     level.update(0.1f);
     ASSERT_EQ(level.get_entities().size(), 1u);

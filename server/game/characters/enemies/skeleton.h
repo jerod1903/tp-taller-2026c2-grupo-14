@@ -11,7 +11,7 @@
 class Skeleton: public Enemy {
 public:
     Skeleton(uint32_t id, const Position& pos, Location& location,
-             const std::vector<Creature*>& visitors);
+             const std::vector<Creature*>& visitors, uint32_t seed);
 
     EntityType entity_type() const override;
     void on_death() override;
