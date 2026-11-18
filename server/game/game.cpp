@@ -39,6 +39,9 @@ void Game::run() {
             world->update(tick_seconds);
             ++tick;
             broadcast_snapshot();
+            if (world->get_farm().take_changes()) {
+                player_sessions.broadcast(SnapshotBuilder::farm_state(world->get_farm()));
+            }
             next += period;
             std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
             if (next < now) {
@@ -66,6 +69,8 @@ PlayerSessions& Game::sessions() { return player_sessions; }
 PlayerMovement& Game::movement() { return world->get_movement(); }
 
 PlayerCharacters& Game::characters() { return *world; }
+
+PlayerFarming& Game::farming() { return *world; }
 
 void Game::broadcast_snapshot() { player_sessions.broadcast(SnapshotBuilder::build(tick, *world)); }
 

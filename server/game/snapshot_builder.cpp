@@ -18,7 +18,8 @@ PlayerState state_of(uint32_t player_id, const Player& player) {
                        static_cast<int8_t>(delta.y),
                        static_cast<uint16_t>(player.get_health()),
                        static_cast<uint16_t>(player.get_energy()),
-                       static_cast<uint32_t>(player.get_gold())};
+                       static_cast<uint32_t>(player.get_gold()),
+                       player.is_unconscious()};
 }
 
 EntityState entity_of(uint32_t player_id, const Player& player) {
@@ -63,7 +64,9 @@ EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& 
 }  // namespace
 
 Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
-    Snapshot snapshot{tick, {}, {}};
+    const GameClock& clock = world.get_clock();
+    Snapshot snapshot{tick, clock.get_day(), static_cast<uint16_t>(clock.get_minute_of_day()), {},
+                      {}};
     for (const auto& [player_id, player]: world.get_players()) {
         snapshot.players.push_back(state_of(player_id, *player));
         snapshot.entities.push_back(entity_of(player_id, *player));
@@ -76,4 +79,18 @@ Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
         snapshot.entities.push_back(bed_of(player_id, slot, cabin.get_name()));
     }
     return snapshot;
+}
+
+FarmState SnapshotBuilder::farm_state(const Farm& farm) {
+    FarmState state{farm.get_name(), {}};
+    for (const auto& [pos, plot]: farm.get_plots()) {
+        state.tiles.push_back(FarmTile{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y),
+                                       plot.soil, plot.crop.get_type(), plot.crop.get_stage(),
+                                       plot.crop.needs_water(), plot.crop.is_ready()});
+    }
+    for (const auto& [pos, item]: farm.get_ground_items()) {
+        state.items.push_back(
+                GroundItem{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), item});
+    }
+    return state;
 }

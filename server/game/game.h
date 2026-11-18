@@ -25,6 +25,8 @@ public:
     PlayerMovement& movement() override;
     // El World, dueño de los personajes y los animales.
     PlayerCharacters& characters() override;
+    // El World, dueño de la granja.
+    PlayerFarming& farming() override;
 
     void start() override;
     void run() override;

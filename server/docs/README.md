@@ -12,6 +12,9 @@ extensión PlantUML de VS Code (`Export Current Diagram`, en formato svg) o con
 - [Comandos del jugador](#comandos-del-jugador)
 - [Mundo y personajes](#mundo-y-personajes)
 - [Un tick de la partida](#un-tick-de-la-partida)
+- [Energía y fin del día](#energía-y-fin-del-día)
+- [La granja](#la-granja)
+- [Cheats](#cheats)
 - [Interiores: la cabaña y el mercado](#interiores-la-cabaña-y-el-mercado)
 
 ## Vista general y hilos
@@ -45,7 +48,8 @@ Los comandos solo conocen `GameContext`, no `Game`. `GameContext` no tiene las a
 
 - `sessions()` → `PlayerSessions`: entrar, salir y mandarles mensajes a los conectados (`send_to`, `broadcast`, `find_player_by_name`). La implementa `Sessions`, que tiene los jugadores conectados: su outbox y su info.
 - `movement()` → `PlayerMovement` (caminar y cruzar puertas). La implementa `Movement`, el del `World`.
-- `characters()` → `PlayerCharacters`: los personajes por id (`find_player`) y los animales de la granja. La implementa el `World`. La usan `ChatCommand`, `InteractCommand` (ordeñar con la E), `SelectSlotCommand` y `TypingCommand`.
+- `characters()` → `PlayerCharacters`: solo los personajes por id (`find_player`). La implementa el `World`. La usan `ChatCommand`, `InteractCommand`, `ClickCommand`, `SelectSlotCommand` y `TypingCommand`.
+- `farming()` → `PlayerFarming`: las acciones de la granja (`dig`, `plant`, `water`, `harvest`, `milk`). Reciben al jugador y el dueño de los datos resuelve todo: si está en la granja, si la celda le queda al alcance, qué vaca está más cerca. La implementa el `World`. La usan las herramientas y las interacciones (ver [La granja](#la-granja)).
 
 `Game` queda con la inbox, el loop de ticks, el `World` y sus `Sessions`.
 
@@ -92,13 +96,67 @@ Fuente: [diagrams/world/world.puml](diagrams/world/world.puml)
 - La `Farm` enlaza las dos puertas de la cabaña: se sale un tile y medio debajo de la puerta, para que el dibujo de la cabaña no tape al jugador.
 - `build_world` enlaza el resto (granja ↔ pueblo ↔ mazmorra) con las transiciones del mapa, con la llegada en el centro de la celda.
 
-**Snapshot**: `SnapshotBuilder::build(tick, world)` pasa el `World` a lo que viaja al cliente, en milésimas de celda. Arma un `PlayerState` por jugador y un `EntityState` por jugador, animal y cama con dueño.
+**Snapshot**: `SnapshotBuilder::build(tick, world)` pasa el `World` a lo que viaja al cliente, en milésimas de celda. Arma un `PlayerState` por jugador (con `unconscious` si está desmayado) y un `EntityState` por jugador, animal y cama con dueño. El estado de la granja no va en cada snapshot: viaja en un `FarmState` aparte, solo cuando cambia (ver [La granja](#la-granja)).
 
 ## Un tick de la partida
 
 ![Un tick](diagrams/tick_sequence/tick_sequence.svg)
 
 Fuente: [diagrams/tick_sequence/tick_sequence.puml](diagrams/tick_sequence/tick_sequence.puml)
+
+## Energía y fin del día
+
+El día dura 1200 minutos de juego (de 6:00 a 2:00), y `GameClock` los reparte en `day_speed` segundos reales.
+
+- Cada acción cansa lo suyo: los costos están en `[energy]` de `server_config.toml`. Los gasta `Player::spend_energy`, que no baja de 0, así que la última acción se hace aunque no le alcance.
+- Con `tired_energy` (10%) o menos de su energía, el jugador camina a mitad de velocidad (`Player::speed`).
+- Sin energía o sin vida queda **inconsciente** (`is_unconscious`): no camina, y `ClickCommand` e `InteractCommand` no hacen nada hasta el día siguiente.
+- El día termina a las 2:00, o antes si todos los conectados están inconscientes (`World::everyone_unconscious`, que adelanta el reloj con `GameClock::end_day`).
+- Al empezar el día, `World::start_new_day` despierta a todos en su cama (`Player::wake_up`). Los que estaban parados sobre su propia cama (`Cabin::is_in_bed`) y conscientes recuperan toda la vida y la energía. Los demás despiertan con `bad_night_recovery` (la mitad).
+
+Pendiente: que todos los jugadores den el Ok antes de empezar el día siguiente.
+
+## La granja
+
+![Herramientas, interacciones y cheats](diagrams/farming/farming.svg)
+
+Fuente: [diagrams/farming/farming.puml](diagrams/farming/farming.puml)
+
+**Dos formas de actuar**, cada una con su mensaje del cliente:
+
+- **Click** (`GameOp::Click`, con la celda clickeada): depende de lo que hay en esa celda. `click_actions()` prueba cada `ClickAction` en orden hasta que una aplica (`try_at` devuelve true), y cada una cobra su energía. Hoy solo está `UseTool`, que va última: el saludo del comerciante y el regalo a otro jugador van antes, para ganarle a la herramienta que tenga en la mano.
+- **Herramientas** (`UseTool`): depende de lo que tiene en el slot elegido. `tool_for(ItemType)` da la `Tool` de ese objeto, o ninguna. Cada una sabe qué hace (`use`) y cuánto cansa (`energy_cost`). Solo actúan si el jugador está en la granja y la celda está pegada a la suya, también en diagonal (`World::reaches`); si no, no pasa nada y no cansa.
+  - `Shovel`: cava la celda. Pasto → `Dirt` → `Tilled`.
+  - `WateringCan`: riega su cultivo.
+  - `Seed`: planta en tierra `Tilled` vacía y gasta una semilla. Hay una por cada tipo de semilla.
+- **Interacciones**, con la E (`GameOp::Interact`): depende de lo que hay cerca, y actúan sobre la celda de adelante o lo más cercano. `interactions()` las prueba en orden (`Milk`, `Harvest`, `PickUp`) hasta que una aplica. Cada una devuelve un `Outcome` (`not_here`, `inventory_full`, `done`), y es el `Outcome` el que cobra la energía y le avisa al jugador. Por eso `InteractCommand` no tiene ifs.
+
+Todas son objetos sin estado. Para sumar una nueva, se agrega su clase y se registra en `click_actions()`, `tool_for` o `interactions()`. Si necesita tocar la granja, su acción va en `PlayerFarming`.
+
+**Cultivos** (`Crop`, en cada `Plot` de la `Farm`). Los datos de cada tipo están en `[crops.<tipo>]`:
+
+- **Riego**: el día se parte en `waterings_per_day` ventanas. Una ventana que se cierra sin riego cuenta como salteada. `Farm::update_time` las abre y las cierra con la hora del reloj.
+- **Crecimiento**: al empezar el día, el cultivo crece si salteó como mucho `skippable_waterings` riegos. Está listo a los `days_to_grow` días. La etapa que se dibuja se reparte entre los sprites, y la última solo aparece cuando está listo.
+- **Cosecha** (`Farm::harvest`): le da el producto al jugador. Si no le entra en el inventario, el cultivo queda donde está. Los que vuelven a dar (`regrow_days`) retroceden esos días; los demás dejan la tierra vacía.
+- **Calidad**: un puntaje de 0 a 1 que combina qué tan rápido se regó (`watering_weight`) y qué tan rápido se cosechó (llega a 0 a los `harvest_grace_days`), multiplicado por la suerte (`luck_min`..`luck_max`). Los umbrales `good`..`perfect` de `[crops.quality]` lo pasan a `ItemQuality`.
+
+**Animales**: la `Farm` es dueña de las vacas y las gallinas.
+
+- La vaca se ordeña con la E (`milk_nearest_cow`: la más cercana dentro de `milking_reach`) cada `production_days`.
+- La gallina pone el huevo sola, a una hora al azar del día. `Farm::collect_drops` lo levanta con `Animal::take_drop` y lo deja en el piso, en su celda.
+
+**Objetos en el piso**: los guarda cualquier `Location` (`drop`, `get_ground_items`), así sirven para cualquier zona. `PickUp` levanta el de la celda del jugador o el de la que tiene adelante (`Location::pick_up`).
+
+**`FarmState`**: las celdas trabajadas (suelo, cultivo, etapa, si necesita riego, si está listo) y los objetos en el piso de la granja. Se manda solo cuando algo cambió (`Location::take_changes`). Los objetos en el piso de otras zonas todavía no viajan al cliente.
+
+## Cheats
+
+Se escriben en el chat como `$nombre [cantidad]`. `ChatCommand` separa el nombre del payload y busca el `Cheat` con `cheat_for`. Si no existe, le avisa solo al que lo escribió.
+
+- `$seeds [n]`: n semillas de cada tipo (por defecto, `[cheats] seeds`).
+- `$gold [n]`: n de oro (por defecto, `[cheats] gold`).
+
+Para sumar uno, se crea su clase con `apply(Player&, GameContext&, payload)` y se registra en `cheat_for`. Los helpers `amount` (lee la cantidad) y `tell` (le responde al jugador) están en `Cheat`.
 
 ## Interiores: la cabaña y el mercado
 
@@ -118,6 +176,8 @@ Cada interior es un `Interior`: una `Location` con una puerta que lleva afuera. 
 - La cama aparece cuando el jugador entra por primera vez: `Cabin::assign_bed` le da el primer lugar libre. Si sale y vuelve, conserva la misma cama.
 - Al entrar a la partida, el jugador aparece centrado en su cama (`Cabin::bed_spawn`). La fila de la almohada no se camina; la de arriba sí, para pasar por detrás de la cabecera.
 - Cada cama viaja en el snapshot como `EntityType::Bed`, con el `playerId` del dueño.
+- Cada mañana todos despiertan en su cama (ver [Energía y fin del día](#energía-y-fin-del-día)).
+
 **El mercado**:
 
 - La sala es la misma en todas las partidas: `maps/interiors/market.toml`, que lee `loadMarketInterior()` (en `common/map/MarketInterior.h`). Las paredes las pone `addWalls`, como en la cabaña.

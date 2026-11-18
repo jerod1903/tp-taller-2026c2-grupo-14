@@ -8,6 +8,10 @@ struct Position {
 
     bool operator==(const Position& other) const { return x == other.x && y == other.y; }
     bool operator!=(const Position& other) const { return !(*this == other); }
+    // Por filas, para poder usarla de clave en un std::map.
+    bool operator<(const Position& other) const {
+        return y != other.y ? y < other.y : x < other.x;
+    }
 };
 
 #endif  // POSITION_H

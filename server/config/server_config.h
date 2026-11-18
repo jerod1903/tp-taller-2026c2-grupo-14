@@ -4,12 +4,15 @@
 #include <cstdint>
 #include <string>
 
+#include "common/farm_dto.h"
+
 // Lo que se ajusta del juego sin recompilar. Se lee de server_config.toml, en el root del repo.
 struct ServerConfig {
     struct Game {
         uint8_t max_players;
         int tick_rate;  // ticks por segundo
         unsigned int outbox_size;
+        float day_speed;  // segundos que dura un día
     };
     struct Player {
         int health;
@@ -18,6 +21,26 @@ struct ServerConfig {
         float speed;  // celdas por segundo
         // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
         uint8_t max_stack;
+        float tired_energy;        // fracción de la energía desde la que camina a mitad de velocidad
+        float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su cama
+    };
+    // Lo que cansa cada acción.
+    struct Energy {
+        int dig;
+        int water;
+        int plant;
+        int harvest;
+        int milk;
+        int pick_up;
+        int attack;
+        int mine;
+        int talk;
+    };
+    struct Species {
+        int price;            // lo que cuesta el animal
+        int product_price;    // lo que se paga por la leche o el huevo
+        int max_per_farm;
+        int production_days;  // cada cuántos días da su producto
     };
     struct Animals {
         int cows;
@@ -29,11 +52,10 @@ struct ServerConfig {
         float speed;     // celdas por segundo
         float min_walk;  // segundos
         float max_walk;
-        // Provisorio, hasta que exista el ciclo de días: cada cuánto da leche una vaca, en
-        // segundos.
-        float cow_ready_seconds;
         // Hasta dónde llega el jugador para ordeñar: de su centro al de la vaca, en casillas.
         float milking_reach;
+        Species cow;
+        Species chicken;
     };
 
     // Lo que comparten los enemigos que pelean cuerpo a cuerpo
@@ -58,10 +80,48 @@ struct ServerConfig {
         Skeleton skeleton;
     };
 
+    struct CropSpec {
+        int seed_price;           // lo que cuesta la semilla
+        int base_price;           // lo que se paga por la cosecha de calidad base
+        int waterings_per_day;
+        int days_to_grow;         // desde que se planta hasta que se puede cosechar
+        int regrow_days;          // después de cosechar vuelve a dar en estos días; 0 si no
+        int skippable_waterings;  // riegos que se pueden saltear en un día sin que deje de crecer
+    };
+    // Cómo se calcula la calidad de una cosecha: un puntaje de 0 a 1 por qué tan rápido se regó y
+    // qué tan rápido se cosechó, por un multiplicador de suerte al azar.
+    struct Quality {
+        float watering_weight;     // cuánto pesa el riego en el puntaje; lo demás, la cosecha
+        float harvest_grace_days;  // días lista sin cosechar hasta que esa parte llega a 0
+        float luck_min;
+        float luck_max;
+        // Puntaje mínimo de cada calidad; por debajo de good, base
+        float good;
+        float excellent;
+        float incredible;
+        float perfect;
+    };
+    struct Crops {
+        CropSpec strawberry;
+        CropSpec scallion;
+        CropSpec potato;
+        CropSpec pumpkin;
+        Quality quality;
+
+        // Lanza std::invalid_argument con CropType::None.
+        const CropSpec& of(CropType type) const;
+    };
+
     Game game;
     Player player;
+    Energy energy;
     Animals animals;
     Enemies enemies;
+    Crops crops;
+    struct Cheats {
+        int seeds;  // cuántas de cada tipo da "$seeds" sin cantidad
+        int gold;   // cuánto da "$gold" sin cantidad
+    } cheats;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

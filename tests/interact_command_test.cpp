@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "server/config/server_config.h"
+#include "server/game/characters/animals/chicken/chicken.h"
+#include "server/game/characters/animals/cow/cow.h"
 #include "tests/fake_game_context.h"
 
 namespace {
@@ -15,12 +17,16 @@ class InteractCommandTest: public ::testing::Test {
 protected:
     // Pone un animal en `cell`; si `ready`, ya tiene leche (sin moverse de esa celda).
     Animal& add(AnimalKind kind, const Position& cell, bool ready = true) {
-        context.animals.push_back(
-                std::make_unique<Animal>(next_id++, kind, cell, context.location));
+        if (kind == AnimalKind::Cow) {
+            context.animals.push_back(std::make_unique<Cow>(next_id++, cell, context.location));
+        } else {
+            context.animals.push_back(std::make_unique<Chicken>(next_id++, cell, context.location));
+        }
         Animal& animal = *context.animals.back();
         if (ready) {
-            animal.update(server_config().animals.cow_ready_seconds);
-            animal.relocate(context.location, cell);
+            for (int day = 0; day < server_config().animals.cow.production_days; ++day) {
+                animal.start_new_day();
+            }
         }
         return animal;
     }
@@ -91,9 +97,10 @@ TEST_F(InteractCommandTest, ChickensAreNotMilked) {
 
 TEST_F(InteractCommandTest, ACowInAnotherAreaIsIgnored) {
     TestLocation other;
-    context.animals.push_back(std::make_unique<Animal>(0, AnimalKind::Cow, Position{0, 0}, other));
-    context.animals.back()->update(server_config().animals.cow_ready_seconds);
-    context.animals.back()->relocate(other, Position{0, 0});
+    context.animals.push_back(std::make_unique<Cow>(0, Position{0, 0}, other));
+    for (int day = 0; day < server_config().animals.cow.production_days; ++day) {
+        context.animals.back()->start_new_day();
+    }
     interact();
     EXPECT_TRUE(context.animals.back()->is_ready());
 }

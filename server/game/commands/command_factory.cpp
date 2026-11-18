@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "server/game/commands/chat_command.h"
+#include "server/game/commands/click_command.h"
 #include "server/game/commands/enter_portal_command.h"
 #include "server/game/commands/interact_command.h"
 #include "server/game/commands/move_command.h"
@@ -44,6 +45,7 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
                 {GameOp::Chat, with_payload<ChatCommand>(&ServerProtocol::recv_chat)},
                 {GameOp::Interact, without_payload<InteractCommand>()},
                 {GameOp::Typing, with_payload<TypingCommand>(&ServerProtocol::recv_typing)},
+                {GameOp::Click, with_payload<ClickCommand>(&ServerProtocol::recv_click)},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

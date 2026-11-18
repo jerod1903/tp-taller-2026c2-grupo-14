@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "common/map/CabinInterior.h"
+#include "server/game/characters/player.h"
 
 Cabin::Cabin(std::string name, Grid grid, const Position& door_pos,
              std::vector<Position> bed_slots):
@@ -32,6 +33,17 @@ SpawnPoint Cabin::bed_spawn(uint32_t player_id) {
 }
 
 const std::map<uint32_t, Position>& Cabin::get_beds() const { return beds; }
+
+bool Cabin::is_in_bed(const Player& player) const {
+    auto bed = beds.find(player.get_id());
+    if (&player.get_location() != this || bed == beds.end()) {
+        return false;
+    }
+    const Position& corner = bed->second;
+    const Position& pos = player.get_position();
+    return pos.x >= corner.x && pos.x < corner.x + stardew::maps::BED_WIDTH && pos.y >= corner.y &&
+           pos.y < corner.y + stardew::maps::BED_HEIGHT;
+}
 
 std::size_t Cabin::bed_slot_count() const { return bed_slots.size(); }
 

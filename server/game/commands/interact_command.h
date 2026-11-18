@@ -5,11 +5,9 @@
 
 #include "server/game/commands/game_command.h"
 
-// El jugador apreto la tecla de interactuar. Por ahora solo sirve para ordeñar: busca la vaca
-// lista mas cercana en su misma area, a lo sumo a MILKING_REACH casillas (de centro a centro).
-// Si la encuentra, le suma una leche al inventario, deja a la vaca sin leche y le manda el
-// inventario nuevo. Si el inventario esta lleno, le avisa por el chat y la vaca sigue lista.
-// Si no hay ninguna vaca lista cerca, no pasa nada.
+// El jugador apretó la tecla de interactuar: se hace la primera de interactions() que tenga con
+// qué hacerse al alcance. Si se hizo, cansa y le manda el inventario nuevo; si no le entraba en
+// el inventario, le avisa por el chat. Si no hay ninguna al alcance, no pasa nada.
 class InteractCommand: public GameCommand {
 public:
     explicit InteractCommand(uint32_t player_id);

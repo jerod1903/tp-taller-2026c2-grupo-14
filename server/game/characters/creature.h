@@ -29,6 +29,11 @@ public:
     // Hacia dónde camina; NONE frena en el acto. En diagonal va a la misma velocidad.
     void set_direction(Direction dir);
     Direction get_direction() const;
+    // Hacia dónde mira: la última dirección en la que caminó (en diagonal, el costado). Arranca
+    // mirando abajo.
+    Direction get_facing() const;
+    // La celda que tiene adelante, donde usa la herramienta.
+    Position facing_cell() const;
     // El centro, en celdas, para que el cliente lo dibuje donde está.
     float get_x() const;
     float get_y() const;
@@ -51,6 +56,7 @@ protected:
     float base_speed;
     int damage;
     Direction direction = Direction::NONE;
+    Direction facing = Direction::DOWN;
     float x;
     float y;
     bool stepped = false;
