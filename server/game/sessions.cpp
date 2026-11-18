@@ -5,6 +5,7 @@
 
 #include "common/logger.h"
 #include "server/config/server_config.h"
+#include "server/game/snapshot_builder.h"
 
 Sessions::Sessions(std::string world_id, World& world):
         world_id(std::move(world_id)), world(world) {}
@@ -25,6 +26,7 @@ void Sessions::add_player(uint32_t player_id, const GameMember& member,
     if (Player* character = world.find_player(player_id)) {
         send(*outbox, character->get_inventory_state());
     }
+    send(*outbox, SnapshotBuilder::farm_state(world.get_farm()));
     players.emplace(player_id, ConnectedPlayer{std::move(outbox), std::move(info)});
 }
 

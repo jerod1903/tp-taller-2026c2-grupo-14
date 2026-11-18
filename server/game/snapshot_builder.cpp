@@ -79,3 +79,13 @@ Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
     }
     return snapshot;
 }
+
+FarmState SnapshotBuilder::farm_state(const Farm& farm) {
+    FarmState state{farm.get_name(), {}};
+    for (const auto& [pos, plot]: farm.get_plots()) {
+        state.tiles.push_back(FarmTile{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y),
+                                       plot.soil, plot.crop.get_type(), plot.crop.get_stage(),
+                                       false, plot.crop.is_ready()});
+    }
+    return state;
+}

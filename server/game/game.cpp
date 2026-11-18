@@ -39,6 +39,9 @@ void Game::run() {
             world->update(tick_seconds);
             ++tick;
             broadcast_snapshot();
+            if (world->get_farm().take_changes()) {
+                player_sessions.broadcast(SnapshotBuilder::farm_state(world->get_farm()));
+            }
             next += period;
             std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
             if (next < now) {
