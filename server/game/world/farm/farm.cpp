@@ -66,8 +66,14 @@ std::optional<ItemType> Farm::pick_up(const Position& pos) {
 
 void Farm::start_new_day() {
     for (const std::unique_ptr<Animal>& animal: animals) {
-        std::optional<ItemType> dropped = animal->start_new_day();
-        if (dropped) {
+        animal->start_new_day();
+    }
+    collect_drops();
+}
+
+void Farm::collect_drops() {
+    for (const std::unique_ptr<Animal>& animal: animals) {
+        if (std::optional<ItemType> dropped = animal->take_drop()) {
             // Si la celda ya tiene algo, el nuevo se pierde
             ground_items.emplace(animal->get_position(), *dropped);
         }
@@ -137,5 +143,6 @@ bool Farm::take_changes() { return std::exchange(changed, false); }
 
 void Farm::update(float dt) {
     update_entities(dt);
+    collect_drops();
     cabin->update(dt);
 }

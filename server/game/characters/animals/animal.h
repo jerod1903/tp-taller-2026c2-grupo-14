@@ -19,14 +19,17 @@ public:
     virtual AnimalKind get_kind() const = 0;
     // Si tiene algo para que el jugador le saque (la vaca, leche). Por defecto nunca.
     virtual bool is_ready() const;
-    // Lo que deja en el piso de su celda al empezar el día (la gallina, un huevo), si deja algo.
-    virtual std::optional<ItemType> start_new_day() = 0;
+    virtual void start_new_day() = 0;
+    // Lo que dejó en el piso desde la última vez que se preguntó (la gallina, un huevo).
+    virtual std::optional<ItemType> take_drop();
 
     void update(float dt) override;
 
+protected:
+    std::mt19937 rng;
+
 private:
     float time_left = 0;  // segundos hasta elegir otra direccion
-    std::mt19937 rng;
 
     void choose_direction();
 };

@@ -49,7 +49,7 @@ public:
     // Levanta el objeto de la celda, si hay uno.
     std::optional<ItemType> pick_up(const Position& pos);
 
-    // Los animales producen; lo que dejan en el piso queda en su celda.
+    // Los animales cuentan un día más; lo que dejan en el piso queda en su celda.
     void start_new_day();
 
     // Un golpe de pala: pasto -> dirt -> tilled. false si la celda no se puede cavar (fuera de la
@@ -64,7 +64,7 @@ public:
     // true si los plots cambiaron desde la última vez que se preguntó (para mandar el FarmState).
     bool take_changes();
 
-    // Actualiza también la Cabin.
+    // Actualiza también la Cabin y levanta lo que dejaron los animales en el tick.
     void update(float dt) override;
 
 private:
@@ -77,6 +77,8 @@ private:
     bool changed = false;
 
     int count_of(AnimalKind kind) const;
+    // Pone en el piso, en su celda, lo que dejó cada animal.
+    void collect_drops();
 };
 
 #endif  // FARM_H

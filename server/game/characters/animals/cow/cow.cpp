@@ -10,11 +10,10 @@ AnimalKind Cow::get_kind() const { return AnimalKind::Cow; }
 
 bool Cow::is_ready() const { return ready; }
 
-std::optional<ItemType> Cow::start_new_day() {
+void Cow::start_new_day() {
     if (!ready && --days_left <= 0) {
         ready = true;
     }
-    return std::nullopt;
 }
 
 void Cow::milk() {

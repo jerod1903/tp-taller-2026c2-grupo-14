@@ -2,7 +2,6 @@
 #define COW_H
 
 #include <cstdint>
-#include <optional>
 #include <random>
 
 #include "server/game/characters/animals/animal.h"
@@ -16,8 +15,7 @@ public:
 
     AnimalKind get_kind() const override;
     bool is_ready() const override;
-    // Nunca deja nada en el piso: la leche se saca ordeñando.
-    std::optional<ItemType> start_new_day() override;
+    void start_new_day() override;
     // La deja sin leche y vuelve a contar los días.
     void milk();
 

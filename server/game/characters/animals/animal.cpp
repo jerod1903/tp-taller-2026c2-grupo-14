@@ -17,6 +17,8 @@ Animal::Animal(uint32_t id, const Position& pos, Location& location, uint32_t se
 
 bool Animal::is_ready() const { return false; }
 
+std::optional<ItemType> Animal::take_drop() { return std::nullopt; }
+
 void Animal::update(float dt) {
     time_left -= dt;
     if (time_left <= 0) {
