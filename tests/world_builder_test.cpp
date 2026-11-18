@@ -174,3 +174,30 @@ TEST(WorldBuilderExampleTest, TheValidExampleMapBuilds) {
 }
 
 }  // namespace
+
+TEST_F(WorldBuilderTest, TheMarketHasTheFourMerchants) {
+    Market market = build_market(make_map(), *world);
+    for (const char* name: {"Marnie", "Clint", "Pierre", "Robin"}) {
+        EXPECT_NE(market.find_merchant(name), nullptr) << name;
+    }
+}
+
+TEST_F(WorldBuilderTest, MarnieSellsAnimalsAtTheConfiguredPrice) {
+    Market market = build_market(make_map(), *world);
+    const Offer* cow = market.find_merchant("Marnie")->find_sold("vaca");
+    ASSERT_NE(cow, nullptr);
+    EXPECT_EQ(cow->price, server_config().market.cow_price);
+}
+
+TEST_F(WorldBuilderTest, PierreBuysMilk) {
+    Market market = build_market(make_map(), *world);
+    const Offer* milk = market.find_merchant("Pierre")->find_bought("leche");
+    ASSERT_NE(milk, nullptr);
+    EXPECT_EQ(milk->price, server_config().market.milk_buyback);
+}
+
+TEST_F(WorldBuilderTest, MerchantsStandOnBlockedCellsOfTheMarket) {
+    Market market = build_market(make_map(), *world);
+    const Position& pos = market.find_merchant("Marnie")->get_position();
+    EXPECT_FALSE(town().get_market().is_walkable(pos));
+}

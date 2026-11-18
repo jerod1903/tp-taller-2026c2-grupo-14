@@ -11,6 +11,7 @@
 
 #include "server/game/characters/player.h"
 #include "server/game/commands/game_context.h"
+#include "server/game/commands/player_commerce.h"
 #include "tests/world_helpers.h"
 
 // GameContext sin Game: tiene un jugador ya conectado y anota lo que le piden los comandos.
@@ -18,7 +19,8 @@ class FakeGameContext:
         public GameContext,
         public PlayerSessions,
         public PlayerMovement,
-        public PlayerCharacters {
+        public PlayerCharacters,
+        public PlayerCommerce {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -31,6 +33,7 @@ public:
     PlayerSessions& sessions() override { return *this; }
     PlayerMovement& movement() override { return *this; }
     PlayerCharacters& characters() override { return *this; }
+    PlayerCommerce& commerce() override { return *this; }
 
     Player* find_player(uint32_t player_id) override {
         return player_id == PLAYER_ID ? &player : nullptr;
@@ -67,6 +70,16 @@ public:
 
     const std::vector<std::unique_ptr<Animal>>& farm_animals() override { return animals; }
 
+    std::optional<ChatMessage> talk(Player&, const Position& cell) override {
+        clicked.push_back(cell);
+        return greeting;
+    }
+
+    TradeReply trade(Player&, const std::string& command) override {
+        commands.push_back(command);
+        return trade_reply;
+    }
+
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.
     std::vector<std::unique_ptr<Animal>> animals;
 
@@ -83,6 +96,13 @@ public:
     std::vector<Added> added;
     std::vector<uint32_t> removed;
     std::vector<uint32_t> entered_portal;
+
+    // Las celdas que se clickearon y lo que contesta talk (nullopt: no había nadie ahí).
+    std::vector<Position> clicked;
+    std::optional<ChatMessage> greeting;
+    // Los comandos que recibió trade y lo que contesta.
+    std::vector<std::string> commands;
+    TradeReply trade_reply{ChatMessage{ChatKind::Merchant, "Marnie", "ok"}, false};
 };
 
 #endif  // FAKE_GAME_CONTEXT_H
