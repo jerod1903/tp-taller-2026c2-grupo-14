@@ -44,14 +44,67 @@ void DungeonLevel::update(float dt) {
 
 void DungeonLevel::repopulate() {
     remove_enemies();
+    ores.clear();
     for (int i = 0; i < server_config().enemies.skeleton.count; ++i) {
         std::optional<Position> cell = random_free_cell(
                 rng, [this](const Position& pos) { return far_from_portals(pos); });
         if (!cell) {
-            return;
+            break;
         }
         spawn(std::make_unique<Skeleton>(next_enemy_id++, *cell, *this, visitors));
     }
+    populate_ores();
+}
+
+bool DungeonLevel::is_walkable(const Position& pos) const {
+    return Location::is_walkable(pos) && ores.find(pos) == ores.end();
+}
+
+const std::map<Position, DungeonLevel::OreNode>& DungeonLevel::get_ores() const { return ores; }
+
+DungeonLevel::OreNode* DungeonLevel::ore_at(const Position& pos) {
+    auto ore = ores.find(pos);
+    return ore == ores.end() ? nullptr : &ore->second;
+}
+
+void DungeonLevel::remove_ore(const Position& pos) { ores.erase(pos); }
+
+void DungeonLevel::populate_ores() {
+    const ServerConfig::Mining& mining = server_config().mining;
+    for (ItemType ore: {ItemType::Coal, ItemType::Lapis, ItemType::Silver, ItemType::GoldOre}) {
+        if (ore == ItemType::GoldOre && depth < mining.gold_min_depth) {
+            continue;
+        }
+        const ServerConfig::OreSpec& spec = mining.of(ore);
+        for (int i = 0; i < spec.count; ++i) {
+            std::optional<Position> cell = random_free_cell(
+                    rng, [this](const Position& pos) { return far_from_portals(pos); });
+            if (!cell) {
+                return;
+            }
+            ores.emplace(*cell, OreNode{ore, spec.hits});
+        }
+    }
+}
+
+DungeonLevel::StrikeResult DungeonLevel::strike_ore(const Position& pos) {
+    return strike_ore(pos, std::uniform_real_distribution<float>(0.0f, 1.0f)(rng));
+}
+
+DungeonLevel::StrikeResult DungeonLevel::strike_ore(const Position& pos, float roll) {
+    OreNode* node = ore_at(pos);
+    if (node == nullptr) {
+        return {Strike::NoOre};
+    }
+    if (--node->hits_left > 0) {
+        return {Strike::Chipped};
+    }
+    ItemType ore = node->ore;
+    remove_ore(pos);
+    if (ore == ItemType::Lapis && roll < server_config().mining.lapis_break_chance) {
+        return {Strike::Crumbled};
+    }
+    return {Strike::Mined, ore};
 }
 
 void DungeonLevel::remove_enemies() {

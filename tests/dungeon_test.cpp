@@ -158,4 +158,122 @@ TEST_F(RepopulateTest, OnlyAnEmptyLevelRepopulates) {
     }
 }
 
+class MiningLevelTest: public ::testing::Test {
+protected:
+    MiningLevelTest() { level.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}}); }
+
+    // Busca la primera celda que tenga el mineral pedido (después de repoblar).
+    Position find_ore(DungeonLevel& target, ItemType ore) const {
+        for (const auto& [pos, node]: target.get_ores()) {
+            if (node.ore == ore) {
+                return pos;
+            }
+        }
+        ADD_FAILURE() << "No se generó el mineral esperado en el nivel";
+        return Position{0, 0};
+    }
+
+    int count_ore(const DungeonLevel& target, ItemType ore) const {
+        int total = 0;
+        for (const auto& [pos, node]: target.get_ores()) {
+            if (node.ore == ore) {
+                ++total;
+            }
+        }
+        return total;
+    }
+
+    TestLocation outside;
+    DungeonLevel level{"level", make_grid(20, 20), 0, 7};
+    TestCreature visitor{level, Position{0, 1}};
+};
+
+TEST_F(MiningLevelTest, CoalIsMinedInOneStrike) {
+    level.set_visitors({&visitor});
+    const Position pos = find_ore(level, ItemType::Coal);
+
+    DungeonLevel::StrikeResult result = level.strike_ore(pos, 0.5f);
+    EXPECT_EQ(result.strike, DungeonLevel::Strike::Mined);
+    EXPECT_EQ(result.ore, ItemType::Coal);
+    EXPECT_EQ(level.ore_at(pos), nullptr);
+}
+
+TEST_F(MiningLevelTest, LapisTakesTwoStrikesAndYieldsItemOnHighRoll) {
+    level.set_visitors({&visitor});
+    const Position pos = find_ore(level, ItemType::Lapis);
+
+    DungeonLevel::StrikeResult first = level.strike_ore(pos, 0.5f);
+    EXPECT_EQ(first.strike, DungeonLevel::Strike::Chipped);
+    EXPECT_NE(level.ore_at(pos), nullptr);
+
+    DungeonLevel::StrikeResult second = level.strike_ore(pos, 0.99f);
+    EXPECT_EQ(second.strike, DungeonLevel::Strike::Mined);
+    EXPECT_EQ(second.ore, ItemType::Lapis);
+    EXPECT_EQ(level.ore_at(pos), nullptr);
+}
+
+TEST_F(MiningLevelTest, LapisCrumblesOnLowRollWithoutDroppingItem) {
+    level.set_visitors({&visitor});
+    const Position pos = find_ore(level, ItemType::Lapis);
+
+    ASSERT_EQ(level.strike_ore(pos, 0.5f).strike, DungeonLevel::Strike::Chipped);
+
+    DungeonLevel::StrikeResult second = level.strike_ore(pos, 0.0f);
+    EXPECT_EQ(second.strike, DungeonLevel::Strike::Crumbled);
+    EXPECT_EQ(second.ore, ItemType::Empty);
+    EXPECT_EQ(level.ore_at(pos), nullptr);
+}
+
+TEST_F(MiningLevelTest, SilverAndGoldRequireConfiguredStrikes) {
+    DungeonLevel deep_level{"level", make_grid(20, 20), 4, 7};
+    deep_level.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
+    deep_level.set_visitors({&visitor});
+
+    const Position silver_pos = find_ore(deep_level, ItemType::Silver);
+    const int silver_hits = server_config().mining.silver.hits;
+    for (int i = 0; i < silver_hits - 1; ++i) {
+        EXPECT_EQ(deep_level.strike_ore(silver_pos, 0.99f).strike, DungeonLevel::Strike::Chipped);
+    }
+    DungeonLevel::StrikeResult silver_final = deep_level.strike_ore(silver_pos, 0.99f);
+    EXPECT_EQ(silver_final.strike, DungeonLevel::Strike::Mined);
+    EXPECT_EQ(silver_final.ore, ItemType::Silver);
+
+    const Position gold_pos = find_ore(deep_level, ItemType::GoldOre);
+    const int gold_hits = server_config().mining.gold.hits;
+    for (int i = 0; i < gold_hits - 1; ++i) {
+        EXPECT_EQ(deep_level.strike_ore(gold_pos, 0.99f).strike, DungeonLevel::Strike::Chipped);
+    }
+    DungeonLevel::StrikeResult gold_final = deep_level.strike_ore(gold_pos, 0.99f);
+    EXPECT_EQ(gold_final.strike, DungeonLevel::Strike::Mined);
+    EXPECT_EQ(gold_final.ore, ItemType::GoldOre);
+}
+
+TEST_F(MiningLevelTest, StrikingEmptyCellReturnsNoOre) {
+    const Position empty{2, 2};
+    DungeonLevel::StrikeResult result = level.strike_ore(empty, 0.5f);
+    EXPECT_EQ(result.strike, DungeonLevel::Strike::NoOre);
+    EXPECT_EQ(result.ore, ItemType::Empty);
+}
+
+TEST_F(MiningLevelTest, OreBlocksWalkingUntilBroken) {
+    level.set_visitors({&visitor});
+    const Position pos = find_ore(level, ItemType::Coal);
+
+    EXPECT_FALSE(level.is_walkable(pos));
+    level.strike_ore(pos, 0.5f);
+    EXPECT_TRUE(level.is_walkable(pos));
+}
+
+TEST_F(MiningLevelTest, GoldOnlyAppearsFromDepthFourOnward) {
+    DungeonLevel depth3{"level", make_grid(20, 20), 3, 7};
+    depth3.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
+    depth3.set_visitors({&visitor});
+    EXPECT_EQ(count_ore(depth3, ItemType::GoldOre), 0);
+
+    DungeonLevel depth4{"level", make_grid(20, 20), 4, 7};
+    depth4.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
+    depth4.set_visitors({&visitor});
+    EXPECT_GT(count_ore(depth4, ItemType::GoldOre), 0);
+}
+
 }  // namespace

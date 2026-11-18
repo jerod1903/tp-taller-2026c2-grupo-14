@@ -120,6 +120,25 @@ struct ServerConfig {
         const CropSpec& of(CropType type) const;
     };
 
+    struct OreSpec {
+        int hits;   // golpes de pico para sacarlo
+        int count;  // cuántos aparecen en cada nivel
+        int price;  // lo que paga Clint
+    };
+
+    struct Mining {
+        float lapis_break_chance;
+        float silver_orc_chance;
+        int gold_min_depth;  // profundidad mínima del oro; el nivel de entrada es la 0
+        OreSpec coal;
+        OreSpec lapis;
+        OreSpec silver;
+        OreSpec gold;
+
+        // Lanza std::invalid_argument si item no es un mineral.
+        const OreSpec& of(ItemType ore) const;
+    };
+
     Game game;
     Player player;
     Energy energy;
@@ -131,6 +150,7 @@ struct ServerConfig {
         int gold;   // cuánto da "$gold" sin cantidad
     } cheats;
     Market market;
+    Mining mining;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.
