@@ -71,6 +71,11 @@ inline const char* const CURSOR_CHAT = "_";
 inline const char* const MARCA_PRIVADO = " (privado)";
 inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
 inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
+inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
+        {ItemType::Milk, Sonido::Ordenar},
+        {ItemType::Egg, Sonido::Recoger},
+};
+
 inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
         {ChatKind::Public, {255, 255, 255, 255}},
         {ChatKind::Private, {255, 150, 200, 255}},

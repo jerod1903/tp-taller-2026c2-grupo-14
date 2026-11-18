@@ -219,14 +219,17 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
 
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
-    int leche = 0;
-    for (const InventorySlot& slot: estado.inventario.slots) {
-        leche += slot.item == ItemType::Milk ? slot.quantity : 0;
+    for (const auto& [item, sonido]: SONIDOS_AL_RECIBIR) {
+        int cantidad = 0;
+        for (const InventorySlot& slot: estado.inventario.slots) {
+            cantidad += slot.item == item ? slot.quantity : 0;
+        }
+        auto anterior = cantidades_anteriores.find(item);
+        if (anterior != cantidades_anteriores.end() && cantidad > anterior->second) {
+            reproductor.reproducir(sonido);
+        }
+        cantidades_anteriores[item] = cantidad;
     }
-    if (leche_anterior && leche > *leche_anterior) {
-        reproductor.reproducir(Sonido::Ordenar);
-    }
-    leche_anterior = leche;
     auto propio = std::find_if(
             estado.jugadores.begin(), estado.jugadores.end(),
             [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
