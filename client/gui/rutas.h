@@ -20,6 +20,7 @@ inline const char* const RUTA_ICONO_ORO = "Assets/Caverns/items and trap_animati
 
 inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
+inline const char* const RUTA_HOJA_CULTIVOS = "Assets/Farm/Crops/Spring Crops.png";
 
 inline const char* const RUTA_BOTON_MENU = "Assets/Menu/botones/boton_320.png";
 inline const char* const RUTA_BOTON_DESHABILITADO =

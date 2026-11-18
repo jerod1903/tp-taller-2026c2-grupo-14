@@ -76,6 +76,14 @@ inline const std::map<SoilType, stardew::maps::TileType> TILES_SUELO = {
         {SoilType::Tilled, stardew::maps::TileType::TilledSoil},
 };
 
+inline constexpr int TAMANO_CUADRO_CULTIVO = 16;
+inline const std::map<CropType, int> FILAS_CULTIVOS = {
+        {CropType::Strawberry, 1},
+        {CropType::Scallion, 3},
+        {CropType::Potato, 5},
+        {CropType::Pumpkin, 7},
+};
+
 inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
         {ItemType::Milk, Sonido::Ordenar},
         {ItemType::Egg, Sonido::Recoger},

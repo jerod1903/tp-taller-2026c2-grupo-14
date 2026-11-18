@@ -50,6 +50,7 @@ private:
     void dibujar_area(const EntidadGrafica& propio, const FarmState& granja);
     void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
+    Sprite sprite_cultivo(const FarmTile& celda);
     void dibujar_inventario(const InventoryState& inventario);
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
@@ -62,6 +63,7 @@ private:
     ConstructorCapas constructor_capas;
     SDL2pp::Texture hoja_vaca;
     SDL2pp::Texture hoja_gallina;
+    SDL2pp::Texture hoja_cultivos;
     struct Aspecto {
         const FormatoAnimacion* formato;
         std::vector<Capa> capas;
