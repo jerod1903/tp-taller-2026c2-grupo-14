@@ -85,7 +85,7 @@ FarmState SnapshotBuilder::farm_state(const Farm& farm) {
     for (const auto& [pos, plot]: farm.get_plots()) {
         state.tiles.push_back(FarmTile{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y),
                                        plot.soil, plot.crop.get_type(), plot.crop.get_stage(),
-                                       false, plot.crop.is_ready()});
+                                       plot.crop.needs_water(), plot.crop.is_ready()});
     }
     for (const auto& [pos, item]: farm.get_ground_items()) {
         state.items.push_back(

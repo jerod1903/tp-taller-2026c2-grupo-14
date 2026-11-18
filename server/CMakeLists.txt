@@ -13,6 +13,7 @@ target_sources(taller_server
     game/tools/tool.cpp
     game/tools/shovel.cpp
     game/tools/seed.cpp
+    game/tools/watering_can.cpp
     game/cheats/cheat.cpp
     game/cheats/seeds_cheat.cpp
     game/cheats/gold_cheat.cpp
@@ -77,6 +78,7 @@ target_sources(taller_server
     game/tools/tool.h
     game/tools/shovel.h
     game/tools/seed.h
+    game/tools/watering_can.h
     game/cheats/cheat.h
     game/cheats/seeds_cheat.h
     game/cheats/gold_cheat.h

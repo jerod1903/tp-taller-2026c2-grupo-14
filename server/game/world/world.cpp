@@ -59,6 +59,10 @@ bool World::plant(const Player& player, CropType crop) {
     return &player.get_location() == farm.get() && farm->plant(player.facing_cell(), crop);
 }
 
+bool World::water(const Player& player) {
+    return &player.get_location() == farm.get() && farm->water(player.facing_cell());
+}
+
 const Outcome& World::milk(Player& player) { return milk_nearest_cow(farm->get_animals(), player); }
 
 Movement& World::get_movement() { return movement; }
@@ -94,4 +98,5 @@ void World::update(float dt) {
     if (clock.update(dt)) {
         start_new_day();
     }
+    farm->update_time(clock.get_minute_of_day());
 }

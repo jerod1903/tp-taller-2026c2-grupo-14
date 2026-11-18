@@ -71,6 +71,8 @@ public:
 
     bool plant(const Player&, CropType) override { return false; }
 
+    bool water(const Player&) override { return false; }
+
     const Outcome& milk(Player& player) override { return milk_nearest_cow(animals, player); }
 
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.

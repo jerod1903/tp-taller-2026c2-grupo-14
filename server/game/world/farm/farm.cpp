@@ -57,8 +57,9 @@ void Farm::start_new_day() {
         animal->start_new_day();
     }
     collect_drops();
+    minute = 0.0f;
     for (auto& [pos, plot]: plots) {
-        if (plot.crop.is_planted() && !plot.crop.is_ready()) {
+        if (plot.crop.is_planted()) {
             plot.crop.grow();
             changed = true;
         }
@@ -114,7 +115,7 @@ bool Farm::plant(const Position& pos, CropType type) {
         plot->second.crop.is_planted()) {
         return false;
     }
-    plot->second.crop = Crop{type};
+    plot->second.crop = Crop{type, minute};
     changed = true;
     return true;
 }
@@ -129,6 +130,22 @@ std::optional<CropHarvest> Farm::harvest(const Position& pos) {
     plot->second.crop.harvested();
     changed = true;
     return harvested;
+}
+
+bool Farm::water(const Position& pos) {
+    auto plot = plots.find(pos);
+    if (plot == plots.end() || !plot->second.crop.water(minute)) {
+        return false;
+    }
+    changed = true;
+    return true;
+}
+
+void Farm::update_time(float minute_of_day) {
+    minute = minute_of_day;
+    for (auto& [pos, plot]: plots) {
+        changed |= plot.crop.update_time(minute);
+    }
 }
 
 const std::map<Position, Plot>& Farm::get_plots() const { return plots; }

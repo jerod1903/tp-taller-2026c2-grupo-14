@@ -53,6 +53,10 @@ public:
     bool dig(const Position& pos);
     // Planta en una celda tilled y vacía. false si no se puede.
     bool plant(const Position& pos, CropType type);
+    // Riega el cultivo de la celda. false si no hay o no lo necesitaba.
+    bool water(const Position& pos);
+    // La hora del día, en minutos de juego desde las 6:00: abre y cierra las ventanas de riego.
+    void update_time(float minute_of_day);
     // Cosecha un cultivo listo: la celda queda vacía, o vuelve a crecer si el cultivo vuelve a dar.
     // nullopt si no hay nada para cosechar.
     std::optional<CropHarvest> harvest(const Position& pos);
@@ -68,6 +72,7 @@ private:
     std::vector<std::unique_ptr<Animal>> animals;
     std::map<Position, Plot> plots;
     uint32_t next_animal_id = 0;
+    float minute = 0.0f;  // la hora del día, para las ventanas de riego
 
     int count_of(AnimalKind kind) const;
     // Pone en el piso, en su celda, lo que dejó cada animal.

@@ -74,6 +74,7 @@ target_sources(taller_tests
     ../server/game/tools/tool.cpp
     ../server/game/tools/shovel.cpp
     ../server/game/tools/seed.cpp
+    ../server/game/tools/watering_can.cpp
     ../server/game/cheats/cheat.cpp
     ../server/game/cheats/seeds_cheat.cpp
     ../server/game/cheats/gold_cheat.cpp
