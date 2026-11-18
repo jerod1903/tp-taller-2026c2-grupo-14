@@ -10,6 +10,7 @@ target_sources(taller_tests
     character_sheets_test.cpp
     chat_command_test.cpp
     interact_command_test.cpp
+    click_command_test.cpp
     typing_command_test.cpp
     transicion_area_test.cpp
     command_factory_test.cpp
@@ -68,6 +69,7 @@ target_sources(taller_tests
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
+    ../server/game/commands/click_command.cpp
     ../server/game/commerce/merchant.cpp
     ../server/game/commerce/market.cpp
     ../server/game/commands/typing_command.cpp

@@ -107,3 +107,13 @@ TEST_F(CommandFactoryTest, SelectSlotClosedWithoutDataIsNullptr) {
 
 
 }  // namespace
+
+TEST_F(CommandFactoryTest, ClickReadsTheCellAndBuildsAClickCommand) {
+    ASSERT_TRUE(client->send_u16(16));
+    ASSERT_TRUE(client->send_u16(8));
+    std::shared_ptr<GameCommand> command = factory->create(GameOp::Click, PLAYER_ID);
+    ASSERT_NE(command, nullptr);
+    command->execute(context);
+    ASSERT_EQ(context.clicked.size(), 1u);
+    EXPECT_EQ(context.clicked[0], (Position{16, 8}));
+}

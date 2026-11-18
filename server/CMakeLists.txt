@@ -8,6 +8,7 @@ target_sources(taller_server
     game/commands/chat_command.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
+    game/commands/click_command.cpp
     game/commerce/merchant.cpp
     game/commerce/market.cpp
     game/commands/typing_command.cpp
@@ -58,6 +59,7 @@ target_sources(taller_server
     game/commands/chat_command.h
     game/commands/command_factory.h
     game/commands/interact_command.h
+    game/commands/click_command.h
     game/commands/typing_command.h
     game/commands/game_command.h
     game/commands/game_context.h

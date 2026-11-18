@@ -206,3 +206,15 @@ TEST_F(ServerProtocolTest, RecvTypingClosedWithoutDataIsNullopt) {
     client->shutdown();
     EXPECT_FALSE(server->recv_typing().has_value());
 }
+
+TEST_F(ServerProtocolTest, RecvClickReadsTheCell) {
+    ASSERT_TRUE(client->send_u16(14));
+    ASSERT_TRUE(client->send_u16(3));
+    EXPECT_EQ(server->recv_click(), std::optional<ClickRequest>(ClickRequest{14, 3}));
+}
+
+TEST_F(ServerProtocolTest, RecvClickCutInTheMiddleIsNullopt) {
+    ASSERT_TRUE(client->send_u16(14));
+    client->shutdown();
+    EXPECT_FALSE(server->recv_click().has_value());
+}

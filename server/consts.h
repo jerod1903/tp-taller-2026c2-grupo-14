@@ -28,6 +28,8 @@ public:
     static constexpr char PRIVATE_CHAT_PREFIX = '@';
     // Aviso al que mando un privado a alguien que no esta: "<nombre> no está conectado".
     static constexpr const char* NOT_CONNECTED = " no está conectado";
+    // Chat: "/comando ..." es para el comerciante con el que habla el jugador.
+    static constexpr char MERCHANT_COMMAND_PREFIX = '/';
 };
 
 #endif  // SERVER_CONSTANTS_H
