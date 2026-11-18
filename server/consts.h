@@ -34,6 +34,10 @@ public:
     static constexpr const char* NOT_CONNECTED = " no está conectado";
     // Chat: "/comando ..." es para el comerciante con el que habla el jugador.
     static constexpr char MERCHANT_COMMAND_PREFIX = '/';
+    // Respuestas a GameOp::Invite, por el chat como mensaje de sistema.
+    static constexpr const char* INVITE_CODE = "Código para invitar: ";
+    static constexpr const char* INVITE_NOT_OWNER = "Solo quien creó la partida puede invitar";
+    static constexpr const char* INVITE_FAILED = "No se pudo generar el código de invitación";
 };
 
 #endif  // SERVER_CONSTANTS_H

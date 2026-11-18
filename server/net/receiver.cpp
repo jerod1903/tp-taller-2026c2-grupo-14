@@ -2,14 +2,20 @@
 
 #include <memory>
 #include <optional>
+#include <utility>
 
 #include "common/game_dto.h"
 #include "common/logger.h"
 #include "common/net/liberror.h"
 #include "server/game/commands/leave_command.h"
 
-Receiver::Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id):
-        protocol(protocol), factory(protocol), inbox(inbox), player_id(player_id) {}
+Receiver::Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id,
+                   std::function<void()> on_invite):
+        protocol(protocol),
+        factory(protocol),
+        inbox(inbox),
+        player_id(player_id),
+        on_invite(std::move(on_invite)) {}
 
 void Receiver::start() {
     Thread::start();
@@ -26,6 +32,10 @@ void Receiver::run() {
             if (*op == GameOp::LeaveGame) {
                 left = true;
                 break;
+            }
+            if (*op == GameOp::Invite) {
+                on_invite();
+                continue;
             }
             std::shared_ptr<GameCommand> command = factory.create(*op, player_id);
             if (!command) {

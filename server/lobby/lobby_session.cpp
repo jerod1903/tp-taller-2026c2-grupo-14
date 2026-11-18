@@ -46,6 +46,17 @@ std::string printable(const std::string& text) {
     return out;
 }
 
+// Lo que se le contesta por el chat al que pidió el código de invitación.
+std::string invite_text(const EnableMultiplayerResponse& response) {
+    if (response.status == LobbyStatus::Ok) {
+        return ServerConstants::INVITE_CODE + response.inviteCode;
+    }
+    if (response.status == LobbyStatus::NotOwner) {
+        return ServerConstants::INVITE_NOT_OWNER;
+    }
+    return ServerConstants::INVITE_FAILED;
+}
+
 }  // namespace
 
 LobbySession::LobbySession(Socket&& peer, GameRegistry& registry):
@@ -230,8 +241,16 @@ bool LobbySession::play(uint32_t player_id, const GameMember& member) {
     Inbox& inbox = registry.attach(*current_game);
     std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(server_config().game.outbox_size);
     inbox.push(std::make_shared<JoinCommand>(player_id, member, outbox));
+    // Pasa la partida a multi y le contesta el código por el chat. Corre en el hilo del Receiver;
+    // con la outbox llena el aviso se pierde, pero no se deja de leer la conexión.
+    auto invite = [this, outbox]() {
+        EnableMultiplayerResponse response = registry.enable_multiplayer(*current_game, *username);
+        try {
+            outbox->try_push(ChatMessage{ChatKind::System, "", invite_text(response)});
+        } catch (const ClosedQueue&) {}  // ya salió de la partida
+    };
     Sender sender(protocol, outbox);
-    Receiver receiver(protocol, inbox, player_id);
+    Receiver receiver(protocol, inbox, player_id, invite);
     sender.start();
     receiver.start();
     receiver.join();

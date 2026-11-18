@@ -328,6 +328,34 @@ protected:
         return reason ? std::optional<EndReason>(static_cast<EndReason>(*reason)) : std::nullopt;
     }
 
+    // Descarta lo que llega hasta el próximo ChatMessage y lo devuelve.
+    std::optional<ChatMessage> recv_chat() {
+        std::optional<uint8_t> tag;
+        while ((tag = client->recv_u8())) {
+            if (*tag == static_cast<uint8_t>(GameMsg::ChatMessage)) {
+                ChatMessage chat{};
+                chat.kind = static_cast<ChatKind>(client->recv_u8().value_or(0));
+                chat.from = client->recv_string().value_or("");
+                chat.text = client->recv_string().value_or("");
+                return chat;
+            }
+            if (*tag == static_cast<uint8_t>(GameMsg::Snapshot)) {
+                recv_snapshot_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::FarmState)) {
+                recv_farm_state_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::InventoryState)) {
+                recv_inventory_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::PlayerInfo)) {
+                recv_player_info_body();
+            } else {
+                return std::nullopt;
+            }
+        }
+        return std::nullopt;
+    }
+
+    void send_invite() { ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Invite))); }
+
     void expect_server_closed() { EXPECT_FALSE(client->recv_u8().has_value()); }
 
     void expect_login_retry_works() {
@@ -819,3 +847,32 @@ TEST_F(LobbySessionTest, LeftPlayerCanEnterTheGameAgain) {
 }
 
 }  // namespace
+
+TEST_F(LobbySessionTest, TheOwnerGetsTheInviteCodeInTheChat) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_create_game("pueblo", "Mi granja", "martin");
+    expect_status(LobbyStatus::Ok);
+    recv_created_game_id();
+    expect_location("pueblo");
+    send_invite();
+    std::optional<ChatMessage> chat = recv_chat();
+    ASSERT_TRUE(chat.has_value());
+    EXPECT_EQ(chat->kind, ChatKind::System);
+    std::string prefix = ServerConstants::INVITE_CODE;
+    EXPECT_EQ(chat->text.rfind(prefix, 0), 0u);
+    EXPECT_GT(chat->text.size(), prefix.size());
+}
+
+TEST_F(LobbySessionTest, AnInvitedPlayerCannotGetTheInviteCode) {
+    send_login("jero");
+    expect_status(LobbyStatus::Ok);
+    send_join_game(CODE, "Invitado");
+    expect_status(LobbyStatus::Ok);
+    expect_entered_ids(MULTI_ID, 1);
+    expect_location("granja");
+    send_invite();
+    std::optional<ChatMessage> chat = recv_chat();
+    ASSERT_TRUE(chat.has_value());
+    EXPECT_EQ(chat->text, ServerConstants::INVITE_NOT_OWNER);
+}
