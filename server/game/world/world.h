@@ -47,6 +47,7 @@ public:
     bool dig(const Player& player) override;
     bool plant(const Player& player, CropType crop) override;
     bool water(const Player& player) override;
+    const Outcome& harvest(Player& player) override;
     const Outcome& milk(Player& player) override;
     // Atiende a MoveCommand.
     Movement& get_movement();

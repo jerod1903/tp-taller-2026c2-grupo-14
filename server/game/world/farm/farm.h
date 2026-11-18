@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <random>
 #include <set>
 #include <string>
 #include <vector>
@@ -57,9 +58,9 @@ public:
     bool water(const Position& pos);
     // La hora del día, en minutos de juego desde las 6:00: abre y cierra las ventanas de riego.
     void update_time(float minute_of_day);
-    // Cosecha un cultivo listo: la celda queda vacía, o vuelve a crecer si el cultivo vuelve a dar.
-    // nullopt si no hay nada para cosechar.
-    std::optional<CropHarvest> harvest(const Position& pos);
+    // Le da al jugador el cultivo listo de la celda, con su calidad: la celda queda vacía, o vuelve
+    // a crecer si el cultivo vuelve a dar. Si no le entra en el inventario, no se cosecha.
+    const Outcome& harvest(const Position& pos, Player& player);
     // Las celdas trabajadas, por posición.
     const std::map<Position, Plot>& get_plots() const;
 
@@ -72,7 +73,8 @@ private:
     std::vector<std::unique_ptr<Animal>> animals;
     std::map<Position, Plot> plots;
     uint32_t next_animal_id = 0;
-    float minute = 0.0f;  // la hora del día, para las ventanas de riego
+    float minute = 0.0f;  // la hora del día, para las ventanas de riego y la calidad
+    std::mt19937 rng{std::random_device{}()};  // la suerte de cada cosecha
 
     int count_of(AnimalKind kind) const;
     // Pone en el piso, en su celda, lo que dejó cada animal.

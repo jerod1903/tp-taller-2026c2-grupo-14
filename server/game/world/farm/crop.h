@@ -20,6 +20,11 @@ public:
     CropType get_type() const;
     // Reparte los días de crecimiento entre las etapas del sprite; la última es "lista".
     uint8_t get_stage() const;
+    // El producto que da al cosecharlo.
+    ItemType product() const;
+    // La calidad si se cosecha a esta hora (en minutos de juego desde las 6:00) con esta suerte:
+    // ver [crops.quality] en server_config.toml.
+    ItemQuality quality(float minute, float luck) const;
     // Plantado, creciendo y sin regar en la ventana actual.
     bool needs_water() const;
 
@@ -41,13 +46,21 @@ private:
     bool watered = false;
     float window_start = 0.0f;  // minuto en que se abrió la ventana actual
     int skipped = 0;            // ventanas de hoy que se cerraron sin riego
-    // Para la calidad: cuánto se tardó en regar, sumado sobre todos los riegos
+    // Para la calidad, desde que se plantó (o volvió a dar): cuánto se tardó en regar, sumado
+    // sobre todos los riegos, cuántos riegos hubo, cuántos se saltearon y cuántos días lleva
+    // lista sin cosechar
     float watering_delay = 0.0f;
     int waterings = 0;
+    int skipped_total = 0;
+    int days_ready = 0;
 
     int days_to_grow() const;
     int window_of(float minute) const;
     bool growing() const;
+    // De 0 a 1: 1 si cada riego fue apenas abrió su ventana.
+    float watering_score() const;
+    // De 0 a 1: 1 si se cosecha apenas quedó lista.
+    float harvest_score(float minute) const;
 };
 
 #endif  // CROP_H

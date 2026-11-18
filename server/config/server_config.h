@@ -86,11 +86,25 @@ struct ServerConfig {
         int regrow_days;          // después de cosechar vuelve a dar en estos días; 0 si no
         int skippable_waterings;  // riegos que se pueden saltear en un día sin que deje de crecer
     };
+    // Cómo se calcula la calidad de una cosecha: un puntaje de 0 a 1 por qué tan rápido se regó y
+    // qué tan rápido se cosechó, por un multiplicador de suerte al azar.
+    struct Quality {
+        float watering_weight;     // cuánto pesa el riego en el puntaje; lo demás, la cosecha
+        float harvest_grace_days;  // días lista sin cosechar hasta que esa parte llega a 0
+        float luck_min;
+        float luck_max;
+        // Puntaje mínimo de cada calidad; por debajo de good, base
+        float good;
+        float excellent;
+        float incredible;
+        float perfect;
+    };
     struct Crops {
         CropSpec strawberry;
         CropSpec scallion;
         CropSpec potato;
         CropSpec pumpkin;
+        Quality quality;
 
         // Lanza std::invalid_argument con CropType::None.
         const CropSpec& of(CropType type) const;

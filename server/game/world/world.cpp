@@ -63,6 +63,13 @@ bool World::water(const Player& player) {
     return &player.get_location() == farm.get() && farm->water(player.facing_cell());
 }
 
+const Outcome& World::harvest(Player& player) {
+    if (&player.get_location() != farm.get()) {
+        return Outcome::not_here();
+    }
+    return farm->harvest(player.facing_cell(), player);
+}
+
 const Outcome& World::milk(Player& player) { return milk_nearest_cow(farm->get_animals(), player); }
 
 Movement& World::get_movement() { return movement; }

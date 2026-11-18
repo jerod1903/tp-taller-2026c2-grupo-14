@@ -177,9 +177,36 @@ ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& nam
     return read;
 }
 
+ServerConfig::Quality read_quality(const toml::table& root) {
+    TomlTableReader quality = subsection(root, "crops", "quality");
+    ServerConfig::Quality read{required_float(quality, "watering_weight"),
+                               positive(required_float(quality, "harvest_grace_days"),
+                                        "harvest_grace_days"),
+                               positive(required_float(quality, "luck_min"), "luck_min"),
+                               positive(required_float(quality, "luck_max"), "luck_max"),
+                               positive(required_float(quality, "good"), "good"),
+                               positive(required_float(quality, "excellent"), "excellent"),
+                               positive(required_float(quality, "incredible"), "incredible"),
+                               positive(required_float(quality, "perfect"), "perfect")};
+    if (read.watering_weight < 0.0f || read.watering_weight > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": 'watering_weight' must be between 0 and 1");
+    }
+    if (read.luck_min > read.luck_max) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'luck_min' is bigger than 'luck_max'");
+    }
+    if (!(read.good < read.excellent && read.excellent < read.incredible &&
+          read.incredible < read.perfect)) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": quality thresholds must go up from 'good' to 'perfect'");
+    }
+    return read;
+}
+
 ServerConfig::Crops read_crops(const toml::table& root) {
     return ServerConfig::Crops{read_crop(root, "strawberry"), read_crop(root, "scallion"),
-                               read_crop(root, "potato"), read_crop(root, "pumpkin")};
+                               read_crop(root, "potato"),     read_crop(root, "pumpkin"),
+                               read_quality(root)};
 }
 
 ServerConfig::Cheats read_cheats(const toml::table& root) {

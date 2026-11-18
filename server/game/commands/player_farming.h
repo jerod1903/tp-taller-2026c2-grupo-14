@@ -14,6 +14,8 @@ public:
     virtual bool plant(const Player& player, CropType crop) = 0;
     // Riega el cultivo de la celda que tiene adelante, si está en la granja. true si regó.
     virtual bool water(const Player& player) = 0;
+    // Cosecha el cultivo listo de la celda que tiene adelante, si está en la granja.
+    virtual const Outcome& harvest(Player& player) = 0;
     // Ordeña la vaca lista más cercana que tenga al alcance.
     virtual const Outcome& milk(Player& player) = 0;
 

@@ -1,6 +1,8 @@
 #include "server/game/world/farm/crop.h"
 
 #include <algorithm>
+#include <array>
+#include <utility>
 
 #include "server/config/server_config.h"
 
@@ -38,6 +40,38 @@ uint8_t Crop::get_stage() const {
     return static_cast<uint8_t>(std::min(last - 1, days_grown * last / days_to_grow()));
 }
 
+ItemType Crop::product() const {
+    switch (type) {
+        case CropType::Strawberry:
+            return ItemType::Strawberry;
+        case CropType::Scallion:
+            return ItemType::Scallion;
+        case CropType::Potato:
+            return ItemType::Potato;
+        case CropType::Pumpkin:
+            return ItemType::Pumpkin;
+        case CropType::None:
+            break;
+    }
+    return ItemType::Empty;
+}
+
+ItemQuality Crop::quality(float minute, float luck) const {
+    const ServerConfig::Quality& config = server_config().crops.quality;
+    float weight = config.watering_weight;
+    float score = (weight * watering_score() + (1.0f - weight) * harvest_score(minute)) * luck;
+    // De la mejor a la peor: la primera cuyo mínimo alcanza
+    const std::array<std::pair<float, ItemQuality>, 4> levels = {{
+            {config.perfect, ItemQuality::Perfect},
+            {config.incredible, ItemQuality::Incredible},
+            {config.excellent, ItemQuality::Excellent},
+            {config.good, ItemQuality::Good},
+    }};
+    auto level = std::find_if(levels.begin(), levels.end(),
+                              [score](const auto& level) { return score >= level.first; });
+    return level != levels.end() ? level->second : ItemQuality::Base;
+}
+
 bool Crop::needs_water() const { return growing() && !watered; }
 
 bool Crop::water(float minute) {
@@ -65,8 +99,11 @@ bool Crop::update_time(float minute) {
 }
 
 void Crop::grow() {
-    if (growing()) {
+    if (is_ready()) {
+        ++days_ready;
+    } else if (growing()) {
         skipped += watered ? 0 : 1;  // la última ventana del día
+        skipped_total += skipped;
         if (skipped <= server_config().crops.of(type).skippable_waterings) {
             ++days_grown;
         }
@@ -81,6 +118,10 @@ void Crop::harvested() {
     int regrow = server_config().crops.of(type).regrow_days;
     if (regrow > 0) {
         days_grown = days_to_grow() - regrow;
+        watering_delay = 0.0f;
+        waterings = 0;
+        skipped_total = 0;
+        days_ready = 0;
     } else {
         *this = Crop{};
     }
@@ -97,3 +138,20 @@ int Crop::window_of(float minute) const {
 }
 
 bool Crop::growing() const { return is_planted() && !is_ready(); }
+
+float Crop::watering_score() const {
+    int windows = waterings + skipped_total;
+    if (windows == 0) {
+        return 1.0f;
+    }
+    float window_length = MINUTES_PER_DAY / server_config().crops.of(type).waterings_per_day;
+    // Cada riego suma su demora como fracción de la ventana; cada salteado, una ventana entera
+    float lateness = watering_delay / window_length + static_cast<float>(skipped_total);
+    return std::clamp(1.0f - lateness / static_cast<float>(windows), 0.0f, 1.0f);
+}
+
+float Crop::harvest_score(float minute) const {
+    float waited = static_cast<float>(days_ready) * MINUTES_PER_DAY + minute;
+    float grace = server_config().crops.quality.harvest_grace_days * MINUTES_PER_DAY;
+    return std::clamp(1.0f - waited / grace, 0.0f, 1.0f);
+}

@@ -12,6 +12,8 @@
 #include "server/config/server_config.h"
 #include "server/game/characters/animals/chicken/chicken.h"
 #include "server/game/characters/animals/cow/cow.h"
+#include "server/game/characters/player.h"
+#include "server/game/interactions/outcome.h"
 
 Farm::Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin,
            const std::set<Position>& tilled):
@@ -120,16 +122,20 @@ bool Farm::plant(const Position& pos, CropType type) {
     return true;
 }
 
-std::optional<CropHarvest> Farm::harvest(const Position& pos) {
+const Outcome& Farm::harvest(const Position& pos, Player& player) {
     auto plot = plots.find(pos);
     if (plot == plots.end() || !plot->second.crop.is_ready()) {
-        return std::nullopt;
+        return Outcome::not_here();
     }
-    // La calidad todavía no se calcula.
-    CropHarvest harvested{plot->second.crop.get_type(), ItemQuality::Base};
-    plot->second.crop.harvested();
+    Crop& crop = plot->second.crop;
+    const ServerConfig::Quality& config = server_config().crops.quality;
+    std::uniform_real_distribution<float> luck(config.luck_min, config.luck_max);
+    if (player.receive(crop.product(), 1, crop.quality(minute, luck(rng))) > 0) {
+        return Outcome::inventory_full();
+    }
+    crop.harvested();
     changed = true;
-    return harvested;
+    return Outcome::done();
 }
 
 bool Farm::water(const Position& pos) {

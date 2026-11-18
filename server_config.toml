@@ -97,6 +97,19 @@ days_to_grow = 7
 regrow_days = 0
 skippable_waterings = 0
 
+# Calidad de la cosecha: puntaje = (riego * watering_weight + cosecha * (1 - watering_weight)) * suerte.
+# Riego: 1 si se regó apenas lo necesitó, baja con la demora y cada riego salteado cuenta como 0.
+# Cosecha: 1 si se cosechó apenas estuvo lista, llega a 0 a los harvest_grace_days días.
+[crops.quality]
+watering_weight = 0.5
+harvest_grace_days = 2.0
+luck_min = 0.8            # la suerte es un multiplicador al azar entre estos dos
+luck_max = 1.2
+good = 0.5                # puntaje mínimo de cada calidad; por debajo, base
+excellent = 0.7
+incredible = 0.85
+perfect = 0.95
+
 # Se escriben en el chat con un $ adelante y una cantidad opcional: "$gold 10".
 [cheats]
 seeds = 10                # cuántas semillas de cada tipo da "$seeds" sin cantidad
