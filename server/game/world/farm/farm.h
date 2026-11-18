@@ -29,6 +29,10 @@ public:
     // La granja es dueña de sus animales y los registra como entidades de la Location.
     void add_animal(AnimalKind kind, const Position& pos);
     const std::vector<std::unique_ptr<Animal>>& get_animals() const;
+    int count_animals(AnimalKind kind) const;
+    // Saca los primeros `quantity` de esa especie (los vendió). Lanza std::invalid_argument si no
+    // hay tantos.
+    void remove_animals(AnimalKind kind, int quantity);
 
     // Actualiza también la Cabin.
     void update(float dt) override;

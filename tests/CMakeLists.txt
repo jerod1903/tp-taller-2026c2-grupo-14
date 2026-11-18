@@ -35,6 +35,7 @@ target_sources(taller_tests
     server_protocol_test.cpp
     inventory_test.cpp
     player_test.cpp
+    farm_test.cpp
     select_slot_command_test.cpp
     # Código del servidor bajo test (sin main.cpp)
     ../server/config/server_config.cpp

@@ -1,6 +1,8 @@
 #include "server/game/world/farm/farm.h"
 
+#include <algorithm>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,6 +26,27 @@ void Farm::add_animal(AnimalKind kind, const Position& pos) {
 }
 
 const std::vector<std::unique_ptr<Animal>>& Farm::get_animals() const { return animals; }
+
+int Farm::count_animals(AnimalKind kind) const {
+    return static_cast<int>(std::count_if(
+            animals.begin(), animals.end(),
+            [kind](const std::unique_ptr<Animal>& animal) { return animal->get_kind() == kind; }));
+}
+
+void Farm::remove_animals(AnimalKind kind, int quantity) {
+    if (count_animals(kind) < quantity) {
+        throw std::invalid_argument("not enough animals in the farm");
+    }
+    for (auto it = animals.begin(); it != animals.end() && quantity > 0;) {
+        if ((*it)->get_kind() != kind) {
+            ++it;
+            continue;
+        }
+        remove_entity(**it);
+        it = animals.erase(it);
+        --quantity;
+    }
+}
 
 void Farm::update(float dt) {
     update_entities(dt);
