@@ -53,6 +53,7 @@ target_sources(taller_tests
     ../server/game/world/farm/crop.cpp
     ../server/game/world/interior.cpp
     ../server/game/world/farm/farm.cpp
+    ../server/game/world/farm/milking.cpp
     ../server/game/world/grid.cpp
     ../server/game/world/location.cpp
     ../server/game/world/movement.cpp
@@ -72,6 +73,9 @@ target_sources(taller_tests
     ../server/game/commands/use_tool_command.cpp
     ../server/game/tools/tool.cpp
     ../server/game/tools/shovel.cpp
+    ../server/game/interactions/outcome.cpp
+    ../server/game/interactions/interaction.cpp
+    ../server/game/interactions/milk.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
     ../server/game/commands/enter_portal_command.cpp

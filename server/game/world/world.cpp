@@ -51,9 +51,11 @@ Player* World::find_player(uint32_t player_id) {
     return player == players.end() ? nullptr : player->second.get();
 }
 
-const std::vector<std::unique_ptr<Animal>>& World::farm_animals() { return farm->get_animals(); }
+bool World::dig(const Player& player) {
+    return &player.get_location() == farm.get() && farm->dig(player.facing_cell());
+}
 
-Farm* World::find_farm() { return farm.get(); }
+const Outcome& World::milk(Player& player) { return milk_nearest_cow(farm->get_animals(), player); }
 
 Movement& World::get_movement() { return movement; }
 

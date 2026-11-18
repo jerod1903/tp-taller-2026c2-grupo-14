@@ -12,6 +12,9 @@ target_sources(taller_server
     game/commands/use_tool_command.cpp
     game/tools/tool.cpp
     game/tools/shovel.cpp
+    game/interactions/outcome.cpp
+    game/interactions/interaction.cpp
+    game/interactions/milk.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/enter_portal_command.cpp
@@ -38,6 +41,7 @@ target_sources(taller_server
     game/world/farm/crop.cpp
     game/world/interior.cpp
     game/world/farm/farm.cpp
+    game/world/farm/milking.cpp
     game/world/grid.cpp
     game/world/location.cpp
     game/world/movement.cpp
@@ -67,8 +71,12 @@ target_sources(taller_server
     game/commands/use_tool_command.h
     game/tools/tool.h
     game/tools/shovel.h
+    game/interactions/outcome.h
+    game/interactions/interaction.h
+    game/interactions/milk.h
     game/commands/game_command.h
     game/commands/game_context.h
+    game/commands/player_farming.h
     game/commands/join_command.h
     game/commands/leave_command.h
     game/commands/enter_portal_command.h
@@ -94,6 +102,7 @@ target_sources(taller_server
     game/world/farm/cabin.h
     game/world/interior.h
     game/world/farm/farm.h
+    game/world/farm/milking.h
     game/world/grid.h
     game/world/location.h
     game/world/movement.h

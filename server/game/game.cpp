@@ -70,6 +70,8 @@ PlayerMovement& Game::movement() { return world->get_movement(); }
 
 PlayerCharacters& Game::characters() { return *world; }
 
+PlayerFarming& Game::farming() { return *world; }
+
 void Game::broadcast_snapshot() { player_sessions.broadcast(SnapshotBuilder::build(tick, *world)); }
 
 void Game::stop() {

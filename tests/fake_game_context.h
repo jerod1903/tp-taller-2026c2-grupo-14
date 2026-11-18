@@ -18,7 +18,8 @@ class FakeGameContext:
         public GameContext,
         public PlayerSessions,
         public PlayerMovement,
-        public PlayerCharacters {
+        public PlayerCharacters,
+        public PlayerFarming {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -31,6 +32,7 @@ public:
     PlayerSessions& sessions() override { return *this; }
     PlayerMovement& movement() override { return *this; }
     PlayerCharacters& characters() override { return *this; }
+    PlayerFarming& farming() override { return *this; }
 
     Player* find_player(uint32_t player_id) override {
         return player_id == PLAYER_ID ? &player : nullptr;
@@ -65,9 +67,9 @@ public:
         return found->second;
     }
 
-    const std::vector<std::unique_ptr<Animal>>& farm_animals() override { return animals; }
+    bool dig(const Player&) override { return false; }
 
-    Farm* find_farm() override { return nullptr; }
+    const Outcome& milk(Player& player) override { return milk_nearest_cow(animals, player); }
 
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.
     std::vector<std::unique_ptr<Animal>> animals;
