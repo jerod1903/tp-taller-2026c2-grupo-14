@@ -33,7 +33,9 @@ Interfaz::Interfaz():
                   {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
         barra(renderer),
         fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
+        fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
         panel_chat(fuente),
+        menu_pausa(renderer, fuente, fuente_titulo),
         globo(renderer),
         transicion(DURACION_TRANSICION) {}
 
@@ -60,6 +62,10 @@ Entrada Interfaz::leer_entrada() {
         if (evento.type == SDL_QUIT) {
             entrada.salir = true;
         }
+        if (menu_pausa.abierto()) {
+            leer_pausa(evento, entrada);
+            continue;
+        }
         if (borrador) {
             leer_chat(evento, entrada);
             continue;
@@ -69,7 +75,7 @@ Entrada Interfaz::leer_entrada() {
         }
         SDL_Keycode tecla = evento.key.keysym.sym;
         if (tecla == SDLK_ESCAPE) {
-            entrada.salir = true;
+            menu_pausa.abrir();
         } else if (tecla == SDLK_RETURN) {
             borrador = "";
             entrada.escribiendo = true;
@@ -83,7 +89,7 @@ Entrada Interfaz::leer_entrada() {
             entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
     }
-    if (borrador) {
+    if (borrador || menu_pausa.abierto()) {
         return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
@@ -103,6 +109,12 @@ Entrada Interfaz::leer_entrada() {
     entrada.dir_x = static_cast<int8_t>(dir_x);
     entrada.dir_y = static_cast<int8_t>(dir_y);
     return entrada;
+}
+
+void Interfaz::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
+    if (menu_pausa.leer(evento, renderer.GetOutputSize()) == OpcionPausa::Salir) {
+        entrada.salir = true;
+    }
 }
 
 void Interfaz::leer_chat(const SDL_Event& evento, Entrada& entrada) {
@@ -271,6 +283,9 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
+    if (menu_pausa.abierto()) {
+        menu_pausa.dibujar(renderer, renderer.GetOutputSize());
+    }
     renderer.Present();
 }
 

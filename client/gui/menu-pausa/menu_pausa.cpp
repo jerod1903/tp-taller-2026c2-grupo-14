@@ -122,6 +122,6 @@ void MenuPausa::dibujar_texto(SDL2pp::Renderer& renderer, Fuente& fuente, const 
                               const SDL_Color& color, const SDL2pp::Point& centro) {
     SDL2pp::Texture textura = fuente.renderizar(renderer, texto, color);
     SDL2pp::Point tamano = textura.GetSize();
-    renderer.Copy(textura, SDL2pp::NullOpt,
-                  SDL2pp::Rect(centro.x - tamano.x / 2, centro.y - tamano.y / 2, tamano.x, tamano.y));
+    SDL2pp::Point esquina(centro.x - tamano.x / 2, centro.y - tamano.y / 2);
+    renderer.Copy(textura, SDL2pp::NullOpt, SDL2pp::Rect(esquina, tamano));
 }

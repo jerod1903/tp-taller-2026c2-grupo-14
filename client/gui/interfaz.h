@@ -26,6 +26,7 @@
 #include "client/gui/sprites/globo.h"
 #include "common/game_dto.h"
 #include "client/gui/mapa/transicion_area.h"
+#include "client/gui/menu-pausa/menu_pausa.h"
 
 class Interfaz {
 public:
@@ -41,6 +42,7 @@ private:
                 bool recien_creado);
     void ajustar_lienzo(int ancho_area, int alto_area);
     void leer_chat(const SDL_Event& evento, Entrada& entrada);
+    void leer_pausa(const SDL_Event& evento, Entrada& entrada);
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio);
@@ -71,7 +73,9 @@ private:
     std::vector<EntityState> camas;
     BarraInventario barra;
     Fuente fuente;
+    Fuente fuente_titulo;
     PanelChat panel_chat;
+    MenuPausa menu_pausa;
     std::optional<std::string> borrador;
     Globo globo;
     TransicionArea transicion;
