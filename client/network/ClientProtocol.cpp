@@ -175,6 +175,10 @@ bool ClientProtocol::sendAppearance(const CharacterAppearance& appearance) {
            baseProtocol.send_u16(appearance.pants) && baseProtocol.send_u16(appearance.hat);
 }
 
+void ClientProtocol::sendClick(uint16_t x, uint16_t y) {
+    ensure(sendGameOp(GameOp::Click) && baseProtocol.send_u16(x) && baseProtocol.send_u16(y));
+}
+
 LobbyStatus ClientProtocol::recvStatus() {
     return static_cast<LobbyStatus>(ensure(baseProtocol.recv_u8()));
 }

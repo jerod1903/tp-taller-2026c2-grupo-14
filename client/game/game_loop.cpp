@@ -68,6 +68,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.escribiendo) {
         enviador.escribiendo(*entrada.escribiendo);
     }
+    if (entrada.click) {
+        enviador.clickear(*entrada.click);
+    }
 }
 
 void GameLoop::procesar_mensajes() {

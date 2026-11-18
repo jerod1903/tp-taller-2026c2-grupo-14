@@ -262,4 +262,14 @@ std::optional<CharacterAppearance> ServerProtocol::recv_appearance() {
     return CharacterAppearance{*hair_style, *hair_color, *shirt, *pants, *hat};
 }
 
+std::optional<ClickRequest> ServerProtocol::recv_click() {
+    std::optional<uint16_t> x = baseProtocol.recv_u16();
+    if (!x)
+        return std::nullopt;
+    std::optional<uint16_t> y = baseProtocol.recv_u16();
+    if (!y)
+        return std::nullopt;
+    return ClickRequest{*x, *y};
+}
+
 void ServerProtocol::shutdown() { baseProtocol.shutdown(); }

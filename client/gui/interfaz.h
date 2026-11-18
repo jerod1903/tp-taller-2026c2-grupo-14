@@ -42,6 +42,7 @@ private:
                 bool recien_creado);
     void ajustar_lienzo(int ancho_area, int alto_area);
     void leer_chat(const SDL_Event& evento, Entrada& entrada);
+    ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio);
@@ -64,6 +65,7 @@ private:
     std::map<EntityType, Aspecto> aspectos;
     CalculadorCamara calculador_camara;
     std::optional<SDL2pp::Texture> lienzo;
+    std::optional<SDL2pp::Rect> camara;
     int escala = 1;
     bool pantalla_completa = false;
     std::optional<Mapa> mapa;

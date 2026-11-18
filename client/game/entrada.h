@@ -5,6 +5,8 @@
 #include <optional>
 #include <string>
 
+#include "common/game_dto.h"
+
 // Lo que hizo el usuario en un frame, sin depender de SDL.
 struct Entrada {
     bool salir = false;          // cerro la ventana o apreto Escape
@@ -15,6 +17,7 @@ struct Entrada {
     std::optional<std::string> mensaje_chat;
     bool interactuar = false;
     std::optional<bool> escribiendo;
+    std::optional<ClickRequest> click;
 };
 
 #endif
