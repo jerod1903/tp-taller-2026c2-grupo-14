@@ -21,6 +21,8 @@ public:
     void spend_energy(int amount);
     // Sin energía no puede hacer nada más en el día.
     bool is_exhausted() const;
+    // Gasta lo que tiene en el slot elegido (una semilla al plantar).
+    void remove_selected(uint8_t quantity);
     // Lo que tiene en el slot elegido del inventario.
     ItemType selected_item() const;
 

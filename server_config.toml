@@ -63,3 +63,39 @@ sight = 6.0              # hasta donde ve a un jugador, en casillas (no ve a tra
 reach = 1.0              # hasta donde llega su golpe, de su centro al del jugador, en casillas
 cooldown = 1.0           # segundos entre golpe y golpe
 revive_seconds = 10.0    # cuanto tarda en revivir
+
+[crops]
+cheat_starting_seeds = 5  # provisorio, hasta que se compren a Pierre: semillas de cada tipo al aparecer
+
+# Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
+[crops.strawberry]
+seed_price = 10
+base_price = 25
+waterings_per_day = 2
+days_to_grow = 4
+regrow_days = 2           # después de la primera cosecha vuelve a dar cada 2 días
+skippable_waterings = 0
+
+[crops.scallion]
+seed_price = 5
+base_price = 12
+waterings_per_day = 3
+days_to_grow = 2
+regrow_days = 0
+skippable_waterings = 0
+
+[crops.potato]
+seed_price = 8
+base_price = 18
+waterings_per_day = 2
+days_to_grow = 3
+regrow_days = 0
+skippable_waterings = 1   # tolera saltearse un riego por día
+
+[crops.pumpkin]
+seed_price = 20
+base_price = 50
+waterings_per_day = 1
+days_to_grow = 7
+regrow_days = 0
+skippable_waterings = 0

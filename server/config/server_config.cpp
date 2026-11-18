@@ -155,7 +155,56 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
                     positive(required_float(skeleton, "revive_seconds"), "revive_seconds")}};
 }
 
+ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& name) {
+    TomlTableReader crop = subsection(root, "crops", name);
+    auto non_negative = [&crop](const std::string& key) {
+        int value = crop.requiredInt(key);
+        if (value < 0) {
+            throw std::runtime_error(std::string(FILE_NAME) + ": '" + key + "' can't be negative");
+        }
+        return value;
+    };
+    ServerConfig::CropSpec read{positive(crop.requiredInt("seed_price"), "seed_price"),
+                                positive(crop.requiredInt("base_price"), "base_price"),
+                                positive(crop.requiredInt("waterings_per_day"), "waterings_per_day"),
+                                positive(crop.requiredInt("days_to_grow"), "days_to_grow"),
+                                non_negative("regrow_days"),
+                                non_negative("skippable_waterings")};
+    if (read.regrow_days >= read.days_to_grow) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": [crops." + name +
+                                 "] 'regrow_days' must be smaller than 'days_to_grow'");
+    }
+    return read;
+}
+
+ServerConfig::Crops read_crops(const toml::table& root) {
+    TomlTableReader crops = section(root, "crops");
+    int cheat = crops.requiredInt("cheat_starting_seeds");
+    if (cheat < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": 'cheat_starting_seeds' can't be negative");
+    }
+    return ServerConfig::Crops{cheat, read_crop(root, "strawberry"), read_crop(root, "scallion"),
+                               read_crop(root, "potato"), read_crop(root, "pumpkin")};
+}
+
 }  // namespace
+
+const ServerConfig::CropSpec& ServerConfig::Crops::of(CropType type) const {
+    switch (type) {
+        case CropType::Strawberry:
+            return strawberry;
+        case CropType::Scallion:
+            return scallion;
+        case CropType::Potato:
+            return potato;
+        case CropType::Pumpkin:
+            return pumpkin;
+        case CropType::None:
+            break;
+    }
+    throw std::invalid_argument("CropType::None has no spec");
+}
 
 ServerConfig load_server_config(const std::string& path) {
     toml::table root;
@@ -164,8 +213,8 @@ ServerConfig load_server_config(const std::string& path) {
     } catch (const toml::parse_error& e) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
-    return ServerConfig{read_game(root), read_player(root), read_energy(root), read_animals(root),
-                        read_enemies(root)};
+    return ServerConfig{read_game(root),    read_player(root),  read_energy(root),
+                        read_animals(root), read_enemies(root), read_crops(root)};
 }
 
 const ServerConfig& server_config() {

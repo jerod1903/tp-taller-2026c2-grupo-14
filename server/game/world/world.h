@@ -45,6 +45,7 @@ public:
     void remove_player(uint32_t player_id);
     Player* find_player(uint32_t player_id) override;
     bool dig(const Player& player) override;
+    bool plant(const Player& player, CropType crop) override;
     const Outcome& milk(Player& player) override;
     // Atiende a MoveCommand.
     Movement& get_movement();

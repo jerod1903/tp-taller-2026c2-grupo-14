@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+#include "common/farm_dto.h"
+
 // Lo que se ajusta del juego sin recompilar. Se lee de server_config.toml, en el root del repo.
 struct ServerConfig {
     struct Game {
@@ -76,11 +78,32 @@ struct ServerConfig {
         Skeleton skeleton;
     };
 
+    struct CropSpec {
+        int seed_price;           // lo que cuesta la semilla
+        int base_price;           // lo que se paga por la cosecha de calidad base
+        int waterings_per_day;
+        int days_to_grow;         // desde que se planta hasta que se puede cosechar
+        int regrow_days;          // después de cosechar vuelve a dar en estos días; 0 si no
+        int skippable_waterings;  // riegos que se pueden saltear en un día sin que deje de crecer
+    };
+    struct Crops {
+        // Provisorio, hasta que se compren a Pierre: semillas de cada tipo al aparecer.
+        int cheat_starting_seeds;
+        CropSpec strawberry;
+        CropSpec scallion;
+        CropSpec potato;
+        CropSpec pumpkin;
+
+        // Lanza std::invalid_argument con CropType::None.
+        const CropSpec& of(CropType type) const;
+    };
+
     Game game;
     Player player;
     Energy energy;
     Animals animals;
     Enemies enemies;
+    Crops crops;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

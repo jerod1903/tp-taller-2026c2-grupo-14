@@ -44,7 +44,8 @@ public:
     bool add_animal(AnimalKind kind, const Position& pos);
     const std::vector<std::unique_ptr<Animal>>& get_animals() const;
 
-    // Los animales cuentan un día más; lo que dejan en el piso queda en su celda.
+    // Los animales y los cultivos cuentan un día más; lo que dejan los animales en el piso
+    // queda en su celda.
     void start_new_day();
 
     // Un golpe de pala: pasto -> dirt -> tilled. false si la celda no se puede cavar (fuera de la
@@ -52,7 +53,8 @@ public:
     bool dig(const Position& pos);
     // Planta en una celda tilled y vacía. false si no se puede.
     bool plant(const Position& pos, CropType type);
-    // Cosecha un cultivo listo y deja la celda tilled y vacía. nullopt si no hay nada para cosechar.
+    // Cosecha un cultivo listo: la celda queda vacía, o vuelve a crecer si el cultivo vuelve a dar.
+    // nullopt si no hay nada para cosechar.
     std::optional<CropHarvest> harvest(const Position& pos);
     // Las celdas trabajadas, por posición.
     const std::map<Position, Plot>& get_plots() const;

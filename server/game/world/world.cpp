@@ -26,6 +26,10 @@ void World::spawn_player(uint32_t player_id, std::string name) {
                                            std::move(name), stats.health, stats.speed, stats.gold,
                                            stats.energy);
     player->place_at(spawn.point);
+    for (ItemType seeds: {ItemType::StrawberrySeeds, ItemType::ScallionSeeds, ItemType::PotatoSeeds,
+                          ItemType::PumpkinSeeds}) {
+        player->receive(seeds, static_cast<uint8_t>(server_config().crops.cheat_starting_seeds));
+    }
     add_player(std::move(player));
     // Su cama puede haber aparecido donde estaba parado otro
     movement.free_trapped();
@@ -53,6 +57,10 @@ Player* World::find_player(uint32_t player_id) {
 
 bool World::dig(const Player& player) {
     return &player.get_location() == farm.get() && farm->dig(player.facing_cell());
+}
+
+bool World::plant(const Player& player, CropType crop) {
+    return &player.get_location() == farm.get() && farm->plant(player.facing_cell(), crop);
 }
 
 const Outcome& World::milk(Player& player) { return milk_nearest_cow(farm->get_animals(), player); }

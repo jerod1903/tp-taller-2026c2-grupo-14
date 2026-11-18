@@ -73,6 +73,7 @@ target_sources(taller_tests
     ../server/game/commands/use_tool_command.cpp
     ../server/game/tools/tool.cpp
     ../server/game/tools/shovel.cpp
+    ../server/game/tools/seed.cpp
     ../server/game/interactions/outcome.cpp
     ../server/game/interactions/interaction.cpp
     ../server/game/interactions/milk.cpp

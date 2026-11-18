@@ -12,6 +12,7 @@ target_sources(taller_server
     game/commands/use_tool_command.cpp
     game/tools/tool.cpp
     game/tools/shovel.cpp
+    game/tools/seed.cpp
     game/interactions/outcome.cpp
     game/interactions/interaction.cpp
     game/interactions/milk.cpp
@@ -72,6 +73,7 @@ target_sources(taller_server
     game/commands/use_tool_command.h
     game/tools/tool.h
     game/tools/shovel.h
+    game/tools/seed.h
     game/interactions/outcome.h
     game/interactions/interaction.h
     game/interactions/milk.h

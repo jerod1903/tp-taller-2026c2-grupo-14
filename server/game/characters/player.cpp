@@ -21,6 +21,8 @@ void Player::spend_energy(int amount) { energy = std::max(0, energy - amount); }
 
 bool Player::is_exhausted() const { return energy == 0; }
 
+void Player::remove_selected(uint8_t quantity) { inventory.remove_selected(quantity); }
+
 ItemType Player::selected_item() const { return inventory.selected_item(); }
 
 void Player::update(float dt) { advance(dt); }

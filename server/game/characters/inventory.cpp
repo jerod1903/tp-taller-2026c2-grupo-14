@@ -40,6 +40,14 @@ uint8_t Inventory::add(ItemType item, uint8_t quantity, ItemQuality quality) {
     return quantity;
 }
 
+void Inventory::remove_selected(uint8_t quantity) {
+    InventorySlot& slot = slots[selected_slot];
+    slot.quantity -= std::min(quantity, slot.quantity);
+    if (slot.quantity == 0) {
+        slot = InventorySlot{ItemType::Empty, 0};
+    }
+}
+
 ItemType Inventory::selected_item() const { return slots[selected_slot].item; }
 
 InventoryState Inventory::get_state() const {

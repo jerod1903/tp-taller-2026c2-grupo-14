@@ -57,6 +57,12 @@ void Farm::start_new_day() {
         animal->start_new_day();
     }
     collect_drops();
+    for (auto& [pos, plot]: plots) {
+        if (plot.crop.is_planted() && !plot.crop.is_ready()) {
+            plot.crop.grow();
+            changed = true;
+        }
+    }
 }
 
 void Farm::collect_drops() {
@@ -120,7 +126,7 @@ std::optional<CropHarvest> Farm::harvest(const Position& pos) {
     }
     // La calidad todavía no se calcula.
     CropHarvest harvested{plot->second.crop.get_type(), ItemQuality::Base};
-    plot->second.crop = Crop{};
+    plot->second.crop.harvested();
     changed = true;
     return harvested;
 }

@@ -9,6 +9,9 @@ class PlayerFarming {
 public:
     // Cava la celda que tiene adelante, si está en la granja. true si cavó.
     virtual bool dig(const Player& player) = 0;
+    // Planta en la celda que tiene adelante, si está en la granja y es tierra arada vacía.
+    // true si plantó.
+    virtual bool plant(const Player& player, CropType crop) = 0;
     // Ordeña la vaca lista más cercana que tenga al alcance.
     virtual const Outcome& milk(Player& player) = 0;
 
