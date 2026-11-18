@@ -350,6 +350,12 @@ std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
                   SDL2pp::Rect(esquina, tamano)};
 }
 
+void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara) {
+    for (const FarmTile& celda: granja.tiles) {
+        mapa->dibujar_tile(renderer, TILES_SUELO.at(celda.soil), celda.x, celda.y, camara);
+    }
+}
+
 void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
@@ -359,6 +365,9 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     std::vector<Sprite> sprites;
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);
+        if (granja.areaId == area) {
+            dibujar_tierra(granja, camara);
+        }
         sprites = mapa->elementos();
     }
     for (const EntityState& cama: camas) {

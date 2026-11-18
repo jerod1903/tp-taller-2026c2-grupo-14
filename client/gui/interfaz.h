@@ -48,6 +48,7 @@ private:
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio, const FarmState& granja);
+    void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
     void dibujar_inventario(const InventoryState& inventario);
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
