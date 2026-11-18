@@ -1,5 +1,6 @@
 #include "server/game/world/world.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -90,6 +91,16 @@ const GameClock& World::get_clock() const { return clock; }
 
 void World::start_new_day() {
     farm->start_new_day();
+    for (const auto& [player_id, player]: players) {
+        bool slept = !player->is_unconscious() && farm->get_cabin().is_in_bed(*player);
+        player->wake_up(farm->bed_spawn(player_id), slept);
+    }
+}
+
+bool World::everyone_unconscious() const {
+    return !players.empty() && std::all_of(players.begin(), players.end(), [](const auto& entry) {
+        return entry.second->is_unconscious();
+    });
 }
 
 void World::update(float dt) {
@@ -102,7 +113,12 @@ void World::update(float dt) {
     dungeon.set_visitors(characters);
     dungeon.update(dt);
     movement.travel_through_portals();
-    if (clock.update(dt)) {
+    bool day_over = clock.update(dt);
+    if (!day_over && everyone_unconscious()) {
+        clock.end_day();
+        day_over = true;
+    }
+    if (day_over) {
         start_new_day();
     }
     farm->update_time(clock.get_minute_of_day());

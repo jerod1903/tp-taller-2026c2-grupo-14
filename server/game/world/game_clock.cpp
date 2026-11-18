@@ -23,3 +23,8 @@ bool GameClock::update(float dt) {
     }
     return false;
 }
+
+void GameClock::end_day() {
+    elapsed = 0.0f;
+    day++;
+}

@@ -7,6 +7,7 @@
 #include "common/game_dto.h"
 #include "server/game/characters/creature.h"
 #include "server/game/characters/inventory.h"
+#include "server/game/world/spawn_point.h"
 
 class Player: public Creature {
 public:
@@ -21,8 +22,12 @@ public:
 
     // Le resta energía, sin bajar de 0: la última acción se hace aunque no le alcance.
     void spend_energy(int amount);
-    // Sin energía no puede hacer nada más en el día.
-    bool is_exhausted() const;
+    // Sin energía o sin vida cae inconsciente: no hace nada más hasta el día siguiente.
+    bool is_unconscious() const;
+    // Despierta en su cama: con toda su vida y energía si durmió en ella, si no con una fracción.
+    void wake_up(const SpawnPoint& bed, bool slept_in_bed);
+    // A mitad de velocidad cuando está cansado (tired_energy).
+    float speed() const override;
     // Gasta lo que tiene en el slot elegido (una semilla al plantar).
     void remove_selected(uint8_t quantity);
     // Lo que tiene en el slot elegido del inventario.
@@ -42,6 +47,8 @@ private:
     std::string name;
     int gold;
     int energy;
+    int max_health;
+    int max_energy;
     Inventory inventory;
     bool typing = false;
 };

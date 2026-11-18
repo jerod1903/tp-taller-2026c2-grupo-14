@@ -15,6 +15,8 @@ public:
     float get_day_seconds() const;    // segundos que dura un día
     // true si con este dt terminó el día
     bool update(float dt);
+    // Termina el día antes de las 2:00 (cayeron todos inconscientes).
+    void end_day();
 
 private:
     float day_seconds;

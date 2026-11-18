@@ -60,7 +60,8 @@ public:
     const Cabin& get_cabin() const;
     const GameClock& get_clock() const;
 
-    // Actualiza las tres zonas y después hace viajar a los que pisaron un portal.
+    // Actualiza las tres zonas, hace viajar a los que pisaron un portal y termina el día a las
+    // 2:00 o cuando caen todos inconscientes.
     void update(float dt);
 
 private:
@@ -71,7 +72,10 @@ private:
     Movement movement;
     GameClock clock{server_config().game.day_speed};
 
+    // Despierta a todos en su cama: enteros los que durmieron en ella, a medias los demás.
     void start_new_day();
+    // El día termina antes si cayeron todos.
+    bool everyone_unconscious() const;
 };
 
 #endif  // WORLD_H

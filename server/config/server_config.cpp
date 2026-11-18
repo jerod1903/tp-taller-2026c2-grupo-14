@@ -82,10 +82,19 @@ ServerConfig::Player read_player(const toml::table& root) {
     if (max_stack > std::numeric_limits<uint8_t>::max()) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'max_stack' is too big");
     }
-    return ServerConfig::Player{
+    ServerConfig::Player read{
             positive(player.requiredInt("health"), "health"),
-            positive(player.requiredInt("energy"), "energy"), player.requiredInt("gold"),
-            positive(required_float(player, "speed"), "speed"), static_cast<uint8_t>(max_stack)};
+            positive(player.requiredInt("energy"), "energy"),
+            player.requiredInt("gold"),
+            positive(required_float(player, "speed"), "speed"),
+            static_cast<uint8_t>(max_stack),
+            positive(required_float(player, "tired_energy"), "tired_energy"),
+            positive(required_float(player, "bad_night_recovery"), "bad_night_recovery")};
+    if (read.tired_energy >= 1.0f || read.bad_night_recovery > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": 'tired_energy' and 'bad_night_recovery' are fractions up to 1");
+    }
+    return read;
 }
 
 ServerConfig::Energy read_energy(const toml::table& root) {

@@ -8,7 +8,7 @@ UseToolCommand::UseToolCommand(uint32_t player_id): GameCommand(player_id) {}
 
 void UseToolCommand::execute(GameContext& context) {
     Player* player = context.characters().find_player(player_id);
-    if (player == nullptr || player->is_exhausted()) {
+    if (player == nullptr || player->is_unconscious()) {
         return;
     }
     const Tool* tool = tool_for(player->selected_item());
