@@ -2,7 +2,9 @@
 
 #include <gtest/gtest.h>
 
+#include "common/farm_dto.h"
 #include "server/config/server_config.h"
+#include "server/game/commands/click_command.h"
 #include "server/game/world/dungeon/dungeon_level.h"
 #include "tests/fake_game_context.h"
 #include "tests/world_helpers.h"
@@ -18,7 +20,7 @@ protected:
         coal_pos = find_coal();
         // Paramos al jugador una celda arriba del carbón mirando hacia abajo
         player_pos = Position{coal_pos.x, coal_pos.y - 1};
-        context.player.set_location(dungeon, player_pos);
+        context.player.relocate(dungeon, player_pos);
         context.player.set_direction(Direction::DOWN);
     }
 
@@ -42,7 +44,10 @@ protected:
 TEST_F(PickaxeTest, StrikingOreAheadConsumesEnergyAndGivesItem) {
     const int energy_before = context.player.get_energy();
 
-    EXPECT_TRUE(pickaxe.use(context.player, context, coal_pos));
+    ClickCommand(FakeGameContext::PLAYER_ID,
+                 ClickRequest{static_cast<uint16_t>(coal_pos.x),
+                              static_cast<uint16_t>(coal_pos.y)})
+            .execute(context);
     EXPECT_EQ(context.player.get_energy(), energy_before - server_config().energy.mine);
     EXPECT_EQ(context.player.count(ItemType::Coal), 1);
     EXPECT_EQ(dungeon.ore_at(coal_pos), nullptr);
@@ -58,21 +63,23 @@ TEST_F(PickaxeTest, ClickingAnotherCellOrNonDungeonLocationDoesNothing) {
     EXPECT_NE(dungeon.ore_at(coal_pos), nullptr);
 
     // En una Location que no es DungeonLevel
-    context.player.set_location(context.location, Position{1, 1});
+    context.player.relocate(context.location, Position{1, 1});
     context.player.set_direction(Direction::DOWN);
     EXPECT_FALSE(pickaxe.use(context.player, context, Position{1, 2}));
     EXPECT_EQ(context.player.get_energy(), energy_before);
 }
 
 TEST_F(PickaxeTest, WhenInventoryIsFullItemDropsOnLevelFloor) {
-    // Llenamos todos los slots del inventario hasta que receive devuelva sobrante > 0
-    while (context.player.receive(ItemType::Seed, 1) == 0) {}
+    // Llenamos todos los slots del inventario con picos hasta que receive devuelva sobrante > 0
+    while (context.player.receive(ItemType::Pickaxe, 1) == 0) {}
 
     EXPECT_TRUE(pickaxe.use(context.player, context, coal_pos));
     EXPECT_EQ(context.player.count(ItemType::Coal), 0);
-    ASSERT_FALSE(dungeon.get_drops().empty());
-    EXPECT_EQ(dungeon.get_drops().front().item, ItemType::Coal);
-    EXPECT_EQ(dungeon.get_drops().front().pos, coal_pos);
+
+    const auto& ground = dungeon.get_ground_items();
+    auto it = ground.find(coal_pos);
+    ASSERT_NE(it, ground.end());
+    EXPECT_EQ(it->second, ItemType::Coal);
 }
 
 }  // namespace
