@@ -244,6 +244,43 @@ ServerConfig::Market read_market(const toml::table& root, const ServerConfig::An
     return read;
 }
 
+ServerConfig::OreSpec read_ore(const toml::table& root, const std::string& name) {
+    TomlTableReader ore = subsection(root, "ores", name);
+    int count = ore.requiredInt("count");
+    if (count < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": [ores." + name +
+                                 "] 'count' can't be negative");
+    }
+    return ServerConfig::OreSpec{positive(ore.requiredInt("hits"), "hits"), count,
+                                 positive(ore.requiredInt("price"), "price")};
+}
+
+float chance(const TomlTableReader& reader, const std::string& key) {
+    float value = required_float(reader, key);
+    if (value < 0.0f || value > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": '" + key +
+                                 "' is a chance between 0 and 1");
+    }
+    return value;
+}
+
+ServerConfig::Mining read_mining(const toml::table& root) {
+    TomlTableReader mining = section(root, "mining");
+    int gold_min_depth = mining.requiredInt("gold_min_depth");
+    if (gold_min_depth < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'gold_min_depth' can't be negative");
+    }
+    return ServerConfig::Mining{chance(mining, "lapis_break_chance"),
+                                chance(mining, "silver_orc_chance"),
+                                gold_min_depth,
+                                read_ore(root, "coal"),
+                                read_ore(root, "lapis"),
+                                read_ore(root, "silver"),
+                                read_ore(root, "gold")};
+}
+
+
+
 }  // namespace
 
 const ServerConfig::CropSpec& ServerConfig::Crops::of(CropType type) const {
@@ -262,6 +299,23 @@ const ServerConfig::CropSpec& ServerConfig::Crops::of(CropType type) const {
     throw std::invalid_argument("CropType::None has no spec");
 }
 
+const ServerConfig::OreSpec& ServerConfig::Mining::of(ItemType ore) const {
+    switch (ore) {
+        case ItemType::Coal:
+            return coal;
+        case ItemType::Lapis:
+            return lapis;
+        case ItemType::Silver:
+            return silver;
+        case ItemType::GoldOre:
+            return gold;
+        default:
+            break;
+    }
+    throw std::invalid_argument("not an ore");
+}
+
+
 ServerConfig load_server_config(const std::string& path) {
     toml::table root;
     try {
@@ -272,7 +326,7 @@ ServerConfig load_server_config(const std::string& path) {
     ServerConfig::Animals animals = read_animals(root);
     return ServerConfig{read_game(root), read_player(root),  read_energy(root),
                         animals,         read_enemies(root), read_crops(root),
-                        read_cheats(root), read_market(root, animals)};
+                        read_cheats(root), read_market(root, animals), read_mining(root)};
 }
 
 const ServerConfig& server_config() {

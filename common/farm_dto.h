@@ -32,6 +32,10 @@ enum class ItemType : uint8_t {
     Potato,
     Pumpkin,
     Egg,
+    Coal,
+    Lapis,
+    Silver,
+    GoldOre,
 };
 
 enum class SoilType : uint8_t { Dirt, Tilled };

@@ -123,3 +123,31 @@ gold = 100                # cuánto oro da "$gold" sin cantidad
 reach = 2.5              # hasta donde se le habla a un comerciante, de centro a centro, en casillas
 cow_buyback = 40         # lo que paga Marnie por una vaca (no puede superar su price)
 chicken_buyback = 10
+
+
+# Minería. Los golpes de pico salen de "tiempo hasta conseguir el material" del enunciado (poco,
+# medio, alto, muy alto); la cantidad por nivel, de la frecuencia de aparición.
+[mining]
+lapis_break_chance = 0.15  # al picarlo se rompe y no da producto
+silver_orc_chance = 0.10   # al obtenerla se avecina una manada de orcos
+gold_min_depth = 4         # el oro solo aparece desde la 5ta sala (el nivel de entrada es el 0)
+
+[ores.coal]
+hits = 1
+count = 4                  # cuántos aparecen en cada nivel
+price = 10                 # lo que paga Clint
+
+[ores.lapis]
+hits = 2
+count = 3
+price = 40
+
+[ores.silver]
+hits = 3
+count = 2
+price = 50
+
+[ores.gold]
+hits = 4
+count = 1
+price = 80
