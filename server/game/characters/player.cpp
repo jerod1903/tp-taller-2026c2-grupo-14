@@ -1,5 +1,7 @@
 #include "server/game/characters/player.h"
 
+#include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -30,3 +32,20 @@ void Player::set_typing(bool typing) { this->typing = typing; }
 bool Player::is_typing() const { return typing; }
 
 uint8_t Player::receive(ItemType item, uint8_t quantity) { return inventory.add(item, quantity); }
+
+void Player::tire(int amount) { energy = std::max(0, energy - amount); }
+
+void Player::pay(int amount) {
+    if (amount > gold) {
+        throw std::invalid_argument("not enough gold");
+    }
+    gold -= amount;
+}
+
+void Player::earn(int amount) { gold += amount; }
+
+int Player::count(ItemType item) const { return inventory.count(item); }
+
+int Player::room_for(ItemType item) const { return inventory.room_for(item); }
+
+void Player::take(ItemType item, int quantity) { inventory.remove(item, quantity); }

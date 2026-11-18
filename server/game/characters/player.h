@@ -29,6 +29,15 @@ public:
     bool is_typing() const;
     // Agrega objetos a su inventario. Devuelve cuantos no entraron (0 si entraron todos).
     uint8_t receive(ItemType item, uint8_t quantity);
+    // Lo cansa: hablar con un comerciante (y más adelante, cualquier acción). No baja de 0.
+    void tire(int amount);
+    // Lanza std::invalid_argument si no le alcanza: quien le vende se fija antes.
+    void pay(int amount);
+    void earn(int amount);
+    int count(ItemType item) const;
+    int room_for(ItemType item) const;
+    // Lanza std::invalid_argument si no tiene tantos.
+    void take(ItemType item, int quantity);
 
 private:
     std::string name;

@@ -18,6 +18,14 @@ public:
     // vacios. Devuelve cuantos NO entraron: 0 si entro todo.
     uint8_t add(ItemType item, uint8_t quantity);
 
+    // Cuántos hay de ese objeto, sumando todos los slots.
+    int count(ItemType item) const;
+    // Cuántos más de ese objeto entran: lo que falta para llenar sus pilas más los slots vacíos.
+    int room_for(ItemType item) const;
+    // Saca esa cantidad, empezando por los últimos slots; el que queda en 0 se vacía. Lanza
+    // std::invalid_argument si no hay tantos.
+    void remove(ItemType item, int quantity);
+
     InventoryState get_state() const;
 
 private:
