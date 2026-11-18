@@ -15,8 +15,8 @@
 std::string texto_hora(uint16_t minuto_del_dia);
 
 // Arriba a la derecha, dos carteles colgados (el día y la hora con el reloj) y abajo el oro con la
-// moneda; abajo a la derecha, la barra de energía. Se dibuja sobre la ventana: los assets a una
-// escala entera y el texto con una fuente propia, un poco más grande que la del chat.
+// moneda; abajo a la derecha, las barras de vida y de energía. Se dibuja sobre la ventana: los
+// assets a una escala entera y el texto con una fuente propia, un poco más grande que la del chat.
 class Hud {
 public:
     explicit Hud(SDL2pp::Renderer& renderer);
@@ -29,8 +29,9 @@ private:
                           const SDL2pp::Point& esquina, int escala);
     void dibujar_oro(SDL2pp::Renderer& renderer, uint32_t oro, const SDL2pp::Point& esquina,
                      int escala);
-    void dibujar_energia(SDL2pp::Renderer& renderer, uint16_t energia, int energia_maxima,
-                         const SDL2pp::Point& esquina, int escala);
+    // Una barra vertical que se llena desde abajo, con la etiqueta arriba
+    void dibujar_barra(SDL2pp::Renderer& renderer, uint16_t valor, int maximo, const char* etiqueta,
+                       const SDL2pp::Point& esquina, int escala);
     // En el cartel que empieza en `cartel`: el icono a la izquierda y el texto alineado a la
     // derecha
     void escribir_con_icono(SDL2pp::Renderer& renderer, SDL2pp::Texture& icono,

@@ -23,6 +23,17 @@ inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
 inline const char* const RUTA_HOJA_CULTIVOS = "Assets/Farm/Crops/Spring Crops.png";
 
+inline const char* const RUTA_ESQUELETO_QUIETO =
+        "Assets/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_idle.png";
+inline const char* const RUTA_ESQUELETO_CAMINANDO =
+        "Assets/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_movement.png";
+inline const char* const RUTA_ESQUELETO_ATACANDO =
+        "Assets/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_attack.png";
+inline const char* const RUTA_ESQUELETO_HERIDO =
+        "Assets/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_take_damage.png";
+inline const char* const RUTA_ESQUELETO_MUERTO =
+        "Assets/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_death.png";
+
 inline const char* const RUTA_BOTON_MENU = "Assets/Menu/botones/boton_320.png";
 inline const char* const RUTA_BOTON_DESHABILITADO =
         "Assets/Menu/botones/boton_deshabilitado_320.png";

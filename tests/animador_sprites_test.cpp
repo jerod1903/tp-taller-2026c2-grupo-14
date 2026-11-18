@@ -1,6 +1,8 @@
 #include "client/gui/sprites/animador_sprites.h"
 
 #include <chrono>
+#include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -94,4 +96,42 @@ TEST_F(AnimadorSpritesTest, EnLosPasosBajaLaCabeza) {
     EXPECT_EQ(animador.cuadro().bajada_cabeza, 0);
     animador.actualizar(0, 1, inicio + milliseconds(350));
     EXPECT_EQ(animador.cuadro().bajada_cabeza, 1);
+}
+
+// --- Tiras: una fila por pose, como las del esqueleto ---
+
+TEST(FormatoTiraTest, UsaTodosLosCuadrosEnOrdenYEspejaALaIzquierda) {
+    FormatoAnimacion tira = formato_tira(32, 32, 3, milliseconds(100));
+    EXPECT_EQ(tira.caminata, (std::vector<int>{0, 1, 2}));
+    EXPECT_EQ(tira.filas.at(Orientacion::Derecha), (std::pair<int, bool>{0, false}));
+    EXPECT_EQ(tira.filas.at(Orientacion::Izquierda), (std::pair<int, bool>{0, true}));
+}
+
+TEST(FormatoTiraTest, SeAnimaAunqueEsteQuieta) {
+    AnimadorSprites animador(formato_tira(32, 32, 3, milliseconds(100)));
+    std::chrono::steady_clock::time_point inicio;
+    animador.actualizar(0, 0, inicio);
+    animador.actualizar(0, 0, inicio + milliseconds(150));
+    EXPECT_EQ(animador.cuadro().columna, 1);
+    animador.actualizar(0, 0, inicio + milliseconds(350));
+    EXPECT_EQ(animador.cuadro().columna, 0);
+}
+
+TEST(FormatoTiraTest, SinRepetirSeQuedaEnElUltimoCuadro) {
+    AnimadorSprites animador(formato_tira(32, 32, 3, milliseconds(100), false));
+    std::chrono::steady_clock::time_point inicio;
+    animador.actualizar(0, 0, inicio);
+    animador.actualizar(0, 0, inicio + milliseconds(1000));
+    EXPECT_EQ(animador.cuadro().columna, 2);
+}
+
+TEST(FormatoTiraTest, AlCambiarDeFormatoEmpiezaDesdeElPrimerCuadroMirandoIgual) {
+    AnimadorSprites animador(formato_tira(32, 32, 3, milliseconds(100)));
+    std::chrono::steady_clock::time_point inicio;
+    animador.actualizar(-1, 0, inicio);
+    animador.actualizar(-1, 0, inicio + milliseconds(150));
+    animador.cambiar_formato(formato_tira(32, 32, 5, milliseconds(100)));
+    animador.actualizar(0, 0, inicio + milliseconds(200));
+    EXPECT_EQ(animador.cuadro().columna, 0);
+    EXPECT_TRUE(animador.cuadro().espejado);
 }

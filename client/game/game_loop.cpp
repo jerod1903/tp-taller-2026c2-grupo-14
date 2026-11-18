@@ -84,6 +84,7 @@ void GameLoop::procesar_mensajes() {
             estado.mundo = ubicacion->worldId;
             estado.max_jugadores = ubicacion->maxPlayers;
             estado.energia_maxima = ubicacion->maxEnergy;
+            estado.vida_maxima = ubicacion->maxHealth;
             if (ubicacion->tickRate > 0) {
                 estado.duracion_tick = std::chrono::duration<float>(1.0f / ubicacion->tickRate);
             }

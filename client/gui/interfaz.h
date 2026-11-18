@@ -18,16 +18,17 @@
 #include "client/gui/calculadores/calculador_camara.h"
 #include "client/gui/chat/fuente.h"
 #include "client/gui/chat/panel_chat.h"
+#include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/mapa/mapa.h"
-#include "client/gui/hud/hud.h"
+#include "client/gui/mapa/transicion_area.h"
+#include "client/gui/menu-pausa/menu_pausa.h"
 #include "client/gui/sprites/capa.h"
 #include "client/gui/sprites/constructor_capas.h"
 #include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/sprites/globo.h"
+#include "client/gui/sprites/pose.h"
 #include "common/game_dto.h"
-#include "client/gui/mapa/transicion_area.h"
-#include "client/gui/menu-pausa/menu_pausa.h"
 
 class Interfaz {
 public:
@@ -67,11 +68,11 @@ private:
     SDL2pp::Texture hoja_gallina;
     SDL2pp::Texture hoja_cultivos;
     SDL2pp::Texture icono_regadera;
-    struct Aspecto {
-        const FormatoAnimacion* formato;
-        std::vector<Capa> capas;
-    };
     std::map<EntityType, Aspecto> aspectos;
+    // Las que tienen una hoja por pose (HOJAS_POR_POSE): se dibujan con la de lo que estén
+    // haciendo. Las texturas van por ruta.
+    std::map<std::string, SDL2pp::Texture> hojas_por_pose;
+    std::map<EntityType, std::map<Pose, Aspecto>> aspectos_por_pose;
     CalculadorCamara calculador_camara;
     std::optional<SDL2pp::Texture> lienzo;
     std::optional<SDL2pp::Rect> camara;

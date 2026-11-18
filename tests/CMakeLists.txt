@@ -6,6 +6,7 @@ target_sources(taller_tests
     client_protocol_test.cpp
     config_test.cpp
     animador_sprites_test.cpp
+    pose_test.cpp
     animal_test.cpp
     character_sheets_test.cpp
     chat_command_test.cpp
@@ -122,6 +123,7 @@ target_sources(taller_tests
     ../client/config/client_config.cpp
     ../client/network/ClientProtocol.cpp
     ../client/gui/sprites/animador_sprites.cpp
+    ../client/gui/sprites/pose.cpp
     ../client/gui/mapa/transicion_area.cpp
     ../client/audio/sonidos_granja.cpp
     # Inventario

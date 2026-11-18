@@ -15,6 +15,7 @@ target_sources(taller_client
     gui/calculadores/calculador_posicion.cpp
     gui/sprites/animador_sprites.cpp
     gui/sprites/entidad_grafica.cpp
+    gui/sprites/pose.cpp
     gui/sprites/globo.cpp
     gui/sprites/constructor_capas.cpp
     gui/calculadores/calculador_camara.cpp
@@ -48,6 +49,7 @@ target_sources(taller_client
     gui/calculadores/calculador_posicion.h
     gui/sprites/animador_sprites.h
     gui/sprites/entidad_grafica.h
+    gui/sprites/pose.h
     gui/sprites/globo.h
     gui/sprites/capa.h
     gui/sprites/constructor_capas.h

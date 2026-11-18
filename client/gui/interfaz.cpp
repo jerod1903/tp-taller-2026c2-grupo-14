@@ -45,6 +45,14 @@ Interfaz::Interfaz():
     for (const auto& [item, ruta]: RUTAS_ICONOS) {
         objetos_piso.try_emplace(item, renderer, ruta);
     }
+    for (const auto& [tipo, hojas]: HOJAS_POR_POSE) {
+        for (const auto& [pose, hoja]: hojas) {
+            SDL2pp::Texture& textura =
+                    hojas_por_pose.try_emplace(hoja.ruta, renderer, hoja.ruta).first->second;
+            aspectos_por_pose[tipo].emplace(
+                    pose, Aspecto{&hoja.formato, {capa_animal(textura, hoja.formato)}});
+        }
+    }
 }
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
@@ -53,6 +61,13 @@ Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& format
 }
 
 namespace {
+bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
+    return std::any_of(estado.jugadores.begin(), estado.jugadores.end(),
+                       [player_id](const PlayerState& jugador) {
+                           return jugador.playerId == player_id && jugador.unconscious;
+                       });
+}
+
 void borrar_ultima_letra(std::string& texto) {
     while (!texto.empty() && (static_cast<unsigned char>(texto.back()) & 0xC0) == 0x80) {
         texto.pop_back();
@@ -180,15 +195,19 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
     std::set<std::pair<EntityType, uint32_t>> presentes;
     for (const EntityState& entidad: estado.entidades) {
         auto aspecto = aspectos.find(entidad.type);
-        if (aspecto == aspectos.end()) {
+        auto por_pose = aspectos_por_pose.find(entidad.type);
+        if (aspecto == aspectos.end() && por_pose == aspectos_por_pose.end()) {
             continue;
         }
         std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
         presentes.insert(clave);
-        auto [it, nueva] =
-                entidades.try_emplace(clave, *aspecto->second.formato, aspecto->second.capas);
+        auto [it, nueva] = por_pose != aspectos_por_pose.end() ?
+                                   entidades.try_emplace(clave, por_pose->second) :
+                                   entidades.try_emplace(clave, *aspecto->second.formato,
+                                                         aspecto->second.capas);
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
+            it->second.tirar(inconsciente(estado, entidad.entityId));
         }
         it->second.actualizar(entidad, estado.tick, estado.duracion_tick, ahora);
     }
