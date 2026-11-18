@@ -40,6 +40,7 @@ target_sources(taller_tests
     merchant_test.cpp
     market_test.cpp
     select_slot_command_test.cpp
+    pickaxe_test.cpp
     # Código del servidor bajo test (sin main.cpp)
     ../server/config/server_config.cpp
     ../server/game/characters/animals/animal.cpp
@@ -82,6 +83,7 @@ target_sources(taller_tests
     ../server/game/tools/shovel.cpp
     ../server/game/tools/seed.cpp
     ../server/game/tools/watering_can.cpp
+    ../server/game/tools/pickaxe.cpp
     ../server/game/cheats/cheat.cpp
     ../server/game/cheats/seeds_cheat.cpp
     ../server/game/cheats/gold_cheat.cpp
