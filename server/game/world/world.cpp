@@ -29,6 +29,8 @@ Town& World::get_town() { return *town; }
 
 Dungeon& World::get_dungeon() { return dungeon; }
 
+const Dungeon& World::get_dungeon() const { return dungeon; }
+
 void World::spawn_player(uint32_t player_id, std::string name) {
     SpawnPoint spawn = movement.spawn_point(player_id);
     const ServerConfig::Player& stats = server_config().player;

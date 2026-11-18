@@ -28,7 +28,8 @@ const std::vector<Creature*> NO_VISITORS;
 class CountingEnemy: public Enemy {
 public:
     CountingEnemy(Location& location, int* deaths):
-            Enemy(1, Position{0, 0}, location, STATS, NO_VISITORS), deaths(deaths) {}
+            Enemy(1, Position{0, 0}, location, STATS, NO_VISITORS, 1.0f, 1.0f), deaths(deaths) {}
+    EntityType entity_type() const override { return EntityType::Skeleton; }
     void on_death() override { ++*deaths; }
 
 protected:

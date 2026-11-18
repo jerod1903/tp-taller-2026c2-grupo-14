@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "common/game_dto.h"
 #include "server/config/server_config.h"
 #include "server/game/characters/creature.h"
 
@@ -14,11 +15,18 @@ class Enemy: public Creature {
 public:
     // `visitors`: los jugadores que están en su nivel. Es la lista del nivel, que se actualiza en
     // cada tick; el nivel es dueño del enemigo, así que la lista vive más que él.
+    // `attack_time` y `hurt_time`: cuánto tarda en pegar y cuánto queda dolorido por un golpe.
     Enemy(uint32_t id, const Position& pos, Location& location, const ServerConfig::Fighter& stats,
-          const std::vector<Creature*>& visitors);
+          const std::vector<Creature*>& visitors, float attack_time, float hurt_time);
 
-    // Llama a on_death() la primera vez que la vida llega a 0.
+    // Queda dolorido un rato. Llama a on_death() la primera vez que la vida llega a 0.
     void take_damage(int amount) override;
+
+    // Lo que está haciendo: muerto, dolorido, pegando o nada (camina o está quieto).
+    EntityAction action() const;
+
+    // Qué enemigo es, para que el cliente sepa cómo dibujarlo.
+    virtual EntityType entity_type() const = 0;
 
     // Drops, revivir, etc. Por defecto no hace nada.
     virtual void on_death();
@@ -46,6 +54,10 @@ private:
     float reach;
     float cooldown;
     float cooldown_left = 0;  // el primer golpe sale en cuanto llega al lado
+    float attack_time;
+    float hurt_time;
+    float attacking_left = 0;
+    float hurt_left = 0;
     const std::vector<Creature*>& visitors;
 
     // Está dentro de su vista y no hay paredes en el medio.

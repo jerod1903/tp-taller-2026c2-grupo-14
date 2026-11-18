@@ -46,6 +46,8 @@ Enemy* DungeonLevel::enemy_near(const Position& cell) const {
     return nearest;
 }
 
+const std::vector<std::unique_ptr<Enemy>>& DungeonLevel::get_enemies() const { return enemies; }
+
 void DungeonLevel::set_visitors(std::vector<Creature*> players) {
     bool was_empty = visitors.empty();
     visitors = std::move(players);

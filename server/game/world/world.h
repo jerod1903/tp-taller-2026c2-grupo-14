@@ -36,6 +36,7 @@ public:
     Farm& get_farm();
     Town& get_town();
     Dungeon& get_dungeon();
+    const Dungeon& get_dungeon() const;
 
     // Crea su personaje en su cama de la cabaña, con los valores de server_config.toml. Si ya
     // estaba, lo reemplaza.

@@ -51,6 +51,19 @@ EntityState entity_of(const Animal& animal) {
                        animal.is_ready() ? Emote::CowMilkReady : Emote::None};
 }
 
+EntityState entity_of(const Enemy& enemy) {
+    Position delta = step(Position{0, 0}, enemy.get_direction());
+    return EntityState{enemy.get_id(),
+                       enemy.entity_type(),
+                       enemy.get_location().get_name(),
+                       to_wire(enemy.get_x()),
+                       to_wire(enemy.get_y()),
+                       static_cast<int8_t>(delta.x),
+                       static_cast<int8_t>(delta.y),
+                       Emote::None,
+                       enemy.action()};
+}
+
 // La celda de arriba a la izquierda de la cama, en milésimas de celda
 EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& area_id) {
     return EntityState{player_id,
@@ -73,6 +86,12 @@ Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
     }
     for (const std::unique_ptr<Animal>& animal: world.get_animals()) {
         snapshot.entities.push_back(entity_of(*animal));
+    }
+    const Dungeon& dungeon = world.get_dungeon();
+    for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
+        for (const std::unique_ptr<Enemy>& enemy: dungeon.level(depth).get_enemies()) {
+            snapshot.entities.push_back(entity_of(*enemy));
+        }
     }
     const Cabin& cabin = world.get_cabin();
     for (const auto& [player_id, slot]: cabin.get_beds()) {

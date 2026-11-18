@@ -1,5 +1,6 @@
 #include "server/game/world/world.h"
 
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -10,6 +11,7 @@
 #include "server/config/server_config.h"
 #include "server/game/characters/enemies/skeleton.h"
 #include "server/game/characters/player.h"
+#include "server/game/snapshot_builder.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/farm.h"
 #include "server/game/world/town/town.h"
@@ -166,6 +168,19 @@ TEST_F(CombatTest, AWeakPlayerHitsLess) {
     EXPECT_TRUE(world->attack(player, Position{2, 1}));
     int weak_damage = static_cast<int>(sword_damage() * server_config().player.weak_damage);
     EXPECT_EQ(skeleton->get_health(), health - weak_damage);
+}
+
+TEST_F(CombatTest, SnapshotsHaveTheEnemiesOfTheDungeon) {
+    world->attack(player, Position{2, 1});
+    Snapshot snapshot = SnapshotBuilder::build(0, *world);
+    auto found = std::find_if(snapshot.entities.begin(), snapshot.entities.end(),
+                              [](const EntityState& e) { return e.type == EntityType::Skeleton; });
+    ASSERT_NE(found, snapshot.entities.end());
+    EXPECT_EQ(found->entityId, skeleton->get_id());
+    EXPECT_EQ(found->areaId, level().get_name());
+    EXPECT_EQ(found->x, 2500u);
+    EXPECT_EQ(found->y, 1500u);
+    EXPECT_EQ(found->action, EntityAction::Hurt);
 }
 
 }  // namespace
