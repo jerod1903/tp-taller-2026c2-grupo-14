@@ -84,6 +84,27 @@ inline const std::map<CropType, int> FILAS_CULTIVOS = {
         {CropType::Pumpkin, 7},
 };
 
+inline constexpr int COLUMNA_SEMILLAS = 7;
+inline const std::map<ItemQuality, int> COLUMNAS_CALIDAD = {
+        {ItemQuality::Base, 8},
+        {ItemQuality::Good, 9},
+        {ItemQuality::Excellent, 10},
+        {ItemQuality::Incredible, 11},
+        {ItemQuality::Perfect, 12},
+};
+inline const std::map<ItemType, CropType> SEMILLAS = {
+        {ItemType::StrawberrySeeds, CropType::Strawberry},
+        {ItemType::ScallionSeeds, CropType::Scallion},
+        {ItemType::PotatoSeeds, CropType::Potato},
+        {ItemType::PumpkinSeeds, CropType::Pumpkin},
+};
+inline const std::map<ItemType, CropType> PRODUCTOS_CULTIVO = {
+        {ItemType::Strawberry, CropType::Strawberry},
+        {ItemType::Scallion, CropType::Scallion},
+        {ItemType::Potato, CropType::Potato},
+        {ItemType::Pumpkin, CropType::Pumpkin},
+};
+
 inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
         {ItemType::Milk, Sonido::Ordenar},
         {ItemType::Egg, Sonido::Recoger},
