@@ -10,6 +10,7 @@ struct ServerConfig {
         uint8_t max_players;
         int tick_rate;  // ticks por segundo
         unsigned int outbox_size;
+        float day_speed;  // segundos que dura un día
     };
     struct Player {
         int health;
@@ -18,6 +19,23 @@ struct ServerConfig {
         float speed;  // celdas por segundo
         // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
         uint8_t max_stack;
+    };
+    // Lo que cansa cada acción.
+    struct Energy {
+        int dig;
+        int water;
+        int plant;
+        int harvest;
+        int milk;
+        int attack;
+        int mine;
+        int talk;
+    };
+    struct Species {
+        int price;            // lo que cuesta el animal
+        int product_price;    // lo que se paga por la leche o el huevo
+        int max_per_farm;
+        int production_days;  // cada cuántos días da su producto
     };
     struct Animals {
         int cows;
@@ -29,11 +47,10 @@ struct ServerConfig {
         float speed;     // celdas por segundo
         float min_walk;  // segundos
         float max_walk;
-        // Provisorio, hasta que exista el ciclo de días: cada cuánto da leche una vaca, en
-        // segundos.
-        float cow_ready_seconds;
         // Hasta dónde llega el jugador para ordeñar: de su centro al de la vaca, en casillas.
         float milking_reach;
+        Species cow;
+        Species chicken;
     };
 
     // Lo que comparten los enemigos que pelean cuerpo a cuerpo
@@ -60,6 +77,7 @@ struct ServerConfig {
 
     Game game;
     Player player;
+    Energy energy;
     Animals animals;
     Enemies enemies;
 };

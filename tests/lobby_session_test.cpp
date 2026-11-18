@@ -175,6 +175,8 @@ protected:
         EXPECT_EQ(client->recv_u16(),
                   std::optional<uint16_t>(static_cast<uint16_t>(server_config().game.tick_rate)));
         EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(server_config().game.max_players));
+        EXPECT_EQ(client->recv_u16(),
+                  std::optional<uint16_t>(static_cast<uint16_t>(server_config().player.energy)));
     }
 
     Snapshot recv_snapshot() {
@@ -185,7 +187,8 @@ protected:
 
     // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
     Snapshot recv_snapshot_body() {
-        Snapshot snapshot{client->recv_u32().value_or(0), {}, {}};
+        Snapshot snapshot{client->recv_u32().value_or(0), client->recv_u16().value_or(0),
+                          client->recv_u16().value_or(0), {}, {}};
         uint16_t count = client->recv_u16().value_or(0);
         for (uint16_t i = 0; i < count; ++i) {
             PlayerState player{};

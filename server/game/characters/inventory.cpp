@@ -18,10 +18,11 @@ void Inventory::select_slot(uint8_t slot) {
     }
 }
 
-uint8_t Inventory::add(ItemType item, uint8_t quantity) {
-    // Primero completa las pilas que ya hay de ese objeto
+uint8_t Inventory::add(ItemType item, uint8_t quantity, ItemQuality quality) {
+    // Primero completa las pilas que ya hay de ese objeto con esa calidad
     for (InventorySlot& slot: slots) {
-        if (quantity > 0 && slot.item == item && slot.quantity < server_config().player.max_stack) {
+        if (quantity > 0 && slot.item == item && slot.quality == quality &&
+            slot.quantity < server_config().player.max_stack) {
             uint8_t added =
                     std::min<uint8_t>(quantity, server_config().player.max_stack - slot.quantity);
             slot.quantity += added;
@@ -32,12 +33,14 @@ uint8_t Inventory::add(ItemType item, uint8_t quantity) {
     for (InventorySlot& slot: slots) {
         if (quantity > 0 && slot.item == ItemType::Empty) {
             uint8_t added = std::min<uint8_t>(quantity, server_config().player.max_stack);
-            slot = InventorySlot{item, added};
+            slot = InventorySlot{item, added, quality};
             quantity -= added;
         }
     }
     return quantity;
 }
+
+ItemType Inventory::selected_item() const { return slots[selected_slot].item; }
 
 InventoryState Inventory::get_state() const {
     return InventoryState{selected_slot, std::vector<InventorySlot>(slots.begin(), slots.end())};

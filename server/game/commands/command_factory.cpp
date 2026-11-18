@@ -9,6 +9,7 @@
 #include "server/game/commands/move_command.h"
 #include "server/game/commands/select_slot_command.h"
 #include "server/game/commands/typing_command.h"
+#include "server/game/commands/use_tool_command.h"
 
 namespace {
 
@@ -44,6 +45,7 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
                 {GameOp::Chat, with_payload<ChatCommand>(&ServerProtocol::recv_chat)},
                 {GameOp::Interact, without_payload<InteractCommand>()},
                 {GameOp::Typing, with_payload<TypingCommand>(&ServerProtocol::recv_typing)},
+                {GameOp::UseTool, without_payload<UseToolCommand>()},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

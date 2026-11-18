@@ -67,6 +67,8 @@ public:
 
     const std::vector<std::unique_ptr<Animal>>& farm_animals() override { return animals; }
 
+    Farm* find_farm() override { return nullptr; }
+
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.
     std::vector<std::unique_ptr<Animal>> animals;
 

@@ -16,7 +16,10 @@ public:
 
     // Apila primero sobre los slots que ya tienen ese objeto (hasta MAX_STACK) y despues usa los
     // vacios. Devuelve cuantos NO entraron: 0 si entro todo.
-    uint8_t add(ItemType item, uint8_t quantity);
+    uint8_t add(ItemType item, uint8_t quantity, ItemQuality quality = ItemQuality::Base);
+
+    // Lo que hay en el slot elegido (ItemType::Empty si está vacío).
+    ItemType selected_item() const;
 
     InventoryState get_state() const;
 

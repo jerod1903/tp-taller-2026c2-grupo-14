@@ -5,12 +5,25 @@ max_players = 5
 tick_rate = 30           # ticks por segundo
 outbox_size = 64         # mensajes pendientes por jugador; con la outbox llena se descartan snapshots
 
+[time]
+day_speed = "medio"      # "lento" (21 min reales por dia), "medio" (14) o "rapido" (7)
+
 [player]
 health = 100
 energy = 100
 gold = 500
 speed = 4.0              # celdas por segundo
 max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
+
+[energy]                 # lo que cansa cada acción
+dig = 2                  # cada golpe de pala
+water = 2
+plant = 1
+harvest = 1
+milk = 1
+attack = 2               # cada golpe de espada
+mine = 3                 # cada golpe de pico
+talk = 1                 # hablar con un comerciante
 
 # Provisorio: hasta que se compren a Marnie, la granja arranca con estos.
 [animals]
@@ -22,8 +35,19 @@ health = 100
 speed = 1.0              # celdas por segundo
 min_walk = 1.0           # segundos que camina (o se queda quieto) antes de elegir otra direccion
 max_walk = 3.0
-cow_ready_seconds = 20.0 # provisorio, hasta el ciclo de dias: cada cuanto da leche una vaca
 milking_reach = 1.5      # hasta donde llega el jugador para ordeñar, en casillas
+
+[animals.cow]
+price = 80               # monedas de oro
+product_price = 30       # la leche
+max_per_farm = 5
+production_days = 2      # da leche cada dos dias
+
+[animals.chicken]
+price = 20
+product_price = 3        # el huevo
+max_per_farm = 10
+production_days = 1      # pone un huevo por dia
 
 [enemies]
 spawn_distance = 5.0     # al aparecer, ninguno queda a menos de estas casillas de un portal del nivel

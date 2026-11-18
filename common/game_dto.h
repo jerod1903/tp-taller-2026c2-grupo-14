@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "common/lobby_dto.h"
+#include "common/farm_dto.h"
 
 // Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
@@ -17,6 +18,7 @@ enum class GameOp : uint8_t {
     Interact = 0x05,     // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
     Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
+    UseTool = 0x08,      // sin payload: usa lo del slot elegido sobre la celda que tiene adelante
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -36,14 +38,17 @@ enum class GameMsg : uint8_t {
     PlayerInfo,
     InventoryState,
     ChatMessage,
+    FarmState,
 };
 
-// El mundo de la partida, cuántos Snapshots por segundo manda el servidor y el máximo de jugadores
-// (el ala este de la cabaña tiene una cama por jugador). Se manda al entrar.
+// El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
+// (el ala este de la cabaña tiene una cama por jugador) y la energía máxima de un jugador (para la
+// barra del HUD). Se manda al entrar.
 struct LocationData {
     std::string worldId;
     uint16_t tickRate;
     uint8_t maxPlayers;
+    uint16_t maxEnergy;
 };
 
 // Las posiciones van en milésimas de celda: x = 14500 es el centro de la columna 14.
@@ -105,6 +110,8 @@ struct EntityState {
 // cualquier área.
 struct Snapshot {
     uint32_t tick;
+    uint16_t day;          // día 1, 2, ...
+    uint16_t minuteOfDay;  // minutos de juego desde las 6:00 (0..1199)
     std::vector<PlayerState> players;
     std::vector<EntityState> entities;
 };
@@ -182,18 +189,29 @@ enum class ItemType : uint8_t {
     Shovel,
     Sword,
     Milk,
+    StrawberrySeeds,
+    ScallionSeeds,
+    PotatoSeeds,
+    PumpkinSeeds,
+    Strawberry,
+    Scallion,
+    Potato,
+    Pumpkin,
+    Egg,
 };
 
 struct InventorySlot {
     ItemType item;
     uint8_t quantity;
+    ItemQuality quality = ItemQuality::Base;
 
     bool operator==(const InventorySlot&) const = default;
 };
 
+
 // Inventario de un jugador. Se manda al entrar y cada vez que cambia, no en cada tick.
 // En el cable: tag GameMsg::InventoryState, u8 selectedSlot, u16 cantidad de slots y, por cada
-// slot, u8 item y u8 quantity. Con selectedSlot de 0 a slots.size() - 1.
+// slot, u8 item, u8 quantity y u8 quality. Con selectedSlot de 0 a slots.size() - 1.
 struct InventoryState {
     uint8_t selectedSlot = 0;
     std::vector<InventorySlot> slots = {};

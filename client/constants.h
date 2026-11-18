@@ -75,6 +75,36 @@ inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
         {ChatKind::System, {170, 170, 170, 255}},
 };
 
+// hud.cpp: los carteles con el dia y la hora, el oro y la energia. Las medidas van en pixeles de
+// los assets; el HUD se dibuja a una escala entera
+inline constexpr int HORA_INICIO_DIA = 6;      // el minuto 0 del dia son las 6:00
+inline constexpr int PASO_MINUTOS_RELOJ = 10;  // la hora se muestra de a 10 minutos
+inline const char* const PREFIJO_DIA = "Día ";
+inline constexpr int TAMANO_FUENTE_HUD = 18;
+inline constexpr int MARGEN_HUD = 4;
+// botones_madera_enlazados.png: tres carteles de 96x32 (con la sombra), uno cada 40 (con las
+// cadenas); se usan los dos de arriba. El texto se centra en la cara, sin la sombra de abajo
+inline constexpr int ANCHO_CARTEL = 96;
+inline constexpr int ALTO_CARTEL = 32;
+inline constexpr int ALTO_CARA_CARTEL = 28;
+inline constexpr int PASO_CARTELES = 40;
+inline constexpr int CANTIDAD_CARTELES = 2;
+inline constexpr int SEPARACION_CARTEL_ORO = 4;
+inline constexpr int RELLENO_CARTEL = 12;  // de la punta redonda al icono o al texto
+// input_madera_panel.png: el marco de la barra de energia, que se estira sin tocar el borde
+inline constexpr int BORDE_MARCO = 9;
+inline constexpr int ANCHO_BARRA_ENERGIA = 26;
+inline constexpr int ALTO_BARRA_ENERGIA = 80;
+inline constexpr int PORCENTAJE_ENERGIA_MEDIA = 50;
+inline constexpr int PORCENTAJE_ENERGIA_BAJA = 20;
+inline const char* const ETIQUETA_ENERGIA = "E";
+inline constexpr SDL_Color COLOR_TEXTO_HUD = {255, 240, 210, 255};
+inline constexpr SDL_Color COLOR_SOMBRA_HUD = {43, 28, 35, 255};
+inline constexpr SDL_Color COLOR_ENERGIA_ALTA = {120, 200, 60, 255};
+inline constexpr SDL_Color COLOR_ENERGIA_MEDIA = {230, 190, 50, 255};
+inline constexpr SDL_Color COLOR_ENERGIA_BAJA = {200, 60, 50, 255};
+
+// globo.cpp: el globito con el emote arriba de un personaje
 inline constexpr int SEPARACION_GLOBO = 1;
 inline constexpr int RELLENO_GLOBO = 2;
 inline constexpr int ALTO_PALITO = 3;

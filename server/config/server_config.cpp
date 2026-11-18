@@ -57,9 +57,23 @@ ServerConfig::Game read_game(const toml::table& root) {
     if (max_players > std::numeric_limits<uint8_t>::max()) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'max_players' is too big");
     }
+    TomlTableReader time = section(root, "time");
+    std::string day_speed_str = time.requiredValue<std::string>("day_speed");
+    float day_speed;
+    if (day_speed_str == "lento") {
+        day_speed = 21 * 60.0f;
+    } else if (day_speed_str == "medio") {
+        day_speed = 14 * 60.0f;
+    } else if (day_speed_str == "rapido") {
+        day_speed = 7 * 60.0f;
+    } else {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": 'day_speed' must be 'lento', 'medio' or 'rapido'");
+    }
     return ServerConfig::Game{
             static_cast<uint8_t>(max_players), positive(game.requiredInt("tick_rate"), "tick_rate"),
-            static_cast<unsigned int>(positive(game.requiredInt("outbox_size"), "outbox_size"))};
+            static_cast<unsigned int>(positive(game.requiredInt("outbox_size"), "outbox_size")),
+            day_speed };
 }
 
 ServerConfig::Player read_player(const toml::table& root) {
@@ -74,6 +88,33 @@ ServerConfig::Player read_player(const toml::table& root) {
             positive(required_float(player, "speed"), "speed"), static_cast<uint8_t>(max_stack)};
 }
 
+ServerConfig::Energy read_energy(const toml::table& root) {
+    TomlTableReader energy = section(root, "energy");
+    auto cost = [&energy](const std::string& key) {
+        int value = energy.requiredInt(key);
+        if (value < 0) {
+            throw std::runtime_error(std::string(FILE_NAME) + ": '" + key + "' can't be negative");
+        }
+        return value;
+    };
+    return ServerConfig::Energy{cost("dig"),  cost("water"),  cost("plant"), cost("harvest"),
+                                cost("milk"), cost("attack"), cost("mine"),  cost("talk")};
+}
+
+ServerConfig::Species read_species(const toml::table& root, const std::string& name) {
+    const toml::table* table = root["animals"][name].as_table();
+    if (table == nullptr) {
+        throw std::runtime_error(std::string(FILE_NAME) + " is missing section [animals." + name +
+                                 "]");
+    }
+    TomlTableReader species(*table, "[animals." + name + "]");
+    return ServerConfig::Species{
+            positive(species.requiredInt("price"), "price"),
+            positive(species.requiredInt("product_price"), "product_price"),
+            positive(species.requiredInt("max_per_farm"), "max_per_farm"),
+            positive(species.requiredInt("production_days"), "production_days")};
+}
+
 ServerConfig::Animals read_animals(const toml::table& root) {
     TomlTableReader animals = section(root, "animals");
     ServerConfig::Animals read{
@@ -85,8 +126,9 @@ ServerConfig::Animals read_animals(const toml::table& root) {
             positive(required_float(animals, "speed"), "speed"),
             positive(required_float(animals, "min_walk"), "min_walk"),
             positive(required_float(animals, "max_walk"), "max_walk"),
-            positive(required_float(animals, "cow_ready_seconds"), "cow_ready_seconds"),
-            positive(required_float(animals, "milking_reach"), "milking_reach")};
+            positive(required_float(animals, "milking_reach"), "milking_reach"),
+            read_species(root, "cow"),
+            read_species(root, "chicken")};
     if (read.min_walk > read.max_walk) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'min_walk' is bigger than 'max_walk'");
     }
@@ -121,7 +163,8 @@ ServerConfig load_server_config(const std::string& path) {
     } catch (const toml::parse_error& e) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
-    return ServerConfig{read_game(root), read_player(root), read_animals(root), read_enemies(root)};
+    return ServerConfig{read_game(root), read_player(root), read_energy(root), read_animals(root),
+                        read_enemies(root)};
 }
 
 const ServerConfig& server_config() {

@@ -63,7 +63,9 @@ EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& 
 }  // namespace
 
 Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
-    Snapshot snapshot{tick, {}, {}};
+    const GameClock& clock = world.get_clock();
+    Snapshot snapshot{tick, clock.get_day(), static_cast<uint16_t>(clock.get_minute_of_day()), {},
+                      {}};
     for (const auto& [player_id, player]: world.get_players()) {
         snapshot.players.push_back(state_of(player_id, *player));
         snapshot.entities.push_back(entity_of(player_id, *player));

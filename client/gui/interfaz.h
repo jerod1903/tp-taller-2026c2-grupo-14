@@ -20,6 +20,7 @@
 #include "client/gui/chat/panel_chat.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/mapa/mapa.h"
+#include "client/gui/hud/hud.h"
 #include "client/gui/sprites/capa.h"
 #include "client/gui/sprites/constructor_capas.h"
 #include "client/gui/sprites/entidad_grafica.h"
@@ -72,6 +73,7 @@ private:
     BarraInventario barra;
     Fuente fuente;
     PanelChat panel_chat;
+    Hud hud;
     std::optional<std::string> borrador;
     Globo globo;
     TransicionArea transicion;
