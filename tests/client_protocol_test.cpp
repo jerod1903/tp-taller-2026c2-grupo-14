@@ -295,6 +295,14 @@ TEST_F(ClientGameProtocolTest, SendInteractSendsOnlyTheTag) {
     EXPECT_EQ(server.recv_u8(), std::nullopt);
 }
 
+TEST_F(ClientGameProtocolTest, SendClickSendsTagAndCell) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendClick(14, 3);
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Click));
+    EXPECT_EQ(server.recv_u16(), 14);
+    EXPECT_EQ(server.recv_u16(), 3);
+}
+
 TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
     BaseProtocol server(std::move(*server_socket));
     client->sendTyping(true);

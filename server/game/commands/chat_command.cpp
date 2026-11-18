@@ -46,6 +46,14 @@ void ChatCommand::execute(GameContext& context) {
     if (author == nullptr || message.empty()) {
         return;
     }
+    if (message.front() == ServerConstants::MERCHANT_COMMAND_PREFIX) {
+        TradeReply reply = context.commerce().trade(*author, message);
+        context.sessions().send_to(player_id, reply.message);
+        if (reply.inventory_changed) {
+            context.sessions().send_to(player_id, author->get_inventory_state());
+        }
+        return;
+    }
     if (message.front() == ServerConstants::CHEAT_PREFIX) {
         run_cheat(context, *author, message.substr(1));
         return;

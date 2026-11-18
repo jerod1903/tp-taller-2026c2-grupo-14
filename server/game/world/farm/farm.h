@@ -44,6 +44,10 @@ public:
     // false si ya tiene el máximo de esa especie (max_per_farm).
     bool add_animal(AnimalKind kind, const Position& pos);
     const std::vector<std::unique_ptr<Animal>>& get_animals() const;
+    int count_animals(AnimalKind kind) const;
+    // Saca los primeros `quantity` de esa especie (los vendió). Lanza std::invalid_argument si no
+    // hay tantos.
+    void remove_animals(AnimalKind kind, int quantity);
 
     // Los animales y los cultivos cuentan un día más; lo que dejan los animales en el piso
     // queda en su celda.
@@ -76,7 +80,6 @@ private:
     float minute = 0.0f;  // la hora del día, para las ventanas de riego y la calidad
     std::mt19937 rng{std::random_device{}()};  // la suerte de cada cosecha
 
-    int count_of(AnimalKind kind) const;
     // Pone en el piso, en su celda, lo que dejó cada animal.
     void collect_drops();
 };

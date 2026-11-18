@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,13 +37,13 @@ bool Farm::add_animal(AnimalKind kind, const Position& pos) {
     const ServerConfig::Animals& config = server_config().animals;
     switch (kind) {
         case AnimalKind::Cow:
-            if (count_of(kind) >= config.cow.max_per_farm) {
+            if (count_animals(kind) >= config.cow.max_per_farm) {
                 return false;
             }
             animals.push_back(std::make_unique<Cow>(next_animal_id++, pos, *this));
             break;
         case AnimalKind::Chicken:
-            if (count_of(kind) >= config.chicken.max_per_farm) {
+            if (count_animals(kind) >= config.chicken.max_per_farm) {
                 return false;
             }
             animals.push_back(std::make_unique<Chicken>(next_animal_id++, pos, *this));
@@ -77,7 +78,7 @@ void Farm::collect_drops() {
     }
 }
 
-int Farm::count_of(AnimalKind kind) const {
+int Farm::count_animals(AnimalKind kind) const {
     return static_cast<int>(
             std::count_if(animals.begin(), animals.end(), [kind](const auto& animal) {
                 return animal->get_kind() == kind;
@@ -156,6 +157,21 @@ void Farm::update_time(float minute_of_day) {
 
 const std::map<Position, Plot>& Farm::get_plots() const { return plots; }
 
+
+void Farm::remove_animals(AnimalKind kind, int quantity) {
+    if (count_animals(kind) < quantity) {
+        throw std::invalid_argument("not enough animals in the farm");
+    }
+    for (auto it = animals.begin(); it != animals.end() && quantity > 0;) {
+        if ((*it)->get_kind() != kind) {
+            ++it;
+            continue;
+        }
+        remove_entity(**it);
+        it = animals.erase(it);
+        --quantity;
+    }
+}
 
 void Farm::update(float dt) {
     update_entities(dt);

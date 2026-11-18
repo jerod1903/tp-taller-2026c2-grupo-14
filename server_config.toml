@@ -116,3 +116,10 @@ perfect = 0.95
 [cheats]
 seeds = 10                # cuántas semillas de cada tipo da "$seeds" sin cantidad
 gold = 100                # cuánto oro da "$gold" sin cantidad
+
+# Los comerciantes del mercado. Los precios de animales, leche, huevos, semillas y cosechas son los
+# de [animals.*] y [crops.*]; lo que cansa hablarles, el "talk" de [energy].
+[market]
+reach = 2.5              # hasta donde se le habla a un comerciante, de centro a centro, en casillas
+cow_buyback = 40         # lo que paga Marnie por una vaca (no puede superar su price)
+chicken_buyback = 10

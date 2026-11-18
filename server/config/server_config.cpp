@@ -224,6 +224,26 @@ ServerConfig::Cheats read_cheats(const toml::table& root) {
                                 positive(cheats.requiredInt("gold"), "gold")};
 }
 
+// Lo que paga un comerciante por algo no puede superar lo que lo cobra: si no, comprar y volver a
+// vender daría oro infinito.
+void check_buyback(int price, int buyback, const std::string& key) {
+    if (buyback > price) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": '" + key +
+                                 "' is bigger than its price");
+    }
+}
+
+// Necesita los precios de los animales, que se leen en [animals.*].
+ServerConfig::Market read_market(const toml::table& root, const ServerConfig::Animals& animals) {
+    TomlTableReader market = section(root, "market");
+    ServerConfig::Market read{positive(required_float(market, "reach"), "reach"),
+                              positive(market.requiredInt("cow_buyback"), "cow_buyback"),
+                              positive(market.requiredInt("chicken_buyback"), "chicken_buyback")};
+    check_buyback(animals.cow.price, read.cow_buyback, "cow_buyback");
+    check_buyback(animals.chicken.price, read.chicken_buyback, "chicken_buyback");
+    return read;
+}
+
 }  // namespace
 
 const ServerConfig::CropSpec& ServerConfig::Crops::of(CropType type) const {
@@ -249,9 +269,10 @@ ServerConfig load_server_config(const std::string& path) {
     } catch (const toml::parse_error& e) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
-    return ServerConfig{read_game(root),    read_player(root),  read_energy(root),
-                        read_animals(root), read_enemies(root), read_crops(root),
-                        read_cheats(root)};
+    ServerConfig::Animals animals = read_animals(root);
+    return ServerConfig{read_game(root), read_player(root),  read_energy(root),
+                        animals,         read_enemies(root), read_crops(root),
+                        read_cheats(root), read_market(root, animals)};
 }
 
 const ServerConfig& server_config() {

@@ -42,6 +42,12 @@ public:
     bool is_typing() const;
     // Agrega objetos a su inventario. Devuelve cuantos no entraron (0 si entraron todos).
     uint8_t receive(ItemType item, uint8_t quantity, ItemQuality quality = ItemQuality::Base);
+    // Cuántos tiene de ese objeto, de cualquier calidad.
+    int count(ItemType item) const;
+    // Cuántos más de ese objeto, con calidad base, le entran en el inventario.
+    int room_for(ItemType item) const;
+    // Saca esa cantidad, de cualquier calidad. Lanza std::invalid_argument si no tiene tantos.
+    void take(ItemType item, int quantity);
 
 private:
     std::string name;

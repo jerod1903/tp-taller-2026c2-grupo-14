@@ -8,6 +8,8 @@ target_sources(taller_server
     game/commands/chat_command.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
+    game/commerce/merchant.cpp
+    game/commerce/market.cpp
     game/commands/typing_command.cpp
     game/commands/click_command.cpp
     game/tools/tool.cpp
@@ -23,6 +25,7 @@ target_sources(taller_server
     game/interactions/harvest.cpp
     game/interactions/pick_up.cpp
     game/clicks/click_action.cpp
+    game/clicks/talk_to_merchant.cpp
     game/clicks/use_tool.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
@@ -91,6 +94,7 @@ target_sources(taller_server
     game/interactions/harvest.h
     game/interactions/pick_up.h
     game/clicks/click_action.h
+    game/clicks/talk_to_merchant.h
     game/clicks/use_tool.h
     game/commands/game_command.h
     game/commands/game_context.h

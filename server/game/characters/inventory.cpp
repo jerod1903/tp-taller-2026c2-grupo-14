@@ -1,6 +1,7 @@
 #include "server/game/characters/inventory.h"
 
 #include <algorithm>
+#include <stdexcept>
 #include <vector>
 
 #include "server/config/server_config.h"
@@ -49,6 +50,46 @@ void Inventory::remove_selected(uint8_t quantity) {
 }
 
 ItemType Inventory::selected_item() const { return slots[selected_slot].item; }
+
+int Inventory::count(ItemType item) const {
+    int total = 0;
+    for (const InventorySlot& slot: slots) {
+        if (slot.item == item) {
+            total += slot.quantity;
+        }
+    }
+    return total;
+}
+
+int Inventory::room_for(ItemType item) const {
+    int max_stack = server_config().player.max_stack;
+    int room = 0;
+    for (const InventorySlot& slot: slots) {
+        if (slot.item == item && slot.quality == ItemQuality::Base) {
+            room += max_stack - slot.quantity;
+        } else if (slot.item == ItemType::Empty) {
+            room += max_stack;
+        }
+    }
+    return room;
+}
+
+void Inventory::remove(ItemType item, int quantity) {
+    if (count(item) < quantity) {
+        throw std::invalid_argument("not enough items in the inventory");
+    }
+    for (auto slot = slots.rbegin(); slot != slots.rend() && quantity > 0; ++slot) {
+        if (slot->item != item) {
+            continue;
+        }
+        int taken = std::min<int>(quantity, slot->quantity);
+        slot->quantity = static_cast<uint8_t>(slot->quantity - taken);
+        quantity -= taken;
+        if (slot->quantity == 0) {
+            *slot = InventorySlot{ItemType::Empty, 0};
+        }
+    }
+}
 
 InventoryState Inventory::get_state() const {
     return InventoryState{selected_slot, std::vector<InventorySlot>(slots.begin(), slots.end())};

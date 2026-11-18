@@ -79,6 +79,14 @@ struct ServerConfig {
         float spawn_distance;
         Skeleton skeleton;
     };
+    // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están
+    // en [animals.*] y [crops.*]; lo que cansa hablarles, en [energy].
+    struct Market {
+        float reach;  // casillas, del centro del jugador al de la celda del comerciante
+        // Lo que paga Marnie por un animal que le vendés; no puede superar su price.
+        int cow_buyback;
+        int chicken_buyback;
+    };
 
     struct CropSpec {
         int seed_price;           // lo que cuesta la semilla
@@ -122,6 +130,7 @@ struct ServerConfig {
         int seeds;  // cuántas de cada tipo da "$seeds" sin cantidad
         int gold;   // cuánto da "$gold" sin cantidad
     } cheats;
+    Market market;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.
