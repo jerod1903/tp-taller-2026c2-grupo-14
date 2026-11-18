@@ -15,7 +15,7 @@ enum class GameOp : uint8_t {
     LeaveGame = 0x02,  // sin payload
     SelectSlot = 0x03,
     Chat = 0x04,         // payload: string con el texto tal cual lo escribio el jugador
-    Interact = 0x05,     // sin payload: el servidor decide con que interactua (por ahora, ordeñar)
+    Interact = 0x05,     // sin payload: el servidor decide con que interactua (ordeñar, cosechar)
     Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
     UseTool = 0x08,      // sin payload: usa lo del slot elegido sobre la celda que tiene adelante
@@ -72,6 +72,7 @@ struct PlayerState {
     uint16_t health;
     uint16_t energy;
     uint32_t gold;
+    bool unconscious = false;  // sin energía o sin vida: tirado donde cayó hasta el día siguiente
 
     bool operator==(const PlayerState&) const = default;
 };

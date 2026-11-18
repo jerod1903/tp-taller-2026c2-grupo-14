@@ -177,7 +177,8 @@ bool ServerProtocol::send_player_state(const PlayerState& player) {
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirX)) &&
            baseProtocol.send_u8(static_cast<uint8_t>(player.dirY)) &&
            baseProtocol.send_u16(player.health) && baseProtocol.send_u16(player.energy) &&
-           baseProtocol.send_u32(player.gold);
+           baseProtocol.send_u32(player.gold) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(player.unconscious));
 }
 
 bool ServerProtocol::send_entity_state(const EntityState& entity) {

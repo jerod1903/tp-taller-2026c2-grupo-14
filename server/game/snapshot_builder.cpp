@@ -18,7 +18,8 @@ PlayerState state_of(uint32_t player_id, const Player& player) {
                        static_cast<int8_t>(delta.y),
                        static_cast<uint16_t>(player.get_health()),
                        static_cast<uint16_t>(player.get_energy()),
-                       static_cast<uint32_t>(player.get_gold())};
+                       static_cast<uint32_t>(player.get_gold()),
+                       player.is_unconscious()};
 }
 
 EntityState entity_of(uint32_t player_id, const Player& player) {
