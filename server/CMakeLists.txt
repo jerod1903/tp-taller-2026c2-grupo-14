@@ -8,6 +8,7 @@ target_sources(taller_server
     game/commands/chat_command.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
+    game/commerce/merchant.cpp
     game/commands/typing_command.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp

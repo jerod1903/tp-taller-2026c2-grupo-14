@@ -36,6 +36,7 @@ target_sources(taller_tests
     inventory_test.cpp
     player_test.cpp
     farm_test.cpp
+    merchant_test.cpp
     select_slot_command_test.cpp
     # Código del servidor bajo test (sin main.cpp)
     ../server/config/server_config.cpp
@@ -66,6 +67,7 @@ target_sources(taller_tests
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
+    ../server/game/commerce/merchant.cpp
     ../server/game/commands/typing_command.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
