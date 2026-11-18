@@ -112,6 +112,31 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
                     positive(required_float(skeleton, "revive_seconds"), "revive_seconds")}};
 }
 
+// Lo que paga un comerciante por algo no puede superar lo que lo cobra: si no, comprar y volver a
+// vender daría oro infinito.
+void check_buyback(int price, int buyback, const std::string& key) {
+    if (buyback > price) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": '" + key +
+                                 "' is bigger than its price");
+    }
+}
+
+ServerConfig::Market read_market(const toml::table& root) {
+    TomlTableReader market = section(root, "market");
+    ServerConfig::Market read{positive(required_float(market, "reach"), "reach"),
+                              positive(market.requiredInt("talk_energy"), "talk_energy"),
+                              positive(market.requiredInt("cow_price"), "cow_price"),
+                              positive(market.requiredInt("cow_buyback"), "cow_buyback"),
+                              positive(market.requiredInt("chicken_price"), "chicken_price"),
+                              positive(market.requiredInt("chicken_buyback"), "chicken_buyback"),
+                              positive(market.requiredInt("milk_buyback"), "milk_buyback"),
+                              positive(market.requiredInt("max_cows"), "max_cows"),
+                              positive(market.requiredInt("max_chickens"), "max_chickens")};
+    check_buyback(read.cow_price, read.cow_buyback, "cow_buyback");
+    check_buyback(read.chicken_price, read.chicken_buyback, "chicken_buyback");
+    return read;
+}
+
 }  // namespace
 
 ServerConfig load_server_config(const std::string& path) {
@@ -121,7 +146,8 @@ ServerConfig load_server_config(const std::string& path) {
     } catch (const toml::parse_error& e) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
-    return ServerConfig{read_game(root), read_player(root), read_animals(root), read_enemies(root)};
+    return ServerConfig{read_game(root), read_player(root), read_animals(root), read_enemies(root),
+                        read_market(root)};
 }
 
 const ServerConfig& server_config() {

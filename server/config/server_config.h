@@ -57,11 +57,25 @@ struct ServerConfig {
         float spawn_distance;
         Skeleton skeleton;
     };
+    // Los comerciantes: hasta dónde se les habla, cuánto cansa y los precios de lo que venden
+    // (price) y de lo que compran (buyback).
+    struct Market {
+        float reach;  // casillas, del centro del jugador al de la celda del comerciante
+        int talk_energy;
+        int cow_price;
+        int cow_buyback;
+        int chicken_price;
+        int chicken_buyback;
+        int milk_buyback;
+        int max_cows;  // tope por granja
+        int max_chickens;
+    };
 
     Game game;
     Player player;
     Animals animals;
     Enemies enemies;
+    Market market;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

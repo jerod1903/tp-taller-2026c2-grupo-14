@@ -38,3 +38,16 @@ sight = 6.0              # hasta donde ve a un jugador, en casillas (no ve a tra
 reach = 1.0              # hasta donde llega su golpe, de su centro al del jugador, en casillas
 cooldown = 1.0           # segundos entre golpe y golpe
 revive_seconds = 10.0    # cuanto tarda en revivir
+
+# Los comerciantes del mercado. "price" es lo que cobran al venderte; "buyback", lo que te pagan
+# (no puede ser mayor que su price).
+[market]
+reach = 2.5              # hasta donde se le habla a un comerciante, de centro a centro, en casillas
+talk_energy = 2          # lo que cansa hablarle
+cow_price = 80
+cow_buyback = 40
+chicken_price = 20
+chicken_buyback = 10
+milk_buyback = 30
+max_cows = 5             # tope por granja
+max_chickens = 10

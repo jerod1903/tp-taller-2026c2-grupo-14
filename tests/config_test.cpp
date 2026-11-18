@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 
@@ -20,6 +21,17 @@ TEST(ServerConfigTest, TheRepoConfigLoads) {
     EXPECT_GT(config.game.max_players, 0);
     EXPECT_GT(config.game.tick_rate, 0);
     EXPECT_LE(config.animals.min_walk, config.animals.max_walk);
+    EXPECT_LE(config.market.cow_buyback, config.market.cow_price);
+    EXPECT_GT(config.market.max_cows, 0);
+}
+
+TEST(ServerConfigTest, ABuybackAboveItsPriceIsRejected) {
+    std::ifstream repo(std::string(TALLER_CONFIG_DIR) + "/server_config.toml");
+    std::string content((std::istreambuf_iterator<char>(repo)), std::istreambuf_iterator<char>());
+    std::string line = "cow_buyback = 40";
+    ASSERT_NE(content.find(line), std::string::npos);
+    content.replace(content.find(line), line.size(), "cow_buyback = 1000");
+    EXPECT_THROW(load_server_config(write_file("buyback.toml", content)), std::runtime_error);
 }
 
 TEST(ServerConfigTest, AMissingSectionIsRejected) {
