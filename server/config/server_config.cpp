@@ -22,6 +22,17 @@ TomlTableReader section(const toml::table& root, const std::string& name) {
     return TomlTableReader(*table, "[" + name + "]");
 }
 
+// Una sección anidada, como [enemies.skeleton]
+TomlTableReader subsection(const toml::table& root, const std::string& name,
+                           const std::string& child) {
+    const toml::table* table = root[name][child].as_table();
+    if (table == nullptr) {
+        throw std::runtime_error(std::string(FILE_NAME) + " is missing section [" + name + "." +
+                                 child + "]");
+    }
+    return TomlTableReader(*table, "[" + name + "." + child + "]");
+}
+
 float required_float(const TomlTableReader& reader, std::string_view key) {
     return static_cast<float>(reader.requiredValue<double>(key));
 }
@@ -82,6 +93,25 @@ ServerConfig::Animals read_animals(const toml::table& root) {
     return read;
 }
 
+ServerConfig::Fighter read_fighter(const TomlTableReader& enemy) {
+    return ServerConfig::Fighter{positive(enemy.requiredInt("health"), "health"),
+                                 positive(enemy.requiredInt("damage"), "damage"),
+                                 positive(required_float(enemy, "speed"), "speed"),
+                                 positive(required_float(enemy, "sight"), "sight"),
+                                 positive(required_float(enemy, "reach"), "reach"),
+                                 positive(required_float(enemy, "cooldown"), "cooldown")};
+}
+
+ServerConfig::Enemies read_enemies(const toml::table& root) {
+    TomlTableReader enemies = section(root, "enemies");
+    TomlTableReader skeleton = subsection(root, "enemies", "skeleton");
+    return ServerConfig::Enemies{
+            positive(required_float(enemies, "spawn_distance"), "spawn_distance"),
+            ServerConfig::Skeleton{
+                    positive(skeleton.requiredInt("count"), "count"), read_fighter(skeleton),
+                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds")}};
+}
+
 }  // namespace
 
 ServerConfig load_server_config(const std::string& path) {
@@ -91,7 +121,7 @@ ServerConfig load_server_config(const std::string& path) {
     } catch (const toml::parse_error& e) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
-    return ServerConfig{read_game(root), read_player(root), read_animals(root)};
+    return ServerConfig{read_game(root), read_player(root), read_animals(root), read_enemies(root)};
 }
 
 const ServerConfig& server_config() {

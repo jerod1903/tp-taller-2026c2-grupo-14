@@ -24,3 +24,17 @@ min_walk = 1.0           # segundos que camina (o se queda quieto) antes de eleg
 max_walk = 3.0
 cow_ready_seconds = 20.0 # provisorio, hasta el ciclo de dias: cada cuanto da leche una vaca
 milking_reach = 1.5      # hasta donde llega el jugador para ordeñar, en casillas
+
+[enemies]
+spawn_distance = 5.0     # al aparecer, ninguno queda a menos de estas casillas de un portal del nivel
+
+# Pelea cuerpo a cuerpo; al morir revive pasado un tiempo.
+[enemies.skeleton]
+count = 2                # cuantos aparecen en cada nivel
+health = 30
+damage = 5               # vida que le saca al jugador en cada golpe
+speed = 2.5              # celdas por segundo
+sight = 6.0              # hasta donde ve a un jugador, en casillas (no ve a traves de las paredes)
+reach = 1.0              # hasta donde llega su golpe, de su centro al del jugador, en casillas
+cooldown = 1.0           # segundos entre golpe y golpe
+revive_seconds = 10.0    # cuanto tarda en revivir

@@ -18,6 +18,7 @@ target_sources(taller_tests
     game_test.cpp
     grid_test.cpp
     location_test.cpp
+    skeleton_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
     map_editing_test.cpp

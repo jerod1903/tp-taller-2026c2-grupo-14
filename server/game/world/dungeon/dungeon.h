@@ -18,6 +18,9 @@ public:
     // Precondición: 0 <= depth < LEVEL_COUNT.
     DungeonLevel& level(int depth);
 
+    // Le dice a cada nivel cuáles de estos jugadores están en él.
+    void set_visitors(const std::vector<Creature*>& players);
+
     void update(float dt);
 
 private:

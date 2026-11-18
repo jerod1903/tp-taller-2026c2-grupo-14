@@ -70,6 +70,11 @@ const Cabin& World::get_cabin() const { return farm->get_cabin(); }
 void World::update(float dt) {
     farm->update(dt);
     town->update(dt);
+    std::vector<Creature*> characters;
+    for (const auto& [player_id, player]: players) {
+        characters.push_back(player.get());
+    }
+    dungeon.set_visitors(characters);
     dungeon.update(dt);
     movement.travel_through_portals();
 }

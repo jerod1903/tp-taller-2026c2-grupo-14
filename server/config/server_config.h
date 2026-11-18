@@ -36,9 +36,32 @@ struct ServerConfig {
         float milking_reach;
     };
 
+    // Lo que comparten los enemigos que pelean cuerpo a cuerpo
+    struct Fighter {
+        int health;
+        int damage;      // vida que le saca a quien golpea
+        float speed;     // celdas por segundo
+        float sight;     // hasta donde ve a un jugador, en celdas
+        float reach;     // hasta donde llega su golpe: de su centro al del jugador, en celdas
+        float cooldown;  // segundos entre golpe y golpe
+    };
+    // Tiene que estar antes de Enemies, que la usa
+    struct Skeleton {
+        int count;  // cuantos aparecen en cada nivel
+        Fighter fighter;
+        float revive_seconds;  // cuanto tarda en revivir despues de morir
+    };
+    struct Enemies {
+        // Al aparecer, ninguno queda a menos de esta distancia (en celdas) de un portal del nivel:
+        // el que entra no se los encuentra encima.
+        float spawn_distance;
+        Skeleton skeleton;
+    };
+
     Game game;
     Player player;
     Animals animals;
+    Enemies enemies;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

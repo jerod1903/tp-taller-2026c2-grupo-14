@@ -11,12 +11,17 @@
 // con decimales. `pos` es la celda en la que está ese centro, la que usan portales y herramientas.
 class Creature: public Entity {
 public:
-    Creature(uint32_t id, const Position& pos, Location& location, int health, float base_speed);
+    // `damage`: la vida que le saca a quien ataca. Las que no pelean (los animales) no la usan.
+    Creature(uint32_t id, const Position& pos, Location& location, int health, float base_speed,
+             int damage = 0);
 
     int get_health() const;
 
     virtual void take_damage(int amount);
     bool is_alive() const;
+    // Le pega a `target`: le saca su daño. Cuándo pegar lo decide quien la maneja (la IA del
+    // enemigo, la acción del jugador).
+    void attack(Creature& target) const;
 
     // Celdas por segundo. Por defecto base_speed; las subclases pueden modificarla.
     virtual float speed() const;
@@ -44,6 +49,7 @@ public:
 protected:
     int health;
     float base_speed;
+    int damage;
     Direction direction = Direction::NONE;
     float x;
     float y;

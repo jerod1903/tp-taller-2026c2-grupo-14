@@ -14,10 +14,11 @@ constexpr float MAX_SUBSTEP = 0.25f;
 }  // namespace
 
 Creature::Creature(uint32_t id, const Position& pos, Location& location, int health,
-                   float base_speed):
+                   float base_speed, int damage):
         Entity(id, pos, location),
         health(health),
         base_speed(base_speed),
+        damage(damage),
         x(pos.x + CELL_CENTER),
         y(pos.y + CELL_CENTER) {}
 
@@ -26,6 +27,8 @@ int Creature::get_health() const { return health; }
 void Creature::take_damage(int amount) { health = std::max(0, health - amount); }
 
 bool Creature::is_alive() const { return health > 0; }
+
+void Creature::attack(Creature& target) const { target.take_damage(damage); }
 
 float Creature::speed() const { return base_speed; }
 

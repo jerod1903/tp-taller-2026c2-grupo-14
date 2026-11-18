@@ -21,4 +21,8 @@ enum class Direction : uint8_t {
 // `pos`.
 Position step(const Position& pos, Direction dir);
 
+// Hacia dónde ir para recorrer el vector (dx, dy): una de las 8 direcciones, o NONE si ya llegó. Un
+// eje casi alineado (menos de una décima de celda) no cuenta, así no tiembla al estar alineado.
+Direction direction_towards(float dx, float dy);
+
 #endif  // DIRECTION_H
