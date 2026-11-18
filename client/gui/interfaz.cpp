@@ -29,6 +29,7 @@ Interfaz::Interfaz():
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
         hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS),
+        icono_regadera(renderer, RUTA_ICONO_REGADERA),
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
@@ -373,6 +374,20 @@ Sprite Interfaz::sprite_cultivo(const FarmTile& celda) {
     return Sprite{&hoja_cultivos, origen, destino};
 }
 
+void Interfaz::dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara) {
+    SDL2pp::Point arriba(celda.x * TAMANO_TILE + TAMANO_TILE / 2, celda.y * TAMANO_TILE);
+    if (celda.readyToHarvest) {
+        SDL2pp::Rect producto(COLUMNAS_CALIDAD.at(ItemQuality::Base) * TAMANO_CUADRO_CULTIVO,
+                              FILAS_CULTIVOS.at(celda.crop) * TAMANO_CUADRO_CULTIVO,
+                              TAMANO_CUADRO_CULTIVO, TAMANO_CUADRO_CULTIVO);
+        globo.dibujar_icono(renderer, hoja_cultivos, producto, arriba, camara);
+    } else if (celda.needsWater) {
+        globo.dibujar_icono(renderer, icono_regadera,
+                            SDL2pp::Rect(SDL2pp::Point(0, 0), icono_regadera.GetSize()), arriba,
+                            camara);
+    }
+}
+
 void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara) {
     for (const FarmTile& celda: granja.tiles) {
         mapa->dibujar_tile(renderer, TILES_SUELO.at(celda.soil), celda.x, celda.y, camara);
@@ -437,6 +452,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area && entidad.emote() != Emote::None) {
             globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+        }
+    }
+    if (granja.areaId == area) {
+        for (const FarmTile& celda: granja.tiles) {
+            dibujar_aviso(celda, camara);
         }
     }
 }

@@ -10,6 +10,9 @@ public:
     explicit Globo(SDL2pp::Renderer& renderer);
     void dibujar(SDL2pp::Renderer& renderer, Emote emote, const SDL2pp::Point& cabeza,
                  const SDL2pp::Rect& camara);
+    void dibujar_icono(SDL2pp::Renderer& renderer, SDL2pp::Texture& textura,
+                       const SDL2pp::Rect& origen, const SDL2pp::Point& cabeza,
+                       const SDL2pp::Rect& camara);
 
 private:
     void dibujar_ventanita(SDL2pp::Renderer& renderer, const SDL2pp::Rect& contenido);

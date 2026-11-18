@@ -12,6 +12,7 @@ inline const char* const RUTA_FUENTE = "Assets/Fonts/PixelifySans.ttf";
 
 inline const char* const RUTA_GLOBO_ESCRIBIENDO = "Assets/Misc/expression_chat.png";
 inline const char* const RUTA_ICONO_LECHE = "Assets/Farm/Animals/milk.png";
+inline const char* const RUTA_ICONO_REGADERA = "Assets/Misc/watering_can.png";
 
 inline const char* const RUTA_CARTELES_HUD = "Assets/Menu/botones/botones_madera_enlazados.png";
 inline const char* const RUTA_MARCO_HUD = "Assets/Menu/botones/input_madera_panel.png";

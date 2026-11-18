@@ -51,6 +51,7 @@ private:
     void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
     Sprite sprite_cultivo(const FarmTile& celda);
+    void dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara);
     void dibujar_inventario(const InventoryState& inventario);
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
@@ -65,6 +66,7 @@ private:
     SDL2pp::Texture hoja_vaca;
     SDL2pp::Texture hoja_gallina;
     SDL2pp::Texture hoja_cultivos;
+    SDL2pp::Texture icono_regadera;
     struct Aspecto {
         const FormatoAnimacion* formato;
         std::vector<Capa> capas;
