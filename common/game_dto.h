@@ -18,7 +18,7 @@ enum class GameOp : uint8_t {
     Interact = 0x05,     // sin payload: el servidor decide con que interactua (ordeñar, cosechar)
     Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
-    UseTool = 0x08,      // sin payload: usa lo del slot elegido sobre la celda que tiene adelante
+    Click = 0x08,        // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -164,10 +164,18 @@ struct ChatRequest {
     bool operator==(const ChatRequest&) const = default;
 };
 
+struct ClickRequest {
+    uint16_t x;
+    uint16_t y;
+
+    bool operator==(const ClickRequest&) const = default;
+};
+
 enum class ChatKind : uint8_t {
     Public,   // a todos los jugadores de la partida
     Private,  // solo al destinatario, con una copia para el que lo mando
     System,   // un aviso del servidor (por ejemplo, que el destinatario no esta conectado)
+    Merchant, // un comerciante le habla al jugador, from es su nombre
 };
 
 // Un mensaje de chat. En el cable: tag GameMsg::ChatMessage, u8 kind, from y text como strings.
