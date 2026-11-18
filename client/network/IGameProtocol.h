@@ -31,4 +31,5 @@ public:
     virtual void sendInteract() = 0;
     virtual void sendTyping(bool escribiendo) = 0;
     virtual void sendClick(uint16_t x, uint16_t y) = 0;
+    virtual void sendInvite() = 0;
 };

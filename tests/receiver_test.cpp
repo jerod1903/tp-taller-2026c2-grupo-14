@@ -1,5 +1,6 @@
 #include "server/net/receiver.h"
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -36,7 +37,7 @@ protected:
         Socket client_socket(HOST, PORT);
         server = std::make_unique<ServerProtocol>(listener.accept());
         client = std::make_unique<BaseProtocol>(std::move(client_socket));
-        receiver = std::make_unique<Receiver>(*server, inbox, PLAYER_ID);
+        receiver = std::make_unique<Receiver>(*server, inbox, PLAYER_ID, [this] { invites++; });
         receiver->start();
     }
 
@@ -66,12 +67,23 @@ protected:
     std::unique_ptr<ServerProtocol> server;
     std::unique_ptr<BaseProtocol> client;
     std::unique_ptr<Receiver> receiver;
+    // Cuántas veces se llamó a on_invite (desde el hilo del Receiver).
+    std::atomic<int> invites{0};
 };
 
 TEST_F(ReceiverTest, ForwardsMovesAsMoveCommands) {
     send_move(1, -1);
     execute_next();
     EXPECT_EQ(context.player.get_direction(), Direction::UP_RIGHT);
+}
+
+TEST_F(ReceiverTest, InviteCallsOnInviteAndKeepsReading) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::Invite)));
+    send_move(1, -1);
+    // El Move llegó: el Invite no cortó la conexión ni fue a la inbox
+    execute_next();
+    EXPECT_EQ(context.player.get_direction(), Direction::UP_RIGHT);
+    EXPECT_EQ(invites, 1);
 }
 
 TEST_F(ReceiverTest, ClientDisconnectPostsLeaveCommand) {

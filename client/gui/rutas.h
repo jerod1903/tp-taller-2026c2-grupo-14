@@ -21,6 +21,10 @@ inline const char* const RUTA_ICONO_ORO = "Assets/Caverns/items and trap_animati
 inline const char* const RUTA_HOJA_VACA = "Assets/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = "Assets/Farm/Animals/Chicken Red.png";
 
+inline const char* const RUTA_BOTON_MENU = "Assets/Menu/botones/boton_320.png";
+inline const char* const RUTA_BOTON_DESHABILITADO =
+        "Assets/Menu/botones/boton_deshabilitado_320.png";
+
 inline const std::map<ItemType, const char*> RUTAS_ICONOS = {
         {ItemType::Pickaxe, "Assets/Misc/pickaxe.png"},
         {ItemType::WateringCan, "Assets/Misc/watering_can.png"},

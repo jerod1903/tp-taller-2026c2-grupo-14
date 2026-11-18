@@ -71,6 +71,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.click) {
         enviador.clickear(*entrada.click);
     }
+    if (entrada.invitar) {
+        enviador.invitar();
+    }
 }
 
 void GameLoop::procesar_mensajes() {
