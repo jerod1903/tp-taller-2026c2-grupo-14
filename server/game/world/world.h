@@ -10,6 +10,7 @@
 #include "server/config/server_config.h"
 #include "server/game/characters/player.h"
 #include "server/game/commands/player_characters.h"
+#include "server/game/commands/player_combat.h"
 #include "server/game/commands/player_farming.h"
 #include "server/game/world/direction.h"
 #include "server/game/world/dungeon/dungeon.h"
@@ -21,9 +22,9 @@
 // El mapa completo de una partida. Es dueño de las tres zonas y de los personajes de los
 // jugadores, que se piden por id. Los portales entre zonas (pueblo <-> granja, pueblo <-> mazmorra)
 // los enlaza quien arma el mundo a partir del mapa, porque las posiciones de origen y llegada salen
-// de ahí. Atiende a los comandos que usan los personajes (PlayerCharacters) y la granja
-// (PlayerFarming).
-class World: public PlayerCharacters, public PlayerFarming {
+// de ahí. Atiende a los comandos que usan los personajes (PlayerCharacters), la granja
+// (PlayerFarming) y la pelea (PlayerCombat).
+class World: public PlayerCharacters, public PlayerFarming, public PlayerCombat {
 public:
     World(std::unique_ptr<Farm> farm, std::unique_ptr<Town> town, Dungeon dungeon);
 
@@ -35,6 +36,7 @@ public:
     Farm& get_farm();
     Town& get_town();
     Dungeon& get_dungeon();
+    const Dungeon& get_dungeon() const;
 
     // Crea su personaje en su cama de la cabaña, con los valores de server_config.toml. Si ya
     // estaba, lo reemplaza.
@@ -49,6 +51,7 @@ public:
     bool water(const Player& player, const Position& cell) override;
     const Outcome& harvest(Player& player) override;
     const Outcome& milk(Player& player) override;
+    bool attack(Player& player, const Position& cell) override;
     // Atiende a MoveCommand.
     Movement& get_movement();
 

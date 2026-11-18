@@ -23,6 +23,10 @@ struct ServerConfig {
         uint8_t max_stack;
         float tired_energy;        // fracción de la energía desde la que camina a mitad de velocidad
         float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su cama
+        int sword_damage;          // vida que le saca a un enemigo cada golpe de espada
+        float attack_cooldown;     // segundos entre golpe y golpe
+        float weak_health;         // fracción de la vida desde la que pega menos
+        float weak_damage;         // fracción de su daño que pega cuando está así de débil
     };
     // Lo que cansa cada acción.
     struct Energy {

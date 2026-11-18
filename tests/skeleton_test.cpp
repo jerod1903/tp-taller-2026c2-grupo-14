@@ -77,4 +77,43 @@ TEST_F(SkeletonTest, RevivesWithFullHealthAfterAWhile) {
     EXPECT_EQ(skeleton.get_health(), config().fighter.health);
 }
 
+// --- Lo que está haciendo, para que el cliente lo anime ---
+
+TEST_F(SkeletonTest, DoesNothingUntilItSeesSomeone) {
+    skeleton.update(0);
+    EXPECT_EQ(skeleton.action(), EntityAction::None);
+}
+
+TEST_F(SkeletonTest, IsAttackingForAWhileAfterAHit) {
+    TestCreature player(level, Position{3, 2});
+    visitors = {&player};
+    skeleton.update(0);
+    EXPECT_EQ(skeleton.action(), EntityAction::Attacking);
+    // Antes del próximo golpe ya terminó de pegar
+    skeleton.update(config().fighter.cooldown * 0.9f);
+    EXPECT_EQ(skeleton.action(), EntityAction::None);
+}
+
+TEST_F(SkeletonTest, IsHurtForAWhileAfterBeingHit) {
+    skeleton.take_damage(1);
+    EXPECT_EQ(skeleton.action(), EntityAction::Hurt);
+    skeleton.update(1.0f);
+    EXPECT_EQ(skeleton.action(), EntityAction::None);
+}
+
+TEST_F(SkeletonTest, BeingHurtShowsOverAttacking) {
+    TestCreature player(level, Position{3, 2});
+    visitors = {&player};
+    skeleton.update(0);
+    skeleton.take_damage(1);
+    EXPECT_EQ(skeleton.action(), EntityAction::Hurt);
+}
+
+TEST_F(SkeletonTest, IsDeadUntilItRevivesAndThenDoesNothing) {
+    skeleton.take_damage(config().fighter.health);
+    EXPECT_EQ(skeleton.action(), EntityAction::Dead);
+    skeleton.update(config().revive_seconds);
+    EXPECT_EQ(skeleton.action(), EntityAction::None);
+}
+
 }  // namespace

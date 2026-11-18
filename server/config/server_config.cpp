@@ -89,10 +89,18 @@ ServerConfig::Player read_player(const toml::table& root) {
             positive(required_float(player, "speed"), "speed"),
             static_cast<uint8_t>(max_stack),
             positive(required_float(player, "tired_energy"), "tired_energy"),
-            positive(required_float(player, "bad_night_recovery"), "bad_night_recovery")};
+            positive(required_float(player, "bad_night_recovery"), "bad_night_recovery"),
+            positive(player.requiredInt("sword_damage"), "sword_damage"),
+            positive(required_float(player, "attack_cooldown"), "attack_cooldown"),
+            positive(required_float(player, "weak_health"), "weak_health"),
+            positive(required_float(player, "weak_damage"), "weak_damage")};
     if (read.tired_energy >= 1.0f || read.bad_night_recovery > 1.0f) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": 'tired_energy' and 'bad_night_recovery' are fractions up to 1");
+    }
+    if (read.weak_health >= 1.0f || read.weak_damage > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": 'weak_health' and 'weak_damage' are fractions up to 1");
     }
     return read;
 }

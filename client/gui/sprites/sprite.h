@@ -13,6 +13,10 @@ struct Sprite {
     bool espejado = false;
     SDL_Color tinte = {255, 255, 255, 255};
     std::optional<int> apoyo = std::nullopt;
+    // Girado en grados, en el sentido del reloj, alrededor de `pivote` (relativo a la esquina de
+    // `destino`)
+    double angulo = 0.0;
+    SDL2pp::Point pivote = SDL2pp::Point(0, 0);
 
     int base() const { return apoyo ? *apoyo : destino.y + destino.h; }
 
@@ -22,7 +26,7 @@ struct Sprite {
             renderer.Copy(
                     *textura, origen,
                     SDL2pp::Rect(destino.x - camara.x, destino.y - camara.y, destino.w, destino.h),
-                    0.0, SDL2pp::NullOpt, espejado ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+                    angulo, pivote, espejado ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
         }
     }
 };

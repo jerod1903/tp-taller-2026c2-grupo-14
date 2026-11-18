@@ -9,11 +9,14 @@
 
 #include "server/config/server_config.h"
 #include "server/game/characters/enemies/skeleton.h"
+#include "server/game/world/point.h"
 
 namespace {
 // Los ids de los enemigos de cada nivel arrancan en (depth + 1) * ENEMY_IDS: no se repiten entre
 // niveles.
 constexpr uint32_t ENEMY_IDS = 1000;
+// Hasta dónde, del centro de la celda clickeada, cuenta un enemigo como "en esa celda"
+constexpr float ENEMY_NEAR_CELL = 1.0f;
 }  // namespace
 
 DungeonLevel::DungeonLevel(std::string name, Grid grid, int depth, uint32_t seed):
@@ -28,6 +31,22 @@ void DungeonLevel::spawn(std::unique_ptr<Enemy> enemy) {
     add_entity(*enemy);
     enemies.push_back(std::move(enemy));
 }
+
+Enemy* DungeonLevel::enemy_near(const Position& cell) const {
+    Point center = center_of(cell);
+    Enemy* nearest = nullptr;
+    float nearest_distance = ENEMY_NEAR_CELL;
+    for (const std::unique_ptr<Enemy>& enemy: enemies) {
+        float distance = std::hypot(enemy->get_x() - center.x, enemy->get_y() - center.y);
+        if (enemy->is_alive() && distance <= nearest_distance) {
+            nearest = enemy.get();
+            nearest_distance = distance;
+        }
+    }
+    return nearest;
+}
+
+const std::vector<std::unique_ptr<Enemy>>& DungeonLevel::get_enemies() const { return enemies; }
 
 void DungeonLevel::set_visitors(std::vector<Creature*> players) {
     bool was_empty = visitors.empty();

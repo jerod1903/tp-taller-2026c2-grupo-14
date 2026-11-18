@@ -7,7 +7,7 @@
 #include "server/game/world/world.h"
 
 // Pasa el estado del World a lo que viaja al cliente: posiciones en milésimas de celda, una
-// entidad por jugador, animal y cama con dueño.
+// entidad por jugador, animal, enemigo y cama con dueño.
 class SnapshotBuilder {
 public:
     static Snapshot build(uint32_t tick, const World& world);

@@ -33,6 +33,10 @@ public:
     // Lo que tiene en el slot elegido del inventario.
     ItemType selected_item() const;
 
+    // Le pega con la espada si ya pasó el tiempo desde el último golpe. true si le pegó.
+    bool strike(Creature& target);
+
+    // Cuenta el tiempo entre golpes y camina.
     void update(float dt) override;
 
     void select_inventory_slot(uint8_t slot);
@@ -49,6 +53,10 @@ public:
     // Saca esa cantidad, de cualquier calidad. Lanza std::invalid_argument si no tiene tantos.
     void take(ItemType item, int quantity);
 
+protected:
+    // Débil (weak_health de su vida o menos) pega menos (weak_damage de su daño).
+    int attack_damage() const override;
+
 private:
     std::string name;
     int gold;
@@ -57,6 +65,7 @@ private:
     int max_energy;
     Inventory inventory;
     bool typing = false;
+    float attack_cooldown_left = 0;
 };
 
 #endif  // PLAYER_H

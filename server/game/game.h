@@ -30,6 +30,7 @@ public:
     PlayerCommerce& commerce() override;
     // El World, dueño de la granja.
     PlayerFarming& farming() override;
+    PlayerCombat& combat() override;
 
     void start() override;
     void run() override;

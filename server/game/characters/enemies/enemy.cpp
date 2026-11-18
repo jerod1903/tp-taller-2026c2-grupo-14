@@ -8,20 +8,43 @@
 #include "server/game/world/location.h"
 
 Enemy::Enemy(uint32_t id, const Position& pos, Location& location,
-             const ServerConfig::Fighter& stats, const std::vector<Creature*>& visitors):
+             const ServerConfig::Fighter& stats, const std::vector<Creature*>& visitors,
+             float attack_time, float hurt_time):
         Creature(id, pos, location, stats.health, stats.speed, stats.damage),
         max_health(stats.health),
         sight(stats.sight),
         reach(stats.reach),
         cooldown(stats.cooldown),
+        attack_time(attack_time),
+        hurt_time(hurt_time),
         visitors(visitors) {}
 
 void Enemy::take_damage(int amount) {
     bool was_alive = is_alive();
     Creature::take_damage(amount);
-    if (was_alive && !is_alive()) {
+    if (is_alive()) {
+        hurt_left = hurt_time;
+        return;
+    }
+    // Muerto no sigue pegando ni dolorido: al revivir arranca sin nada
+    attacking_left = 0;
+    hurt_left = 0;
+    if (was_alive) {
         on_death();
     }
+}
+
+EntityAction Enemy::action() const {
+    if (!is_alive()) {
+        return EntityAction::Dead;
+    }
+    if (hurt_left > 0) {
+        return EntityAction::Hurt;
+    }
+    if (attacking_left > 0) {
+        return EntityAction::Attacking;
+    }
+    return EntityAction::None;
 }
 
 void Enemy::on_death() {}
@@ -33,6 +56,8 @@ void Enemy::update(float dt) {
         return;
     }
     cooldown_left -= dt;
+    attacking_left -= dt;
+    hurt_left -= dt;
     react();
     advance(dt);
 }
@@ -51,6 +76,7 @@ void Enemy::react() {
     if (cooldown_left <= 0) {
         attack(*target);
         cooldown_left = cooldown;
+        attacking_left = attack_time;
     }
 }
 

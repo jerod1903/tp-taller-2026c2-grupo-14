@@ -3,6 +3,7 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 
 #include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
@@ -26,6 +27,12 @@ struct Capa {
     SDL2pp::Point desplazamiento;
     Vistas vistas = {};
     SDL_Color tinte = SIN_TINTE;
+};
+
+// Cómo se dibuja una entidad: el formato de su hoja y las capas que la forman.
+struct Aspecto {
+    const FormatoAnimacion* formato;
+    std::vector<Capa> capas;
 };
 
 #endif

@@ -13,13 +13,15 @@
 #include <SDL2pp/SDL2pp.hh>
 
 #include "client/audio/sonido.h"
+#include "client/gui/menu-pausa/menu_pausa.h"
+#include "client/gui/rutas.h"
 #include "client/gui/sprites/animador_sprites.h"
 #include "client/gui/sprites/capa.h"
+#include "client/gui/sprites/pose.h"
 #include "common/character/CharacterSheets.h"
 #include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
-#include "client/gui/menu-pausa/menu_pausa.h"
 
 inline constexpr int CANTIDAD_ARGUMENTOS = 4;
 inline const char* const MUNDO_PRUEBA = "valle";
@@ -56,6 +58,30 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
                                                {Orientacion::Arriba, {1, false}}},
                                               {0, 1, 2, 3},
                                               std::chrono::duration<float>(0.15f)};
+
+// Las entidades que tienen un PNG por pose (lo que estén haciendo). Para sumar un enemigo alcanza
+// con agregarlo acá.
+// El esqueleto: una tira de cuadros de 32x32 por pose. Pegar y doler duran lo mismo que en el
+// servidor (0.6 y 0.4 segundos, en Skeleton), así la animación entra completa.
+inline constexpr int LADO_CUADRO_ESQUELETO = 32;
+inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
+        {EntityType::Skeleton,
+         {{Pose::Quieto,
+           {RUTA_ESQUELETO_QUIETO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 6,
+                                                std::chrono::duration<float>(0.15f))}},
+          {Pose::Caminando,
+           {RUTA_ESQUELETO_CAMINANDO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 10,
+                                                   std::chrono::duration<float>(0.08f))}},
+          {Pose::Atacando,
+           {RUTA_ESQUELETO_ATACANDO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 9,
+                                                  std::chrono::duration<float>(0.6f / 9))}},
+          {Pose::Herido,
+           {RUTA_ESQUELETO_HERIDO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 5,
+                                                std::chrono::duration<float>(0.4f / 5))}},
+          {Pose::Muerto,
+           {RUTA_ESQUELETO_MUERTO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 17,
+                                                std::chrono::duration<float>(0.08f), false)}}}},
+};
 
 inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;
 
@@ -137,18 +163,21 @@ inline constexpr int PASO_CARTELES = 40;
 inline constexpr int CANTIDAD_CARTELES = 2;
 inline constexpr int SEPARACION_CARTEL_ORO = 4;
 inline constexpr int RELLENO_CARTEL = 12;  // de la punta redonda al icono o al texto
-// input_madera_panel.png: el marco de la barra de energia, que se estira sin tocar el borde
+// input_madera_panel.png: el marco de las barras de vida y energia, que se estira sin tocar el
+// borde. La de vida va a la izquierda de la de energia
 inline constexpr int BORDE_MARCO = 9;
-inline constexpr int ANCHO_BARRA_ENERGIA = 26;
-inline constexpr int ALTO_BARRA_ENERGIA = 80;
-inline constexpr int PORCENTAJE_ENERGIA_MEDIA = 50;
-inline constexpr int PORCENTAJE_ENERGIA_BAJA = 20;
+inline constexpr int ANCHO_BARRA_HUD = 26;
+inline constexpr int ALTO_BARRA_HUD = 80;
+inline constexpr int PORCENTAJE_BARRA_MEDIA = 50;
+inline constexpr int PORCENTAJE_BARRA_BAJA = 20;
+inline constexpr int SEPARACION_BARRAS = 4;
 inline const char* const ETIQUETA_ENERGIA = "E";
+inline const char* const ETIQUETA_VIDA = "V";
 inline constexpr SDL_Color COLOR_TEXTO_HUD = {255, 240, 210, 255};
 inline constexpr SDL_Color COLOR_SOMBRA_HUD = {43, 28, 35, 255};
-inline constexpr SDL_Color COLOR_ENERGIA_ALTA = {120, 200, 60, 255};
-inline constexpr SDL_Color COLOR_ENERGIA_MEDIA = {230, 190, 50, 255};
-inline constexpr SDL_Color COLOR_ENERGIA_BAJA = {200, 60, 50, 255};
+inline constexpr SDL_Color COLOR_BARRA_ALTA = {120, 200, 60, 255};
+inline constexpr SDL_Color COLOR_BARRA_MEDIA = {230, 190, 50, 255};
+inline constexpr SDL_Color COLOR_BARRA_BAJA = {200, 60, 50, 255};
 
 // globo.cpp: el globito con el emote arriba de un personaje
 inline constexpr int SEPARACION_GLOBO = 1;

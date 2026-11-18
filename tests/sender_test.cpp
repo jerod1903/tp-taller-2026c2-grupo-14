@@ -60,7 +60,7 @@ protected:
 };
 
 TEST_F(SenderTest, SendsMessagesInOrder) {
-    outbox->push(LocationData{"", 30, 4, 100});
+    outbox->push(LocationData{"", 30, 4, 100, 80});
     outbox->push(Snapshot{0, 1, 0, {}, {}});
     EXPECT_EQ(client->recv_u8(),
               std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::LocationData)));
@@ -68,6 +68,7 @@ TEST_F(SenderTest, SendsMessagesInOrder) {
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(30));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(4));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(100));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(80));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
 }
 

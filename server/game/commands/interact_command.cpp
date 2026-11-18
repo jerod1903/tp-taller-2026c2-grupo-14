@@ -14,8 +14,9 @@ void InteractCommand::execute(GameContext& context) {
         return;
     }
     const std::vector<const Interaction*>& all = interactions();
-    std::any_of(all.begin(), all.end(), [&](const Interaction* interaction) {
+    // Corta en la primera interacción que se hace cargo; el resultado no se usa
+    static_cast<void>(std::any_of(all.begin(), all.end(), [&](const Interaction* interaction) {
         return interaction->try_with(*player, context)
                 .apply(*player, context, interaction->energy_cost());
-    });
+    }));
 }

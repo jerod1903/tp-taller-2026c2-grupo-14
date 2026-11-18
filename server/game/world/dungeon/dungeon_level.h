@@ -20,6 +20,12 @@ public:
     // El nivel es dueño de sus enemigos y los registra como entidades de la Location.
     void spawn(std::unique_ptr<Enemy> enemy);
 
+    // El enemigo vivo más cercano a `cell` que esté a menos de una celda de ella (se mueven entre
+    // celdas, así que no tiene que estar justo ahí), o nullptr si no hay.
+    Enemy* enemy_near(const Position& cell) const;
+
+    const std::vector<std::unique_ptr<Enemy>>& get_enemies() const;
+
     // Los jugadores que están en el nivel ahora; sus enemigos ven siempre esta lista. Si estaba
     // vacío y llega alguien, los enemigos se reemplazan por otros en celdas al azar: cada vez que
     // se entra aparecen en otro lado.

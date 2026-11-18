@@ -13,6 +13,7 @@ public:
     Skeleton(uint32_t id, const Position& pos, Location& location,
              const std::vector<Creature*>& visitors);
 
+    EntityType entity_type() const override;
     void on_death() override;
     // Nunca se va: siempre revive.
     bool is_gone() const override;

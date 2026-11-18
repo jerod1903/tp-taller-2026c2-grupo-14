@@ -16,7 +16,8 @@ void Sessions::add_player(uint32_t player_id, const GameMember& member,
     world.spawn_player(player_id, member.characterName);
     send(*outbox, LocationData{world_id, static_cast<uint16_t>(server_config().game.tick_rate),
                                server_config().game.max_players,
-                               static_cast<uint16_t>(server_config().player.energy)});
+                               static_cast<uint16_t>(server_config().player.energy),
+                               static_cast<uint16_t>(server_config().player.health)});
     PlayerInfo info{player_id, member.characterName, member.appearance};
     for (const auto& [other_id, other]: players) {
         send(*outbox, other.info);

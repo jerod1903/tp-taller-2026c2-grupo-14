@@ -24,10 +24,12 @@
 // Durante la partida:
 //   Acciones del jugador: tag GameOp u8 y su payload, ver la tabla de GameOp en common/game_dto.h
 //   Mensajes del servidor, con su tag GameMsg u8 adelante:
-//     LocationData:  worldId, tickRate u16, maxPlayers u8, maxEnergy u16
-//     Snapshot:      tick u32, day u16, minuteOfDay u16, count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
-//                    health u16, energy u16, gold u32)*,
-//                    count u16, (entityId u32, type u8, areaId, x u32, y u32, dirX u8, dirY u8)*
+//     LocationData:  worldId, tickRate u16, maxPlayers u8, maxEnergy u16, maxHealth u16
+//     Snapshot:      tick u32, day u16, minuteOfDay u16,
+//                    count u16, (playerId u32, areaId, x u32, y u32, dirX u8, dirY u8,
+//                    health u16, energy u16, gold u32, unconscious u8)*,
+//                    count u16, (entityId u32, type u8, areaId, x u32, y u32, dirX u8, dirY u8,
+//                    emote u8, action u8)*
 //     GameEnded:     reason u8
 //     PlayerInfo:    playerId u32, characterName, apariencia
 //     InventoryState: selectedSlot u8, count u16, (item u8, quantity u8, quality u8)*
@@ -199,7 +201,9 @@ LocationData ClientProtocol::recvLocationData() {
     std::string worldId = ensure(baseProtocol.recv_string());
     uint16_t tickRate = ensure(baseProtocol.recv_u16());
     uint8_t maxPlayers = ensure(baseProtocol.recv_u8());
-    return LocationData{std::move(worldId), tickRate, maxPlayers, ensure(baseProtocol.recv_u16())};
+    uint16_t maxEnergy = ensure(baseProtocol.recv_u16());
+    return LocationData{std::move(worldId), tickRate, maxPlayers, maxEnergy,
+                        ensure(baseProtocol.recv_u16())};
 }
 
 Snapshot ClientProtocol::recvSnapshot() {
@@ -243,6 +247,7 @@ EntityState ClientProtocol::recvEntityState() {
     entity.dirX = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
     entity.dirY = static_cast<int8_t>(ensure(baseProtocol.recv_u8()));
     entity.emote = static_cast<Emote>(ensure(baseProtocol.recv_u8()));
+    entity.action = static_cast<EntityAction>(ensure(baseProtocol.recv_u8()));
     return entity;
 }
 
