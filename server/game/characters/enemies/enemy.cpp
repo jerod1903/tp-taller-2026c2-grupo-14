@@ -93,6 +93,8 @@ Creature* Enemy::nearest_visible() const {
     return nearest;
 }
 
+const std::vector<Creature*>& Enemy::get_visitors() const { return visitors; }
+
 bool Enemy::sees(const Creature& target) const {
     return &target.get_location() == location && distance_to(target) <= sight &&
            clear_line_to(target);

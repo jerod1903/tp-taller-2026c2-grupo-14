@@ -77,6 +77,16 @@ struct ServerConfig {
         Fighter fighter;
         float revive_seconds;  // cuanto tarda en revivir despues de morir
     };
+    // Una pareja: la vampira, más rápida (fast_speed), y el vampiro, que pega más fuerte
+    // (strong_damage). Los demás valores, en `fighter`, son de los dos.
+    struct Vampire {
+        int pairs;  // cuantas parejas aparecen en cada nivel
+        Fighter fighter;
+        float fast_speed;
+        int strong_damage;
+        float revive_seconds;  // muerto, cuanto tarda en revivir despues de que cae sangre cerca
+        float blood_reach;     // hasta donde (en celdas) le llega la sangre de un jugador
+    };
     struct Enemies {
         // Al aparecer, ninguno queda a menos de esta distancia (en celdas) de un portal del nivel:
         // el que entra no se los encuentra encima.
@@ -85,6 +95,7 @@ struct ServerConfig {
         float min_walk;  // segundos
         float max_walk;
         Skeleton skeleton;
+        Vampire vampire;
     };
     // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están
     // en [animals.*] y [crops.*]; lo que cansa hablarles, en [energy].

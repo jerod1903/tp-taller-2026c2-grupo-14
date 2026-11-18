@@ -53,6 +53,9 @@ protected:
 
     // El jugador vivo más cercano que ve, o nullptr si no ve a ninguno.
     Creature* nearest_visible() const;
+    // Los jugadores que están en su nivel
+    const std::vector<Creature*>& get_visitors() const;
+    float distance_to(const Creature& target) const;
 
 private:
     float sight;
@@ -70,7 +73,6 @@ private:
     bool sees(const Creature& target) const;
     // Recorre las celdas de la recta entre los dos: ninguna puede ser una pared.
     bool clear_line_to(const Creature& target) const;
-    float distance_to(const Creature& target) const;
 };
 
 #endif  // ENEMY_H

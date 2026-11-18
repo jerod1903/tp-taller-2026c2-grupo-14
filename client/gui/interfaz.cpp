@@ -46,11 +46,15 @@ Interfaz::Interfaz():
         objetos_piso.try_emplace(item, renderer, ruta);
     }
     for (const auto& [tipo, hojas]: HOJAS_POR_POSE) {
+        auto tinte = TINTES.find(tipo);
         for (const auto& [pose, hoja]: hojas) {
             SDL2pp::Texture& textura =
                     hojas_por_pose.try_emplace(hoja.ruta, renderer, hoja.ruta).first->second;
-            aspectos_por_pose[tipo].emplace(
-                    pose, Aspecto{&hoja.formato, {capa_animal(textura, hoja.formato)}});
+            Capa capa = capa_animal(textura, hoja.formato);
+            if (tinte != TINTES.end()) {
+                capa.tinte = tinte->second;
+            }
+            aspectos_por_pose[tipo].emplace(pose, Aspecto{&hoja.formato, {capa}});
         }
     }
 }

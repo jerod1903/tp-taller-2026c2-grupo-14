@@ -165,13 +165,20 @@ ServerConfig::Fighter read_fighter(const TomlTableReader& enemy) {
 ServerConfig::Enemies read_enemies(const toml::table& root) {
     TomlTableReader enemies = section(root, "enemies");
     TomlTableReader skeleton = subsection(root, "enemies", "skeleton");
+    TomlTableReader vampire = subsection(root, "enemies", "vampire");
     ServerConfig::Enemies read{
             positive(required_float(enemies, "spawn_distance"), "spawn_distance"),
             positive(required_float(enemies, "min_walk"), "min_walk"),
             positive(required_float(enemies, "max_walk"), "max_walk"),
             ServerConfig::Skeleton{
                     positive(skeleton.requiredInt("count"), "count"), read_fighter(skeleton),
-                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds")}};
+                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds")},
+            ServerConfig::Vampire{
+                    positive(vampire.requiredInt("pairs"), "pairs"), read_fighter(vampire),
+                    positive(required_float(vampire, "fast_speed"), "fast_speed"),
+                    positive(vampire.requiredInt("strong_damage"), "strong_damage"),
+                    positive(required_float(vampire, "revive_seconds"), "revive_seconds"),
+                    positive(required_float(vampire, "blood_reach"), "blood_reach")}};
     if (read.min_walk > read.max_walk) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": [enemies] 'min_walk' is bigger than 'max_walk'");

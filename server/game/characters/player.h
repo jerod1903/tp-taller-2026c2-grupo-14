@@ -33,6 +33,9 @@ public:
     // Lo que tiene en el slot elegido del inventario.
     ItemType selected_item() const;
 
+    // Con weak_health de su vida o menos: pega menos y, cerca de un vampiro muerto, lo revive.
+    bool is_badly_hurt() const override;
+
     // Le pega con la espada si ya pasó el tiempo desde el último golpe. true si le pegó.
     bool strike(Creature& target);
 
@@ -54,7 +57,7 @@ public:
     void take(ItemType item, int quantity);
 
 protected:
-    // Débil (weak_health de su vida o menos) pega menos (weak_damage de su daño).
+    // Gravemente herido pega menos (weak_damage de su daño).
     int attack_damage() const override;
 
 private:

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -14,6 +15,8 @@
 #include "server/config/server_config.h"
 #include "server/game/characters/enemies/enemy.h"
 #include "server/game/characters/enemies/skeleton.h"
+#include "server/game/world/dungeon/spawners/skeleton_spawner.h"
+#include "server/game/world/dungeon/spawners/vampire_spawner.h"
 #include "tests/world_helpers.h"
 
 namespace {
@@ -127,14 +130,48 @@ protected:
     TestCreature player{level, Position{0, 1}};
 };
 
-TEST_F(RepopulateTest, WhenSomeoneEntersTheConfiguredEnemiesAppearFarFromThePortals) {
-    level.add_entity(player);
-    level.set_visitors({&player});
-    std::vector<const Entity*> found = enemies();
-    ASSERT_EQ(found.size(), static_cast<size_t>(server_config().enemies.skeleton.count));
-    for (const Entity* enemy: found) {
-        const Position& pos = enemy->get_position();
-        EXPECT_GE(std::hypot(pos.x, pos.y), server_config().enemies.spawn_distance);
+// Cuántos pone de ese tipo, según server_config.toml
+size_t expected_count(EntityType type) {
+    const ServerConfig::Enemies& config = server_config().enemies;
+    return type == EntityType::Skeleton ? config.skeleton.count : 2 * config.vampire.pairs;
+}
+
+TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePortals) {
+    for (int entry = 0; entry < 10; ++entry) {
+        level.set_visitors({});
+        level.set_visitors({&player});
+        const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+        ASSERT_FALSE(found.empty());
+        EntityType type = found.front()->entity_type();
+        if (type == EntityType::Vampiress) {
+            type = EntityType::Vampire;  // la pareja es un solo tipo
+        }
+        EXPECT_EQ(found.size(), expected_count(type));
+        for (const std::unique_ptr<Enemy>& enemy: found) {
+            EntityType other = enemy->entity_type();
+            EXPECT_EQ(other == EntityType::Vampiress ? EntityType::Vampire : other, type);
+            const Position& pos = enemy->get_position();
+            EXPECT_GE(std::hypot(pos.x, pos.y), server_config().enemies.spawn_distance);
+        }
+    }
+}
+
+TEST_F(RepopulateTest, SkeletonsAppearAlone) {
+    SkeletonSpawner().spawn(level);
+    EXPECT_EQ(level.get_enemies().size(), expected_count(EntityType::Skeleton));
+}
+
+TEST_F(RepopulateTest, EachVampireAppearsNextToItsPartner) {
+    VampireSpawner().spawn(level);
+    const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+    ASSERT_EQ(found.size(), expected_count(EntityType::Vampire));
+    // De a pares: el vampiro y después su vampira
+    for (size_t i = 0; i + 1 < found.size(); i += 2) {
+        EXPECT_EQ(found[i]->entity_type(), EntityType::Vampire);
+        EXPECT_EQ(found[i + 1]->entity_type(), EntityType::Vampiress);
+        const Position& a = found[i]->get_position();
+        const Position& b = found[i + 1]->get_position();
+        EXPECT_EQ(std::abs(a.x - b.x) + std::abs(a.y - b.y), 1);
     }
 }
 

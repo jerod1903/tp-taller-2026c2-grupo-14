@@ -42,6 +42,8 @@ void Creature::take_damage(int amount) { health = std::max(0, health - amount); 
 
 bool Creature::is_alive() const { return health > 0; }
 
+bool Creature::is_badly_hurt() const { return !is_alive(); }
+
 void Creature::attack(Creature& target) const { target.take_damage(attack_damage()); }
 
 int Creature::attack_damage() const { return damage; }

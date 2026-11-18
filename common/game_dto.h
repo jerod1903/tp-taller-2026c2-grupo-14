@@ -85,6 +85,8 @@ enum class EntityType : uint8_t {
     Chicken,
     Bed,  // la de cada jugador, con su playerId como entityId; aparece cuando entra a la partida
     Skeleton,
+    Vampire,
+    Vampiress,
 };
 
 // Lo que se muestra arriba de la cabeza de una entidad.

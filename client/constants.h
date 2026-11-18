@@ -64,6 +64,26 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
 // El esqueleto: una tira de cuadros de 32x32 por pose. Pegar y doler duran lo mismo que en el
 // servidor (0.6 y 0.4 segundos, en Skeleton), así la animación entra completa.
 inline constexpr int LADO_CUADRO_ESQUELETO = 32;
+// El vampiro y la vampira: las mismas tiras de 32x32, cada uno con su tinte (TINTES). Pegar y
+// doler duran lo mismo que en el servidor (0.8 y 0.4 segundos, en Vampire).
+inline constexpr int LADO_CUADRO_VAMPIRO = 32;
+inline const std::map<Pose, HojaDePose> HOJAS_VAMPIRO = {
+        {Pose::Quieto,
+         {RUTA_VAMPIRO_QUIETO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 6,
+                                            std::chrono::duration<float>(0.15f))}},
+        {Pose::Caminando,
+         {RUTA_VAMPIRO_CAMINANDO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 8,
+                                               std::chrono::duration<float>(0.1f))}},
+        {Pose::Atacando,
+         {RUTA_VAMPIRO_ATACANDO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 16,
+                                              std::chrono::duration<float>(0.8f / 16))}},
+        {Pose::Herido,
+         {RUTA_VAMPIRO_HERIDO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 5,
+                                            std::chrono::duration<float>(0.4f / 5))}},
+        {Pose::Muerto,
+         {RUTA_VAMPIRO_MUERTO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 14,
+                                            std::chrono::duration<float>(0.08f), false)}},
+};
 inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
         {EntityType::Skeleton,
          {{Pose::Quieto,
@@ -81,6 +101,13 @@ inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
           {Pose::Muerto,
            {RUTA_ESQUELETO_MUERTO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 17,
                                                 std::chrono::duration<float>(0.08f), false)}}}},
+        {EntityType::Vampire, HOJAS_VAMPIRO},
+        {EntityType::Vampiress, HOJAS_VAMPIRO},
+};
+// Las que se dibujan teñidas (las demás, sin tinte): el vampiro de negro, la vampira de rojo
+inline const std::map<EntityType, SDL_Color> TINTES = {
+        {EntityType::Vampire, {90, 90, 110, 255}},
+        {EntityType::Vampiress, {255, 110, 110, 255}},
 };
 
 inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;

@@ -2,13 +2,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <utility>
 #include <vector>
 
 #include "server/config/server_config.h"
-#include "server/game/characters/enemies/skeleton.h"
+#include "server/game/world/dungeon/spawners/enemy_spawner.h"
 #include "server/game/world/point.h"
 
 namespace {
@@ -63,15 +64,20 @@ void DungeonLevel::update(float dt) {
 
 void DungeonLevel::repopulate() {
     remove_enemies();
-    for (int i = 0; i < server_config().enemies.skeleton.count; ++i) {
-        std::optional<Position> cell = random_free_cell(
-                rng, [this](const Position& pos) { return far_from_portals(pos); });
-        if (!cell) {
-            return;
-        }
-        spawn(std::make_unique<Skeleton>(next_enemy_id++, *cell, *this, visitors, rng()));
-    }
+    random_spawner(rng).spawn(*this);
 }
+
+std::optional<Position> DungeonLevel::spawn_cell(const std::function<bool(const Position&)>& also) {
+    return random_free_cell(rng, [this, &also](const Position& pos) {
+        return far_from_portals(pos) && (!also || also(pos));
+    });
+}
+
+uint32_t DungeonLevel::new_enemy_id() { return next_enemy_id++; }
+
+uint32_t DungeonLevel::new_seed() { return rng(); }
+
+const std::vector<Creature*>& DungeonLevel::get_visitors() const { return visitors; }
 
 void DungeonLevel::remove_enemies() {
     for (const std::unique_ptr<Enemy>& enemy: enemies) {
