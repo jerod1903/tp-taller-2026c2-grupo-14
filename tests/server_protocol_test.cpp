@@ -37,13 +37,14 @@ protected:
     std::unique_ptr<BaseProtocol> client;
 };
 
-TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagWorldIdTickRateMaxPlayersAndMaxEnergy) {
-    ASSERT_TRUE(server->send_location_data(LocationData{"granja", 30, 4, 270}));
+TEST_F(ServerProtocolTest, LocationDataGoesWithItsTagWorldIdTickRateMaxPlayersAndMaxStats) {
+    ASSERT_TRUE(server->send_location_data(LocationData{"granja", 30, 4, 270, 100}));
     expect_msg(GameMsg::LocationData);
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("granja"));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(30));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(4));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(270));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(100));
 }
 
 TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
@@ -67,7 +68,8 @@ TEST_F(ServerProtocolTest, SnapshotGoesWithTickAndTheStateOfEachPlayer) {
 }
 
 TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
-    EntityState cow{2, EntityType::Cow, "granja", 3500, 4500, 1, -1, Emote::CowMilkReady};
+    EntityState cow{2,  EntityType::Cow,     "granja",          3500, 4500, 1,
+                    -1, Emote::CowMilkReady, EntityAction::Hurt};
     ASSERT_TRUE(server->send_snapshot(Snapshot{7, 1, 0, {}, {cow}}));
     expect_msg(GameMsg::Snapshot);
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(7));
@@ -83,6 +85,7 @@ TEST_F(ServerProtocolTest, SnapshotEntitiesGoAfterThePlayers) {
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(-1)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(Emote::CowMilkReady)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(EntityAction::Hurt)));
 }
 
 TEST_F(ServerProtocolTest, PlayerInfoGoesWithIdNameAndAppearance) {

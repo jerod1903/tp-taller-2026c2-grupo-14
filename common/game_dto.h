@@ -43,13 +43,14 @@ enum class GameMsg : uint8_t {
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
-// (el ala este de la cabaña tiene una cama por jugador) y la energía máxima de un jugador (para la
-// barra del HUD). Se manda al entrar.
+// (el ala este de la cabaña tiene una cama por jugador) y la energía y la vida máximas de un
+// jugador (para las barras del HUD). Se manda al entrar.
 struct LocationData {
     std::string worldId;
     uint16_t tickRate;
     uint8_t maxPlayers;
     uint16_t maxEnergy;
+    uint16_t maxHealth;
 };
 
 // Las posiciones van en milésimas de celda: x = 14500 es el centro de la columna 14.
@@ -83,6 +84,7 @@ enum class EntityType : uint8_t {
     Cow,
     Chicken,
     Bed,  // la de cada jugador, con su playerId como entityId; aparece cuando entra a la partida
+    Skeleton,
 };
 
 // Lo que se muestra arriba de la cabeza de una entidad.
@@ -90,6 +92,15 @@ enum class Emote : uint8_t {
     None,
     CowMilkReady,  // una vaca lista para ordeñar
     Typing,        // un jugador con el chat abierto
+};
+
+// Lo que está haciendo una entidad, además de caminar. Dura mientras el servidor lo siga mandando:
+// el cliente lo anima a su ritmo.
+enum class EntityAction : uint8_t {
+    None,
+    Attacking,
+    Hurt,
+    Dead,  // tirado: un esqueleto hasta que revive
 };
 
 // Algo que se dibuja y se mueve, en un tick. entityId es único dentro de su tipo (una vaca puede
@@ -104,6 +115,7 @@ struct EntityState {
     int8_t dirX;
     int8_t dirY;
     Emote emote = Emote::None;  // en el cable va al final, como u8
+    EntityAction action = EntityAction::None;  // en el cable después del emote, como u8
 
     bool operator==(const EntityState&) const = default;
 };

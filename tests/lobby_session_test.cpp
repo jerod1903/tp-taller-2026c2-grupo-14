@@ -177,6 +177,8 @@ protected:
         EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(server_config().game.max_players));
         EXPECT_EQ(client->recv_u16(),
                   std::optional<uint16_t>(static_cast<uint16_t>(server_config().player.energy)));
+        EXPECT_EQ(client->recv_u16(),
+                  std::optional<uint16_t>(static_cast<uint16_t>(server_config().player.health)));
     }
 
     // Saltea el FarmState que manda el servidor al entrar, antes de los snapshots.
@@ -239,6 +241,7 @@ protected:
             entity.dirX = static_cast<int8_t>(client->recv_u8().value_or(0));
             entity.dirY = static_cast<int8_t>(client->recv_u8().value_or(0));
             entity.emote = static_cast<Emote>(client->recv_u8().value_or(0));
+            entity.action = static_cast<EntityAction>(client->recv_u8().value_or(0));
             snapshot.entities.push_back(entity);
         }
         return snapshot;
