@@ -28,6 +28,8 @@ public:
     PlayerCharacters& characters() override;
     // Los comerciantes del mercado.
     PlayerCommerce& commerce() override;
+    // El World, dueño de la granja.
+    PlayerFarming& farming() override;
 
     void start() override;
     void run() override;

@@ -58,6 +58,7 @@ private:
     PlayerInfo recvPlayerInfo();
     InventoryState recvInventoryState();
     ChatMessage recvChatMessage();
+    FarmState recvFarmState();
 
     BaseProtocol baseProtocol;
 };

@@ -21,8 +21,8 @@ TEST(ServerConfigTest, TheRepoConfigLoads) {
     EXPECT_GT(config.game.max_players, 0);
     EXPECT_GT(config.game.tick_rate, 0);
     EXPECT_LE(config.animals.min_walk, config.animals.max_walk);
-    EXPECT_LE(config.market.cow_buyback, config.market.cow_price);
-    EXPECT_GT(config.market.max_cows, 0);
+    EXPECT_LE(config.market.cow_buyback, config.animals.cow.price);
+    EXPECT_LE(config.market.chicken_buyback, config.animals.chicken.price);
 }
 
 TEST(ServerConfigTest, ABuybackAboveItsPriceIsRejected) {

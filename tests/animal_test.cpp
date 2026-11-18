@@ -1,5 +1,8 @@
 #include "server/game/characters/animals/animal.h"
 
+#include "server/game/characters/animals/chicken/chicken.h"
+#include "server/game/characters/animals/cow/cow.h"
+
 #include <set>
 
 #include <gtest/gtest.h>
@@ -16,13 +19,13 @@ const float TICK = 1.0f / server_config().game.tick_rate;
 
 TEST(AnimalTest, KeepsItsKind) {
     TestLocation location;
-    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
+    Cow cow(0, Position{2, 2}, location, SEED);
     EXPECT_EQ(cow.get_kind(), AnimalKind::Cow);
 }
 
 TEST(AnimalTest, ChangesDirectionOverTime) {
     TestLocation location;
-    Animal chicken(0, AnimalKind::Chicken, Position{2, 2}, location, SEED);
+    Chicken chicken(0, Position{2, 2}, location, SEED);
     std::set<Direction> seen;
     for (int i = 0; i < 60 * server_config().game.tick_rate; ++i) {  // un minuto
         chicken.update(TICK);
@@ -50,7 +53,7 @@ TEST(AnimalTest, NeverLeavesAWalledPen) {
                                      {4, 1},
                                      {4, 2},
                                      {4, 3}})};
-    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
+    Cow cow(0, Position{2, 2}, location, SEED);
     for (int i = 0; i < 60 * server_config().game.tick_rate; ++i) {
         cow.update(TICK);
         ASSERT_GE(cow.get_position().x, 1);
@@ -60,28 +63,36 @@ TEST(AnimalTest, NeverLeavesAWalledPen) {
     }
 }
 
-TEST(AnimalTest, ACowIsReadyAfterCowReadySeconds) {
+TEST(AnimalTest, ACowIsReadyAfterItsProductionDays) {
     TestLocation location;
-    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
-    cow.update(server_config().animals.cow_ready_seconds - 1);
+    Cow cow(0, Position{2, 2}, location, SEED);
+    for (int day = 1; day < server_config().animals.cow.production_days; ++day) {
+        cow.start_new_day();
+    }
     EXPECT_FALSE(cow.is_ready());
-    cow.update(1);
+    cow.start_new_day();
     EXPECT_TRUE(cow.is_ready());
 }
 
 TEST(AnimalTest, MilkingStartsTheCountAgain) {
     TestLocation location;
-    Animal cow(0, AnimalKind::Cow, Position{2, 2}, location, SEED);
-    cow.update(server_config().animals.cow_ready_seconds);
+    Cow cow(0, Position{2, 2}, location, SEED);
+    for (int day = 0; day < server_config().animals.cow.production_days; ++day) {
+        cow.start_new_day();
+    }
     cow.milk();
     EXPECT_FALSE(cow.is_ready());
-    cow.update(server_config().animals.cow_ready_seconds);
+    for (int day = 0; day < server_config().animals.cow.production_days; ++day) {
+        cow.start_new_day();
+    }
     EXPECT_TRUE(cow.is_ready());
 }
 
 TEST(AnimalTest, AChickenIsNeverReady) {
     TestLocation location;
-    Animal chicken(0, AnimalKind::Chicken, Position{2, 2}, location, SEED);
-    chicken.update(server_config().animals.cow_ready_seconds * 10);
+    Chicken chicken(0, Position{2, 2}, location, SEED);
+    for (int day = 0; day < 10; ++day) {
+        chicken.start_new_day();
+    }
     EXPECT_FALSE(chicken.is_ready());
 }

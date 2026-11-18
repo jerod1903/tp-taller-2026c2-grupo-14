@@ -10,6 +10,8 @@
 #include "server/game/world/position.h"
 #include "server/game/world/spawn_point.h"
 
+class Player;
+
 // El interior de la cabaña, con las camas. Vive dentro de la Farm.
 class Cabin: public Interior {
 public:
@@ -25,6 +27,8 @@ public:
     SpawnPoint bed_spawn(uint32_t player_id);
     // Las camas que ya tienen dueño, por player_id.
     const std::map<uint32_t, Position>& get_beds() const;
+    // Si está parado sobre su propia cama.
+    bool is_in_bed(const Player& player) const;
     std::size_t bed_slot_count() const;
 
     // Como cualquier Location, pero la cabecera de una cama con dueño no se pisa.

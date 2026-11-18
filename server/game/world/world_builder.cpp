@@ -165,8 +165,16 @@ std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::Map
                                  const std::set<std::string>& passages,
                                  std::unique_ptr<Cabin> cabin_interior) {
     const maps::MapElement& cabin = element_of_type(map, area, maps::ElementType::Cabin);
+    std::set<Position> tilled;
+    for (int y = 0; y < static_cast<int>(area.tiles.size()); ++y) {
+        for (int x = 0; x < static_cast<int>(area.tiles[y].size()); ++x) {
+            if (area.tiles[y][x] == maps::TileType::TilledSoil) {
+                tilled.insert(Position{x, y});
+            }
+        }
+    }
     return std::make_unique<Farm>(area.id, build_grid(map, area, passages), building_door(cabin),
-                                  std::move(cabin_interior));
+                                  std::move(cabin_interior), tilled);
 }
 
 std::unique_ptr<Town> build_town(const maps::MapDefinition& map, const maps::MapArea& area,
@@ -243,19 +251,23 @@ const std::map<maps::ElementType, std::string> MERCHANT_NAMES = {
         {maps::ElementType::MerchantRobin, "Robin"}};
 
 // Lo que vende y compra cada uno. Clint y Robin todavía no tienen nada: faltan los minerales y
-// los muebles. Las semillas de Pierre llegan con los cultivos.
+// los muebles. Pierre todavía no vende semillas ni compra cosechas.
 Merchant build_merchant(maps::ElementType type, const Position& pos) {
-    const ServerConfig::Market& prices = server_config().market;
+    const ServerConfig::Species& cow = server_config().animals.cow;
+    const ServerConfig::Species& chicken = server_config().animals.chicken;
+    const ServerConfig::Market& market = server_config().market;
     const std::string& name = MERCHANT_NAMES.at(type);
     if (type == maps::ElementType::MerchantMarnie) {
         return Merchant(name, pos,
-                        {{"vaca", AnimalKind::Cow, prices.cow_price},
-                         {"gallina", AnimalKind::Chicken, prices.chicken_price}},
-                        {{"vaca", AnimalKind::Cow, prices.cow_buyback},
-                         {"gallina", AnimalKind::Chicken, prices.chicken_buyback}});
+                        {{"vaca", AnimalKind::Cow, cow.price},
+                         {"gallina", AnimalKind::Chicken, chicken.price}},
+                        {{"vaca", AnimalKind::Cow, market.cow_buyback},
+                         {"gallina", AnimalKind::Chicken, market.chicken_buyback}});
     }
     if (type == maps::ElementType::MerchantPierre) {
-        return Merchant(name, pos, {}, {{"leche", ItemType::Milk, prices.milk_buyback}});
+        return Merchant(name, pos, {},
+                        {{"leche", ItemType::Milk, cow.product_price},
+                         {"huevo", ItemType::Egg, chicken.product_price}});
     }
     return Merchant(name, pos, {}, {});
 }

@@ -175,17 +175,44 @@ protected:
         EXPECT_EQ(client->recv_u16(),
                   std::optional<uint16_t>(static_cast<uint16_t>(server_config().game.tick_rate)));
         EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(server_config().game.max_players));
+        EXPECT_EQ(client->recv_u16(),
+                  std::optional<uint16_t>(static_cast<uint16_t>(server_config().player.energy)));
     }
 
+    // Saltea el FarmState que manda el servidor al entrar, antes de los snapshots.
     Snapshot recv_snapshot() {
-        EXPECT_EQ(client->recv_u8(),
-                  std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
+        std::optional<uint8_t> tag = client->recv_u8();
+        while (tag == std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::FarmState))) {
+            recv_farm_state_body();
+            tag = client->recv_u8();
+        }
+        EXPECT_EQ(tag, std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
         return recv_snapshot_body();
+    }
+
+    // Decodifica lo que manda ServerProtocol::send_farm_state, sin el tag, y lo descarta.
+    void recv_farm_state_body() {
+        client->recv_string();
+        uint16_t tiles = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < tiles; ++i) {
+            client->recv_u16();
+            client->recv_u16();
+            for (int field = 0; field < 5; ++field) {
+                client->recv_u8();
+            }
+        }
+        uint16_t items = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < items; ++i) {
+            client->recv_u16();
+            client->recv_u16();
+            client->recv_u8();
+        }
     }
 
     // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
     Snapshot recv_snapshot_body() {
-        Snapshot snapshot{client->recv_u32().value_or(0), {}, {}};
+        Snapshot snapshot{client->recv_u32().value_or(0), client->recv_u16().value_or(0),
+                          client->recv_u16().value_or(0), {}, {}};
         uint16_t count = client->recv_u16().value_or(0);
         for (uint16_t i = 0; i < count; ++i) {
             PlayerState player{};
@@ -198,6 +225,7 @@ protected:
             player.health = client->recv_u16().value_or(0);
             player.energy = client->recv_u16().value_or(0);
             player.gold = client->recv_u32().value_or(0);
+            player.unconscious = client->recv_u8().value_or(0) != 0;
             snapshot.players.push_back(player);
         }
         uint16_t entity_count = client->recv_u16().value_or(0);
@@ -241,7 +269,8 @@ protected:
         for (uint16_t i = 0; i < count; ++i) {
             ItemType item = static_cast<ItemType>(client->recv_u8().value_or(0));
             uint8_t quantity = client->recv_u8().value_or(0);
-            inventory.slots.push_back(InventorySlot{item, quantity});
+            auto quality = static_cast<ItemQuality>(client->recv_u8().value_or(0));
+            inventory.slots.push_back(InventorySlot{item, quantity, quality});
         }
         return inventory;
     }
@@ -286,6 +315,8 @@ protected:
                 recv_player_info_body();
             } else if (*tag == static_cast<uint8_t>(GameMsg::InventoryState)) {
                 recv_inventory_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::FarmState)) {
+                recv_farm_state_body();
             } else {
                 break;
             }

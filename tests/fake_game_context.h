@@ -20,7 +20,8 @@ class FakeGameContext:
         public PlayerSessions,
         public PlayerMovement,
         public PlayerCharacters,
-        public PlayerCommerce {
+        public PlayerCommerce,
+        public PlayerFarming {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -34,6 +35,7 @@ public:
     PlayerMovement& movement() override { return *this; }
     PlayerCharacters& characters() override { return *this; }
     PlayerCommerce& commerce() override { return *this; }
+    PlayerFarming& farming() override { return *this; }
 
     Player* find_player(uint32_t player_id) override {
         return player_id == PLAYER_ID ? &player : nullptr;
@@ -68,7 +70,15 @@ public:
         return found->second;
     }
 
-    const std::vector<std::unique_ptr<Animal>>& farm_animals() override { return animals; }
+    bool dig(const Player&, const Position&) override { return false; }
+
+    bool plant(const Player&, const Position&, CropType) override { return false; }
+
+    bool water(const Player&, const Position&) override { return false; }
+
+    const Outcome& harvest(Player&) override { return Outcome::not_here(); }
+
+    const Outcome& milk(Player& player) override { return milk_nearest_cow(animals, player); }
 
     std::optional<ChatMessage> talk(Player&, const Position& cell) override {
         clicked.push_back(cell);
@@ -92,7 +102,7 @@ public:
     std::vector<std::pair<uint32_t, GameMessage>> sent;
 
     TestLocation location;
-    Player player{PLAYER_ID, Position{0, 0}, location, "jero", 10, 1.0f, 0, 0};
+    Player player{PLAYER_ID, Position{0, 0}, location, "jero", 10, 1.0f, 0, 100};
     std::vector<Added> added;
     std::vector<uint32_t> removed;
     std::vector<uint32_t> entered_portal;

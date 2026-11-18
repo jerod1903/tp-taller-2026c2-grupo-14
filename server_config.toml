@@ -5,12 +5,28 @@ max_players = 5
 tick_rate = 30           # ticks por segundo
 outbox_size = 64         # mensajes pendientes por jugador; con la outbox llena se descartan snapshots
 
+[time]
+day_speed = "medio"      # "lento" (21 min reales por dia), "medio" (14) o "rapido" (7)
+
 [player]
 health = 100
 energy = 100
 gold = 500
 speed = 4.0              # celdas por segundo
 max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
+tired_energy = 0.1       # con esta fracción de su energía o menos camina a mitad de velocidad
+bad_night_recovery = 0.5 # fracción de vida y energía con la que despierta si no durmió en su cama
+
+[energy]                 # lo que cansa cada acción
+dig = 2                  # cada golpe de pala
+water = 2
+plant = 1
+harvest = 1
+milk = 1
+pick_up = 1              # levantar un huevo del piso
+attack = 2               # cada golpe de espada
+mine = 3                 # cada golpe de pico
+talk = 1                 # hablar con un comerciante
 
 # Provisorio: hasta que se compren a Marnie, la granja arranca con estos.
 [animals]
@@ -22,8 +38,19 @@ health = 100
 speed = 1.0              # celdas por segundo
 min_walk = 1.0           # segundos que camina (o se queda quieto) antes de elegir otra direccion
 max_walk = 3.0
-cow_ready_seconds = 20.0 # provisorio, hasta el ciclo de dias: cada cuanto da leche una vaca
 milking_reach = 1.5      # hasta donde llega el jugador para ordeñar, en casillas
+
+[animals.cow]
+price = 80               # monedas de oro
+product_price = 30       # la leche
+max_per_farm = 5
+production_days = 2      # da leche cada dos dias
+
+[animals.chicken]
+price = 20
+product_price = 3        # el huevo
+max_per_farm = 10
+production_days = 1      # pone un huevo por dia
 
 [enemies]
 spawn_distance = 5.0     # al aparecer, ninguno queda a menos de estas casillas de un portal del nivel
@@ -39,15 +66,60 @@ reach = 1.0              # hasta donde llega su golpe, de su centro al del jugad
 cooldown = 1.0           # segundos entre golpe y golpe
 revive_seconds = 10.0    # cuanto tarda en revivir
 
-# Los comerciantes del mercado. "price" es lo que cobran al venderte; "buyback", lo que te pagan
-# (no puede ser mayor que su price).
+# Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
+[crops.strawberry]
+seed_price = 10
+base_price = 25
+waterings_per_day = 2
+days_to_grow = 4
+regrow_days = 2           # después de la primera cosecha vuelve a dar cada 2 días
+skippable_waterings = 0
+
+[crops.scallion]
+seed_price = 5
+base_price = 12
+waterings_per_day = 3
+days_to_grow = 2
+regrow_days = 0
+skippable_waterings = 0
+
+[crops.potato]
+seed_price = 8
+base_price = 18
+waterings_per_day = 2
+days_to_grow = 3
+regrow_days = 0
+skippable_waterings = 1   # tolera saltearse un riego por día
+
+[crops.pumpkin]
+seed_price = 20
+base_price = 50
+waterings_per_day = 1
+days_to_grow = 7
+regrow_days = 0
+skippable_waterings = 0
+
+# Calidad de la cosecha: puntaje = (riego * watering_weight + cosecha * (1 - watering_weight)) * suerte.
+# Riego: 1 si se regó apenas lo necesitó, baja con la demora y cada riego salteado cuenta como 0.
+# Cosecha: 1 si se cosechó apenas estuvo lista, llega a 0 a los harvest_grace_days días.
+[crops.quality]
+watering_weight = 0.5
+harvest_grace_days = 2.0
+luck_min = 0.8            # la suerte es un multiplicador al azar entre estos dos
+luck_max = 1.2
+good = 0.5                # puntaje mínimo de cada calidad; por debajo, base
+excellent = 0.7
+incredible = 0.85
+perfect = 0.95
+
+# Se escriben en el chat con un $ adelante y una cantidad opcional: "$gold 10".
+[cheats]
+seeds = 10                # cuántas semillas de cada tipo da "$seeds" sin cantidad
+gold = 100                # cuánto oro da "$gold" sin cantidad
+
+# Los comerciantes del mercado. Los precios de animales, leche, huevos, semillas y cosechas son los
+# de [animals.*] y [crops.*]; lo que cansa hablarles, el "talk" de [energy].
 [market]
 reach = 2.5              # hasta donde se le habla a un comerciante, de centro a centro, en casillas
-talk_energy = 2          # lo que cansa hablarle
-cow_price = 80
-cow_buyback = 40
-chicken_price = 20
+cow_buyback = 40         # lo que paga Marnie por una vaca (no puede superar su price)
 chicken_buyback = 10
-milk_buyback = 30
-max_cows = 5             # tope por granja
-max_chickens = 10

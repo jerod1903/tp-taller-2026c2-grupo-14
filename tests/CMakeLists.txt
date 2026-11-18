@@ -43,17 +43,22 @@ target_sources(taller_tests
     # Código del servidor bajo test (sin main.cpp)
     ../server/config/server_config.cpp
     ../server/game/characters/animals/animal.cpp
+    ../server/game/characters/animals/chicken/chicken.cpp
+    ../server/game/characters/animals/cow/cow.cpp
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
     ../server/game/characters/enemies/skeleton.cpp
     ../server/game/characters/entity.cpp
     ../server/game/characters/player.cpp
     ../server/game/world/direction.cpp
+    ../server/game/world/game_clock.cpp
     ../server/game/world/dungeon/dungeon.cpp
     ../server/game/world/dungeon/dungeon_level.cpp
     ../server/game/world/farm/cabin.cpp
+    ../server/game/world/farm/crop.cpp
     ../server/game/world/interior.cpp
     ../server/game/world/farm/farm.cpp
+    ../server/game/world/farm/milking.cpp
     ../server/game/world/grid.cpp
     ../server/game/world/location.cpp
     ../server/game/world/movement.cpp
@@ -69,10 +74,25 @@ target_sources(taller_tests
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
-    ../server/game/commands/click_command.cpp
     ../server/game/commerce/merchant.cpp
     ../server/game/commerce/market.cpp
     ../server/game/commands/typing_command.cpp
+    ../server/game/commands/click_command.cpp
+    ../server/game/tools/tool.cpp
+    ../server/game/tools/shovel.cpp
+    ../server/game/tools/seed.cpp
+    ../server/game/tools/watering_can.cpp
+    ../server/game/cheats/cheat.cpp
+    ../server/game/cheats/seeds_cheat.cpp
+    ../server/game/cheats/gold_cheat.cpp
+    ../server/game/interactions/outcome.cpp
+    ../server/game/interactions/interaction.cpp
+    ../server/game/interactions/milk.cpp
+    ../server/game/interactions/harvest.cpp
+    ../server/game/interactions/pick_up.cpp
+    ../server/game/clicks/click_action.cpp
+    ../server/game/clicks/talk_to_merchant.cpp
+    ../server/game/clicks/use_tool.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
     ../server/game/commands/enter_portal_command.cpp

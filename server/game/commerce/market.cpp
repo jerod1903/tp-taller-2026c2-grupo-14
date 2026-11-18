@@ -41,8 +41,8 @@ std::optional<int> parse_quantity(const std::string& text) {
 }
 
 int max_animals(AnimalKind kind) {
-    return kind == AnimalKind::Cow ? server_config().market.max_cows
-                                   : server_config().market.max_chickens;
+    return kind == AnimalKind::Cow ? server_config().animals.cow.max_per_farm
+                                   : server_config().animals.chicken.max_per_farm;
 }
 
 }  // namespace
@@ -58,7 +58,7 @@ std::optional<ChatMessage> Market::talk(Player& player, const Position& cell) {
     for (const Merchant& merchant: merchants) {
         if (merchant.occupies(cell) && can_reach(player, merchant)) {
             talking[player.get_id()] = &merchant;
-            player.tire(server_config().market.talk_energy);
+            player.spend_energy(server_config().energy.talk);
             return ChatMessage{ChatKind::Merchant, merchant.get_name(), merchant.greeting()};
         }
     }
@@ -135,7 +135,7 @@ TradeReply Market::buy(Player& player, const Merchant& merchant, const std::stri
         if (farm.count_animals(*kind) + quantity > max_animals(*kind)) {
             return reply(merchant, "No entran más en tu granja");
         }
-        player.pay(total);
+        player.add_gold(-total);
         for (int i = 0; i < quantity; ++i) {
             farm.add_animal(*kind, animal_spawn);
         }
@@ -145,7 +145,7 @@ TradeReply Market::buy(Player& player, const Merchant& merchant, const std::stri
     if (player.room_for(item) < quantity) {
         return reply(merchant, "No te entra en el inventario");
     }
-    player.pay(total);
+    player.add_gold(-total);
     player.receive(item, static_cast<uint8_t>(quantity));
     return reply(merchant, "¡Listo! Pagaste " + std::to_string(total) + " monedas", true);
 }
@@ -171,7 +171,7 @@ TradeReply Market::sell(Player& player, const Merchant& merchant, const std::str
         inventory_changed = true;
     }
     int total = offer->price * quantity;
-    player.earn(total);
+    player.add_gold(total);
     return reply(merchant, "¡Gracias! Te pago " + std::to_string(total) + " monedas",
                  inventory_changed);
 }

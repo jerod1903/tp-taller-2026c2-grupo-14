@@ -189,23 +189,26 @@ TEST_F(ClientGameProtocolTest, SendLeaveGameSendsOnlyTheTag) {
 
 TEST_F(ClientGameProtocolTest, RecvsLocationData) {
     ServerProtocol server(std::move(*server_socket));
-    ASSERT_TRUE(server.send_location_data(LocationData{"granja", 30, 4}));
+    ASSERT_TRUE(server.send_location_data(LocationData{"granja", 30, 4, 270}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<LocationData>(message));
     EXPECT_EQ(std::get<LocationData>(message).worldId, "granja");
     EXPECT_EQ(std::get<LocationData>(message).tickRate, 30);
     EXPECT_EQ(std::get<LocationData>(message).maxPlayers, 4);
+    EXPECT_EQ(std::get<LocationData>(message).maxEnergy, 270);
 }
 
 TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
     ServerProtocol server(std::move(*server_socket));
     const PlayerState walking{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
     const PlayerState still{9, "pueblo", 0, 0, 0, 0, 1, 2, 3};
-    ASSERT_TRUE(server.send_snapshot(Snapshot{42, {walking, still}, {}}));
+    ASSERT_TRUE(server.send_snapshot(Snapshot{42, 3, 125, {walking, still}, {}}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
     const Snapshot& snapshot = std::get<Snapshot>(message);
     EXPECT_EQ(snapshot.tick, 42u);
+    EXPECT_EQ(snapshot.day, 3u);
+    EXPECT_EQ(snapshot.minuteOfDay, 125u);
     ASSERT_EQ(snapshot.players.size(), 2u);
     EXPECT_EQ(snapshot.players[0], walking);
     EXPECT_EQ(snapshot.players[1], still);
@@ -216,7 +219,7 @@ TEST_F(ClientGameProtocolTest, RecvsSnapshotWithItsEntities) {
     const PlayerState player{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
     const EntityState as_entity{7, EntityType::Player, "granja", 14500, 3250, -1, 1};
     const EntityState chicken{7, EntityType::Cow, "granja", 2000, 1000, 0, 0, Emote::CowMilkReady};
-    ASSERT_TRUE(server.send_snapshot(Snapshot{3, {player}, {as_entity, chicken}}));
+    ASSERT_TRUE(server.send_snapshot(Snapshot{3, 1, 0, {player}, {as_entity, chicken}}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
     const Snapshot& snapshot = std::get<Snapshot>(message);
@@ -258,12 +261,16 @@ TEST_F(ClientGameProtocolTest, SendSelectSlotSendsTagAndSlot) {
 
 TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
     ServerProtocol server(std::move(*server_socket));
-    const InventoryState inventory{2, {{ItemType::Pickaxe, 1}, {ItemType::Empty, 0}}};
+    const InventoryState inventory{2,
+                                   {{ItemType::Pickaxe, 1},
+                                    {ItemType::Strawberry, 3},
+                                    {ItemType::Empty, 0}}};
     ASSERT_TRUE(server.send_inventory_state(inventory));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
     EXPECT_EQ(std::get<InventoryState>(message), inventory);
 }
+
 TEST_F(ClientGameProtocolTest, SendChatSendsTagAndText) {
     BaseProtocol server(std::move(*server_socket));
     client->sendChat("hola");
@@ -304,4 +311,26 @@ TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
     EXPECT_EQ(server.recv_u8(), 1);
     EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Typing));
     EXPECT_EQ(server.recv_u8(), 0);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsFarmState) {
+    ServerProtocol server(std::move(*server_socket));
+    const FarmState farm{"granja",
+                         {{10, 5, SoilType::Dirt, CropType::None, 0, false, false},
+                          {11, 5, SoilType::Tilled, CropType::Strawberry, 2, true, false},
+                          {12, 5, SoilType::Tilled, CropType::Potato, 4, false, true}}};
+    ASSERT_TRUE(server.send_farm_state(farm));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<FarmState>(message));
+    EXPECT_EQ(std::get<FarmState>(message), farm);
+}
+
+// Si recvFarmState leyera de más o de menos, el mensaje siguiente quedaría desalineado.
+TEST_F(ClientGameProtocolTest, RecvFarmStateConsumesExactlyItsPayload) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_farm_state(FarmState{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}}));
+    ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
+    EXPECT_TRUE(std::holds_alternative<FarmState>(client->recvGameMessage()));
+    ServerGameMessage next = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<GameEnded>(next));
 }

@@ -2,34 +2,34 @@
 #define ANIMAL_H
 
 #include <cstdint>
+#include <optional>
 #include <random>
 
+#include "common/game_dto.h"
 #include "server/game/characters/creature.h"
 
 enum class AnimalKind { Cow, Chicken };
 
 // Un animal de la granja: camina hacia un lado al azar (o se queda quieto) y cada tanto cambia.
+// Cada especie es una subclase.
 class Animal: public Creature {
 public:
-    Animal(uint32_t id, AnimalKind kind, const Position& pos, Location& location,
-           uint32_t seed = std::random_device{}());
+    Animal(uint32_t id, const Position& pos, Location& location, uint32_t seed);
 
-    AnimalKind get_kind() const;
-
-    // Solo la vaca se pone lista para ordeñar, COW_READY_SECONDS despues de la ultima vez (o de
-    // aparecer). La gallina nunca.
-    bool is_ready() const;
-    // Deja a la vaca sin leche y vuelve a contar desde COW_READY_SECONDS.
-    void milk();
+    virtual AnimalKind get_kind() const = 0;
+    // Si tiene algo para que el jugador le saque (la vaca, leche). Por defecto nunca.
+    virtual bool is_ready() const;
+    virtual void start_new_day() = 0;
+    // Lo que dejó en el piso desde la última vez que se preguntó (la gallina, un huevo).
+    virtual std::optional<ItemType> take_drop();
 
     void update(float dt) override;
 
-private:
-    AnimalKind kind;
-    float time_left = 0;  // segundos hasta elegir otra direccion
-    float time_to_ready;  // segundos hasta tener leche (solo cuenta en la vaca)
-    bool ready = false;
+protected:
     std::mt19937 rng;
+
+private:
+    float time_left = 0;  // segundos hasta elegir otra direccion
 
     void choose_direction();
 };

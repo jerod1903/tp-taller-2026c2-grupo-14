@@ -3,6 +3,7 @@
 
 #include "server/game/commands/player_characters.h"
 #include "server/game/commands/player_commerce.h"
+#include "server/game/commands/player_farming.h"
 #include "server/game/commands/player_movement.h"
 #include "server/game/commands/player_sessions.h"
 
@@ -15,6 +16,7 @@ public:
     virtual PlayerMovement& movement() = 0;
     virtual PlayerCharacters& characters() = 0;
     virtual PlayerCommerce& commerce() = 0;
+    virtual PlayerFarming& farming() = 0;
 
     virtual ~GameContext() = default;
 };

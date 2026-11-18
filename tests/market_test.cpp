@@ -20,12 +20,13 @@ const Position CLINT_POS{2, 8};
 const Position ANIMAL_SPAWN{1, 1};
 
 std::vector<Merchant> merchants() {
-    const ServerConfig::Market& prices = server_config().market;
+    const ServerConfig::Animals& animals = server_config().animals;
     return {Merchant("Marnie", MARNIE_POS,
-                     {{"vaca", AnimalKind::Cow, prices.cow_price},
-                      {"gallina", AnimalKind::Chicken, prices.chicken_price}},
-                     {{"vaca", AnimalKind::Cow, prices.cow_buyback}}),
-            Merchant("Pierre", PIERRE_POS, {}, {{"leche", ItemType::Milk, prices.milk_buyback}}),
+                     {{"vaca", AnimalKind::Cow, animals.cow.price},
+                      {"gallina", AnimalKind::Chicken, animals.chicken.price}},
+                     {{"vaca", AnimalKind::Cow, server_config().market.cow_buyback}}),
+            Merchant("Pierre", PIERRE_POS, {},
+                     {{"leche", ItemType::Milk, animals.cow.product_price}}),
             Merchant("Clint", CLINT_POS, {}, {})};
 }
 
@@ -61,7 +62,7 @@ TEST_F(MarketTest, ClickingAMerchantNearbyGreetsAndTires) {
     ASSERT_TRUE(greeting.has_value());
     EXPECT_EQ(greeting->kind, ChatKind::Merchant);
     EXPECT_EQ(greeting->from, "Marnie");
-    EXPECT_EQ(player.get_energy(), ENERGY - server_config().market.talk_energy);
+    EXPECT_EQ(player.get_energy(), ENERGY - server_config().energy.talk);
 }
 
 TEST_F(MarketTest, ClickingItsHeadAlsoCounts) {
@@ -110,7 +111,7 @@ TEST_F(MarketTest, AnUnknownCommandRepeatsTheGreeting) {
 TEST_F(MarketTest, BuyingAnimalsChargesAndPutsThemInTheFarm) {
     Player& player = talking_to(MARNIE_POS);
     TradeReply reply = market.trade(player, "/comprar vacas 2");
-    EXPECT_EQ(player.get_gold(), GOLD - 2 * server_config().market.cow_price);
+    EXPECT_EQ(player.get_gold(), GOLD - 2 * server_config().animals.cow.price);
     EXPECT_EQ(farm.count_animals(AnimalKind::Cow), 2);
     EXPECT_FALSE(reply.inventory_changed);
 }
@@ -130,7 +131,8 @@ TEST_F(MarketTest, WithoutEnoughGoldNothingIsBought) {
 
 TEST_F(MarketTest, TheFarmLimitIsRespected) {
     Player& player = talking_to(MARNIE_POS);
-    market.trade(player, "/comprar vaca " + std::to_string(server_config().market.max_cows + 1));
+    int too_many = server_config().animals.cow.max_per_farm + 1;
+    market.trade(player, "/comprar vaca " + std::to_string(too_many));
     EXPECT_EQ(player.get_gold(), GOLD);
     EXPECT_EQ(farm.count_animals(AnimalKind::Cow), 0);
 }
@@ -149,7 +151,7 @@ TEST_F(MarketTest, PierreBuysMilkFromTheInventory) {
     TradeReply reply = market.trade(player, "/vender leche 3");
     EXPECT_TRUE(reply.inventory_changed);
     EXPECT_EQ(player.count(ItemType::Milk), 0);
-    EXPECT_EQ(player.get_gold(), GOLD + 3 * server_config().market.milk_buyback);
+    EXPECT_EQ(player.get_gold(), GOLD + 3 * server_config().animals.cow.product_price);
 }
 
 TEST_F(MarketTest, SellingWhatYouDoNotHaveIsRejected) {

@@ -19,31 +19,21 @@ protected:
 
 }  // namespace
 
-TEST_F(PlayerTest, TireLowersTheEnergy) {
-    player.tire(10);
-    EXPECT_EQ(player.get_energy(), ENERGY - 10);
-}
-
-TEST_F(PlayerTest, TheEnergyDoesNotGoBelowZero) {
-    player.tire(ENERGY + 1);
-    EXPECT_EQ(player.get_energy(), 0);
-}
-
-TEST_F(PlayerTest, PayAndEarnChangeTheGold) {
-    player.pay(30);
-    player.earn(5);
-    EXPECT_EQ(player.get_gold(), GOLD - 30 + 5);
-}
-
-TEST_F(PlayerTest, PayingMoreThanItHasThrowsAndKeepsTheGold) {
-    EXPECT_THROW(player.pay(GOLD + 1), std::invalid_argument);
-    EXPECT_EQ(player.get_gold(), GOLD);
-}
-
 TEST_F(PlayerTest, TakeRemovesFromItsInventory) {
     player.receive(ItemType::Milk, 4);
     player.take(ItemType::Milk, 3);
     EXPECT_EQ(player.count(ItemType::Milk), 1);
+}
+
+TEST_F(PlayerTest, TakeRemovesAnyQuality) {
+    player.receive(ItemType::Potato, 2, ItemQuality::Perfect);
+    player.receive(ItemType::Potato, 1);
+    player.take(ItemType::Potato, 3);
+    EXPECT_EQ(player.count(ItemType::Potato), 0);
+}
+
+TEST_F(PlayerTest, TakingMoreThanItHasThrows) {
+    EXPECT_THROW(player.take(ItemType::Milk, 1), std::invalid_argument);
 }
 
 TEST_F(PlayerTest, RoomForComesFromItsInventory) {

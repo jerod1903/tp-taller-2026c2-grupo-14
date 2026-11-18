@@ -186,14 +186,17 @@ TEST_F(WorldBuilderTest, MarnieSellsAnimalsAtTheConfiguredPrice) {
     Market market = build_market(make_map(), *world);
     const Offer* cow = market.find_merchant("Marnie")->find_sold("vaca");
     ASSERT_NE(cow, nullptr);
-    EXPECT_EQ(cow->price, server_config().market.cow_price);
+    EXPECT_EQ(cow->price, server_config().animals.cow.price);
 }
 
-TEST_F(WorldBuilderTest, PierreBuysMilk) {
+TEST_F(WorldBuilderTest, PierreBuysMilkAndEggs) {
     Market market = build_market(make_map(), *world);
     const Offer* milk = market.find_merchant("Pierre")->find_bought("leche");
+    const Offer* egg = market.find_merchant("Pierre")->find_bought("huevos");
     ASSERT_NE(milk, nullptr);
-    EXPECT_EQ(milk->price, server_config().market.milk_buyback);
+    ASSERT_NE(egg, nullptr);
+    EXPECT_EQ(milk->price, server_config().animals.cow.product_price);
+    EXPECT_EQ(egg->price, server_config().animals.chicken.product_price);
 }
 
 TEST_F(WorldBuilderTest, MerchantsStandOnBlockedCellsOfTheMarket) {

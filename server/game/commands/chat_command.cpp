@@ -4,6 +4,7 @@
 #include <string>
 
 #include "server/consts.h"
+#include "server/game/cheats/cheat.h"
 #include "server/game/characters/player.h"
 #include "server/game/commands/game_context.h"
 
@@ -53,6 +54,10 @@ void ChatCommand::execute(GameContext& context) {
         }
         return;
     }
+    if (message.front() == ServerConstants::CHEAT_PREFIX) {
+        run_cheat(context, *author, message.substr(1));
+        return;
+    }
     if (message.front() == ServerConstants::PRIVATE_CHAT_PREFIX) {
         send_private(context, author->get_name(), message.substr(1));
         return;
@@ -82,4 +87,18 @@ void ChatCommand::send_private(GameContext& context, const std::string& author,
     if (*target != player_id) {
         context.sessions().send_to(player_id, private_message);
     }
+}
+
+void ChatCommand::run_cheat(GameContext& context, Player& author, const std::string& message) const {
+    // El nombre llega hasta el primer espacio; lo demás es el payload
+    std::size_t space = message.find(' ');
+    std::string name = message.substr(0, space);
+    std::string payload = space == std::string::npos ? "" : trim(message.substr(space + 1));
+    const Cheat* cheat = cheat_for(name);
+    if (cheat == nullptr) {
+        context.sessions().send_to(
+                player_id, ChatMessage{ChatKind::System, "", ServerConstants::UNKNOWN_CHEAT + name});
+        return;
+    }
+    cheat->apply(author, context, payload);
 }

@@ -2,16 +2,20 @@
 #define LOCATION_H
 
 #include <functional>
+#include <map>
 #include <optional>
 #include <random>
 #include <string>
 #include <vector>
 
+#include "common/farm_dto.h"
 #include "server/game/world/grid.h"
 #include "server/game/world/portal.h"
 #include "server/game/world/position.h"
 
 class Entity;
+class Outcome;
+class Player;
 
 // Un mapa del mundo (granja, pueblo, nivel de mazmorra). Es dueña de su grilla y sus portales.
 class Location {
@@ -44,6 +48,17 @@ public:
     void remove_entity(const Entity& entity);
     const std::vector<Entity*>& get_entities() const;
 
+    // Deja un objeto en el piso de la celda. false si ya había uno (y entonces no lo deja).
+    bool drop(const Position& pos, ItemType item);
+    // Los objetos tirados en el piso, uno por celda.
+    const std::map<Position, ItemType>& get_ground_items() const;
+    // Le da al jugador, que está en esta Location, lo que haya en el piso de su celda o de la de
+    // adelante. Si no le entra en el inventario, queda en el piso.
+    const Outcome& pick_up(Player& player);
+    // true si algo de la Location cambió desde la última vez que se preguntó (el piso y lo que
+    // marque cada subclase), para mandárselo a los jugadores.
+    bool take_changes();
+
     virtual void update(float dt) = 0;
 
     virtual ~Location() = default;
@@ -53,6 +68,8 @@ protected:
     Grid grid;
     std::vector<Portal> portals;
     std::vector<Entity*> entities;
+    std::map<Position, ItemType> ground_items;
+    bool changed = false;
 
     // Llama al update() de cada entidad. Recorre una copia: una entidad puede darse de baja.
     void update_entities(float dt);
