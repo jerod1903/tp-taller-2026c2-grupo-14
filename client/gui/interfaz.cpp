@@ -64,6 +64,11 @@ Entrada Interfaz::leer_entrada() {
             leer_chat(evento, entrada);
             continue;
         }
+        if (evento.type == SDL_MOUSEBUTTONDOWN && evento.button.button == SDL_BUTTON_LEFT &&
+            camara) {
+            entrada.click = casilla_clickeada(evento.button.x, evento.button.y);
+            continue;
+        }
         if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
             continue;
         }
@@ -103,6 +108,13 @@ Entrada Interfaz::leer_entrada() {
     entrada.dir_x = static_cast<int8_t>(dir_x);
     entrada.dir_y = static_cast<int8_t>(dir_y);
     return entrada;
+}
+
+ClickRequest Interfaz::casilla_clickeada(int x, int y) const {
+    int x_mundo = x / escala + camara->x;
+    int y_mundo = y / escala + camara->y;
+    return ClickRequest{static_cast<uint16_t>(x_mundo / TAMANO_TILE),
+                        static_cast<uint16_t>(y_mundo / TAMANO_TILE)};
 }
 
 void Interfaz::leer_chat(const SDL_Event& evento, Entrada& entrada) {
@@ -304,6 +316,7 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
     SDL2pp::Rect camara = calculador_camara.calcular(propio.centro(), ancho_mapa, alto_mapa);
+    this->camara = camara;
     std::vector<Sprite> sprites;
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);

@@ -73,6 +73,7 @@ inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
         {ChatKind::Public, {255, 255, 255, 255}},
         {ChatKind::Private, {255, 150, 200, 255}},
         {ChatKind::System, {170, 170, 170, 255}},
+        {ChatKind::Merchant, {140, 220, 140, 255}},
 };
 
 inline constexpr int SEPARACION_GLOBO = 1;
