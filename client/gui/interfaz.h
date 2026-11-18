@@ -55,6 +55,7 @@ private:
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
+    void sonar_granja(const FarmState& granja, const std::string& area_propia);
     SDL2pp::SDL sdl;
     ReproductorSonidos reproductor;
     SDL2pp::SDLImage sdl_image;
@@ -96,6 +97,7 @@ private:
     bool caminando = false;
     std::chrono::steady_clock::time_point proximo_paso;
     std::map<ItemType, int> cantidades_anteriores;
+    std::optional<FarmState> granja_anterior;
 };
 
 #endif

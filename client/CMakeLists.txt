@@ -28,6 +28,7 @@ target_sources(taller_client
     network/enviador.cpp
     network/recibidor.cpp
     audio/reproductor_sonidos.cpp
+    audio/sonidos_granja.cpp
     PUBLIC
     # .h files
     app/ClientApp.h
@@ -64,4 +65,5 @@ target_sources(taller_client
     network/recibidor.h
     audio/sonido.h
     audio/reproductor_sonidos.h
+    audio/sonidos_granja.h
     )

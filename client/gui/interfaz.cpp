@@ -11,6 +11,7 @@
 
 #include <SDL_image.h>
 
+#include "client/audio/sonidos_granja.h"
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
@@ -218,6 +219,18 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
     jugador.vestir(constructor_capas.capas(player_id, elegida));
 }
 
+void Interfaz::sonar_granja(const FarmState& granja, const std::string& area_propia) {
+    if (granja_anterior == granja) {
+        return;
+    }
+    if (granja_anterior && granja.areaId == area_propia) {
+        for (Sonido sonido: sonidos_granja(*granja_anterior, granja)) {
+            reproductor.reproducir(sonido);
+        }
+    }
+    granja_anterior = granja;
+}
+
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
     for (const auto& [item, sonido]: SONIDOS_AL_RECIBIR) {
@@ -237,6 +250,7 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
     if (propio == estado.jugadores.end()) {
         return;
     }
+    sonar_granja(estado.granja, propio->areaId);
     if (estado.tick != tick_escuchado) {
         if (propio_anterior) {
             bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;

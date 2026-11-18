@@ -108,6 +108,10 @@ inline const std::map<ItemType, CropType> PRODUCTOS_CULTIVO = {
 inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
         {ItemType::Milk, Sonido::Ordenar},
         {ItemType::Egg, Sonido::Recoger},
+        {ItemType::Strawberry, Sonido::Cosechar},
+        {ItemType::Scallion, Sonido::Cosechar},
+        {ItemType::Potato, Sonido::Cosechar},
+        {ItemType::Pumpkin, Sonido::Cosechar},
 };
 
 inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
