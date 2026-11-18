@@ -19,6 +19,7 @@ public:
     void enviar_chat(const std::string& texto) { protocolo.sendChat(texto); }
     void interactuar() { protocolo.sendInteract(); }
     void escribiendo(bool valor) { protocolo.sendTyping(valor); }
+    void clickear(const ClickRequest& click) { protocolo.sendClick(click.x, click.y); }
 
 private:
     IGameProtocol& protocolo;

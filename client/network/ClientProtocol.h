@@ -37,6 +37,7 @@ public:
     void sendChat(const std::string& texto) override;
     void sendInteract() override;
     void sendTyping(bool escribiendo) override;
+    void ClientProtocol::sendClick(uint16_t x, uint16_t y) override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;

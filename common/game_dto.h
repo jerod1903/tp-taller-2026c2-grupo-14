@@ -157,6 +157,13 @@ struct ChatRequest {
     bool operator==(const ChatRequest&) const = default;
 };
 
+struct ClickRequest {
+    uint16_t x;
+    uint16_t y;
+
+    bool operator==(const ClickRequest&) const = default;
+};
+
 enum class ChatKind : uint8_t {
     Public,   // a todos los jugadores de la partida
     Private,  // solo al destinatario, con una copia para el que lo mando

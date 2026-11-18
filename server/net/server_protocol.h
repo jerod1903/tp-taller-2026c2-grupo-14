@@ -38,6 +38,7 @@ public:
     std::optional<SelectSlotRequest> recv_select_slot();
     std::optional<ChatRequest> recv_chat();
     std::optional<TypingRequest> recv_typing();
+    std::optional<ClickRequest> ServerProtocol::recv_click();
 
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);
