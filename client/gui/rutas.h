@@ -31,6 +31,7 @@ inline const std::map<ItemType, const char*> RUTAS_ICONOS = {
         {ItemType::Shovel, "Assets/Misc/shovel.png"},
         {ItemType::Sword, "Assets/Misc/sword.png"},
         {ItemType::Milk, "Assets/Farm/Animals/milk.png"},
+        {ItemType::Egg, "Assets/Farm/Animals/egg.png"},
 };
 
 inline const std::map<Sonido, const char*> RUTAS_SONIDOS = {

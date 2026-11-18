@@ -38,7 +38,11 @@ Interfaz::Interfaz():
         menu_pausa(renderer, fuente, fuente_titulo),
         hud(renderer),
         globo(renderer),
-        transicion(DURACION_TRANSICION) {}
+        transicion(DURACION_TRANSICION) {
+    for (const auto& [item, ruta]: RUTAS_ICONOS) {
+        objetos_piso.try_emplace(item, renderer, ruta);
+    }
+}
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
@@ -215,14 +219,17 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
 
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
-    int leche = 0;
-    for (const InventorySlot& slot: estado.inventario.slots) {
-        leche += slot.item == ItemType::Milk ? slot.quantity : 0;
+    for (const auto& [item, sonido]: SONIDOS_AL_RECIBIR) {
+        int cantidad = 0;
+        for (const InventorySlot& slot: estado.inventario.slots) {
+            cantidad += slot.item == item ? slot.quantity : 0;
+        }
+        auto anterior = cantidades_anteriores.find(item);
+        if (anterior != cantidades_anteriores.end() && cantidad > anterior->second) {
+            reproductor.reproducir(sonido);
+        }
+        cantidades_anteriores[item] = cantidad;
     }
-    if (leche_anterior && leche > *leche_anterior) {
-        reproductor.reproducir(Sonido::Ordenar);
-    }
-    leche_anterior = leche;
     auto propio = std::find_if(
             estado.jugadores.begin(), estado.jugadores.end(),
             [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
@@ -289,7 +296,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second);
+            dibujar_area(propio->second, estado.granja);
         }
         oscurecer(transicion.opacidad(ahora));
         dibujar_inventario(estado.inventario);
@@ -331,7 +338,19 @@ void Interfaz::oscurecer(uint8_t opacidad) {
     renderer.FillRect(SDL2pp::Rect(0, 0, lienzo->GetWidth(), lienzo->GetHeight()));
 }
 
-void Interfaz::dibujar_area(const EntidadGrafica& propio) {
+std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
+    auto textura = objetos_piso.find(objeto.item);
+    if (textura == objetos_piso.end()) {
+        return std::nullopt;
+    }
+    SDL2pp::Point tamano = textura->second.GetSize();
+    SDL2pp::Point esquina(objeto.x * TAMANO_TILE + (TAMANO_TILE - tamano.x) / 2,
+                          objeto.y * TAMANO_TILE + (TAMANO_TILE - tamano.y) / 2);
+    return Sprite{&textura->second, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(esquina, tamano)};
+}
+
+void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
@@ -357,6 +376,13 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
                                     maps::BED_WIDTH, alto_frazada)}) {
             if (parte) {
                 sprites.push_back(*parte);
+            }
+        }
+    }
+    if (granja.areaId == area) {
+        for (const GroundItem& objeto: granja.items) {
+            if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
+                sprites.push_back(*sprite);
             }
         }
     }

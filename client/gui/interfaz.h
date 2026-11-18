@@ -47,7 +47,8 @@ private:
     ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
-    void dibujar_area(const EntidadGrafica& propio);
+    void dibujar_area(const EntidadGrafica& propio, const FarmState& granja);
+    std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
     void dibujar_inventario(const InventoryState& inventario);
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
@@ -85,12 +86,13 @@ private:
     TransicionArea transicion;
     std::optional<SDL2pp::Texture> congelado;
     std::string area_anterior;
+    std::map<ItemType, SDL2pp::Texture> objetos_piso;
     std::set<uint32_t> vestidos;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;
     bool caminando = false;
     std::chrono::steady_clock::time_point proximo_paso;
-    std::optional<int> leche_anterior;
+    std::map<ItemType, int> cantidades_anteriores;
 };
 
 #endif
