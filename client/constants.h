@@ -244,6 +244,22 @@ inline const std::map<ItemType, CropType> PRODUCTOS_CULTIVO = {
         {ItemType::Pumpkin, CropType::Pumpkin},
 };
 
+inline const std::map<ItemType, SDL2pp::Rect> VETAS_MINERALES = {
+        {ItemType::Silver, SDL2pp::Rect(72, 11, 18, 16)},
+        {ItemType::Coal, SDL2pp::Rect(72, 43, 18, 16)},
+        {ItemType::Lapis, SDL2pp::Rect(72, 75, 18, 16)},
+        {ItemType::GoldOre, SDL2pp::Rect(72, 107, 18, 16)},
+};
+
+inline const std::map<ItemType, SDL2pp::Rect> ICONOS_MINERALES = {
+        {ItemType::Silver, SDL2pp::Rect(100, 17, 10, 10)},
+        {ItemType::Coal, SDL2pp::Rect(100, 49, 10, 10)},
+        {ItemType::Lapis, SDL2pp::Rect(100, 81, 10, 10)},
+        {ItemType::GoldOre, SDL2pp::Rect(100, 113, 10, 10)},
+};
+
+
+
 inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
         {ItemType::Milk, Sonido::Ordenar},
         {ItemType::Egg, Sonido::Recoger},

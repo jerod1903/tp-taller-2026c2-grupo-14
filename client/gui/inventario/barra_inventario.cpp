@@ -40,7 +40,8 @@ void copiar_centrado(SDL2pp::Renderer& renderer, SDL2pp::Texture& textura,
 }
 
 BarraInventario::BarraInventario(SDL2pp::Renderer& renderer):
-        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS) {
+        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS), 
+        hoja_minerales(renderer, RUTA_HOJA_MINERALES) {
     for (const auto& [item, ruta]: RUTAS_ICONOS) {
         iconos.try_emplace(item, renderer, ruta);
     }
@@ -83,6 +84,11 @@ void BarraInventario::dibujar_icono(SDL2pp::Renderer& renderer, const InventoryS
                                     const SDL2pp::Rect& caja) {
     if (std::optional<SDL2pp::Rect> recorte = recorte_cultivo(slot)) {
         copiar_centrado(renderer, hoja_cultivos, *recorte, caja);
+        return;
+    }
+    auto mineral = ICONOS_MINERALES.find(slot.item);
+    if (mineral != ICONOS_MINERALES.end()) {
+        copiar_centrado(renderer, hoja_minerales, mineral->second, caja);
         return;
     }
     auto icono = iconos.find(slot.item);

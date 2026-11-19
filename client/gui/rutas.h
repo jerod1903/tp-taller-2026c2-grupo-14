@@ -23,6 +23,7 @@ inline const char* const RUTA_ICONO_ORO = TALLER_ASSETS_DIR "/Caverns/items and 
 inline const char* const RUTA_HOJA_VACA = TALLER_ASSETS_DIR "/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = TALLER_ASSETS_DIR "/Farm/Animals/Chicken Red.png";
 inline const char* const RUTA_HOJA_CULTIVOS = TALLER_ASSETS_DIR "/Farm/Crops/Spring Crops.png";
+inline const char* const RUTA_HOJA_MINERALES = TALLER_ASSETS_DIR "/Caverns/Mining/ore.png";
 
 inline const char* const RUTA_ESQUELETO_QUIETO =
         TALLER_ASSETS_DIR "/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_idle.png";
