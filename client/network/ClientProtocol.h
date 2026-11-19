@@ -60,6 +60,7 @@ private:
     InventoryState recvInventoryState();
     ChatMessage recvChatMessage();
     FarmState recvFarmState();
+    DungeonState recvDungeonState();
 
     BaseProtocol baseProtocol;
 };

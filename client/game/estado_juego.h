@@ -33,6 +33,7 @@ struct EstadoJuego {
     InventoryState inventario{};
     std::vector<MensajeChat> chat = {};
     FarmState granja{};
+    std::map<std::string, DungeonState> mina{};
 };
 
 #endif

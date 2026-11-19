@@ -158,7 +158,9 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
         case GameMsg::ChatMessage:
             return recvChatMessage();
         case GameMsg::FarmState:
-          return recvFarmState();    
+          return recvFarmState();  
+        case GameMsg::DungeonState:
+            return recvDungeonState();  
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -302,6 +304,28 @@ FarmState ClientProtocol::recvFarmState() {
         farm.items.push_back(item);
     }
     return farm;
+}
+
+DungeonState ClientProtocol::recvDungeonState() {
+    DungeonState dungeon{};
+    dungeon.areaId = ensure(baseProtocol.recv_string());
+    uint16_t ore_count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < ore_count; ++i) {
+        OreDeposit ore{};
+        ore.x = ensure(baseProtocol.recv_u16());
+        ore.y = ensure(baseProtocol.recv_u16());
+        ore.ore = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
+        dungeon.ores.push_back(ore);
+    }
+    uint16_t item_count = ensure(baseProtocol.recv_u16());
+    for (uint16_t i = 0; i < item_count; ++i) {
+        GroundItem item{};
+        item.x = ensure(baseProtocol.recv_u16());
+        item.y = ensure(baseProtocol.recv_u16());
+        item.item = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
+        dungeon.items.push_back(item);
+    }
+    return dungeon;
 }
 
 InventoryState ClientProtocol::recvInventoryState() {

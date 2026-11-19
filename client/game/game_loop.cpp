@@ -105,6 +105,8 @@ void GameLoop::procesar_mensajes() {
             }
         } else if (const auto* granja = std::get_if<FarmState>(&*mensaje)) {
             estado.granja = *granja;
+        } else if (const auto* mina = std::get_if<DungeonState>(&*mensaje)) {
+            estado.mina[mina->areaId] = *mina;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;
