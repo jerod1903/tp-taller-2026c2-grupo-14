@@ -29,9 +29,17 @@ void Player::spend_energy(int amount) { energy = std::max(0, energy - amount); }
 bool Player::is_unconscious() const { return energy == 0 || !is_alive(); }
 
 void Player::wake_up(const SpawnPoint& bed, bool slept_in_bed) {
+    rest(slept_in_bed);
+    lie_in(bed);
+}
+
+void Player::rest(bool slept_in_bed) {
     float recovery = slept_in_bed ? 1.0f : server_config().player.bad_night_recovery;
     health = std::max(1, static_cast<int>(max_health * recovery));
     energy = std::max(1, static_cast<int>(max_energy * recovery));
+}
+
+void Player::lie_in(const SpawnPoint& bed) {
     set_direction(Direction::NONE);
     relocate(bed.location, cell_of(bed.point));
     place_at(bed.point);

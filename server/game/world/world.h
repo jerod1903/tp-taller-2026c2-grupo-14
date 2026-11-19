@@ -38,12 +38,13 @@ public:
     Dungeon& get_dungeon();
     const Dungeon& get_dungeon() const;
 
-    // Crea su personaje en su cama de la cabaña, con los valores de server_config.toml. Si ya
-    // estaba, lo reemplaza.
+    // Lo pone en su cama de la cabaña. Si ya había estado en esta partida (se fue y vuelve),
+    // con todo lo que tenía; si no, un personaje nuevo con los valores de server_config.toml.
     void spawn_player(uint32_t player_id, std::string name);
-    // Lo da de alta en su Location actual, reemplazando al que tenga su mismo id.
+    // Lo da de alta en su Location actual, reemplazando al que tenga su mismo id (esté o no).
     Player& add_player(std::unique_ptr<Player> player);
-    // Si no está, no hace nada.
+    // Se fue de la partida: sale del mapa pero el mundo lo sigue teniendo, por si vuelve. Si no
+    // está, no hace nada.
     void remove_player(uint32_t player_id);
     Player* find_player(uint32_t player_id) override;
     bool dig(const Player& player, const Position& cell) override;
@@ -71,13 +72,18 @@ private:
     std::unique_ptr<Farm> farm;
     std::unique_ptr<Town> town;
     Dungeon dungeon;
+    // Los que están jugando
     std::map<uint32_t, std::unique_ptr<Player>> players;
+    // Los que se fueron de la partida: fuera del mapa, con todo lo suyo, por si vuelven. No se
+    // mueven ni se dibujan; al pasar el día descansan como el que no llegó a su cama.
+    std::map<uint32_t, std::unique_ptr<Player>> away;
     Movement movement;
     GameClock clock{server_config().game.day_speed};
 
     // Si está en la granja y `cell` está pegada a la suya (también en diagonal).
     bool reaches(const Player& player, const Position& cell) const;
-    // Despierta a todos en su cama: enteros los que durmieron en ella, a medias los demás.
+    // Despierta a todos en su cama: enteros los que durmieron en ella, a medias los demás (y los
+    // que se fueron).
     void start_new_day();
     // El día termina antes si cayeron todos.
     bool everyone_unconscious() const;
