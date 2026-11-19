@@ -2,45 +2,16 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "client/constants.h"
 #include "client/gui/fondo/oscurecer_ventana.h"
-
-namespace {
-
-// Una casilla, un píxel. Con la grilla vacía (un mapa sin áreas), un píxel de fondo.
-SDL2pp::Texture textura_de(SDL2pp::Renderer& renderer, const GrillaMapa& grilla) {
-    const int ancho = std::max(1, grilla.ancho);
-    const int alto = std::max(1, grilla.alto);
-    SDL2pp::Texture textura(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, ancho, alto);
-    std::vector<uint8_t> pixeles(static_cast<std::size_t>(ancho) * alto * 3, 0);
-    for (std::size_t i = 0; i < grilla.colores.size(); ++i) {
-        pixeles[i * 3] = grilla.colores[i].r;
-        pixeles[i * 3 + 1] = grilla.colores[i].g;
-        pixeles[i * 3 + 2] = grilla.colores[i].b;
-    }
-    textura.Update(SDL2pp::NullOpt, pixeles.data(), ancho * 3);
-    return textura;
-}
-
-// Un círculo relleno, de a una fila por vez (SDL no dibuja círculos)
-void dibujar_circulo(SDL2pp::Renderer& renderer, float centro_x, float centro_y, int radio,
-                     const SDL_Color& color) {
-    renderer.SetDrawColor(color.r, color.g, color.b, color.a);
-    const int cx = static_cast<int>(std::lround(centro_x));
-    const int cy = static_cast<int>(std::lround(centro_y));
-    for (int dy = -radio; dy <= radio; ++dy) {
-        const int dx = static_cast<int>(std::sqrt(static_cast<float>(radio * radio - dy * dy)));
-        renderer.DrawLine(cx - dx, cy + dy, cx + dx, cy + dy);
-    }
-}
-
-}  // namespace
+#include "client/gui/mapa-general/dibujo_mapa.h"
 
 MapaGeneral::MapaGeneral(SDL2pp::Renderer& renderer, GrillaMapa grilla):
-        grilla(std::move(grilla)), textura(textura_de(renderer, this->grilla)) {}
+        grilla(std::move(grilla)), textura(textura_de_grilla(renderer, this->grilla)) {}
 
 bool MapaGeneral::abierto() const { return visible; }
 
@@ -102,36 +73,21 @@ void MapaGeneral::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& taman
                                static_cast<int>(std::lround(origen_y)),
                                static_cast<int>(std::lround(grilla.ancho * escala)),
                                static_cast<int>(std::lround(grilla.alto * escala))));
-    // El propio al final, para que quede encima de los demás
-    const PlayerState* propio = nullptr;
-    for (const PlayerState& jugador: jugadores) {
-        if (jugador.playerId == id_propio) {
-            propio = &jugador;
-        } else {
-            dibujar_jugador(renderer, jugador, false);
-        }
-    }
-    if (propio) {
-        dibujar_jugador(renderer, *propio, true);
-    }
+    recorrer_jugadores(jugadores, id_propio, [&](const PlayerState& jugador, bool propio) {
+        dibujar_jugador(renderer, jugador, propio);
+    });
 }
 
 void MapaGeneral::dibujar_jugador(SDL2pp::Renderer& renderer, const PlayerState& jugador,
                                   bool propio) const {
-    auto lugar = grilla.areas.find(jugador.areaId);
-    if (lugar == grilla.areas.end()) {
+    std::optional<SDL_FPoint> casilla = jugador_en_grilla(grilla, jugador);
+    if (!casilla) {
         return;
     }
-    // El servidor manda el centro del jugador en milésimas de casilla
-    const float casilla_x = static_cast<float>(lugar->second.x) +
-                            static_cast<float>(jugador.x) / static_cast<float>(POSITION_SCALE);
-    const float casilla_y = static_cast<float>(lugar->second.y) +
-                            static_cast<float>(jugador.y) / static_cast<float>(POSITION_SCALE);
-    const float centro_x = origen_x + casilla_x * escala;
-    const float centro_y = origen_y + casilla_y * escala;
     const int radio =
             std::max(propio ? RADIO_MINIMO_PUNTO_PROPIO : RADIO_MINIMO_PUNTO,
                      static_cast<int>((propio ? RADIO_PUNTO_PROPIO : RADIO_PUNTO) * escala));
-    dibujar_circulo(renderer, centro_x, centro_y, radio + 1, COLOR_BORDE_PUNTO);
-    dibujar_circulo(renderer, centro_x, centro_y, radio, COLOR_PUNTO_JUGADOR);
+    dibujar_punto_jugador(
+            renderer, SDL_FPoint{origen_x + casilla->x * escala, origen_y + casilla->y * escala},
+            radio);
 }

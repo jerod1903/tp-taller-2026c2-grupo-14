@@ -235,7 +235,9 @@ void Interfaz::actualizar_mapa(const EstadoJuego& estado) {
         // Se lee una sola vez: lo usan el área que se ve y el mapa general
         const stardew::maps::MapDefinition mundo = cargar_mundo(*estado.mundo);
         mapa.emplace(renderer, mundo, estado.max_jugadores);
-        mapa_general.emplace(renderer, grilla_del_mapa(mundo));
+        GrillaMapa grilla = grilla_del_mapa(mundo);
+        minimapa.emplace(renderer, grilla);
+        mapa_general.emplace(renderer, std::move(grilla));
         mundo_del_mapa = *estado.mundo;
     }
 }
@@ -398,6 +400,9 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     }
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
     hud.dibujar(renderer, estado, escala);
+    if (minimapa) {
+        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio, escala_del_hud(escala));
+    }
     if (mapa_general_abierto()) {
         mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado.jugadores,
                               estado.id_propio);

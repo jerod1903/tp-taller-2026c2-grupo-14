@@ -368,5 +368,12 @@ inline constexpr float RADIO_PUNTO = 0.5f;
 inline constexpr float RADIO_PUNTO_PROPIO = 0.9f;
 inline constexpr int RADIO_MINIMO_PUNTO = 3;
 inline constexpr int RADIO_MINIMO_PUNTO_PROPIO = 5;
+// El minimapa del HUD, arriba a la izquierda: el área donde está el jugador, en el marco de madera
+// del HUD. El área se agranda hasta este tamaño sin deformarse; los tamaños y los radios van en
+// píxeles del HUD (se multiplican por su escala).
+inline constexpr int ANCHO_MAXIMO_MINIMAPA = 110;
+inline constexpr int ALTO_MAXIMO_MINIMAPA = 75;
+inline constexpr int RADIO_PUNTO_MINIMAPA = 1;
+inline constexpr int RADIO_PUNTO_PROPIO_MINIMAPA = 2;
 
 #endif

@@ -10,6 +10,10 @@
 #include "client/game/estado_juego.h"
 #include "client/gui/chat/fuente.h"
 
+// El HUD va a la mitad de la escala del mundo (redondeada para abajo, como mínimo 1) para no tapar
+// tanto. La usan el HUD y el minimapa.
+int escala_del_hud(int escala_mundo);
+
 // La hora en formato HH:MM, redondeada para abajo a PASO_MINUTOS_RELOJ. Después de las 23:50
 // sigue en 00:00.
 std::string texto_hora(uint16_t minuto_del_dia);
@@ -20,7 +24,7 @@ std::string texto_hora(uint16_t minuto_del_dia);
 class Hud {
 public:
     explicit Hud(SDL2pp::Renderer& renderer);
-    // escala: la del mundo. El HUD va a la mitad (redondeada para abajo) para no tapar tanto.
+    // escala: la del mundo (el HUD va a escala_del_hud).
     // No dibuja nada hasta el primer snapshot.
     void dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, int escala);
 
@@ -36,8 +40,6 @@ private:
     // derecha
     void escribir_con_icono(SDL2pp::Renderer& renderer, SDL2pp::Texture& icono,
                             const std::string& texto, const SDL2pp::Point& cartel, int escala);
-    // El marco estirado a `destino` sin deformar el borde
-    void dibujar_marco(SDL2pp::Renderer& renderer, const SDL2pp::Rect& destino, int escala);
     // Con una sombra abajo a la derecha. `x` es el borde izquierdo o, si `a_la_derecha`, el
     // derecho; el texto se centra en vertical en `centro_y`.
     void escribir(SDL2pp::Renderer& renderer, const std::string& texto, int x, int centro_y,

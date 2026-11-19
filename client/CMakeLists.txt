@@ -24,6 +24,9 @@ target_sources(taller_client
     mapa-general/grilla_mapa.cpp
     mapa-general/mundo.cpp
     gui/mapa-general/mapa_general.cpp
+    gui/mapa-general/minimapa.cpp
+    gui/mapa-general/dibujo_mapa.cpp
+    gui/hud/marco.cpp
     gui/fondo/oscurecer_ventana.cpp
     gui/menu-pausa/menu_pausa.cpp
     gui/fin-del-dia/pantalla_fin_del_dia.cpp
@@ -65,6 +68,9 @@ target_sources(taller_client
     mapa-general/grilla_mapa.h
     mapa-general/mundo.h
     gui/mapa-general/mapa_general.h
+    gui/mapa-general/minimapa.h
+    gui/mapa-general/dibujo_mapa.h
+    gui/hud/marco.h
     gui/fondo/oscurecer_ventana.h
     gui/menu-pausa/menu_pausa.h
     gui/fin-del-dia/pantalla_fin_del_dia.h

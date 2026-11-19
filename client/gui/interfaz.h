@@ -22,6 +22,7 @@
 #include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/mapa-general/mapa_general.h"
+#include "client/gui/mapa-general/minimapa.h"
 #include "client/gui/mapa/mapa.h"
 #include "client/gui/mapa/transicion_area.h"
 #include "client/gui/menu-pausa/menu_pausa.h"
@@ -88,6 +89,7 @@ private:
     std::optional<Mapa> mapa;
     // Se arma junto con el mapa, con el mismo mundo
     std::optional<MapaGeneral> mapa_general;
+    std::optional<Minimapa> minimapa;
     std::string mundo_del_mapa;
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
     std::vector<EntityState> camas;
