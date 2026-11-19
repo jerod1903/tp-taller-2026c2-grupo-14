@@ -74,6 +74,10 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
     if (entrada.invitar) {
         enviador.invitar();
     }
+    if (entrada.listo_para_manana && estado.fin_del_dia && !estado.listo_para_manana) {
+        enviador.listo_para_manana();
+        estado.listo_para_manana = true;
+    }
 }
 
 void GameLoop::procesar_mensajes() {
@@ -94,6 +98,10 @@ void GameLoop::procesar_mensajes() {
             estado.tick = snapshot->tick;
             estado.dia = snapshot->day;
             estado.minuto_del_dia = snapshot->minuteOfDay;
+            if (estado.fin_del_dia && snapshot->day > estado.fin_del_dia->day) {
+                estado.fin_del_dia.reset();
+                estado.listo_para_manana = false;
+            }
         } else if (const auto* info = std::get_if<PlayerInfo>(&*mensaje)) {
             estado.info_jugadores.insert_or_assign(info->playerId, *info);
         } else if (const auto* inv = std::get_if<InventoryState>(&*mensaje)) {
@@ -105,6 +113,8 @@ void GameLoop::procesar_mensajes() {
             }
         } else if (const auto* granja = std::get_if<FarmState>(&*mensaje)) {
             estado.granja = *granja;
+        } else if (const auto* fin_del_dia = std::get_if<DayEnded>(&*mensaje)) {
+            estado.fin_del_dia = *fin_del_dia;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;

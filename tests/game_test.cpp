@@ -19,6 +19,7 @@
 #include "server/game/commands/leave_command.h"
 #include "server/game/commands/move_command.h"
 #include "server/game/commands/typing_command.h"
+#include "server/persistence/in_memory_game_store.h"
 #include "tests/test_worlds.h"
 
 namespace {
@@ -80,7 +81,8 @@ protected:
         return snapshot;
     }
 
-    Game game{WORLD_ID, example_map()};
+    InMemoryGameStore store;
+    Game game{WORLD_ID, example_map(), 1, store};
 };
 
 TEST_F(GameTest, JoinedPlayerReceivesTheLocationFirst) {

@@ -19,6 +19,7 @@ struct Entrada {
     std::optional<bool> escribiendo;
     std::optional<ClickRequest> click;
     bool invitar = false;
+    bool listo_para_manana = false;  // dio el Ok en la pantalla de fin de día
 };
 
 #endif

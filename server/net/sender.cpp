@@ -41,6 +41,9 @@ bool Sender::send(const GameMessage& message) {
     if (const FarmState* farm = std::get_if<FarmState>(&message)) {
         return protocol.send_farm_state(*farm);
     }
+    if (const DayEnded* day = std::get_if<DayEnded>(&message)) {
+        return protocol.send_day_ended(*day);
+    }
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 

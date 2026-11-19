@@ -13,10 +13,15 @@ public:
     float get_elapsed() const;        // segundos transcurridos en el día
     float get_minute_of_day() const;  // minutos de juego desde las 6:00
     float get_day_seconds() const;    // segundos que dura un día
-    // true si con este dt terminó el día
+    // true si con este dt terminó el día. Terminado, se queda en las 2:00 (y sigue devolviendo
+    // true) hasta next_day().
     bool update(float dt);
-    // Termina el día antes de las 2:00 (cayeron todos inconscientes).
+    // Termina el día antes de las 2:00 (cayeron todos inconscientes): pasa a las 2:00.
     void end_day();
+    // Arranca el día siguiente a las 6:00.
+    void next_day();
+    // Arranca el día `day` a las 6:00 (al cargar una partida guardada).
+    void start_day(uint16_t day);
 
 private:
     float day_seconds;

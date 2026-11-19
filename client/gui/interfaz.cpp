@@ -15,6 +15,8 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
+#include "client/mapa-general/grilla_mapa.h"
+#include "client/mapa-general/mundo.h"
 #include "common/map/CabinInterior.h"
 
 Interfaz::Interfaz():
@@ -39,6 +41,7 @@ Interfaz::Interfaz():
         fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
         panel_chat(fuente),
         menu_pausa(renderer, fuente, fuente_titulo),
+        pantalla_fin_del_dia(renderer, fuente, fuente_titulo),
         hud(renderer),
         globo(renderer),
         transicion(DURACION_TRANSICION) {
@@ -98,6 +101,14 @@ Entrada Interfaz::leer_entrada() {
             leer_chat(evento, entrada);
             continue;
         }
+        if (fin_del_dia_abierto) {
+            leer_fin_del_dia(evento, entrada);
+            continue;
+        }
+        if (mapa_general_abierto()) {
+            leer_mapa_general(evento);
+            continue;
+        }
         if (evento.type == SDL_MOUSEBUTTONDOWN && evento.button.button == SDL_BUTTON_LEFT &&
             camara) {
             entrada.click = casilla_clickeada(evento.button.x, evento.button.y);
@@ -118,11 +129,14 @@ Entrada Interfaz::leer_entrada() {
             entrada.cruzar_puerta = true;
         } else if (tecla == SDLK_F11) {
             alternar_pantalla_completa();
+        } else if (tecla == SDLK_m && mapa_general) {
+            mapa_general->abrir();
         } else if (tecla >= SDLK_1 && tecla <= SDLK_9) {
             entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
     }
-    if (borrador || menu_pausa.abierto()) {
+    // Escribiendo, en pausa, con el día terminado o mirando el mapa no camina
+    if (borrador || menu_pausa.abierto() || fin_del_dia_abierto || mapa_general_abierto()) {
         return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
@@ -152,6 +166,34 @@ void Interfaz::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
         entrada.invitar = true;
     }
 }
+
+void Interfaz::leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada) {
+    if (pantalla_fin_del_dia.leer(evento, renderer.GetOutputSize())) {
+        entrada.listo_para_manana = true;
+        return;
+    }
+    if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
+        return;
+    }
+    SDL_Keycode tecla = evento.key.keysym.sym;
+    if (tecla == SDLK_ESCAPE) {
+        menu_pausa.abrir();
+    } else if (tecla == SDLK_RETURN) {
+        borrador = "";
+        entrada.escribiendo = true;
+    } else if (tecla == SDLK_F11) {
+        alternar_pantalla_completa();
+    }
+}
+
+void Interfaz::leer_mapa_general(const SDL_Event& evento) {
+    mapa_general->leer(evento);
+    if (evento.type == SDL_KEYDOWN && !evento.key.repeat && evento.key.keysym.sym == SDLK_F11) {
+        alternar_pantalla_completa();
+    }
+}
+
+bool Interfaz::mapa_general_abierto() const { return mapa_general && mapa_general->abierto(); }
 
 ClickRequest Interfaz::casilla_clickeada(int x, int y) const {
     int x_mundo = x / escala + camara->x;
@@ -190,7 +232,12 @@ void Interfaz::alternar_pantalla_completa() {
 
 void Interfaz::actualizar_mapa(const EstadoJuego& estado) {
     if (estado.mundo && (!mapa || *estado.mundo != mundo_del_mapa)) {
-        mapa.emplace(renderer, *estado.mundo, estado.max_jugadores);
+        // Se lee una sola vez: lo usan el área que se ve y el mapa general
+        const stardew::maps::MapDefinition mundo = cargar_mundo(*estado.mundo);
+        mapa.emplace(renderer, mundo, estado.max_jugadores);
+        GrillaMapa grilla = grilla_del_mapa(mundo);
+        minimapa.emplace(renderer, grilla);
+        mapa_general.emplace(renderer, std::move(grilla));
         mundo_del_mapa = *estado.mundo;
     }
 }
@@ -345,8 +392,25 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    fin_del_dia_abierto = estado.fin_del_dia.has_value();
+    // Con el mapa general abierto, el fin del día va encima del mapa
+    if (estado.fin_del_dia && !mapa_general_abierto()) {
+        pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
+                                     estado.listo_para_manana);
+    }
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
     hud.dibujar(renderer, estado, escala);
+    if (minimapa) {
+        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio, escala_del_hud(escala));
+    }
+    if (mapa_general_abierto()) {
+        mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado.jugadores,
+                              estado.id_propio);
+        if (estado.fin_del_dia) {
+            pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
+                                         estado.listo_para_manana);
+        }
+    }
     if (menu_pausa.abierto()) {
         menu_pausa.dibujar(renderer, renderer.GetOutputSize());
     }

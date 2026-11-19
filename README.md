@@ -47,6 +47,16 @@ stardew-valley-g14-client localhost 8080    # en otra, una por jugador
 stardew-valley-g14-editor
 ```
 
+## Cheats
+
+Se escriben en el chat de la partida (Enter para abrirlo). Le llegan solo al que los usa; si están mal escritos, el servidor le contesta cómo se usan.
+
+| Cheat | Qué hace |
+|---|---|
+| `$gold [cantidad]` | Suma esa cantidad de oro. Sin cantidad, la de `gold` en `[cheats]` de `server_config.toml`. |
+| `$seeds [cantidad]` | Da esa cantidad de semillas de cada cultivo, las que entren en el inventario. Sin cantidad, la de `seeds` en `[cheats]`. |
+| `$sleep` | Termina el día en el acto, como si fueran las 2:00: aparece la votación para pasar al día siguiente. |
+
 ## Compilación y ejecución
 
 Para desarrollar, los programas compilados en `build/` leen `Assets/`, `maps/` y las configs del repo.

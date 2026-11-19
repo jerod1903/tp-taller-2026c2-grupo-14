@@ -33,19 +33,53 @@ const Dungeon& World::get_dungeon() const { return dungeon; }
 
 void World::spawn_player(uint32_t player_id, std::string name) {
     SpawnPoint spawn = movement.spawn_point(player_id);
-    const ServerConfig::Player& stats = server_config().player;
-    auto player = std::make_unique<Player>(player_id, cell_of(spawn.point), spawn.location,
-                                           std::move(name), stats.health, stats.speed, stats.gold,
-                                           stats.energy);
-    player->place_at(spawn.point);
-    add_player(std::move(player));
+    auto back = away.find(player_id);
+    if (back != away.end()) {
+        std::unique_ptr<Player> player = std::move(back->second);
+        away.erase(back);
+        // Fuera del mapa no estaba en ninguna Location: lie_in lo da de alta en la cabaña
+        player->lie_in(spawn);
+        players[player_id] = std::move(player);
+    } else {
+        const ServerConfig::Player& stats = server_config().player;
+        auto player = std::make_unique<Player>(player_id, cell_of(spawn.point), spawn.location,
+                                               std::move(name), stats.health, stats.speed,
+                                               stats.gold, stats.energy);
+        player->place_at(spawn.point);
+        auto saved = stored.find(player_id);
+        if (saved != stored.end()) {
+            player->restore(saved->second);
+        }
+        add_player(std::move(player));
+    }
     // Su cama puede haber aparecido donde estaba parado otro
     movement.free_trapped();
 }
 
+SavedGame World::saved() const {
+    SavedGame saved{clock.get_day(), farm->saved(), stored};
+    for (const auto* group: {&players, &away}) {
+        for (const auto& [player_id, player]: *group) {
+            saved.players[player_id] = player->saved();
+        }
+    }
+    return saved;
+}
+
+void World::restore(const SavedGame& saved) {
+    clock.start_day(saved.day);
+    farm->restore(saved.farm);
+    stored = saved.players;
+}
+
 Player& World::add_player(std::unique_ptr<Player> player) {
     uint32_t player_id = player->get_id();
-    remove_player(player_id);
+    away.erase(player_id);
+    auto old = players.find(player_id);
+    if (old != players.end()) {
+        old->second->get_location().remove_entity(*old->second);
+        players.erase(old);
+    }
     player->get_location().add_entity(*player);
     return *players.emplace(player_id, std::move(player)).first->second;
 }
@@ -54,6 +88,8 @@ void World::remove_player(uint32_t player_id) {
     auto player = players.find(player_id);
     if (player != players.end()) {
         player->second->get_location().remove_entity(*player->second);
+        player->second->set_direction(Direction::NONE);
+        away[player_id] = std::move(player->second);
         players.erase(player);
     }
 }
@@ -113,11 +149,18 @@ const Cabin& World::get_cabin() const { return farm->get_cabin(); }
 
 const GameClock& World::get_clock() const { return clock; }
 
+void World::end_day() { clock.end_day(); }
+
+bool World::slept_in_bed(uint32_t player_id) const { return sleepers.count(player_id) > 0; }
+
 void World::start_new_day() {
+    clock.next_day();
     farm->start_new_day();
     for (const auto& [player_id, player]: players) {
-        bool slept = !player->is_unconscious() && farm->get_cabin().is_in_bed(*player);
-        player->wake_up(farm->bed_spawn(player_id), slept);
+        player->wake_up(farm->bed_spawn(player_id), slept_in_bed(player_id));
+    }
+    for (const auto& [player_id, player]: away) {
+        player->rest(false);
     }
 }
 
@@ -127,7 +170,7 @@ bool World::everyone_unconscious() const {
     });
 }
 
-void World::update(float dt) {
+bool World::update(float dt) {
     farm->update(dt);
     town->update(dt);
     std::vector<Creature*> characters;
@@ -143,7 +186,13 @@ void World::update(float dt) {
         day_over = true;
     }
     if (day_over) {
-        start_new_day();
+        sleepers.clear();
+        for (const auto& [player_id, player]: players) {
+            if (!player->is_unconscious() && farm->get_cabin().is_in_bed(*player)) {
+                sleepers.insert(player_id);
+            }
+        }
     }
     farm->update_time(clock.get_minute_of_day());
+    return day_over;
 }

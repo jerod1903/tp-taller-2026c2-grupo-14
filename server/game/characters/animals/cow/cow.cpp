@@ -20,3 +20,12 @@ void Cow::milk() {
     ready = false;
     days_left = server_config().animals.cow.production_days;
 }
+
+SavedAnimal Cow::saved() const {
+    return SavedAnimal{AnimalKind::Cow, get_position(), days_left, ready, std::nullopt, false};
+}
+
+void Cow::restore(const SavedAnimal& saved) {
+    days_left = saved.days_left;
+    ready = saved.ready;
+}

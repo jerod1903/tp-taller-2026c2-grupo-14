@@ -8,6 +8,7 @@
 #include "server/game/characters/creature.h"
 #include "server/game/characters/inventory.h"
 #include "server/game/world/spawn_point.h"
+#include "server/persistence/saved_game.h"
 
 class Player: public Creature {
 public:
@@ -24,8 +25,13 @@ public:
     void spend_energy(int amount);
     // Sin energía o sin vida cae inconsciente: no hace nada más hasta el día siguiente.
     bool is_unconscious() const;
-    // Despierta en su cama: con toda su vida y energía si durmió en ella, si no con una fracción.
+    // Despierta en su cama: descansa (rest) y queda acostado en ella (lie_in).
     void wake_up(const SpawnPoint& bed, bool slept_in_bed);
+    // Recupera toda su vida y energía si durmió en su cama, si no una fracción
+    // (bad_night_recovery).
+    void rest(bool slept_in_bed);
+    // Queda acostado en su cama, quieto.
+    void lie_in(const SpawnPoint& bed);
     // A mitad de velocidad cuando está cansado (tired_energy).
     float speed() const override;
     // Gasta lo que tiene en el slot elegido (una semilla al plantar).
@@ -44,6 +50,9 @@ public:
 
     void select_inventory_slot(uint8_t slot);
     InventoryState get_inventory_state() const;
+    // Lo que se guarda de él: oro, vida, energía e inventario.
+    SavedPlayer saved() const;
+    void restore(const SavedPlayer& saved);
     // Si tiene el chat abierto: los demas le ven el globito de "escribiendo".
     void set_typing(bool typing);
     bool is_typing() const;

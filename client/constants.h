@@ -102,16 +102,14 @@ inline constexpr int ALTO_LLAMA = 11;
 inline const std::map<Pose, HojaDePose> HOJAS_LLAMA = hojas_de(
         {RUTA_LLAMA, formato_tira(ANCHO_LLAMA, ALTO_LLAMA, 1, std::chrono::duration<float>(1.0f))});
 // Las trampas: quietas, un solo cuadro (pinches escondidos, la boquilla del lanzallamas); activas,
-// la animación de activarse. El servidor manda el centro de su celda y el dibujo se corre para
-// que los pinches tapen su celda y el lanzallamas arranque en la pared.
+// la animación de activarse. El servidor manda el centro de su celda y el dibujo se baja para
+// que los pinches tapen su celda. El lanzallamas va centrado en su celda, que es la que quema: la
+// boquilla queda contra la pared y el fuego sobre la celda.
 // Los pies quedan CHARACTER_HALF_HEIGHT de celda abajo del centro: hasta el borde de la celda
 // faltan 4 píxeles.
-// Cada trampa ocupa una celda (los cuadros de 16x16); el lanzallamas, dos: la de la pared y la
-// suya.
+// Cada trampa ocupa una celda (los cuadros de 16x16); el dibujo del lanzallamas, dos de largo.
 inline constexpr int LADO_TRAMPA = 16;
 inline constexpr int BAJADA_TRAMPA = 4;
-// Media celda: lo que se corre el lanzallamas de costado para arrancar en la pared
-inline constexpr int CORRIMIENTO_LANZALLAMAS = 8;
 inline const std::chrono::duration<float> CUADRO_TRAMPA(0.08f);
 inline const std::map<Pose, HojaDePose> HOJAS_PINCHES = hojas_de(
         {RUTA_PINCHES_QUIETOS, formato_tira(LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0,
@@ -125,22 +123,18 @@ inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_ABAJO = hojas_de(
         {{Pose::Atacando,
           {RUTA_LANZALLAMAS_ABAJO_ACTIVO,
            formato_tira(LADO_TRAMPA, 2 * LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
-inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_DERECHA =
-        hojas_de({RUTA_LANZALLAMAS_DERECHA_QUIETO,
-                  formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA),
-                  -CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA},
-                 {{Pose::Atacando,
-                   {RUTA_LANZALLAMAS_DERECHA_ACTIVO,
-                    formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA),
-                    -CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA}}});
-inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_IZQUIERDA =
-        hojas_de({RUTA_LANZALLAMAS_IZQUIERDA_QUIETO,
-                  formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA),
-                  CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA},
-                 {{Pose::Atacando,
-                   {RUTA_LANZALLAMAS_IZQUIERDA_ACTIVO,
-                    formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA),
-                    CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_DERECHA = hojas_de(
+        {RUTA_LANZALLAMAS_DERECHA_QUIETO,
+         formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0, BAJADA_TRAMPA},
+        {{Pose::Atacando,
+          {RUTA_LANZALLAMAS_DERECHA_ACTIVO,
+           formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_IZQUIERDA = hojas_de(
+        {RUTA_LANZALLAMAS_IZQUIERDA_QUIETO,
+         formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0, BAJADA_TRAMPA},
+        {{Pose::Atacando,
+          {RUTA_LANZALLAMAS_IZQUIERDA_ACTIVO,
+           formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
 // Las que se dibujan como parte del piso: debajo de quien esté encima
 inline const std::set<EntityType> EN_EL_PISO = {EntityType::Spikes};
 inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
@@ -335,8 +329,6 @@ inline constexpr uint32_t MASCARA_ALFA = 0xFF000000;
 inline constexpr uint32_t MASCARA_COLOR = 0x00FFFFFF;
 
 inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
-inline const char* const CARACTERES_WORLD_ID =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
 
 inline constexpr int TAMANO_FUENTE_TITULO = 32;
 inline const char* const TITULO_PAUSA = "Pausa";
@@ -352,5 +344,36 @@ inline constexpr SDL_Color COLOR_FONDO_PAUSA = {30, 18, 10, 190};
 inline constexpr SDL_Color COLOR_TITULO_PAUSA = {255, 235, 173, 255};
 inline constexpr SDL_Color COLOR_TEXTO_BOTON = {255, 243, 205, 255};
 inline constexpr SDL_Color COLOR_TEXTO_DESHABILITADO = {90, 58, 34, 255};
+
+// La pantalla de fin de día: mismo fondo y botón que la pausa
+inline const char* const TITULO_FIN_DEL_DIA = "Terminó el día ";
+inline const char* const TEXTO_DURMIO = "Dormiste en tu cama";
+inline const char* const TEXTO_NO_DURMIO =
+        "No llegaste a tu cama: mañana despertás con la mitad de vida y energía";
+inline const char* const TEXTO_OK = "Ok";
+inline const char* const TEXTO_ESPERANDO = "Esperando a los demás";
+// Entre el título, el texto y el botón
+inline constexpr int SEPARACION_TEXTOS_FIN_DEL_DIA = 40;
+
+// El mapa general (M): al abrirlo entra entero en la ventana, dejando este margen a cada lado.
+// La rueda acerca o aleja de a ZOOM_PASO, entre el mapa entero y ZOOM_MAXIMO veces eso.
+inline constexpr float MARGEN_MAPA_GENERAL = 0.05f;
+inline constexpr float ZOOM_PASO = 1.25f;
+inline constexpr float ZOOM_MAXIMO = 8.0f;
+// Cada jugador es un punto blanco con borde negro; el propio, más grande. El radio va en casillas
+// del mapa, con un mínimo en píxeles para que se vea con el mapa entero.
+inline constexpr SDL_Color COLOR_PUNTO_JUGADOR = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_BORDE_PUNTO = {0, 0, 0, 255};
+inline constexpr float RADIO_PUNTO = 0.5f;
+inline constexpr float RADIO_PUNTO_PROPIO = 0.9f;
+inline constexpr int RADIO_MINIMO_PUNTO = 3;
+inline constexpr int RADIO_MINIMO_PUNTO_PROPIO = 5;
+// El minimapa del HUD, arriba a la izquierda: el área donde está el jugador, en el marco de madera
+// del HUD. El área se agranda hasta este tamaño sin deformarse; los tamaños y los radios van en
+// píxeles del HUD (se multiplican por su escala).
+inline constexpr int ANCHO_MAXIMO_MINIMAPA = 110;
+inline constexpr int ALTO_MAXIMO_MINIMAPA = 75;
+inline constexpr int RADIO_PUNTO_MINIMAPA = 1;
+inline constexpr int RADIO_PUNTO_PROPIO_MINIMAPA = 2;
 
 #endif

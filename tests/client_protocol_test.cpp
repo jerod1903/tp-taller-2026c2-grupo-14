@@ -92,6 +92,7 @@ TEST_F(ClientProtocolTest, ListMyGamesReturnsAllFields) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, MULTI_ID);
     EXPECT_EQ(games[0].gameName, "Multi");
+    EXPECT_EQ(games[0].worldId, "granja");
     EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Duenio");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);
@@ -197,6 +198,14 @@ TEST_F(ClientGameProtocolTest, RecvsLocationData) {
     EXPECT_EQ(std::get<LocationData>(message).maxPlayers, 4);
     EXPECT_EQ(std::get<LocationData>(message).maxEnergy, 270);
     EXPECT_EQ(std::get<LocationData>(message).maxHealth, 100);
+}
+
+TEST_F(ClientGameProtocolTest, RecvsDayEnded) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_day_ended(DayEnded{4, false, 2, 3}));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<DayEnded>(message));
+    EXPECT_EQ(std::get<DayEnded>(message), (DayEnded{4, false, 2, 3}));
 }
 
 TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
@@ -311,6 +320,14 @@ TEST_F(ClientGameProtocolTest, SendInviteSendsOnlyTheTag) {
     client->sendInvite();
     client->shutdown();
     EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::Invite));
+    EXPECT_EQ(server.recv_u8(), std::nullopt);
+}
+
+TEST_F(ClientGameProtocolTest, SendDayReadySendsOnlyTheTag) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendDayReady();
+    client->shutdown();
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::DayReady));
     EXPECT_EQ(server.recv_u8(), std::nullopt);
 }
 

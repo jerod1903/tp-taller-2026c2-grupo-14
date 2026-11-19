@@ -33,6 +33,10 @@ struct EstadoJuego {
     InventoryState inventario{};
     std::vector<MensajeChat> chat = {};
     FarmState granja{};
+    // Mientras se vota pasar de día: cómo va la votación. Se va cuando llega un snapshot del día
+    // siguiente.
+    std::optional<DayEnded> fin_del_dia = std::nullopt;
+    bool listo_para_manana = false;  // ya dio el Ok
 };
 
 #endif

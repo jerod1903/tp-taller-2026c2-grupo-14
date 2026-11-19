@@ -6,6 +6,8 @@ target_sources(taller_server
     config/server_config.cpp
     game/game.cpp
     game/commands/chat_command.cpp
+    game/commands/day_ready_command.cpp
+    game/day_vote.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
     game/commerce/merchant.cpp
@@ -20,6 +22,7 @@ target_sources(taller_server
     game/cheats/cheat.cpp
     game/cheats/seeds_cheat.cpp
     game/cheats/gold_cheat.cpp
+    game/cheats/sleep_cheat.cpp
     game/interactions/outcome.cpp
     game/interactions/interaction.cpp
     game/interactions/milk.cpp
@@ -83,6 +86,8 @@ target_sources(taller_server
     net/sender.cpp
     net/server_protocol.cpp
     persistence/in_memory_game_store.cpp
+    persistence/file_game_store.cpp
+    persistence/toml_saves.cpp
     PUBLIC
     # .h files
     consts.h
@@ -92,6 +97,9 @@ target_sources(taller_server
     game/game.h
     game/outbox.h
     game/commands/chat_command.h
+    game/commands/day_ready_command.h
+    game/commands/player_day.h
+    game/day_vote.h
     game/commands/command_factory.h
     game/commands/interact_command.h
     game/commands/typing_command.h
@@ -104,6 +112,7 @@ target_sources(taller_server
     game/cheats/cheat.h
     game/cheats/seeds_cheat.h
     game/cheats/gold_cheat.h
+    game/cheats/sleep_cheat.h
     game/interactions/outcome.h
     game/interactions/interaction.h
     game/interactions/milk.h
@@ -174,4 +183,7 @@ target_sources(taller_server
     net/server_protocol.h
     persistence/game_store.h
     persistence/in_memory_game_store.h
+    persistence/file_game_store.h
+    persistence/saved_game.h
+    persistence/toml_saves.h
     )

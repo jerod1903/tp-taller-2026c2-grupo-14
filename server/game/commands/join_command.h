@@ -12,6 +12,7 @@ public:
     JoinCommand(uint32_t player_id, GameMember member, std::shared_ptr<Outbox> outbox);
 
     void execute(GameContext& context) override;
+    bool runs_while_day_ended() const override { return true; }
 
 private:
     const GameMember member;

@@ -17,14 +17,20 @@ float GameClock::get_day_seconds() const { return day_seconds; }
 bool GameClock::update(float dt) {
     elapsed += dt;
     if (elapsed >= day_seconds) {
-        elapsed -= day_seconds;
-        day++;
+        elapsed = day_seconds;
         return true;
     }
     return false;
 }
 
-void GameClock::end_day() {
-    elapsed = 0.0f;
+void GameClock::end_day() { elapsed = day_seconds; }
+
+void GameClock::next_day() {
     day++;
+    elapsed = 0.0f;
+}
+
+void GameClock::start_day(uint16_t day) {
+    this->day = day;
+    elapsed = 0.0f;
 }

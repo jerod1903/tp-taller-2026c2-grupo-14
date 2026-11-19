@@ -11,6 +11,7 @@ public:
     explicit LeaveCommand(uint32_t player_id);
 
     void execute(GameContext& context) override;
+    bool runs_while_day_ended() const override { return true; }
 };
 
 #endif  // LEAVE_COMMAND_H

@@ -7,8 +7,8 @@
 #include "common/game_dto.h"
 
 // Lo que manda el servidor durante la partida.
-using ServerGameMessage =
-        std::variant<LocationData, Snapshot, GameEnded, PlayerInfo, InventoryState, ChatMessage, FarmState>;
+using ServerGameMessage = std::variant<LocationData, Snapshot, GameEnded, PlayerInfo,
+                                       InventoryState, ChatMessage, FarmState, DayEnded>;
 
 // Lo que la partida necesita del servidor: un send por cada accion del jugador y el recv de lo que
 // manda el servidor. Los send tiran LobbyConnectionError si se corto la conexion.
@@ -32,4 +32,6 @@ public:
     virtual void sendTyping(bool escribiendo) = 0;
     virtual void sendClick(uint16_t x, uint16_t y) = 0;
     virtual void sendInvite() = 0;
+    // Da el Ok para pasar al día siguiente
+    virtual void sendDayReady() = 0;
 };

@@ -1,12 +1,15 @@
 #include "client/menu/screens/MyGamesScreen.h"
 
+#include <QEvent>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
+#include <QPixmap>
 #include <QShowEvent>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -14,11 +17,14 @@
 #include "client/menu/components/CharacterPreview.h"
 #include "client/menu/components/MenuButton.h"
 #include "client/menu/components/SavedGameRow.h"
+#include "client/menu/components/WorldPreview.h"
 #include "client/menu/styles/StyleManager.h"
 
 namespace {
 constexpr int DETAIL_PREVIEW_SIZE = 96;
 constexpr int WORLD_PREVIEW_HEIGHT = 200;
+// Lo que queda libre alrededor del mapa, dentro del recuadro
+constexpr int WORLD_PREVIEW_PADDING = 8;
 }  // namespace
 
 MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
@@ -75,10 +81,12 @@ MyGamesScreen::MyGamesScreen(ILobbyProtocol& lobby, QWidget* parent):
 }
 
 QWidget* MyGamesScreen::createDetailPanel() {
-    // Provisorio hasta definir de donde sale la miniatura del mundo
     worldPreview->setObjectName("worldPreview");
     worldPreview->setAlignment(Qt::AlignCenter);
     worldPreview->setFixedHeight(WORLD_PREVIEW_HEIGHT);
+    // El ancho lo pone el panel: la imagen no lo agranda
+    worldPreview->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    worldPreview->installEventFilter(this);
 
     detailGameName->setObjectName("rowTitle");
     detailGameName->setWordWrap(true);
@@ -156,13 +164,44 @@ void MyGamesScreen::showDetail(int row) {
 
     const SavedGameInfo& game = games[static_cast<std::size_t>(row)];
     const QString characterName = QString::fromStdString(game.characterName);
-    worldPreview->setText("(vista previa pendiente)");
+    showWorldPreview(game.worldId);
     detailCharacter->setCharacter(game.appearance, characterName);
     detailGameName->setText(QString::fromStdString(game.gameName));
     detailInfo->setText("Mundo: " + QString::fromStdString(game.worldName) + "\n" +
                         "Personaje: " + characterName + "\n" +
                         (game.isMultiplayer ? "Multijugador" : "Individual"));
     detailOrHint->setCurrentIndex(1);
+}
+
+void MyGamesScreen::showWorldPreview(const std::string& worldId) {
+    shownWorldId = worldId;
+    if (!worldImages.contains(worldId)) {
+        worldImages.emplace(worldId, worldPreviewImage(worldId));
+    }
+    redrawWorldPreview();
+}
+
+void MyGamesScreen::redrawWorldPreview() {
+    auto image = worldImages.find(shownWorldId);
+    if (image == worldImages.end()) {
+        return;
+    }
+    if (!image->second) {
+        worldPreview->setText("(sin vista previa)");
+        return;
+    }
+    const QSize space = worldPreview->contentsRect().size() -
+                        QSize(2 * WORLD_PREVIEW_PADDING, 2 * WORLD_PREVIEW_PADDING);
+    // Sin suavizar: una casilla es un bloque de color, como en el mapa del juego
+    worldPreview->setPixmap(QPixmap::fromImage(image->second->scaled(
+            space.expandedTo(QSize(1, 1)), Qt::KeepAspectRatio, Qt::FastTransformation)));
+}
+
+bool MyGamesScreen::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == worldPreview && event->type() == QEvent::Resize) {
+        redrawWorldPreview();
+    }
+    return BaseScreen::eventFilter(watched, event);
 }
 
 void MyGamesScreen::playSelected() {

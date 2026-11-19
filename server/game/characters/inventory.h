@@ -33,6 +33,8 @@ public:
     void remove(ItemType item, int quantity);
 
     InventoryState get_state() const;
+    // Vuelve a como estaba en `state` (uno guardado); los slots que falten quedan vacíos.
+    void restore(const InventoryState& state);
 
 private:
     std::array<InventorySlot, INVENTORY_SIZE> slots{};

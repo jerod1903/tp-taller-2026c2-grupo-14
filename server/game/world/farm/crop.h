@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "common/farm_dto.h"
+#include "server/persistence/saved_game.h"
 
 // Lo que hay en una celda cavada de la granja. CropType::None es tierra cavada sin plantar.
 // El día se parte en waterings_per_day ventanas y en cada una necesita un riego. Al empezar el
@@ -13,6 +14,10 @@ class Crop {
 public:
     // minute: la hora a la que se planta, en minutos de juego desde las 6:00.
     explicit Crop(CropType type = CropType::None, float minute = 0.0f);
+    // Uno guardado, tal como estaba
+    explicit Crop(const SavedCrop& saved);
+
+    SavedCrop saved() const;
 
     uint8_t stage_count() const;  // etapas del sprite: 6, 6, 7, 6 según el tipo
     bool is_planted() const;

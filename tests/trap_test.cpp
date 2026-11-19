@@ -119,4 +119,23 @@ TEST(TrapSpawnerTest, PutsTheTrapsAndEachFlamethrowerAgainstAWall) {
     EXPECT_EQ(flamethrowers, config().flamethrowers_count);
 }
 
+TEST(TrapSpawnerTest, NoFlamethrowerHangsFromADecoration) {
+    // Un piso de 5x5 rodeado de decoración (piso tapado, como una antorcha o un barril) y sin
+    // ninguna pared: no hay dónde colgar un lanzallamas
+    const int size = 7;
+    std::vector<Tile> tiles(size * size, Tile(TileType::CaveFloor, true));
+    for (int y = 0; y < size; ++y) {
+        for (int x = 0; x < size; ++x) {
+            if (x == 0 || y == 0 || x == size - 1 || y == size - 1) {
+                tiles[y * size + x] = Tile(TileType::CaveFloor, false);
+            }
+        }
+    }
+    DungeonLevel level{"level", Grid(size, size, std::move(tiles)), 0, 7};
+    TrapSpawner().spawn(level);
+    for (const std::unique_ptr<Trap>& trap: level.get_traps()) {
+        EXPECT_EQ(trap->entity_type(), EntityType::Spikes);
+    }
+}
+
 }  // namespace

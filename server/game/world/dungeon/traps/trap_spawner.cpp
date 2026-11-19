@@ -10,16 +10,23 @@
 #include "server/game/world/dungeon/traps/spikes.h"
 
 namespace {
+// Si en `cell` hay pared: terreno que no se camina, o el borde del nivel. Una antorcha o un barril
+// tapan la celda pero no son pared: el lanzallamas no se cuelga de ellos.
+bool is_wall(const Location& level, const Position& cell) {
+    const Grid& grid = level.get_grid();
+    return !grid.in_bounds(cell) || !is_walkable_terrain(grid.at(cell).get_type());
+}
+
 // Hacia dónde tira el chorro el lanzallamas en `cell`: para el lado contrario a su pared. NONE si
 // no tiene pared arriba, a la izquierda ni a la derecha.
 Direction facing_from_wall(const Location& level, const Position& cell) {
-    if (!level.is_walkable(step(cell, Direction::UP))) {
+    if (is_wall(level, step(cell, Direction::UP))) {
         return Direction::DOWN;
     }
-    if (!level.is_walkable(step(cell, Direction::LEFT))) {
+    if (is_wall(level, step(cell, Direction::LEFT))) {
         return Direction::RIGHT;
     }
-    if (!level.is_walkable(step(cell, Direction::RIGHT))) {
+    if (is_wall(level, step(cell, Direction::RIGHT))) {
         return Direction::LEFT;
     }
     return Direction::NONE;
