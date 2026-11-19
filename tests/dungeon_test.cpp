@@ -258,19 +258,32 @@ protected:
         return total;
     }
 
+    std::unique_ptr<DungeonLevel> make_level_with(int depth, ItemType ore) {
+        for (uint32_t seed = 1; seed < 200; ++seed) {
+            auto candidate = std::make_unique<DungeonLevel>("level", make_grid(20, 20), depth, seed);
+            candidate->add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
+            candidate->set_visitors({&visitor});
+            if (count_ore(*candidate, ore) > 0) {
+                return candidate;
+            }
+        }
+        ADD_FAILURE() << "No se generó el mineral esperado en ninguna semilla";
+        return std::make_unique<DungeonLevel>("level", make_grid(20, 20), depth, 7);
+    }
+
     TestLocation outside;
     DungeonLevel level{"level", make_grid(20, 20), 0, 7};
     TestCreature visitor{level, Position{0, 1}};
 };
 
 TEST_F(MiningLevelTest, CoalIsMinedInOneStrike) {
-    level.set_visitors({&visitor});
-    const Position pos = find_ore(level, ItemType::Coal);
+    auto coal_level = make_level_with(0, ItemType::Coal);
+    const Position pos = find_ore(*coal_level, ItemType::Coal);
 
-    DungeonLevel::StrikeResult result = level.strike_ore(pos, 0.5f);
+    DungeonLevel::StrikeResult result = coal_level->strike_ore(pos, 0.5f);
     EXPECT_EQ(result.strike, DungeonLevel::Strike::Mined);
     EXPECT_EQ(result.ore, ItemType::Coal);
-    EXPECT_EQ(level.ore_at(pos), nullptr);
+    EXPECT_EQ(coal_level->ore_at(pos), nullptr);
 }
 
 TEST_F(MiningLevelTest, LapisTakesTwoStrikesAndYieldsItemOnHighRoll) {
@@ -331,13 +344,14 @@ TEST_F(MiningLevelTest, StrikingEmptyCellReturnsNoOre) {
 }
 
 TEST_F(MiningLevelTest, OreBlocksWalkingUntilBroken) {
-    level.set_visitors({&visitor});
-    const Position pos = find_ore(level, ItemType::Coal);
+    auto coal_level = make_level_with(0, ItemType::Coal);
+    const Position pos = find_ore(*coal_level, ItemType::Coal);
 
-    EXPECT_FALSE(level.is_walkable(pos));
-    level.strike_ore(pos, 0.5f);
-    EXPECT_TRUE(level.is_walkable(pos));
+    EXPECT_FALSE(coal_level->is_walkable(pos));
+    coal_level->strike_ore(pos, 0.5f);
+    EXPECT_TRUE(coal_level->is_walkable(pos));
 }
+
 
 TEST_F(MiningLevelTest, GoldOnlyAppearsFromDepthFourOnward) {
     DungeonLevel depth3{"level", make_grid(20, 20), 3, 7};
@@ -349,6 +363,32 @@ TEST_F(MiningLevelTest, GoldOnlyAppearsFromDepthFourOnward) {
     depth4.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
     depth4.set_visitors({&visitor});
     EXPECT_GT(count_ore(depth4, ItemType::GoldOre), 0);
+}
+
+TEST_F(MiningLevelTest, MiningSilverTriggersOrcsOnlyOnLowRollAndMarksChanges) {
+    for (uint32_t seed = 1; seed < 50; ++seed) {
+        DungeonLevel candidate{"level", make_grid(20, 20), 4, seed};
+        candidate.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
+        candidate.set_visitors({&visitor});
+        if (count_ore(candidate, ItemType::Silver) > 0) {
+            // Limpiamos el flag inicial de población
+            EXPECT_TRUE(candidate.take_changes());
+            EXPECT_FALSE(candidate.take_changes());
+
+            const Position pos = find_ore(candidate, ItemType::Silver);
+            const int hits = server_config().mining.silver.hits;
+            for (int i = 0; i < hits - 1; ++i) {
+                EXPECT_EQ(candidate.strike_ore(pos, 0.99f).strike, DungeonLevel::Strike::Chipped);
+            }
+            DungeonLevel::StrikeResult res = candidate.strike_ore(pos, 0.05f);
+            EXPECT_EQ(res.strike, DungeonLevel::Strike::Mined);
+            EXPECT_EQ(res.ore, ItemType::Silver);
+            EXPECT_TRUE(res.spawn_orcs);
+            EXPECT_TRUE(candidate.take_changes());
+            return;
+        }
+    }
+    FAIL() << "No se generó plata en ninguna semilla probada";
 }
 
 }  // namespace
