@@ -138,6 +138,8 @@ void ClientProtocol::sendEnterPortal() { ensure(sendGameOp(GameOp::EnterPortal))
 
 void ClientProtocol::sendInvite() { ensure(sendGameOp(GameOp::Invite)); }
 
+void ClientProtocol::sendDayReady() { ensure(sendGameOp(GameOp::DayReady)); }
+
 void ClientProtocol::sendSelectSlot(uint8_t slot) {
     ensure(sendGameOp(GameOp::SelectSlot) && baseProtocol.send_u8(slot));
 }
@@ -158,7 +160,9 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
         case GameMsg::ChatMessage:
             return recvChatMessage();
         case GameMsg::FarmState:
-          return recvFarmState();    
+            return recvFarmState();
+        case GameMsg::DayEnded:
+            return recvDayEnded();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -276,6 +280,14 @@ ChatMessage ClientProtocol::recvChatMessage() {
     mensaje.from = ensure(baseProtocol.recv_string());
     mensaje.text = ensure(baseProtocol.recv_string());
     return mensaje;
+}
+
+DayEnded ClientProtocol::recvDayEnded() {
+    uint16_t day = ensure(baseProtocol.recv_u16());
+    bool slept = ensure(baseProtocol.recv_u8()) != 0;
+    uint8_t ready = ensure(baseProtocol.recv_u8());
+    uint8_t total = ensure(baseProtocol.recv_u8());
+    return DayEnded{day, slept, ready, total};
 }
 
 FarmState ClientProtocol::recvFarmState() {

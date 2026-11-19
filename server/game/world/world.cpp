@@ -149,11 +149,15 @@ const Cabin& World::get_cabin() const { return farm->get_cabin(); }
 
 const GameClock& World::get_clock() const { return clock; }
 
+void World::end_day() { clock.end_day(); }
+
+bool World::slept_in_bed(uint32_t player_id) const { return sleepers.count(player_id) > 0; }
+
 void World::start_new_day() {
+    clock.next_day();
     farm->start_new_day();
     for (const auto& [player_id, player]: players) {
-        bool slept = !player->is_unconscious() && farm->get_cabin().is_in_bed(*player);
-        player->wake_up(farm->bed_spawn(player_id), slept);
+        player->wake_up(farm->bed_spawn(player_id), slept_in_bed(player_id));
     }
     for (const auto& [player_id, player]: away) {
         player->rest(false);
@@ -182,7 +186,12 @@ bool World::update(float dt) {
         day_over = true;
     }
     if (day_over) {
-        start_new_day();
+        sleepers.clear();
+        for (const auto& [player_id, player]: players) {
+            if (!player->is_unconscious() && farm->get_cabin().is_in_bed(*player)) {
+                sleepers.insert(player_id);
+            }
+        }
     }
     farm->update_time(clock.get_minute_of_day());
     return day_over;

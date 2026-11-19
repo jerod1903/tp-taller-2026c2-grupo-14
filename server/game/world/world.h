@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -74,9 +75,16 @@ public:
     void restore(const SavedGame& saved);
 
     // Actualiza las tres zonas, hace viajar a los que pisaron un portal y termina el día a las
-    // 2:00 o cuando caen todos inconscientes. true si en este update empezó un día nuevo (ya están
-    // todos despiertos): es cuando se guarda la partida.
+    // 2:00 o cuando caen todos inconscientes. true si en este update terminó el día: ahí queda
+    // anotado quién durmió en su cama, y el día siguiente arranca recién con start_new_day().
     bool update(float dt);
+    // Termina el día ya, como si fueran las 2:00 (el cheat $sleep): el próximo update lo cierra.
+    void end_day();
+    // Si el jugador estaba en su cama (y consciente) cuando terminó el último día.
+    bool slept_in_bed(uint32_t player_id) const;
+    // Arranca el día siguiente: despiertan todos en su cama, enteros los que durmieron en ella y a
+    // medias los demás (y los que se fueron).
+    void start_new_day();
 
 private:
     std::unique_ptr<Farm> farm;
@@ -90,14 +98,13 @@ private:
     // Los de la partida guardada, como estaban: el que entra por primera vez en esta sesión
     // recupera lo suyo de acá
     std::map<uint32_t, SavedPlayer> stored;
+    // Los que estaban en su cama cuando terminó el día
+    std::set<uint32_t> sleepers;
     Movement movement;
     GameClock clock{server_config().game.day_speed};
 
     // Si está en la granja y `cell` está pegada a la suya (también en diagonal).
     bool reaches(const Player& player, const Position& cell) const;
-    // Despierta a todos en su cama: enteros los que durmieron en ella, a medias los demás (y los
-    // que se fueron).
-    void start_new_day();
     // El día termina antes si cayeron todos.
     bool everyone_unconscious() const;
 };

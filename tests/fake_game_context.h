@@ -22,7 +22,8 @@ class FakeGameContext:
         public PlayerCharacters,
         public PlayerCommerce,
         public PlayerFarming,
-        public PlayerCombat {
+        public PlayerCombat,
+        public PlayerDay {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -38,6 +39,9 @@ public:
     PlayerCommerce& commerce() override { return *this; }
     PlayerFarming& farming() override { return *this; }
     PlayerCombat& combat() override { return *this; }
+    PlayerDay& day() override { return *this; }
+    void ready_for_next_day(uint32_t player_id) override { ready.push_back(player_id); }
+    void end_day() override { ++days_ended; }
 
     Player* find_player(uint32_t player_id) override {
         return player_id == PLAYER_ID ? &player : nullptr;
@@ -115,6 +119,9 @@ public:
     Player player{PLAYER_ID, Position{0, 0}, location, "jero", 10, 1.0f, 0, 100};
     std::vector<Added> added;
     std::vector<uint32_t> removed;
+    // Los que dieron el Ok para pasar de día
+    std::vector<uint32_t> ready;
+    int days_ended = 0;
     std::vector<uint32_t> entered_portal;
 
     // Las celdas que se clickearon y lo que contesta talk (nullopt: no había nadie ahí).

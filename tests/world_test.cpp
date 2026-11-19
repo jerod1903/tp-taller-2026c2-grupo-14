@@ -215,14 +215,17 @@ TEST(CabinBedsTest, WithoutFreeSlotsAssigningABedThrows) {
 
 // --- Los que se van y vuelven ---
 
-// Mundo con una cama, sin jugadores: entran con spawn_player.
+// Mundo con dos camas, sin jugadores: entran con spawn_player.
 class ReturningPlayerTest: public ::testing::Test {
 protected:
-    std::unique_ptr<World> world = make_world({Position{2, 1}});
+    std::unique_ptr<World> world = make_world({Position{1, 1}, Position{3, 1}});
 
     Player& player() { return *world->find_player(1); }
-    // Termina el día: despiertan todos
-    void end_the_day() { world->update(world->get_clock().get_day_seconds() + 1); }
+    // Termina el día y arranca el siguiente: despiertan todos
+    void end_the_day() {
+        world->update(world->get_clock().get_day_seconds() + 1);
+        world->start_new_day();
+    }
 };
 
 TEST_F(ReturningPlayerTest, WhoLeavesIsOffTheMapButNotForgotten) {
@@ -290,10 +293,33 @@ TEST_F(ReturningPlayerTest, WhoDidNotEnterKeepsWhatItHadSaved) {
     EXPECT_EQ(saved.players.count(1), 1u);
 }
 
-TEST_F(ReturningPlayerTest, UpdateTellsWhenANewDayStarts) {
+TEST_F(ReturningPlayerTest, UpdateTellsWhenTheDayEndsAndTheNextOneWaits) {
     EXPECT_FALSE(world->update(1.0f));
     EXPECT_TRUE(world->update(world->get_clock().get_day_seconds()));
+    // Queda en las 2:00 del mismo día hasta start_new_day
+    EXPECT_EQ(world->get_clock().get_day(), 1);
+    EXPECT_FLOAT_EQ(world->get_clock().get_minute_of_day(), 1200.0f);
+    world->start_new_day();
     EXPECT_EQ(world->get_clock().get_day(), 2);
+    EXPECT_FLOAT_EQ(world->get_clock().get_minute_of_day(), 0.0f);
+}
+
+TEST_F(ReturningPlayerTest, WhoWasInBedWhenTheDayEndedSleptThere) {
+    world->spawn_player(1, "jero");  // aparece acostado en su cama
+    world->spawn_player(2, "martu");
+    player().take_damage(50);
+    world->find_player(2)->relocate(world->get_farm(), Position{1, 1});
+    world->update(world->get_clock().get_day_seconds());
+    EXPECT_TRUE(world->slept_in_bed(1));
+    EXPECT_FALSE(world->slept_in_bed(2));
+    world->start_new_day();
+    EXPECT_EQ(player().get_health(), server_config().player.health);
+}
+
+TEST_F(ReturningPlayerTest, EndDayClosesItOnTheNextUpdate) {
+    world->end_day();
+    EXPECT_TRUE(world->update(0.0f));
+    EXPECT_EQ(world->get_clock().get_day(), 1);
 }
 
 }  // namespace

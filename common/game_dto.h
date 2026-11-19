@@ -20,6 +20,7 @@ enum class GameOp : uint8_t {
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
     Click = 0x08,        // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
     Invite = 0x09,       // sin payload: pide el código de invitación; llega por el chat
+    DayReady = 0x0A,     // sin payload: dio el Ok para pasar al día siguiente
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -40,6 +41,7 @@ enum class GameMsg : uint8_t {
     InventoryState,
     ChatMessage,
     FarmState,
+    DayEnded,
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
@@ -154,6 +156,21 @@ struct PlayerInfo {
 
 enum class EndReason : uint8_t {
     Left,  // el jugador pidió LeaveGame: la conexión vuelve al lobby
+};
+
+// Terminó el día `day` y se está votando para pasar al siguiente: el mundo queda congelado hasta
+// que todos los conectados den el Ok (DayReady). Llega al terminar el día, cada vez que alguien
+// vota o entra o sale, y al que entra mientras se vota. `slept`: si este jugador estaba en su
+// cama cuando terminó el día (si no, despierta con la mitad de vida y energía). Cuando empieza el
+// día siguiente no se avisa: los snapshots pasan a traer day + 1.
+// En el cable: tag GameMsg::DayEnded, u16 day, u8 slept, u8 ready, u8 total.
+struct DayEnded {
+    uint16_t day;
+    bool slept;
+    uint8_t ready;  // cuántos ya dieron el Ok
+    uint8_t total;  // cuántos tienen que darlo
+
+    bool operator==(const DayEnded&) const = default;
 };
 
 // Último mensaje de la partida: lo que llegue después es del lobby.

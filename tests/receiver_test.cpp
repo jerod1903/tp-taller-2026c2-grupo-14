@@ -86,6 +86,12 @@ TEST_F(ReceiverTest, InviteCallsOnInviteAndKeepsReading) {
     EXPECT_EQ(invites, 1);
 }
 
+TEST_F(ReceiverTest, DayReadyPostsTheOk) {
+    ASSERT_TRUE(client->send_u8(static_cast<uint8_t>(GameOp::DayReady)));
+    execute_next();
+    EXPECT_EQ(context.ready, std::vector<uint32_t>{PLAYER_ID});
+}
+
 TEST_F(ReceiverTest, ClientDisconnectPostsLeaveCommand) {
     client.reset();
     execute_next();

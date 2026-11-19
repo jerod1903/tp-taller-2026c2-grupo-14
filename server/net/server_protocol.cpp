@@ -233,6 +233,12 @@ bool ServerProtocol::send_farm_state(const FarmState& farm) {
            });
 }
 
+bool ServerProtocol::send_day_ended(const DayEnded& day) {
+    return send_game_msg(GameMsg::DayEnded) && baseProtocol.send_u16(day.day) &&
+           baseProtocol.send_u8(day.slept ? 1 : 0) && baseProtocol.send_u8(day.ready) &&
+           baseProtocol.send_u8(day.total);
+}
+
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
     return send_game_msg(GameMsg::GameEnded) &&
            baseProtocol.send_u8(static_cast<uint8_t>(ended.reason));

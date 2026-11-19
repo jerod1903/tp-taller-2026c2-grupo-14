@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -45,8 +46,10 @@ void Game::run() {
     try {
         while (should_keep_running()) {
             process_events();
-            if (world->update(tick_seconds)) {
-                save();
+            if (vote) {
+                update_vote();
+            } else if (world->update(tick_seconds)) {
+                open_vote();
             }
             ++tick;
             broadcast_snapshot();
@@ -67,6 +70,9 @@ void Game::run() {
 void Game::process_events() {
     std::shared_ptr<GameCommand> command;
     while (inbox.try_pop(command)) {
+        if (vote && !command->runs_while_day_ended()) {
+            continue;
+        }
         try {
             command->execute(*this);
         } catch (const std::exception& e) {
@@ -86,6 +92,50 @@ PlayerCommerce& Game::commerce() { return market; }
 PlayerFarming& Game::farming() { return *world; }
 
 PlayerCombat& Game::combat() { return *world; }
+
+PlayerDay& Game::day() { return *this; }
+
+void Game::ready_for_next_day(uint32_t player_id) {
+    if (vote && vote->vote(player_id)) {
+        send_vote();
+    }
+}
+
+void Game::end_day() { world->end_day(); }
+
+void Game::open_vote() {
+    vote.emplace(connected_players());
+    send_vote();
+}
+
+void Game::update_vote() {
+    // Le pregunta a la votación si cambió y si terminó, y decide acá: lo que sigue (avisar a los
+    // jugadores, arrancar el día y guardar) es del Game, y DayVote no conoce al World ni al store.
+    if (vote->sync(connected_players())) {
+        send_vote();
+    }
+    if (vote->is_done()) {
+        vote.reset();
+        world->start_new_day();
+        save();
+    }
+}
+
+void Game::send_vote() {
+    uint16_t day = world->get_clock().get_day();
+    for (uint32_t player_id: connected_players()) {
+        player_sessions.send_to(player_id, DayEnded{day, world->slept_in_bed(player_id),
+                                                    vote->ready_count(), vote->total()});
+    }
+}
+
+std::set<uint32_t> Game::connected_players() const {
+    std::set<uint32_t> ids;
+    for (const auto& [player_id, player]: world->get_players()) {
+        ids.insert(player_id);
+    }
+    return ids;
+}
 
 void Game::broadcast_snapshot() { player_sessions.broadcast(SnapshotBuilder::build(tick, *world)); }
 

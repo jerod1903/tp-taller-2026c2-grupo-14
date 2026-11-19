@@ -4,6 +4,7 @@
 #include "server/game/commands/player_characters.h"
 #include "server/game/commands/player_combat.h"
 #include "server/game/commands/player_commerce.h"
+#include "server/game/commands/player_day.h"
 #include "server/game/commands/player_farming.h"
 #include "server/game/commands/player_movement.h"
 #include "server/game/commands/player_sessions.h"
@@ -19,6 +20,7 @@ public:
     virtual PlayerCommerce& commerce() = 0;
     virtual PlayerFarming& farming() = 0;
     virtual PlayerCombat& combat() = 0;
+    virtual PlayerDay& day() = 0;
 
     virtual ~GameContext() = default;
 };

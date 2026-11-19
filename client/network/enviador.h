@@ -21,6 +21,7 @@ public:
     void escribiendo(bool valor) { protocolo.sendTyping(valor); }
     void clickear(const ClickRequest& click) { protocolo.sendClick(click.x, click.y); }
     void invitar() { protocolo.sendInvite(); }
+    void listo_para_manana() { protocolo.sendDayReady(); }
 
 private:
     IGameProtocol& protocolo;

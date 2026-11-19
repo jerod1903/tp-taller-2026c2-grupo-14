@@ -28,6 +28,7 @@ target_sources(taller_tests
     trap_test.cpp
     saved_game_test.cpp
     file_game_store_test.cpp
+    day_vote_test.cpp
     sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
@@ -95,6 +96,8 @@ target_sources(taller_tests
     ../server/game/sessions.cpp
     ../server/game/snapshot_builder.cpp
     ../server/game/commands/chat_command.cpp
+    ../server/game/commands/day_ready_command.cpp
+    ../server/game/day_vote.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
     ../server/game/commerce/merchant.cpp
@@ -109,6 +112,7 @@ target_sources(taller_tests
     ../server/game/cheats/cheat.cpp
     ../server/game/cheats/seeds_cheat.cpp
     ../server/game/cheats/gold_cheat.cpp
+    ../server/game/cheats/sleep_cheat.cpp
     ../server/game/interactions/outcome.cpp
     ../server/game/interactions/interaction.cpp
     ../server/game/interactions/milk.cpp

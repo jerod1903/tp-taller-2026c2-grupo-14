@@ -18,8 +18,9 @@ namespace {
 constexpr uint8_t SINGLE_PLAYER_MAX = 1;
 
 constexpr std::size_t INVITE_CODE_LEN = 6;
-// Sin 0/O ni 1/I: el código se dicta y se tipea a mano.
-constexpr std::string_view INVITE_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+// Sin 0/O, 1/I, 2/Z, 5/S ni 8/B: el código se dicta y se tipea a mano, y en la fuente pixelada
+// del chat esos pares se confunden.
+constexpr std::string_view INVITE_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ34679";
 
 std::vector<WorldInfo> infos_of(const std::vector<GameWorld>& worlds) {
     std::vector<WorldInfo> infos;

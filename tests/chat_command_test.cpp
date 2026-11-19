@@ -117,3 +117,17 @@ TEST(ChatCommandTest, IfTheTradeChangedTheInventoryItIsSentToo) {
     ASSERT_EQ(context.sent.size(), 2u);
     EXPECT_TRUE(std::holds_alternative<InventoryState>(context.sent[1].second));
 }
+
+TEST(ChatCommandTest, TheSleepCheatEndsTheDayWithoutSayingAnything) {
+    FakeGameContext context;
+    say(context, "$sleep");
+    EXPECT_EQ(context.days_ended, 1);
+    EXPECT_TRUE(context.broadcasted.empty());
+}
+
+TEST(ChatCommandTest, TheSleepCheatTakesNoPayload) {
+    FakeGameContext context;
+    say(context, "$sleep 3");
+    EXPECT_EQ(context.days_ended, 0);
+    EXPECT_EQ(context.sent.size(), 1u);
+}

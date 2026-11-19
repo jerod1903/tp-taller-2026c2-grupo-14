@@ -39,6 +39,7 @@ public:
     void sendTyping(bool escribiendo) override;
     void sendClick(uint16_t x, uint16_t y) override;
     void sendInvite() override;
+    void sendDayReady() override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;
@@ -60,6 +61,7 @@ private:
     InventoryState recvInventoryState();
     ChatMessage recvChatMessage();
     FarmState recvFarmState();
+    DayEnded recvDayEnded();
 
     BaseProtocol baseProtocol;
 };

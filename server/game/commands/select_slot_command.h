@@ -10,6 +10,7 @@ class SelectSlotCommand: public GameCommand {
 public:
     SelectSlotCommand(uint32_t player_id, const SelectSlotRequest& request);
     void execute(GameContext& context) override;
+    bool runs_while_day_ended() const override { return true; }
 
 private:
     uint8_t slot;

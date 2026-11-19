@@ -12,6 +12,10 @@ public:
 
     virtual void execute(GameContext& context) = 0;
 
+    // Si se ejecuta mientras se vota pasar de día, con el mundo congelado. Por defecto no: las
+    // acciones sobre el mundo se descartan. Sí lo hacen entrar, salir, el chat y el Ok.
+    virtual bool runs_while_day_ended() const { return false; }
+
     virtual ~GameCommand() = default;
 
 protected:
