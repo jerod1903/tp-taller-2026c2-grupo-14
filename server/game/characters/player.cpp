@@ -63,10 +63,12 @@ void Player::update(float dt) {
     advance(dt);
 }
 
+bool Player::is_badly_hurt() const {
+    return health <= max_health * server_config().player.weak_health;
+}
+
 int Player::attack_damage() const {
-    const ServerConfig::Player& config = server_config().player;
-    bool weak = health <= max_health * config.weak_health;
-    return weak ? static_cast<int>(damage * config.weak_damage) : damage;
+    return is_badly_hurt() ? static_cast<int>(damage * server_config().player.weak_damage) : damage;
 }
 
 void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); }

@@ -22,6 +22,10 @@ target_sources(taller_tests
     grid_test.cpp
     location_test.cpp
     skeleton_test.cpp
+    vampire_test.cpp
+    orc_test.cpp
+    skull_test.cpp
+    trap_test.cpp
     sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
@@ -51,8 +55,22 @@ target_sources(taller_tests
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
     ../server/game/characters/enemies/skeleton.cpp
+    ../server/game/characters/enemies/vampire.cpp
+    ../server/game/characters/enemies/orc.cpp
+    ../server/game/characters/enemies/skull.cpp
+    ../server/game/world/dungeon/flame.cpp
+    ../server/game/world/dungeon/traps/trap.cpp
+    ../server/game/world/dungeon/traps/spikes.cpp
+    ../server/game/world/dungeon/traps/flamethrower.cpp
+    ../server/game/world/dungeon/traps/trap_spawner.cpp
+    ../server/game/world/dungeon/spawners/enemy_spawner.cpp
+    ../server/game/world/dungeon/spawners/skeleton_spawner.cpp
+    ../server/game/world/dungeon/spawners/vampire_spawner.cpp
+    ../server/game/world/dungeon/spawners/orc_spawner.cpp
+    ../server/game/world/dungeon/spawners/skull_spawner.cpp
     ../server/game/characters/entity.cpp
     ../server/game/characters/player.cpp
+    ../server/game/characters/wanderer.cpp
     ../server/game/world/direction.cpp
     ../server/game/world/game_clock.cpp
     ../server/game/world/dungeon/dungeon.cpp

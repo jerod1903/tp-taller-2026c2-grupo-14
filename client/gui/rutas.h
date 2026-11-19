@@ -34,6 +34,43 @@ inline const char* const RUTA_ESQUELETO_HERIDO =
 inline const char* const RUTA_ESQUELETO_MUERTO =
         "Assets/Caverns/Enemies/Skeleton/V1/enemies-skeleton1_death.png";
 
+inline const char* const RUTA_VAMPIRO_QUIETO =
+        "Assets/Caverns/Enemies/Vampire/enemies-vampire_idle.png";
+inline const char* const RUTA_VAMPIRO_CAMINANDO =
+        "Assets/Caverns/Enemies/Vampire/enemies-vampire_movement.png";
+inline const char* const RUTA_VAMPIRO_ATACANDO =
+        "Assets/Caverns/Enemies/Vampire/enemies-vampire_attack.png";
+inline const char* const RUTA_VAMPIRO_HERIDO =
+        "Assets/Caverns/Enemies/Vampire/enemies-vampire_take_damage.png";
+inline const char* const RUTA_VAMPIRO_MUERTO =
+        "Assets/Caverns/Enemies/Vampire/enemies-vampire_death.png";
+
+inline const char* const RUTA_ORCO_QUIETO = "Assets/Caverns/Enemies/Orcs/Orc_Idle.png";
+inline const char* const RUTA_ORCO_CAMINANDO = "Assets/Caverns/Enemies/Orcs/Orc_Walk.png";
+inline const char* const RUTA_ORCO_ATACANDO = "Assets/Caverns/Enemies/Orcs/Orc_Attack01.png";
+inline const char* const RUTA_ORCO_HERIDO = "Assets/Caverns/Enemies/Orcs/Orc_Hurt.png";
+inline const char* const RUTA_ORCO_MUERTO = "Assets/Caverns/Enemies/Orcs/Orc_Death.png";
+
+inline const char* const RUTA_CALAVERA = "Assets/Caverns/Enemies/Skull/skull_v2.png";
+inline const char* const RUTA_LLAMA = "Assets/Caverns/Enemies/Skull/fire/flame.png";
+
+inline const char* const RUTA_PINCHES_QUIETOS =
+        "Assets/Caverns/items and trap_animation/peaks/spikes_idle.png";
+inline const char* const RUTA_PINCHES_ACTIVOS =
+        "Assets/Caverns/items and trap_animation/peaks/spikes_active.png";
+inline const char* const RUTA_LANZALLAMAS_ABAJO_QUIETO =
+        "Assets/Caverns/items and trap_animation/flamethrower/down_idle.png";
+inline const char* const RUTA_LANZALLAMAS_ABAJO_ACTIVO =
+        "Assets/Caverns/items and trap_animation/flamethrower/down_active.png";
+inline const char* const RUTA_LANZALLAMAS_DERECHA_QUIETO =
+        "Assets/Caverns/items and trap_animation/flamethrower/right_idle.png";
+inline const char* const RUTA_LANZALLAMAS_DERECHA_ACTIVO =
+        "Assets/Caverns/items and trap_animation/flamethrower/right_active.png";
+inline const char* const RUTA_LANZALLAMAS_IZQUIERDA_QUIETO =
+        "Assets/Caverns/items and trap_animation/flamethrower/left_idle.png";
+inline const char* const RUTA_LANZALLAMAS_IZQUIERDA_ACTIVO =
+        "Assets/Caverns/items and trap_animation/flamethrower/left_active.png";
+
 inline const char* const RUTA_BOTON_MENU = "Assets/Menu/botones/boton_320.png";
 inline const char* const RUTA_BOTON_DESHABILITADO =
         "Assets/Menu/botones/boton_deshabilitado_320.png";

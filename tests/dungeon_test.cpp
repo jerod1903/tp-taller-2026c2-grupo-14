@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -14,6 +15,9 @@
 #include "server/config/server_config.h"
 #include "server/game/characters/enemies/enemy.h"
 #include "server/game/characters/enemies/skeleton.h"
+#include "server/game/world/dungeon/spawners/orc_spawner.h"
+#include "server/game/world/dungeon/spawners/skeleton_spawner.h"
+#include "server/game/world/dungeon/spawners/vampire_spawner.h"
 #include "tests/world_helpers.h"
 
 namespace {
@@ -28,12 +32,12 @@ const std::vector<Creature*> NO_VISITORS;
 class CountingEnemy: public Enemy {
 public:
     CountingEnemy(Location& location, int* deaths):
-            Enemy(1, Position{0, 0}, location, STATS, NO_VISITORS, 1.0f, 1.0f), deaths(deaths) {}
+            Enemy(1, Position{0, 0}, location, STATS, NO_VISITORS, 1.0f, 1.0f, 0), deaths(deaths) {}
     EntityType entity_type() const override { return EntityType::Skeleton; }
     void on_death() override { ++*deaths; }
 
 protected:
-    void react() override {}
+    void react(float) override {}
 
 private:
     int* deaths;
@@ -61,17 +65,19 @@ TEST_F(DungeonLevelTest, OnDeathIsCalledOnlyOnce) {
 }
 
 TEST_F(DungeonLevelTest, SpawnRegistersTheEnemy) {
-    level.spawn(std::make_unique<Skeleton>(1, Position{1, 1}, level, NO_VISITORS));
+    level.spawn(std::make_unique<Skeleton>(1, Position{1, 1}, level, NO_VISITORS, 0));
     EXPECT_EQ(level.get_entities().size(), 1u);
 }
 
-TEST_F(DungeonLevelTest, DeadEnemiesAreRemovedOnUpdate) {
+TEST_F(DungeonLevelTest, DeadEnemiesAreRemovedOnceTheirBodyIsGone) {
     auto enemy = std::make_unique<CountingEnemy>(level, &deaths);
     CountingEnemy& ref = *enemy;
     level.spawn(std::move(enemy));
-    level.spawn(std::make_unique<Skeleton>(2, Position{1, 1}, level, NO_VISITORS));
+    level.spawn(std::make_unique<Skeleton>(2, Position{1, 1}, level, NO_VISITORS, 0));
     ref.take_damage(10);
-    level.update(0.1f);
+    level.update(CORPSE_TIME / 2);
+    EXPECT_EQ(level.get_entities().size(), 2u);
+    level.update(CORPSE_TIME);
     ASSERT_EQ(level.get_entities().size(), 1u);
     EXPECT_EQ(level.get_entities()[0]->get_id(), 2u);
 }
@@ -127,14 +133,82 @@ protected:
     TestCreature player{level, Position{0, 1}};
 };
 
-TEST_F(RepopulateTest, WhenSomeoneEntersTheConfiguredEnemiesAppearFarFromThePortals) {
-    level.add_entity(player);
-    level.set_visitors({&player});
-    std::vector<const Entity*> found = enemies();
-    ASSERT_EQ(found.size(), static_cast<size_t>(server_config().enemies.skeleton.count));
-    for (const Entity* enemy: found) {
-        const Position& pos = enemy->get_position();
-        EXPECT_GE(std::hypot(pos.x, pos.y), server_config().enemies.spawn_distance);
+// La pareja de vampiros y las calaveras de los dos colores son un solo tipo
+EntityType same_type(EntityType type) {
+    switch (type) {
+        case EntityType::Vampiress:
+            return EntityType::Vampire;
+        case EntityType::GreenSkull:
+            return EntityType::Skull;
+        default:
+            return type;
+    }
+}
+
+// Si pone tantos de ese tipo como dice server_config.toml
+bool expected_count(EntityType type, size_t count) {
+    const ServerConfig::Enemies& config = server_config().enemies;
+    switch (type) {
+        case EntityType::Skeleton:
+            return count == static_cast<size_t>(config.skeleton.count);
+        case EntityType::Vampire:
+            return count == static_cast<size_t>(2 * config.vampire.pairs);
+        case EntityType::Skull:
+            return count == 1;
+        case EntityType::Orc:
+            return count >= static_cast<size_t>(config.orc.min_group) &&
+                   count <= static_cast<size_t>(config.orc.max_group);
+        default:
+            return false;
+    }
+}
+
+TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePortals) {
+    for (int entry = 0; entry < 10; ++entry) {
+        level.set_visitors({});
+        level.set_visitors({&player});
+        const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+        ASSERT_FALSE(found.empty());
+        EntityType type = found.front()->entity_type();
+        type = same_type(type);
+        EXPECT_TRUE(expected_count(type, found.size()));
+        for (const std::unique_ptr<Enemy>& enemy: found) {
+            EntityType other = enemy->entity_type();
+            EXPECT_EQ(same_type(other), type);
+            const Position& pos = enemy->get_position();
+            EXPECT_GE(std::hypot(pos.x, pos.y), server_config().enemies.spawn_distance);
+        }
+    }
+}
+
+TEST_F(RepopulateTest, SkeletonsAppearAlone) {
+    SkeletonSpawner().spawn(level);
+    EXPECT_TRUE(expected_count(EntityType::Skeleton, level.get_enemies().size()));
+}
+
+TEST_F(RepopulateTest, EachVampireAppearsNextToItsPartner) {
+    VampireSpawner().spawn(level);
+    const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+    ASSERT_TRUE(expected_count(EntityType::Vampire, found.size()));
+    // De a pares: el vampiro y después su vampira
+    for (size_t i = 0; i + 1 < found.size(); i += 2) {
+        EXPECT_EQ(found[i]->entity_type(), EntityType::Vampire);
+        EXPECT_EQ(found[i + 1]->entity_type(), EntityType::Vampiress);
+        const Position& a = found[i]->get_position();
+        const Position& b = found[i + 1]->get_position();
+        EXPECT_EQ(std::abs(a.x - b.x) + std::abs(a.y - b.y), 1);
+    }
+}
+
+TEST_F(RepopulateTest, OrcsAppearInAGroupCloseToTheFirst) {
+    OrcSpawner().spawn(level);
+    const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+    ASSERT_TRUE(expected_count(EntityType::Orc, found.size()));
+    const Position& first = found.front()->get_position();
+    for (const std::unique_ptr<Enemy>& orc: found) {
+        EXPECT_EQ(orc->entity_type(), EntityType::Orc);
+        const Position& pos = orc->get_position();
+        EXPECT_LE(std::max(std::abs(pos.x - first.x), std::abs(pos.y - first.y)), 2);
     }
 }
 

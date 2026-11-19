@@ -19,6 +19,8 @@ public:
 
     virtual void take_damage(int amount);
     bool is_alive() const;
+    // Muerta o gravemente herida. Por defecto, solo muerta; el jugador también con poca vida.
+    virtual bool is_badly_hurt() const;
     // Le pega a `target`: le saca attack_damage(). Cuándo pegar lo decide quien la maneja (la IA
     // del enemigo, la acción del jugador).
     void attack(Creature& target) const;

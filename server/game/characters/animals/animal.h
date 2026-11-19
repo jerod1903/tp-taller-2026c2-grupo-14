@@ -7,11 +7,12 @@
 
 #include "common/game_dto.h"
 #include "server/game/characters/creature.h"
+#include "server/game/characters/wanderer.h"
 
 enum class AnimalKind { Cow, Chicken };
 
-// Un animal de la granja: camina hacia un lado al azar (o se queda quieto) y cada tanto cambia.
-// Cada especie es una subclase.
+// Un animal de la granja: deambula (camina hacia un lado al azar o se queda quieto, y cada tanto
+// cambia). Cada especie es una subclase.
 class Animal: public Creature {
 public:
     Animal(uint32_t id, const Position& pos, Location& location, uint32_t seed);
@@ -29,9 +30,7 @@ protected:
     std::mt19937 rng;
 
 private:
-    float time_left = 0;  // segundos hasta elegir otra direccion
-
-    void choose_direction();
+    Wanderer wanderer;
 };
 
 #endif  // ANIMAL_H
