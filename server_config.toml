@@ -131,7 +131,7 @@ idle_time = 2.0
 damage = 8
 active_time = 1.5
 idle_time = 2.5
-reach = 2                # celdas que alcanza el chorro, contando la suya
+reach = 1                # celdas que alcanza el chorro, contando la suya (el dibujo llega a 1)
 
 # Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
 [crops.strawberry]

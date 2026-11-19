@@ -22,11 +22,10 @@ struct HojaDePose {
 // La acción que manda el servidor; sin ninguna, camina o está quieto según su dirección.
 Pose pose_de(const EntityState& estado);
 
-// Para las que se ven igual hagan lo que hagan (una calavera, una llama): la misma hoja en todas
-// las poses.
-std::map<Pose, HojaDePose> misma_hoja(const HojaDePose& hoja);
-// Para las que solo cambian al atacar (una trampa activa): `atacando` en Atacando y `quieta` en
-// las demás.
-std::map<Pose, HojaDePose> quieta_y_atacando(const HojaDePose& quieta, const HojaDePose& atacando);
+// Para las que tienen menos hojas que poses: `base` en todas las poses, salvo las que estén en
+// `distintas`. Una calavera se ve igual haga lo que haga (sin `distintas`); una trampa solo cambia
+// al activarse ({{Pose::Atacando, activa}}).
+std::map<Pose, HojaDePose> hojas_de(const HojaDePose& base,
+                                    const std::map<Pose, HojaDePose>& distintas = {});
 
 #endif

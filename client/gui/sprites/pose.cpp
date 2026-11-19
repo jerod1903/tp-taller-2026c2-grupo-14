@@ -16,16 +16,11 @@ Pose pose_de(const EntityState& estado) {
     return estado.dirX == 0 && estado.dirY == 0 ? Pose::Quieto : Pose::Caminando;
 }
 
-std::map<Pose, HojaDePose> misma_hoja(const HojaDePose& hoja) {
-    return {{Pose::Quieto, hoja},
-            {Pose::Caminando, hoja},
-            {Pose::Atacando, hoja},
-            {Pose::Herido, hoja},
-            {Pose::Muerto, hoja}};
-}
-
-std::map<Pose, HojaDePose> quieta_y_atacando(const HojaDePose& quieta, const HojaDePose& atacando) {
-    std::map<Pose, HojaDePose> hojas = misma_hoja(quieta);
-    hojas.at(Pose::Atacando) = atacando;
+std::map<Pose, HojaDePose> hojas_de(const HojaDePose& base,
+                                    const std::map<Pose, HojaDePose>& distintas) {
+    std::map<Pose, HojaDePose> hojas = distintas;
+    for (Pose pose: {Pose::Quieto, Pose::Caminando, Pose::Atacando, Pose::Herido, Pose::Muerto}) {
+        hojas.try_emplace(pose, base);
+    }
     return hojas;
 }
