@@ -16,6 +16,8 @@ DungeonLevel& Dungeon::entry_level() { return *levels.front(); }
 
 DungeonLevel& Dungeon::level(int depth) { return *levels.at(depth); }
 
+const DungeonLevel& Dungeon::level(int depth) const { return *levels.at(depth); }
+
 void Dungeon::set_visitors(const std::vector<Creature*>& players) {
     for (const std::unique_ptr<DungeonLevel>& dungeon_level: levels) {
         std::vector<Creature*> here;
@@ -26,6 +28,15 @@ void Dungeon::set_visitors(const std::vector<Creature*>& players) {
         }
         dungeon_level->set_visitors(std::move(here));
     }
+}
+
+DungeonLevel* Dungeon::level_at(const Location& location) {
+    for (const std::unique_ptr<DungeonLevel>& dungeon_level: levels) {
+        if (dungeon_level.get() == &location) {
+            return dungeon_level.get();
+        }
+    }
+    return nullptr;
 }
 
 void Dungeon::update(float dt) {

@@ -21,7 +21,8 @@ class FakeGameContext:
         public PlayerMovement,
         public PlayerCharacters,
         public PlayerCommerce,
-        public PlayerFarming {
+        public PlayerFarming,
+        public PlayerCombat {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -36,6 +37,7 @@ public:
     PlayerCharacters& characters() override { return *this; }
     PlayerCommerce& commerce() override { return *this; }
     PlayerFarming& farming() override { return *this; }
+    PlayerCombat& combat() override { return *this; }
 
     Player* find_player(uint32_t player_id) override {
         return player_id == PLAYER_ID ? &player : nullptr;
@@ -75,6 +77,14 @@ public:
     bool plant(const Player&, const Position&, CropType) override { return false; }
 
     bool water(const Player&, const Position&) override { return false; }
+
+    // Anota dónde se atacó; le pega si `hits` es true.
+    bool attack(Player&, const Position& cell) override {
+        attacked.push_back(cell);
+        return hits;
+    }
+    std::vector<Position> attacked;
+    bool hits = false;
 
     const Outcome& harvest(Player&) override { return Outcome::not_here(); }
 

@@ -89,10 +89,18 @@ ServerConfig::Player read_player(const toml::table& root) {
             positive(required_float(player, "speed"), "speed"),
             static_cast<uint8_t>(max_stack),
             positive(required_float(player, "tired_energy"), "tired_energy"),
-            positive(required_float(player, "bad_night_recovery"), "bad_night_recovery")};
+            positive(required_float(player, "bad_night_recovery"), "bad_night_recovery"),
+            positive(player.requiredInt("sword_damage"), "sword_damage"),
+            positive(required_float(player, "attack_cooldown"), "attack_cooldown"),
+            positive(required_float(player, "weak_health"), "weak_health"),
+            positive(required_float(player, "weak_damage"), "weak_damage")};
     if (read.tired_energy >= 1.0f || read.bad_night_recovery > 1.0f) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": 'tired_energy' and 'bad_night_recovery' are fractions up to 1");
+    }
+    if (read.weak_health >= 1.0f || read.weak_damage > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": 'weak_health' and 'weak_damage' are fractions up to 1");
     }
     return read;
 }
@@ -157,11 +165,64 @@ ServerConfig::Fighter read_fighter(const TomlTableReader& enemy) {
 ServerConfig::Enemies read_enemies(const toml::table& root) {
     TomlTableReader enemies = section(root, "enemies");
     TomlTableReader skeleton = subsection(root, "enemies", "skeleton");
-    return ServerConfig::Enemies{
+    TomlTableReader vampire = subsection(root, "enemies", "vampire");
+    TomlTableReader orc = subsection(root, "enemies", "orc");
+    TomlTableReader skull = subsection(root, "enemies", "skull");
+    TomlTableReader flame = subsection(root, "enemies", "flame");
+    ServerConfig::Enemies read{
             positive(required_float(enemies, "spawn_distance"), "spawn_distance"),
+            positive(required_float(enemies, "min_walk"), "min_walk"),
+            positive(required_float(enemies, "max_walk"), "max_walk"),
             ServerConfig::Skeleton{
                     positive(skeleton.requiredInt("count"), "count"), read_fighter(skeleton),
-                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds")}};
+                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds")},
+            ServerConfig::Vampire{
+                    positive(vampire.requiredInt("pairs"), "pairs"), read_fighter(vampire),
+                    positive(required_float(vampire, "fast_speed"), "fast_speed"),
+                    positive(vampire.requiredInt("strong_damage"), "strong_damage"),
+                    positive(required_float(vampire, "revive_seconds"), "revive_seconds"),
+                    positive(required_float(vampire, "blood_reach"), "blood_reach")},
+            ServerConfig::Orc{positive(orc.requiredInt("min_group"), "min_group"),
+                              positive(orc.requiredInt("max_group"), "max_group"),
+                              read_fighter(orc)},
+            ServerConfig::Skull{positive(required_float(skull, "speed"), "speed"),
+                                positive(required_float(skull, "sight"), "sight"),
+                                positive(required_float(skull, "cooldown"), "cooldown"),
+                                required_float(skull, "green_chance")},
+            ServerConfig::Flame{positive(flame.requiredInt("damage"), "damage"),
+                                positive(required_float(flame, "speed"), "speed"),
+                                positive(required_float(flame, "range"), "range")}};
+    if (read.min_walk > read.max_walk) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": [enemies] 'min_walk' is bigger than 'max_walk'");
+    }
+    if (read.orc.min_group > read.orc.max_group) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": [enemies.orc] 'min_group' is bigger than 'max_group'");
+    }
+    if (read.skull.green_chance < 0.0f || read.skull.green_chance > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": [enemies.skull] 'green_chance' must be between 0 and 1");
+    }
+    return read;
+}
+
+ServerConfig::Trap read_trap(const TomlTableReader& trap) {
+    return ServerConfig::Trap{positive(trap.requiredInt("damage"), "damage"),
+                              positive(required_float(trap, "active_time"), "active_time"),
+                              positive(required_float(trap, "idle_time"), "idle_time")};
+}
+
+ServerConfig::Traps read_traps(const toml::table& root) {
+    TomlTableReader traps = section(root, "traps");
+    TomlTableReader spikes = subsection(root, "traps", "spikes");
+    TomlTableReader flamethrower = subsection(root, "traps", "flamethrower");
+    return ServerConfig::Traps{
+            positive(traps.requiredInt("spikes_count"), "spikes_count"),
+            positive(traps.requiredInt("flamethrowers_count"), "flamethrowers_count"),
+            read_trap(spikes),
+            ServerConfig::Flamethrower{read_trap(flamethrower),
+                                       positive(flamethrower.requiredInt("reach"), "reach")}};
 }
 
 ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& name) {
@@ -324,9 +385,10 @@ ServerConfig load_server_config(const std::string& path) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
     ServerConfig::Animals animals = read_animals(root);
-    return ServerConfig{read_game(root), read_player(root),  read_energy(root),
-                        animals,         read_enemies(root), read_crops(root),
-                        read_cheats(root), read_market(root, animals), read_mining(root)};
+    return ServerConfig{read_game(root),         read_player(root), read_energy(root),
+                        animals,                 read_enemies(root), read_traps(root),
+                        read_crops(root),        read_cheats(root), read_market(root, animals),
+                        read_mining(root)};
 }
 
 const ServerConfig& server_config() {

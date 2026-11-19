@@ -18,11 +18,11 @@ const PlayerState* buscar_propio(const EstadoJuego& estado) {
     return propio == estado.jugadores.end() ? nullptr : &*propio;
 }
 
-const SDL_Color& color_energia(int porcentaje) {
-    if (porcentaje <= PORCENTAJE_ENERGIA_BAJA) {
-        return COLOR_ENERGIA_BAJA;
+const SDL_Color& color_barra(int porcentaje) {
+    if (porcentaje <= PORCENTAJE_BARRA_BAJA) {
+        return COLOR_BARRA_BAJA;
     }
-    return porcentaje <= PORCENTAJE_ENERGIA_MEDIA ? COLOR_ENERGIA_MEDIA : COLOR_ENERGIA_ALTA;
+    return porcentaje <= PORCENTAJE_BARRA_MEDIA ? COLOR_BARRA_MEDIA : COLOR_BARRA_ALTA;
 }
 
 // El icono centrado en vertical en la cara del cartel que empieza en `y`
@@ -49,7 +49,8 @@ Hud::Hud(SDL2pp::Renderer& renderer):
 
 void Hud::dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, int escala) {
     const PlayerState* propio = buscar_propio(estado);
-    if (estado.dia == 0 || propio == nullptr || estado.energia_maxima <= 0) {
+    if (estado.dia == 0 || propio == nullptr || estado.energia_maxima <= 0 ||
+        estado.vida_maxima <= 0) {
         return;
     }
     int escala_hud = std::max(1, escala / 2);
@@ -62,10 +63,13 @@ void Hud::dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, int esc
                 SDL2pp::Point(carteles_en.x,
                               carteles_en.y + alto_carteles + SEPARACION_CARTEL_ORO * escala_hud),
                 escala_hud);
-    dibujar_energia(renderer, propio->energy, estado.energia_maxima,
-                    SDL2pp::Point(ventana.x - margen - ANCHO_BARRA_ENERGIA * escala_hud,
-                                  ventana.y - margen - ALTO_BARRA_ENERGIA * escala_hud),
-                    escala_hud);
+    SDL2pp::Point energia_en(ventana.x - margen - ANCHO_BARRA_HUD * escala_hud,
+                             ventana.y - margen - ALTO_BARRA_HUD * escala_hud);
+    dibujar_barra(renderer, propio->energy, estado.energia_maxima, ETIQUETA_ENERGIA, energia_en,
+                  escala_hud);
+    SDL2pp::Point vida_en(energia_en.x - (ANCHO_BARRA_HUD + SEPARACION_BARRAS) * escala_hud,
+                          energia_en.y);
+    dibujar_barra(renderer, propio->health, estado.vida_maxima, ETIQUETA_VIDA, vida_en, escala_hud);
 }
 
 void Hud::dibujar_carteles(SDL2pp::Renderer& renderer, uint16_t dia, uint16_t minuto_del_dia,
@@ -95,22 +99,21 @@ void Hud::escribir_con_icono(SDL2pp::Renderer& renderer, SDL2pp::Texture& icono,
              cartel.y + ALTO_CARA_CARTEL * escala / 2, true);
 }
 
-void Hud::dibujar_energia(SDL2pp::Renderer& renderer, uint16_t energia, int energia_maxima,
-                          const SDL2pp::Point& esquina, int escala) {
-    SDL2pp::Rect caja(esquina.x, esquina.y, ANCHO_BARRA_ENERGIA * escala,
-                      ALTO_BARRA_ENERGIA * escala);
+void Hud::dibujar_barra(SDL2pp::Renderer& renderer, uint16_t valor, int maximo,
+                        const char* etiqueta, const SDL2pp::Point& esquina, int escala) {
+    SDL2pp::Rect caja(esquina.x, esquina.y, ANCHO_BARRA_HUD * escala, ALTO_BARRA_HUD * escala);
     dibujar_marco(renderer, caja, escala);
     int borde = BORDE_MARCO * escala;
     SDL2pp::Rect interior(caja.x + borde, caja.y + borde, caja.w - 2 * borde, caja.h - 2 * borde);
-    int porcentaje = std::clamp(energia * 100 / energia_maxima, 0, 100);
+    int porcentaje = std::clamp(valor * 100 / maximo, 0, 100);
     int alto = interior.h * porcentaje / 100;
-    const SDL_Color& color = color_energia(porcentaje);
+    const SDL_Color& color = color_barra(porcentaje);
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
     renderer.FillRect(
             SDL2pp::Rect(interior.x, interior.y + interior.h - alto, interior.w, alto));
-    escribir_centrado(renderer, ETIQUETA_ENERGIA,
-                      SDL2pp::Rect(caja.x, caja.y - fuente.alto_linea(), caja.w,
-                                   fuente.alto_linea()));
+    escribir_centrado(
+            renderer, etiqueta,
+            SDL2pp::Rect(caja.x, caja.y - fuente.alto_linea(), caja.w, fuente.alto_linea()));
 }
 
 void Hud::dibujar_marco(SDL2pp::Renderer& renderer, const SDL2pp::Rect& destino, int escala) {

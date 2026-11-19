@@ -18,7 +18,7 @@ function(
   GCC_FILTER_WARNINGS
 )
 
-  # TODO: MSVC flags are untested
+  # Los de MSVC vienen del template y no se usan: compilamos con gcc o clang en Linux
   set(MSVC_WARNINGS
       /W4 # Baseline reasonable warnings
       /w14242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data

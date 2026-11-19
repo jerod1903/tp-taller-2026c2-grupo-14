@@ -5,11 +5,13 @@
 
 #include "server/game/tools/seed.h"
 #include "server/game/tools/shovel.h"
+#include "server/game/tools/sword.h"
 #include "server/game/tools/watering_can.h"
 
 const Tool* tool_for(ItemType item) {
     static const Shovel shovel;
     static const Pickaxe pickaxe;
+    static const Sword sword;
     static const WateringCan watering_can;
     static const Seed strawberry(CropType::Strawberry);
     static const Seed scallion(CropType::Scallion);
@@ -18,6 +20,7 @@ const Tool* tool_for(ItemType item) {
     static const std::map<ItemType, const Tool*> tools = {
             {ItemType::Shovel, &shovel},
             {ItemType::Pickaxe, &pickaxe},
+            {ItemType::Sword, &sword},
             {ItemType::WateringCan, &watering_can},
             {ItemType::StrawberrySeeds, &strawberry},
             {ItemType::ScallionSeeds, &scallion},

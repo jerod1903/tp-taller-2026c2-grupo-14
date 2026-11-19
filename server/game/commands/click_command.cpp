@@ -16,7 +16,8 @@ void ClickCommand::execute(GameContext& context) {
         return;
     }
     const std::vector<const ClickAction*>& all = click_actions();
-    std::any_of(all.begin(), all.end(), [&](const ClickAction* action) {
+    // Corta en la primera acción que se hace cargo; el resultado no se usa
+    static_cast<void>(std::any_of(all.begin(), all.end(), [&](const ClickAction* action) {
         return action->try_at(*player, context, cell);
-    });
+    }));
 }

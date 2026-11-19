@@ -29,6 +29,7 @@ struct EstadoJuego {
     std::chrono::duration<float> duracion_tick{};
     int max_jugadores = 0;
     int energia_maxima = 0;  // llega con LocationData
+    int vida_maxima = 0;     // llega con LocationData
     InventoryState inventario{};
     std::vector<MensajeChat> chat = {};
     FarmState granja{};

@@ -11,6 +11,7 @@
 
 #include <SDL_image.h>
 
+#include "client/audio/sonidos_granja.h"
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
@@ -27,6 +28,8 @@ Interfaz::Interfaz():
         constructor_capas(renderer),
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
+        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS),
+        icono_regadera(renderer, RUTA_ICONO_REGADERA),
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
@@ -38,7 +41,24 @@ Interfaz::Interfaz():
         menu_pausa(renderer, fuente, fuente_titulo),
         hud(renderer),
         globo(renderer),
-        transicion(DURACION_TRANSICION) {}
+        transicion(DURACION_TRANSICION) {
+    for (const auto& [item, ruta]: RUTAS_ICONOS) {
+        objetos_piso.try_emplace(item, renderer, ruta);
+    }
+    for (const auto& [tipo, hojas]: HOJAS_POR_POSE) {
+        auto tinte = TINTES.find(tipo);
+        for (const auto& [pose, hoja]: hojas) {
+            SDL2pp::Texture& textura =
+                    hojas_por_pose.try_emplace(hoja.ruta, renderer, hoja.ruta).first->second;
+            Capa capa = capa_animal(textura, hoja.formato);
+            capa.desplazamiento = SDL2pp::Point(hoja.corrimiento_x, hoja.corrimiento_y);
+            if (tinte != TINTES.end()) {
+                capa.tinte = tinte->second;
+            }
+            aspectos_por_pose[tipo].emplace(pose, Aspecto{&hoja.formato, {capa}});
+        }
+    }
+}
 
 Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato) {
     SDL2pp::Point cuadro(formato.ancho_cuadro, formato.alto_cuadro);
@@ -46,6 +66,13 @@ Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& format
 }
 
 namespace {
+bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
+    return std::any_of(estado.jugadores.begin(), estado.jugadores.end(),
+                       [player_id](const PlayerState& jugador) {
+                           return jugador.playerId == player_id && jugador.unconscious;
+                       });
+}
+
 void borrar_ultima_letra(std::string& texto) {
     while (!texto.empty() && (static_cast<unsigned char>(texto.back()) & 0xC0) == 0x80) {
         texto.pop_back();
@@ -173,15 +200,19 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
     std::set<std::pair<EntityType, uint32_t>> presentes;
     for (const EntityState& entidad: estado.entidades) {
         auto aspecto = aspectos.find(entidad.type);
-        if (aspecto == aspectos.end()) {
+        auto por_pose = aspectos_por_pose.find(entidad.type);
+        if (aspecto == aspectos.end() && por_pose == aspectos_por_pose.end()) {
             continue;
         }
         std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
         presentes.insert(clave);
-        auto [it, nueva] =
-                entidades.try_emplace(clave, *aspecto->second.formato, aspecto->second.capas);
+        auto [it, nueva] = por_pose != aspectos_por_pose.end() ?
+                                   entidades.try_emplace(clave, por_pose->second) :
+                                   entidades.try_emplace(clave, *aspecto->second.formato,
+                                                         aspecto->second.capas);
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
+            it->second.tirar(inconsciente(estado, entidad.entityId));
         }
         it->second.actualizar(entidad, estado.tick, estado.duracion_tick, ahora);
     }
@@ -213,22 +244,38 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
     jugador.vestir(constructor_capas.capas(player_id, elegida));
 }
 
+void Interfaz::sonar_granja(const FarmState& granja, const std::string& area_propia) {
+    if (granja_anterior == granja) {
+        return;
+    }
+    if (granja_anterior && granja.areaId == area_propia) {
+        for (Sonido sonido: sonidos_granja(*granja_anterior, granja)) {
+            reproductor.reproducir(sonido);
+        }
+    }
+    granja_anterior = granja;
+}
+
 void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
                                   std::chrono::steady_clock::time_point ahora) {
-    int leche = 0;
-    for (const InventorySlot& slot: estado.inventario.slots) {
-        leche += slot.item == ItemType::Milk ? slot.quantity : 0;
+    for (const auto& [item, sonido]: SONIDOS_AL_RECIBIR) {
+        int cantidad = 0;
+        for (const InventorySlot& slot: estado.inventario.slots) {
+            cantidad += slot.item == item ? slot.quantity : 0;
+        }
+        auto anterior = cantidades_anteriores.find(item);
+        if (anterior != cantidades_anteriores.end() && cantidad > anterior->second) {
+            reproductor.reproducir(sonido);
+        }
+        cantidades_anteriores[item] = cantidad;
     }
-    if (leche_anterior && leche > *leche_anterior) {
-        reproductor.reproducir(Sonido::Ordenar);
-    }
-    leche_anterior = leche;
     auto propio = std::find_if(
             estado.jugadores.begin(), estado.jugadores.end(),
             [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
     if (propio == estado.jugadores.end()) {
         return;
     }
+    sonar_granja(estado.granja, propio->areaId);
     if (estado.tick != tick_escuchado) {
         if (propio_anterior) {
             bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;
@@ -289,7 +336,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second);
+            dibujar_area(propio->second, estado.granja);
         }
         oscurecer(transicion.opacidad(ahora));
         dibujar_inventario(estado.inventario);
@@ -331,7 +378,47 @@ void Interfaz::oscurecer(uint8_t opacidad) {
     renderer.FillRect(SDL2pp::Rect(0, 0, lienzo->GetWidth(), lienzo->GetHeight()));
 }
 
-void Interfaz::dibujar_area(const EntidadGrafica& propio) {
+std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
+    auto textura = objetos_piso.find(objeto.item);
+    if (textura == objetos_piso.end()) {
+        return std::nullopt;
+    }
+    SDL2pp::Point tamano = textura->second.GetSize();
+    SDL2pp::Point esquina(objeto.x * TAMANO_TILE + (TAMANO_TILE - tamano.x) / 2,
+                          objeto.y * TAMANO_TILE + (TAMANO_TILE - tamano.y) / 2);
+    return Sprite{&textura->second, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(esquina, tamano)};
+}
+
+Sprite Interfaz::sprite_cultivo(const FarmTile& celda) {
+    SDL2pp::Rect origen(celda.stage * TAMANO_CUADRO_CULTIVO,
+                        FILAS_CULTIVOS.at(celda.crop) * TAMANO_CUADRO_CULTIVO,
+                        TAMANO_CUADRO_CULTIVO, TAMANO_CUADRO_CULTIVO);
+    SDL2pp::Rect destino(celda.x * TAMANO_TILE, celda.y * TAMANO_TILE, TAMANO_TILE, TAMANO_TILE);
+    return Sprite{&hoja_cultivos, origen, destino};
+}
+
+void Interfaz::dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara) {
+    SDL2pp::Point arriba(celda.x * TAMANO_TILE + TAMANO_TILE / 2, celda.y * TAMANO_TILE);
+    if (celda.readyToHarvest) {
+        SDL2pp::Rect producto(COLUMNAS_CALIDAD.at(ItemQuality::Base) * TAMANO_CUADRO_CULTIVO,
+                              FILAS_CULTIVOS.at(celda.crop) * TAMANO_CUADRO_CULTIVO,
+                              TAMANO_CUADRO_CULTIVO, TAMANO_CUADRO_CULTIVO);
+        globo.dibujar_icono(renderer, hoja_cultivos, producto, arriba, camara);
+    } else if (celda.needsWater) {
+        globo.dibujar_icono(renderer, icono_regadera,
+                            SDL2pp::Rect(SDL2pp::Point(0, 0), icono_regadera.GetSize()), arriba,
+                            camara);
+    }
+}
+
+void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara) {
+    for (const FarmTile& celda: granja.tiles) {
+        mapa->dibujar_tile(renderer, TILES_SUELO.at(celda.soil), celda.x, celda.y, camara);
+    }
+}
+
+void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
@@ -340,6 +427,9 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     std::vector<Sprite> sprites;
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);
+        if (granja.areaId == area) {
+            dibujar_tierra(granja, camara);
+        }
         sprites = mapa->elementos();
     }
     for (const EntityState& cama: camas) {
@@ -360,9 +450,27 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
             }
         }
     }
+    if (granja.areaId == area) {
+        for (const FarmTile& celda: granja.tiles) {
+            if (celda.crop != CropType::None) {
+                sprites.push_back(sprite_cultivo(celda));
+            }
+        }
+        for (const GroundItem& objeto: granja.items) {
+            if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
+                sprites.push_back(*sprite);
+            }
+        }
+    }
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area) {
             std::vector<Sprite> capas = entidad.sprites();
+            if (EN_EL_PISO.contains(clave.first)) {
+                // Debajo de cualquiera que esté parado en su celda
+                for (Sprite& capa: capas) {
+                    capa.apoyo = capa.destino.y;
+                }
+            }
             sprites.insert(sprites.end(), capas.begin(), capas.end());
         }
     }
@@ -374,6 +482,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio) {
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area && entidad.emote() != Emote::None) {
             globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+        }
+    }
+    if (granja.areaId == area) {
+        for (const FarmTile& celda: granja.tiles) {
+            dibujar_aviso(celda, camara);
         }
     }
 }

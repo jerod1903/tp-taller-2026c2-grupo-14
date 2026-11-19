@@ -17,9 +17,13 @@ public:
 
     // Precondición: 0 <= depth < LEVEL_COUNT.
     DungeonLevel& level(int depth);
+    const DungeonLevel& level(int depth) const;
 
     // Le dice a cada nivel cuáles de estos jugadores están en él.
     void set_visitors(const std::vector<Creature*>& players);
+
+    // El nivel que es `location`, o nullptr si no es un nivel de la mazmorra.
+    DungeonLevel* level_at(const Location& location);
 
     void update(float dt);
 

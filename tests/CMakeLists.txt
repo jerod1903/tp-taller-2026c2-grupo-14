@@ -6,6 +6,7 @@ target_sources(taller_tests
     client_protocol_test.cpp
     config_test.cpp
     animador_sprites_test.cpp
+    pose_test.cpp
     animal_test.cpp
     character_sheets_test.cpp
     chat_command_test.cpp
@@ -13,6 +14,7 @@ target_sources(taller_tests
     click_command_test.cpp
     typing_command_test.cpp
     transicion_area_test.cpp
+    sonidos_granja_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp
@@ -20,6 +22,11 @@ target_sources(taller_tests
     grid_test.cpp
     location_test.cpp
     skeleton_test.cpp
+    vampire_test.cpp
+    orc_test.cpp
+    skull_test.cpp
+    trap_test.cpp
+    sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
     map_editing_test.cpp
@@ -49,8 +56,22 @@ target_sources(taller_tests
     ../server/game/characters/creature.cpp
     ../server/game/characters/enemies/enemy.cpp
     ../server/game/characters/enemies/skeleton.cpp
+    ../server/game/characters/enemies/vampire.cpp
+    ../server/game/characters/enemies/orc.cpp
+    ../server/game/characters/enemies/skull.cpp
+    ../server/game/world/dungeon/flame.cpp
+    ../server/game/world/dungeon/traps/trap.cpp
+    ../server/game/world/dungeon/traps/spikes.cpp
+    ../server/game/world/dungeon/traps/flamethrower.cpp
+    ../server/game/world/dungeon/traps/trap_spawner.cpp
+    ../server/game/world/dungeon/spawners/enemy_spawner.cpp
+    ../server/game/world/dungeon/spawners/skeleton_spawner.cpp
+    ../server/game/world/dungeon/spawners/vampire_spawner.cpp
+    ../server/game/world/dungeon/spawners/orc_spawner.cpp
+    ../server/game/world/dungeon/spawners/skull_spawner.cpp
     ../server/game/characters/entity.cpp
     ../server/game/characters/player.cpp
+    ../server/game/characters/wanderer.cpp
     ../server/game/world/direction.cpp
     ../server/game/world/game_clock.cpp
     ../server/game/world/dungeon/dungeon.cpp
@@ -81,6 +102,7 @@ target_sources(taller_tests
     ../server/game/commands/click_command.cpp
     ../server/game/tools/tool.cpp
     ../server/game/tools/shovel.cpp
+    ../server/game/tools/sword.cpp
     ../server/game/tools/seed.cpp
     ../server/game/tools/watering_can.cpp
     ../server/game/tools/pickaxe.cpp
@@ -121,7 +143,9 @@ target_sources(taller_tests
     ../client/config/client_config.cpp
     ../client/network/ClientProtocol.cpp
     ../client/gui/sprites/animador_sprites.cpp
+    ../client/gui/sprites/pose.cpp
     ../client/gui/mapa/transicion_area.cpp
+    ../client/audio/sonidos_granja.cpp
     # Inventario
     ../server/game/characters/inventory.cpp
     ../server/game/commands/select_slot_command.cpp

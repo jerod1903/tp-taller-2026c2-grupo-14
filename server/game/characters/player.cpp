@@ -9,7 +9,7 @@
 
 Player::Player(uint32_t id, const Position& pos, Location& location, std::string name, int health,
                float base_speed, int gold, int energy):
-        Creature(id, pos, location, health, base_speed),
+        Creature(id, pos, location, health, base_speed, server_config().player.sword_damage),
         name(std::move(name)),
         gold(gold),
         energy(energy),
@@ -46,11 +46,29 @@ void Player::remove_selected(uint8_t quantity) { inventory.remove_selected(quant
 
 ItemType Player::selected_item() const { return inventory.selected_item(); }
 
+bool Player::strike(Creature& target) {
+    if (attack_cooldown_left > 0) {
+        return false;
+    }
+    attack(target);
+    attack_cooldown_left = server_config().player.attack_cooldown;
+    return true;
+}
+
 void Player::update(float dt) {
+    attack_cooldown_left -= dt;
     if (is_unconscious()) {
         direction = Direction::NONE;  // cae donde está
     }
     advance(dt);
+}
+
+bool Player::is_badly_hurt() const {
+    return health <= max_health * server_config().player.weak_health;
+}
+
+int Player::attack_damage() const {
+    return is_badly_hurt() ? static_cast<int>(damage * server_config().player.weak_damage) : damage;
 }
 
 void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); }

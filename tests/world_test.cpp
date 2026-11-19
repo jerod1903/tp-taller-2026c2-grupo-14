@@ -1,5 +1,6 @@
 #include "server/game/world/world.h"
 
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -7,7 +8,10 @@
 
 #include <gtest/gtest.h>
 
+#include "server/config/server_config.h"
+#include "server/game/characters/enemies/skeleton.h"
 #include "server/game/characters/player.h"
+#include "server/game/snapshot_builder.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/farm.h"
 #include "server/game/world/town/town.h"
@@ -102,6 +106,81 @@ TEST_F(WorldTest, UsingTheCabinDoorReturnsToTheFarm) {
     world->get_movement().enter_portal(1);
     EXPECT_EQ(&player.get_location(), &farm());
     EXPECT_EQ(player.get_position(), (Position{CABIN_POS.x, CABIN_POS.y + 2}));
+}
+
+// --- Pelea: el jugador en (1, 1) del primer nivel, un esqueleto en (2, 1) ---
+
+// Los esqueletos de estos tests no ven a nadie: solo reciben golpes
+const std::vector<Creature*> NO_VISITORS;
+
+class CombatTest: public WorldTest {
+protected:
+    CombatTest() {
+        player.relocate(level(), Position{1, 1});
+        auto placed = std::make_unique<Skeleton>(1000, Position{2, 1}, level(), NO_VISITORS, 0);
+        skeleton = placed.get();
+        level().spawn(std::move(placed));
+    }
+
+    DungeonLevel& level() { return world->get_dungeon().level(0); }
+    int sword_damage() const { return server_config().player.sword_damage; }
+
+    Skeleton* skeleton;
+};
+
+TEST_F(CombatTest, HitsTheEnemyInTheClickedCell) {
+    int health = skeleton->get_health();
+    EXPECT_TRUE(world->attack(player, Position{2, 1}));
+    EXPECT_EQ(skeleton->get_health(), health - sword_damage());
+}
+
+TEST_F(CombatTest, AClickNextToAnEnemyBetweenCellsStillHitsIt) {
+    // Está entre (2, 1) y (2, 2): el click en (2, 2) lo encuentra igual
+    skeleton->place_at(Point{2.5f, 2.0f});
+    int health = skeleton->get_health();
+    EXPECT_TRUE(world->attack(player, Position{2, 2}));
+    EXPECT_EQ(skeleton->get_health(), health - sword_damage());
+}
+
+TEST_F(CombatTest, ACellThatIsNotNextToThePlayerIsOutOfReach) {
+    skeleton->place_at(Point{4.5f, 1.5f});
+    EXPECT_FALSE(world->attack(player, Position{4, 1}));
+}
+
+TEST_F(CombatTest, OutsideTheDungeonThereIsNothingToHit) {
+    player.relocate(farm(), Position{1, 1});
+    EXPECT_FALSE(world->attack(player, Position{2, 1}));
+}
+
+TEST_F(CombatTest, WaitsBetweenHits) {
+    int health = skeleton->get_health();
+    EXPECT_TRUE(world->attack(player, Position{2, 1}));
+    EXPECT_FALSE(world->attack(player, Position{2, 1}));
+    player.update(server_config().player.attack_cooldown);
+    EXPECT_TRUE(world->attack(player, Position{2, 1}));
+    EXPECT_EQ(skeleton->get_health(), health - 2 * sword_damage());
+}
+
+TEST_F(CombatTest, AWeakPlayerHitsLess) {
+    // Le queda 1 de 100: menos que weak_health
+    player.take_damage(player.get_health() - 1);
+    int health = skeleton->get_health();
+    EXPECT_TRUE(world->attack(player, Position{2, 1}));
+    int weak_damage = static_cast<int>(sword_damage() * server_config().player.weak_damage);
+    EXPECT_EQ(skeleton->get_health(), health - weak_damage);
+}
+
+TEST_F(CombatTest, SnapshotsHaveTheEnemiesOfTheDungeon) {
+    world->attack(player, Position{2, 1});
+    Snapshot snapshot = SnapshotBuilder::build(0, *world);
+    auto found = std::find_if(snapshot.entities.begin(), snapshot.entities.end(),
+                              [](const EntityState& e) { return e.type == EntityType::Skeleton; });
+    ASSERT_NE(found, snapshot.entities.end());
+    EXPECT_EQ(found->entityId, skeleton->get_id());
+    EXPECT_EQ(found->areaId, level().get_name());
+    EXPECT_EQ(found->x, 2500u);
+    EXPECT_EQ(found->y, 1500u);
+    EXPECT_EQ(found->action, EntityAction::Hurt);
 }
 
 }  // namespace

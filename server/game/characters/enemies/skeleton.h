@@ -11,13 +11,16 @@
 class Skeleton: public Enemy {
 public:
     Skeleton(uint32_t id, const Position& pos, Location& location,
-             const std::vector<Creature*>& visitors);
+             const std::vector<Creature*>& visitors, uint32_t seed);
 
+    EntityType entity_type() const override;
     void on_death() override;
     // Nunca se va: siempre revive.
     bool is_gone() const override;
-    // Muerto, cuenta el tiempo para revivir; vivo, lo de cualquier enemigo.
-    void update(float dt) override;
+
+protected:
+    // Cuenta el tiempo para revivir.
+    void while_dead(float dt) override;
 
 private:
     float revive_left = 0;

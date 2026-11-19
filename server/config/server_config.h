@@ -23,6 +23,10 @@ struct ServerConfig {
         uint8_t max_stack;
         float tired_energy;        // fracción de la energía desde la que camina a mitad de velocidad
         float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su cama
+        int sword_damage;          // vida que le saca a un enemigo cada golpe de espada
+        float attack_cooldown;     // segundos entre golpe y golpe
+        float weak_health;         // fracción de la vida desde la que pega menos
+        float weak_damage;         // fracción de su daño que pega cuando está así de débil
     };
     // Lo que cansa cada acción.
     struct Energy {
@@ -73,11 +77,65 @@ struct ServerConfig {
         Fighter fighter;
         float revive_seconds;  // cuanto tarda en revivir despues de morir
     };
+    // Una pareja: la vampira, más rápida (fast_speed), y el vampiro, que pega más fuerte
+    // (strong_damage). Los demás valores, en `fighter`, son de los dos.
+    struct Vampire {
+        int pairs;  // cuantas parejas aparecen en cada nivel
+        Fighter fighter;
+        float fast_speed;
+        int strong_damage;
+        float revive_seconds;  // muerto, cuanto tarda en revivir despues de que cae sangre cerca
+        float blood_reach;     // hasta donde (en celdas) le llega la sangre de un jugador
+    };
+    // Un grupo de entre min_group y max_group; `fighter` vale para cada uno.
+    struct Orc {
+        int min_group;
+        int max_group;
+        Fighter fighter;
+    };
+    // No se la puede matar: tira llamas de un color, sorteado al aparecer (verde con green_chance).
+    struct Skull {
+        float speed;
+        float sight;
+        float cooldown;  // segundos entre llama y llama
+        float green_chance;
+    };
+    // Las llamas azules; las verdes hacen el doble de daño y van a la mitad de velocidad.
+    struct Flame {
+        int damage;
+        float speed;  // celdas por segundo
+        float range;  // celdas que recorre antes de apagarse
+    };
     struct Enemies {
         // Al aparecer, ninguno queda a menos de esta distancia (en celdas) de un portal del nivel:
         // el que entra no se los encuentra encima.
         float spawn_distance;
+        // Sin nadie a la vista deambulan como los animales: cambian de dirección cada tanto
+        float min_walk;  // segundos
+        float max_walk;
         Skeleton skeleton;
+        Vampire vampire;
+        Orc orc;
+        Skull skull;
+        Flame flame;
+    };
+    // Una trampa: active_time segundos activa y idle_time inactiva, una y otra vez. Activa, le
+    // saca `damage` a cada jugador en su zona, una vez por activación.
+    struct Trap {
+        int damage;
+        float active_time;
+        float idle_time;
+    };
+    struct Flamethrower {
+        Trap trap;
+        int reach;  // celdas que alcanza el chorro, contando la suya
+    };
+    // Cuántas trampas de cada una aparecen en cada nivel de la mazmorra, al azar
+    struct Traps {
+        int spikes_count;
+        int flamethrowers_count;
+        Trap spikes;
+        Flamethrower flamethrower;
     };
     // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están
     // en [animals.*] y [crops.*]; lo que cansa hablarles, en [energy].
@@ -144,6 +202,7 @@ struct ServerConfig {
     Energy energy;
     Animals animals;
     Enemies enemies;
+    Traps traps;
     Crops crops;
     struct Cheats {
         int seeds;  // cuántas de cada tipo da "$seeds" sin cantidad

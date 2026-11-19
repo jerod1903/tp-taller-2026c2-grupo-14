@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -13,13 +14,15 @@
 #include <SDL2pp/SDL2pp.hh>
 
 #include "client/audio/sonido.h"
+#include "client/gui/menu-pausa/menu_pausa.h"
+#include "client/gui/rutas.h"
 #include "client/gui/sprites/animador_sprites.h"
 #include "client/gui/sprites/capa.h"
+#include "client/gui/sprites/pose.h"
 #include "common/character/CharacterSheets.h"
 #include "common/game_dto.h"
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
-#include "client/gui/menu-pausa/menu_pausa.h"
 
 inline constexpr int CANTIDAD_ARGUMENTOS = 4;
 inline const char* const MUNDO_PRUEBA = "valle";
@@ -57,6 +60,142 @@ inline const FormatoAnimacion FORMATO_GALLINA{16,
                                               {0, 1, 2, 3},
                                               std::chrono::duration<float>(0.15f)};
 
+// Las entidades que tienen un PNG por pose (lo que estén haciendo). Para sumar un enemigo alcanza
+// con agregarlo acá.
+// El esqueleto: una tira de cuadros de 32x32 por pose. Pegar y doler duran lo mismo que en el
+// servidor (0.6 y 0.4 segundos, en Skeleton), así la animación entra completa.
+inline constexpr int LADO_CUADRO_ESQUELETO = 32;
+// El vampiro y la vampira: las mismas tiras de 32x32, cada uno con su tinte (TINTES). Pegar y
+// doler duran lo mismo que en el servidor (0.8 y 0.4 segundos, en Vampire).
+inline constexpr int LADO_CUADRO_VAMPIRO = 32;
+inline const std::map<Pose, HojaDePose> HOJAS_VAMPIRO = {
+        {Pose::Quieto,
+         {RUTA_VAMPIRO_QUIETO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 6,
+                                            std::chrono::duration<float>(0.15f))}},
+        {Pose::Caminando,
+         {RUTA_VAMPIRO_CAMINANDO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 8,
+                                               std::chrono::duration<float>(0.1f))}},
+        {Pose::Atacando,
+         {RUTA_VAMPIRO_ATACANDO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 16,
+                                              std::chrono::duration<float>(0.8f / 16))}},
+        {Pose::Herido,
+         {RUTA_VAMPIRO_HERIDO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 5,
+                                            std::chrono::duration<float>(0.4f / 5))}},
+        {Pose::Muerto,
+         {RUTA_VAMPIRO_MUERTO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 14,
+                                            std::chrono::duration<float>(0.08f), false)}},
+};
+// El orco: cuadros de 100x100 con el cuerpo chico y los pies en la fila 57. Se usan solo las
+// ALTO_CUADRO_ORCO filas de arriba, así los pies quedan abajo del cuadro como en los demás. Pegar
+// y doler duran lo mismo que en el servidor (0.6 y 0.4 segundos, en Orc).
+inline constexpr int ANCHO_CUADRO_ORCO = 100;
+inline constexpr int ALTO_CUADRO_ORCO = 58;
+// La calavera: una tira de 4 cuadros de 16x16 (los de Idle/v2), la misma en todas las poses. La
+// verde, teñida (TINTES).
+inline constexpr int LADO_CUADRO_CALAVERA = 16;
+inline const std::map<Pose, HojaDePose> HOJAS_CALAVERA =
+        hojas_de({RUTA_CALAVERA, formato_tira(LADO_CUADRO_CALAVERA, LADO_CUADRO_CALAVERA, 4,
+                                              std::chrono::duration<float>(0.15f))});
+// La llama: fire_skull.png achicada a su tamaño real (9x11), un solo cuadro. La verde, teñida.
+inline constexpr int ANCHO_LLAMA = 9;
+inline constexpr int ALTO_LLAMA = 11;
+inline const std::map<Pose, HojaDePose> HOJAS_LLAMA = hojas_de(
+        {RUTA_LLAMA, formato_tira(ANCHO_LLAMA, ALTO_LLAMA, 1, std::chrono::duration<float>(1.0f))});
+// Las trampas: quietas, un solo cuadro (pinches escondidos, la boquilla del lanzallamas); activas,
+// la animación de activarse. El servidor manda el centro de su celda y el dibujo se corre para
+// que los pinches tapen su celda y el lanzallamas arranque en la pared.
+// Los pies quedan CHARACTER_HALF_HEIGHT de celda abajo del centro: hasta el borde de la celda
+// faltan 4 píxeles.
+// Cada trampa ocupa una celda (los cuadros de 16x16); el lanzallamas, dos: la de la pared y la
+// suya.
+inline constexpr int LADO_TRAMPA = 16;
+inline constexpr int BAJADA_TRAMPA = 4;
+// Media celda: lo que se corre el lanzallamas de costado para arrancar en la pared
+inline constexpr int CORRIMIENTO_LANZALLAMAS = 8;
+inline const std::chrono::duration<float> CUADRO_TRAMPA(0.08f);
+inline const std::map<Pose, HojaDePose> HOJAS_PINCHES = hojas_de(
+        {RUTA_PINCHES_QUIETOS, formato_tira(LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0,
+         BAJADA_TRAMPA},
+        {{Pose::Atacando,
+          {RUTA_PINCHES_ACTIVOS, formato_tira(LADO_TRAMPA, LADO_TRAMPA, 3, CUADRO_TRAMPA, false), 0,
+           BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_ABAJO = hojas_de(
+        {RUTA_LANZALLAMAS_ABAJO_QUIETO,
+         formato_tira(LADO_TRAMPA, 2 * LADO_TRAMPA, 1, CUADRO_TRAMPA), 0, BAJADA_TRAMPA},
+        {{Pose::Atacando,
+          {RUTA_LANZALLAMAS_ABAJO_ACTIVO,
+           formato_tira(LADO_TRAMPA, 2 * LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_DERECHA =
+        hojas_de({RUTA_LANZALLAMAS_DERECHA_QUIETO,
+                  formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA),
+                  -CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA},
+                 {{Pose::Atacando,
+                   {RUTA_LANZALLAMAS_DERECHA_ACTIVO,
+                    formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA),
+                    -CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_IZQUIERDA =
+        hojas_de({RUTA_LANZALLAMAS_IZQUIERDA_QUIETO,
+                  formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA),
+                  CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA},
+                 {{Pose::Atacando,
+                   {RUTA_LANZALLAMAS_IZQUIERDA_ACTIVO,
+                    formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA),
+                    CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA}}});
+// Las que se dibujan como parte del piso: debajo de quien esté encima
+inline const std::set<EntityType> EN_EL_PISO = {EntityType::Spikes};
+inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
+        {EntityType::Skeleton,
+         {{Pose::Quieto,
+           {RUTA_ESQUELETO_QUIETO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 6,
+                                                std::chrono::duration<float>(0.15f))}},
+          {Pose::Caminando,
+           {RUTA_ESQUELETO_CAMINANDO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 10,
+                                                   std::chrono::duration<float>(0.08f))}},
+          {Pose::Atacando,
+           {RUTA_ESQUELETO_ATACANDO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 9,
+                                                  std::chrono::duration<float>(0.6f / 9))}},
+          {Pose::Herido,
+           {RUTA_ESQUELETO_HERIDO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 5,
+                                                std::chrono::duration<float>(0.4f / 5))}},
+          {Pose::Muerto,
+           {RUTA_ESQUELETO_MUERTO, formato_tira(LADO_CUADRO_ESQUELETO, LADO_CUADRO_ESQUELETO, 17,
+                                                std::chrono::duration<float>(0.08f), false)}}}},
+        {EntityType::Vampire, HOJAS_VAMPIRO},
+        {EntityType::Vampiress, HOJAS_VAMPIRO},
+        {EntityType::Orc,
+         {{Pose::Quieto,
+           {RUTA_ORCO_QUIETO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 6,
+                                           std::chrono::duration<float>(0.15f))}},
+          {Pose::Caminando,
+           {RUTA_ORCO_CAMINANDO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 8,
+                                              std::chrono::duration<float>(0.1f))}},
+          {Pose::Atacando,
+           {RUTA_ORCO_ATACANDO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 6,
+                                             std::chrono::duration<float>(0.6f / 6))}},
+          {Pose::Herido,
+           {RUTA_ORCO_HERIDO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 4,
+                                           std::chrono::duration<float>(0.4f / 4))}},
+          {Pose::Muerto,
+           {RUTA_ORCO_MUERTO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 4,
+                                           std::chrono::duration<float>(0.1f), false)}}}},
+        {EntityType::Skull, HOJAS_CALAVERA},
+        {EntityType::GreenSkull, HOJAS_CALAVERA},
+        {EntityType::Flame, HOJAS_LLAMA},
+        {EntityType::GreenFlame, HOJAS_LLAMA},
+        {EntityType::Spikes, HOJAS_PINCHES},
+        {EntityType::FlamethrowerDown, HOJAS_LANZALLAMAS_ABAJO},
+        {EntityType::FlamethrowerRight, HOJAS_LANZALLAMAS_DERECHA},
+        {EntityType::FlamethrowerLeft, HOJAS_LANZALLAMAS_IZQUIERDA},
+};
+// Las que se dibujan teñidas (las demás, sin tinte): el vampiro de negro, la vampira de rojo y
+// la calavera verde y sus llamas de verde
+inline const std::map<EntityType, SDL_Color> TINTES = {
+        {EntityType::Vampire, {90, 90, 110, 255}},
+        {EntityType::Vampiress, {255, 110, 110, 255}},
+        {EntityType::GreenSkull, {110, 255, 140, 255}},
+        {EntityType::GreenFlame, {110, 255, 140, 255}},
+};
+
 inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;
 
 inline constexpr int TAMANO_FUENTE_CHAT = 16;
@@ -71,6 +210,49 @@ inline const char* const CURSOR_CHAT = "_";
 inline const char* const MARCA_PRIVADO = " (privado)";
 inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
 inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
+inline const std::map<SoilType, stardew::maps::TileType> TILES_SUELO = {
+        {SoilType::Dirt, stardew::maps::TileType::Dirt},
+        {SoilType::Tilled, stardew::maps::TileType::TilledSoil},
+};
+
+inline constexpr int TAMANO_CUADRO_CULTIVO = 16;
+inline const std::map<CropType, int> FILAS_CULTIVOS = {
+        {CropType::Strawberry, 1},
+        {CropType::Scallion, 3},
+        {CropType::Potato, 5},
+        {CropType::Pumpkin, 7},
+};
+
+inline constexpr int COLUMNA_SEMILLAS = 7;
+inline const std::map<ItemQuality, int> COLUMNAS_CALIDAD = {
+        {ItemQuality::Base, 8},
+        {ItemQuality::Good, 9},
+        {ItemQuality::Excellent, 10},
+        {ItemQuality::Incredible, 11},
+        {ItemQuality::Perfect, 12},
+};
+inline const std::map<ItemType, CropType> SEMILLAS = {
+        {ItemType::StrawberrySeeds, CropType::Strawberry},
+        {ItemType::ScallionSeeds, CropType::Scallion},
+        {ItemType::PotatoSeeds, CropType::Potato},
+        {ItemType::PumpkinSeeds, CropType::Pumpkin},
+};
+inline const std::map<ItemType, CropType> PRODUCTOS_CULTIVO = {
+        {ItemType::Strawberry, CropType::Strawberry},
+        {ItemType::Scallion, CropType::Scallion},
+        {ItemType::Potato, CropType::Potato},
+        {ItemType::Pumpkin, CropType::Pumpkin},
+};
+
+inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
+        {ItemType::Milk, Sonido::Ordenar},
+        {ItemType::Egg, Sonido::Recoger},
+        {ItemType::Strawberry, Sonido::Cosechar},
+        {ItemType::Scallion, Sonido::Cosechar},
+        {ItemType::Potato, Sonido::Cosechar},
+        {ItemType::Pumpkin, Sonido::Cosechar},
+};
+
 inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
         {ChatKind::Public, {255, 255, 255, 255}},
         {ChatKind::Private, {255, 150, 200, 255}},
@@ -94,18 +276,21 @@ inline constexpr int PASO_CARTELES = 40;
 inline constexpr int CANTIDAD_CARTELES = 2;
 inline constexpr int SEPARACION_CARTEL_ORO = 4;
 inline constexpr int RELLENO_CARTEL = 12;  // de la punta redonda al icono o al texto
-// input_madera_panel.png: el marco de la barra de energia, que se estira sin tocar el borde
+// input_madera_panel.png: el marco de las barras de vida y energia, que se estira sin tocar el
+// borde. La de vida va a la izquierda de la de energia
 inline constexpr int BORDE_MARCO = 9;
-inline constexpr int ANCHO_BARRA_ENERGIA = 26;
-inline constexpr int ALTO_BARRA_ENERGIA = 80;
-inline constexpr int PORCENTAJE_ENERGIA_MEDIA = 50;
-inline constexpr int PORCENTAJE_ENERGIA_BAJA = 20;
+inline constexpr int ANCHO_BARRA_HUD = 26;
+inline constexpr int ALTO_BARRA_HUD = 80;
+inline constexpr int PORCENTAJE_BARRA_MEDIA = 50;
+inline constexpr int PORCENTAJE_BARRA_BAJA = 20;
+inline constexpr int SEPARACION_BARRAS = 4;
 inline const char* const ETIQUETA_ENERGIA = "E";
+inline const char* const ETIQUETA_VIDA = "V";
 inline constexpr SDL_Color COLOR_TEXTO_HUD = {255, 240, 210, 255};
 inline constexpr SDL_Color COLOR_SOMBRA_HUD = {43, 28, 35, 255};
-inline constexpr SDL_Color COLOR_ENERGIA_ALTA = {120, 200, 60, 255};
-inline constexpr SDL_Color COLOR_ENERGIA_MEDIA = {230, 190, 50, 255};
-inline constexpr SDL_Color COLOR_ENERGIA_BAJA = {200, 60, 50, 255};
+inline constexpr SDL_Color COLOR_BARRA_ALTA = {120, 200, 60, 255};
+inline constexpr SDL_Color COLOR_BARRA_MEDIA = {230, 190, 50, 255};
+inline constexpr SDL_Color COLOR_BARRA_BAJA = {200, 60, 50, 255};
 
 // globo.cpp: el globito con el emote arriba de un personaje
 inline constexpr int SEPARACION_GLOBO = 1;

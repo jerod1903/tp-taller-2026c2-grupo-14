@@ -19,8 +19,10 @@ public:
 
     virtual void take_damage(int amount);
     bool is_alive() const;
-    // Le pega a `target`: le saca su daño. Cuándo pegar lo decide quien la maneja (la IA del
-    // enemigo, la acción del jugador).
+    // Muerta o gravemente herida. Por defecto, solo muerta; el jugador también con poca vida.
+    virtual bool is_badly_hurt() const;
+    // Le pega a `target`: le saca attack_damage(). Cuándo pegar lo decide quien la maneja (la IA
+    // del enemigo, la acción del jugador).
     void attack(Creature& target) const;
 
     // Celdas por segundo. Por defecto base_speed; las subclases pueden modificarla.
@@ -60,6 +62,9 @@ protected:
     float x;
     float y;
     bool stepped = false;
+
+    // La vida que le saca a quien ataca. Por defecto su daño; las subclases pueden modificarla.
+    virtual int attack_damage() const;
 
     // Mueve el centro speed() * dt hacia `direction`. Contra una pared se queda pegado a ella y
     // sigue por el eje que esté libre. La llama el update() de cada subclase.

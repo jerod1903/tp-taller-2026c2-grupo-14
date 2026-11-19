@@ -1,5 +1,6 @@
 #include "client/gui/inventario/barra_inventario.h"
 
+#include <optional>
 #include <string>
 
 #include <SDL2/SDL.h>
@@ -11,9 +12,35 @@ namespace {
 void pintar(SDL2pp::Renderer& renderer, const SDL_Color& color) {
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
 }
+
+SDL2pp::Rect cuadro_cultivo(CropType cultivo, int columna) {
+    return SDL2pp::Rect(columna * TAMANO_CUADRO_CULTIVO,
+                        FILAS_CULTIVOS.at(cultivo) * TAMANO_CUADRO_CULTIVO, TAMANO_CUADRO_CULTIVO,
+                        TAMANO_CUADRO_CULTIVO);
 }
 
-BarraInventario::BarraInventario(SDL2pp::Renderer& renderer) {
+std::optional<SDL2pp::Rect> recorte_cultivo(const InventorySlot& slot) {
+    auto semilla = SEMILLAS.find(slot.item);
+    if (semilla != SEMILLAS.end()) {
+        return cuadro_cultivo(semilla->second, COLUMNA_SEMILLAS);
+    }
+    auto producto = PRODUCTOS_CULTIVO.find(slot.item);
+    if (producto != PRODUCTOS_CULTIVO.end()) {
+        return cuadro_cultivo(producto->second, COLUMNAS_CALIDAD.at(slot.quality));
+    }
+    return std::nullopt;
+}
+
+void copiar_centrado(SDL2pp::Renderer& renderer, SDL2pp::Texture& textura,
+                     const SDL2pp::Rect& origen, const SDL2pp::Rect& caja) {
+    renderer.Copy(textura, origen,
+                  SDL2pp::Rect(caja.x + (caja.w - origen.w) / 2, caja.y + (caja.h - origen.h) / 2,
+                               origen.w, origen.h));
+}
+}
+
+BarraInventario::BarraInventario(SDL2pp::Renderer& renderer):
+        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS) {
     for (const auto& [item, ruta]: RUTAS_ICONOS) {
         iconos.try_emplace(item, renderer, ruta);
     }
@@ -45,23 +72,25 @@ void BarraInventario::dibujar_casillero(SDL2pp::Renderer& renderer, const Invent
     if (slot.item == ItemType::Empty) {
         return;
     }
-    dibujar_icono(renderer, slot.item, caja);
+    dibujar_icono(renderer, slot, caja);
     if (slot.quantity > 1) {
         dibujar_numero(renderer, slot.quantity,
                        SDL2pp::Point(caja.x + caja.w - 2, caja.y + caja.h - 2));
     }
 }
 
-void BarraInventario::dibujar_icono(SDL2pp::Renderer& renderer, ItemType item,
+void BarraInventario::dibujar_icono(SDL2pp::Renderer& renderer, const InventorySlot& slot,
                                     const SDL2pp::Rect& caja) {
-    auto icono = iconos.find(item);
+    if (std::optional<SDL2pp::Rect> recorte = recorte_cultivo(slot)) {
+        copiar_centrado(renderer, hoja_cultivos, *recorte, caja);
+        return;
+    }
+    auto icono = iconos.find(slot.item);
     if (icono == iconos.end()) {
         return;
     }
-    SDL2pp::Point tamano = icono->second.GetSize();
-    renderer.Copy(icono->second, SDL2pp::NullOpt,
-                  SDL2pp::Rect(caja.x + (caja.w - tamano.x) / 2, caja.y + (caja.h - tamano.y) / 2,
-                               tamano.x, tamano.y));
+    copiar_centrado(renderer, icono->second,
+                    SDL2pp::Rect(SDL2pp::Point(0, 0), icono->second.GetSize()), caja);
 }
 
 void BarraInventario::dibujar_numero(SDL2pp::Renderer& renderer, int numero,

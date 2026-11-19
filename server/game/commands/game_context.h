@@ -2,6 +2,7 @@
 #define GAME_CONTEXT_H
 
 #include "server/game/commands/player_characters.h"
+#include "server/game/commands/player_combat.h"
 #include "server/game/commands/player_commerce.h"
 #include "server/game/commands/player_farming.h"
 #include "server/game/commands/player_movement.h"
@@ -17,6 +18,7 @@ public:
     virtual PlayerCharacters& characters() = 0;
     virtual PlayerCommerce& commerce() = 0;
     virtual PlayerFarming& farming() = 0;
+    virtual PlayerCombat& combat() = 0;
 
     virtual ~GameContext() = default;
 };

@@ -8,39 +8,68 @@
 #include "server/game/world/location.h"
 
 Enemy::Enemy(uint32_t id, const Position& pos, Location& location,
-             const ServerConfig::Fighter& stats, const std::vector<Creature*>& visitors):
+             const ServerConfig::Fighter& stats, const std::vector<Creature*>& visitors,
+             float attack_time, float hurt_time, uint32_t seed):
         Creature(id, pos, location, stats.health, stats.speed, stats.damage),
         max_health(stats.health),
+        rng(seed),
         sight(stats.sight),
         reach(stats.reach),
         cooldown(stats.cooldown),
-        visitors(visitors) {}
+        attack_time(attack_time),
+        hurt_time(hurt_time),
+        visitors(visitors),
+        wanderer(rng, server_config().enemies.min_walk, server_config().enemies.max_walk) {}
 
 void Enemy::take_damage(int amount) {
     bool was_alive = is_alive();
     Creature::take_damage(amount);
-    if (was_alive && !is_alive()) {
+    if (is_alive()) {
+        hurt_left = hurt_time;
+        return;
+    }
+    // Muerto no sigue pegando ni dolorido: al revivir arranca sin nada
+    attacking_left = 0;
+    hurt_left = 0;
+    if (was_alive) {
+        corpse_left = CORPSE_TIME;
         on_death();
     }
 }
 
+EntityAction Enemy::action() const {
+    if (!is_alive()) {
+        return EntityAction::Dead;
+    }
+    if (hurt_left > 0) {
+        return EntityAction::Hurt;
+    }
+    if (attacking_left > 0) {
+        return EntityAction::Attacking;
+    }
+    return EntityAction::None;
+}
+
 void Enemy::on_death() {}
 
-bool Enemy::is_gone() const { return !is_alive(); }
+bool Enemy::is_gone() const { return !is_alive() && corpse_left <= 0; }
 
 void Enemy::update(float dt) {
     if (!is_alive()) {
+        while_dead(dt);
         return;
     }
     cooldown_left -= dt;
-    react();
+    attacking_left -= dt;
+    hurt_left -= dt;
+    react(dt);
     advance(dt);
 }
 
-void Enemy::react() {
+void Enemy::react(float dt) {
     Creature* target = nearest_visible();
     if (target == nullptr) {
-        set_direction(Direction::NONE);
+        wanderer.wander(*this, dt);
         return;
     }
     if (distance_to(*target) > reach) {
@@ -48,10 +77,20 @@ void Enemy::react() {
         return;
     }
     set_direction(Direction::NONE);
-    if (cooldown_left <= 0) {
-        attack(*target);
-        cooldown_left = cooldown;
+    try_attack(*target);
+}
+
+void Enemy::strike(Creature& target) { attack(target); }
+
+void Enemy::while_dead(float dt) { corpse_left -= dt; }
+
+void Enemy::try_attack(Creature& target) {
+    if (cooldown_left > 0) {
+        return;
     }
+    strike(target);
+    cooldown_left = cooldown;
+    attacking_left = attack_time;
 }
 
 Creature* Enemy::nearest_visible() const {
@@ -64,6 +103,8 @@ Creature* Enemy::nearest_visible() const {
     }
     return nearest;
 }
+
+const std::vector<Creature*>& Enemy::get_visitors() const { return visitors; }
 
 bool Enemy::sees(const Creature& target) const {
     return &target.get_location() == location && distance_to(target) <= sight &&

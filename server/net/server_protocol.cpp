@@ -157,7 +157,7 @@ std::optional<TypingRequest> ServerProtocol::recv_typing() {
 bool ServerProtocol::send_location_data(const LocationData& location) {
     return send_game_msg(GameMsg::LocationData) && baseProtocol.send_string(location.worldId) &&
            baseProtocol.send_u16(location.tickRate) && baseProtocol.send_u8(location.maxPlayers) &&
-           baseProtocol.send_u16(location.maxEnergy);
+           baseProtocol.send_u16(location.maxEnergy) && baseProtocol.send_u16(location.maxHealth);
 }
 
 bool ServerProtocol::send_snapshot(const Snapshot& snapshot) {
@@ -188,7 +188,8 @@ bool ServerProtocol::send_entity_state(const EntityState& entity) {
            baseProtocol.send_u32(entity.y) &&
            baseProtocol.send_u8(static_cast<uint8_t>(entity.dirX)) &&
            baseProtocol.send_u8(static_cast<uint8_t>(entity.dirY)) &&
-           baseProtocol.send_u8(static_cast<uint8_t>(entity.emote));
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.emote)) &&
+           baseProtocol.send_u8(static_cast<uint8_t>(entity.action));
 }
 
 bool ServerProtocol::send_player_info(const PlayerInfo& info) {

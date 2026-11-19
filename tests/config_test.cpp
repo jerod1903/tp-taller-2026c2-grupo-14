@@ -21,6 +21,7 @@ TEST(ServerConfigTest, TheRepoConfigLoads) {
     EXPECT_GT(config.game.max_players, 0);
     EXPECT_GT(config.game.tick_rate, 0);
     EXPECT_LE(config.animals.min_walk, config.animals.max_walk);
+    EXPECT_LE(config.enemies.min_walk, config.enemies.max_walk);
     EXPECT_LE(config.market.cow_buyback, config.animals.cow.price);
     EXPECT_LE(config.market.chicken_buyback, config.animals.chicken.price);
 }
@@ -32,6 +33,15 @@ TEST(ServerConfigTest, ABuybackAboveItsPriceIsRejected) {
     ASSERT_NE(content.find(line), std::string::npos);
     content.replace(content.find(line), line.size(), "cow_buyback = 1000");
     EXPECT_THROW(load_server_config(write_file("buyback.toml", content)), std::runtime_error);
+}
+
+TEST(ServerConfigTest, AnOrcGroupWithMinAboveMaxIsRejected) {
+    std::ifstream repo(std::string(TALLER_CONFIG_DIR) + "/server_config.toml");
+    std::string content((std::istreambuf_iterator<char>(repo)), std::istreambuf_iterator<char>());
+    std::string line = "min_group = 3";
+    ASSERT_NE(content.find(line), std::string::npos);
+    content.replace(content.find(line), line.size(), "min_group = 10");
+    EXPECT_THROW(load_server_config(write_file("orc_group.toml", content)), std::runtime_error);
 }
 
 TEST(ServerConfigTest, AMissingSectionIsRejected) {

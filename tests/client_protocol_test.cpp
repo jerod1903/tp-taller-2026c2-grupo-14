@@ -189,13 +189,14 @@ TEST_F(ClientGameProtocolTest, SendLeaveGameSendsOnlyTheTag) {
 
 TEST_F(ClientGameProtocolTest, RecvsLocationData) {
     ServerProtocol server(std::move(*server_socket));
-    ASSERT_TRUE(server.send_location_data(LocationData{"granja", 30, 4, 270}));
+    ASSERT_TRUE(server.send_location_data(LocationData{"granja", 30, 4, 270, 100}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<LocationData>(message));
     EXPECT_EQ(std::get<LocationData>(message).worldId, "granja");
     EXPECT_EQ(std::get<LocationData>(message).tickRate, 30);
     EXPECT_EQ(std::get<LocationData>(message).maxPlayers, 4);
     EXPECT_EQ(std::get<LocationData>(message).maxEnergy, 270);
+    EXPECT_EQ(std::get<LocationData>(message).maxHealth, 100);
 }
 
 TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
@@ -219,13 +220,15 @@ TEST_F(ClientGameProtocolTest, RecvsSnapshotWithItsEntities) {
     const PlayerState player{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
     const EntityState as_entity{7, EntityType::Player, "granja", 14500, 3250, -1, 1};
     const EntityState chicken{7, EntityType::Cow, "granja", 2000, 1000, 0, 0, Emote::CowMilkReady};
-    ASSERT_TRUE(server.send_snapshot(Snapshot{3, 1, 0, {player}, {as_entity, chicken}}));
+    const EntityState skeleton{1000,        EntityType::Skeleton,   "nivel", 3000, 2000, 0, 0,
+                               Emote::None, EntityAction::Attacking};
+    ASSERT_TRUE(server.send_snapshot(Snapshot{3, 1, 0, {player}, {as_entity, chicken, skeleton}}));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<Snapshot>(message));
     const Snapshot& snapshot = std::get<Snapshot>(message);
     ASSERT_EQ(snapshot.players.size(), 1u);
     EXPECT_EQ(snapshot.players[0], player);
-    EXPECT_EQ(snapshot.entities, (std::vector<EntityState>{as_entity, chicken}));
+    EXPECT_EQ(snapshot.entities, (std::vector<EntityState>{as_entity, chicken, skeleton}));
 }
 
 TEST_F(ClientGameProtocolTest, RecvsPlayerInfo) {
