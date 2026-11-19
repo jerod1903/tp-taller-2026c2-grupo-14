@@ -28,3 +28,8 @@ void GameClock::end_day() {
     elapsed = 0.0f;
     day++;
 }
+
+void GameClock::start_day(uint16_t day) {
+    this->day = day;
+    elapsed = 0.0f;
+}

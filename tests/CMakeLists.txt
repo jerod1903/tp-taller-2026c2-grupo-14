@@ -26,6 +26,7 @@ target_sources(taller_tests
     orc_test.cpp
     skull_test.cpp
     trap_test.cpp
+    saved_game_test.cpp
     sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp

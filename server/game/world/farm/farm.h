@@ -17,6 +17,7 @@
 #include "server/game/world/location.h"
 #include "server/game/world/position.h"
 #include "server/game/world/spawn_point.h"
+#include "server/persistence/saved_game.h"
 
 // Una celda trabajada con la pala: Dirt si era pasto y se cavó una vez, Tilled si ya se puede plantar.
 struct Plot {
@@ -67,6 +68,11 @@ public:
     const Outcome& harvest(const Position& pos, Player& player);
     // Las celdas trabajadas, por posición.
     const std::map<Position, Plot>& get_plots() const;
+
+    // Lo que se guarda: las celdas trabajadas, los objetos del piso y los animales.
+    SavedFarm saved() const;
+    // Reemplaza todo eso por lo guardado.
+    void restore(const SavedFarm& saved);
 
     // Actualiza también la Cabin y levanta lo que dejaron los animales en el tick.
     void update(float dt) override;

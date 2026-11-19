@@ -55,6 +55,35 @@ bool Farm::add_animal(AnimalKind kind, const Position& pos) {
 
 const std::vector<std::unique_ptr<Animal>>& Farm::get_animals() const { return animals; }
 
+SavedFarm Farm::saved() const {
+    SavedFarm saved{{}, ground_items, {}};
+    for (const auto& [pos, plot]: plots) {
+        saved.plots.emplace(pos, SavedPlot{plot.soil, plot.crop.saved()});
+    }
+    for (const std::unique_ptr<Animal>& animal: animals) {
+        saved.animals.push_back(animal->saved());
+    }
+    return saved;
+}
+
+void Farm::restore(const SavedFarm& saved) {
+    plots.clear();
+    for (const auto& [pos, plot]: saved.plots) {
+        plots.emplace(pos, Plot{plot.soil, Crop(plot.crop)});
+    }
+    ground_items = saved.ground_items;
+    for (const std::unique_ptr<Animal>& animal: animals) {
+        remove_entity(*animal);
+    }
+    animals.clear();
+    for (const SavedAnimal& animal: saved.animals) {
+        if (add_animal(animal.kind, animal.cell)) {
+            animals.back()->restore(animal);
+        }
+    }
+    changed = true;
+}
+
 void Farm::start_new_day() {
     for (const std::unique_ptr<Animal>& animal: animals) {
         animal->start_new_day();

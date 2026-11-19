@@ -15,9 +15,10 @@
 #include "server/game/world/direction.h"
 #include "server/game/world/dungeon/dungeon.h"
 #include "server/game/world/farm/farm.h"
+#include "server/game/world/game_clock.h"
 #include "server/game/world/movement.h"
 #include "server/game/world/town/town.h"
-#include "server/game/world/game_clock.h"
+#include "server/persistence/saved_game.h"
 
 // El mapa completo de una partida. Es dueño de las tres zonas y de los personajes de los
 // jugadores, que se piden por id. Los portales entre zonas (pueblo <-> granja, pueblo <-> mazmorra)
@@ -39,7 +40,8 @@ public:
     const Dungeon& get_dungeon() const;
 
     // Lo pone en su cama de la cabaña. Si ya había estado en esta partida (se fue y vuelve),
-    // con todo lo que tenía; si no, un personaje nuevo con los valores de server_config.toml.
+    // con todo lo que tenía; si no, un personaje nuevo con los valores de server_config.toml o,
+    // si estaba en la partida guardada, con lo que tenía guardado.
     void spawn_player(uint32_t player_id, std::string name);
     // Lo da de alta en su Location actual, reemplazando al que tenga su mismo id (esté o no).
     Player& add_player(std::unique_ptr<Player> player);
@@ -64,6 +66,13 @@ public:
     const Cabin& get_cabin() const;
     const GameClock& get_clock() const;
 
+    // Lo que se guarda de la partida: el día, la granja y los jugadores (los que están, los que se
+    // fueron y los de la partida guardada que todavía no volvieron).
+    SavedGame saved() const;
+    // Retoma una partida guardada: el día, la granja y lo de cada jugador, que lo recupera al
+    // entrar. Se llama recién creado el mundo, antes de que entre nadie.
+    void restore(const SavedGame& saved);
+
     // Actualiza las tres zonas, hace viajar a los que pisaron un portal y termina el día a las
     // 2:00 o cuando caen todos inconscientes.
     void update(float dt);
@@ -77,6 +86,9 @@ private:
     // Los que se fueron de la partida: fuera del mapa, con todo lo suyo, por si vuelven. No se
     // mueven ni se dibujan; al pasar el día descansan como el que no llegó a su cama.
     std::map<uint32_t, std::unique_ptr<Player>> away;
+    // Los de la partida guardada, como estaban: el que entra por primera vez en esta sesión
+    // recupera lo suyo de acá
+    std::map<uint32_t, SavedPlayer> stored;
     Movement movement;
     GameClock clock{server_config().game.day_speed};
 

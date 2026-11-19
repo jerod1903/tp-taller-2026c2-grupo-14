@@ -257,4 +257,37 @@ TEST_F(ReturningPlayerTest, IfTheDayPassesWhileAwayItWakesAsAfterABadNight) {
     EXPECT_EQ(player().get_energy(), static_cast<int>(stats.energy * stats.bad_night_recovery));
 }
 
+// --- Guardar y retomar la partida ---
+
+TEST_F(ReturningPlayerTest, TheSavedGameHasTheDayAndEveryoneWhoPlayed) {
+    world->spawn_player(1, "jero");
+    player().add_gold(10);
+    int gold = player().get_gold();
+    world->remove_player(1);
+    end_the_day();
+    SavedGame saved = world->saved();
+    EXPECT_EQ(saved.day, 2);
+    ASSERT_EQ(saved.players.count(1), 1u);
+    EXPECT_EQ(saved.players.at(1).gold, gold);
+}
+
+TEST_F(ReturningPlayerTest, WhoEntersARestoredGameGetsWhatItHadSaved) {
+    SavedGame saved{7, world->get_farm().saved(), {{1, SavedPlayer{999, 40, 30, {}}}}};
+    world->restore(saved);
+    EXPECT_EQ(world->get_clock().get_day(), 7);
+    world->spawn_player(1, "jero");
+    EXPECT_EQ(player().get_gold(), 999);
+    EXPECT_EQ(player().get_health(), 40);
+    EXPECT_EQ(player().get_energy(), 30);
+}
+
+TEST_F(ReturningPlayerTest, WhoDidNotEnterKeepsWhatItHadSaved) {
+    SavedPlayer absent{500, 100, 100, {}};
+    world->restore(SavedGame{3, world->get_farm().saved(), {{2, absent}}});
+    world->spawn_player(1, "jero");
+    SavedGame saved = world->saved();
+    EXPECT_EQ(saved.players.at(2), absent);
+    EXPECT_EQ(saved.players.count(1), 1u);
+}
+
 }  // namespace

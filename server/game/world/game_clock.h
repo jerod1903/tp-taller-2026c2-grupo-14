@@ -17,6 +17,8 @@ public:
     bool update(float dt);
     // Termina el día antes de las 2:00 (cayeron todos inconscientes).
     void end_day();
+    // Arranca el día `day` a las 6:00 (al cargar una partida guardada).
+    void start_day(uint16_t day);
 
 private:
     float day_seconds;

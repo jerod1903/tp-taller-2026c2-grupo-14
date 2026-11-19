@@ -83,6 +83,17 @@ void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); 
 
 InventoryState Player::get_inventory_state() const { return inventory.get_state(); }
 
+SavedPlayer Player::saved() const {
+    return SavedPlayer{gold, health, energy, inventory.get_state()};
+}
+
+void Player::restore(const SavedPlayer& saved) {
+    gold = saved.gold;
+    health = saved.health;
+    energy = saved.energy;
+    inventory.restore(saved.inventory);
+}
+
 void Player::set_typing(bool typing) { this->typing = typing; }
 
 bool Player::is_typing() const { return typing; }

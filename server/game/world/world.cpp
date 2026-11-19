@@ -46,10 +46,30 @@ void World::spawn_player(uint32_t player_id, std::string name) {
                                                std::move(name), stats.health, stats.speed,
                                                stats.gold, stats.energy);
         player->place_at(spawn.point);
+        auto saved = stored.find(player_id);
+        if (saved != stored.end()) {
+            player->restore(saved->second);
+        }
         add_player(std::move(player));
     }
     // Su cama puede haber aparecido donde estaba parado otro
     movement.free_trapped();
+}
+
+SavedGame World::saved() const {
+    SavedGame saved{clock.get_day(), farm->saved(), stored};
+    for (const auto* group: {&players, &away}) {
+        for (const auto& [player_id, player]: *group) {
+            saved.players[player_id] = player->saved();
+        }
+    }
+    return saved;
+}
+
+void World::restore(const SavedGame& saved) {
+    clock.start_day(saved.day);
+    farm->restore(saved.farm);
+    stored = saved.players;
 }
 
 Player& World::add_player(std::unique_ptr<Player> player) {

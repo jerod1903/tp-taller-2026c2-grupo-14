@@ -8,6 +8,7 @@
 #include "server/game/characters/creature.h"
 #include "server/game/characters/inventory.h"
 #include "server/game/world/spawn_point.h"
+#include "server/persistence/saved_game.h"
 
 class Player: public Creature {
 public:
@@ -49,6 +50,9 @@ public:
 
     void select_inventory_slot(uint8_t slot);
     InventoryState get_inventory_state() const;
+    // Lo que se guarda de él: oro, vida, energía e inventario.
+    SavedPlayer saved() const;
+    void restore(const SavedPlayer& saved);
     // Si tiene el chat abierto: los demas le ven el globito de "escribiendo".
     void set_typing(bool typing);
     bool is_typing() const;
