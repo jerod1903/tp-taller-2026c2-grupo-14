@@ -88,6 +88,10 @@ enum class EntityType : uint8_t {
     Vampire,
     Vampiress,
     Orc,
+    Skull,
+    GreenSkull,
+    Flame,
+    GreenFlame,
 };
 
 // Lo que se muestra arriba de la cabeza de una entidad.

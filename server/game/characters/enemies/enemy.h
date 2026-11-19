@@ -56,6 +56,11 @@ protected:
     // deambula.
     virtual void react(float dt);
 
+    // Si ya pasó el cooldown desde el último golpe
+    bool ready_to_attack() const;
+    // Arranca un golpe: vuelve a contar el cooldown y queda pegando attack_time segundos.
+    void start_attack();
+
     // El jugador vivo más cercano que ve, o nullptr si no ve a ninguno.
     Creature* nearest_visible() const;
     // Los jugadores que están en su nivel

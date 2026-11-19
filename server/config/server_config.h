@@ -93,6 +93,19 @@ struct ServerConfig {
         int max_group;
         Fighter fighter;
     };
+    // No se la puede matar: tira llamas de un color, sorteado al aparecer (verde con green_chance).
+    struct Skull {
+        float speed;
+        float sight;
+        float cooldown;  // segundos entre llama y llama
+        float green_chance;
+    };
+    // Las llamas azules; las verdes hacen el doble de daño y van a la mitad de velocidad.
+    struct Flame {
+        int damage;
+        float speed;  // celdas por segundo
+        float range;  // celdas que recorre antes de apagarse
+    };
     struct Enemies {
         // Al aparecer, ninguno queda a menos de esta distancia (en celdas) de un portal del nivel:
         // el que entra no se los encuentra encima.
@@ -103,6 +116,8 @@ struct ServerConfig {
         Skeleton skeleton;
         Vampire vampire;
         Orc orc;
+        Skull skull;
+        Flame flame;
     };
     // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están
     // en [animals.*] y [crops.*]; lo que cansa hablarles, en [energy].

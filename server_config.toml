@@ -99,6 +99,20 @@ sight = 6.0
 reach = 1.0
 cooldown = 1.0
 
+# No se la puede matar: pelea a distancia, tirando llamas. Cada una tira siempre del mismo color,
+# sorteado al aparecer.
+[enemies.skull]
+speed = 1.5
+sight = 7.0
+cooldown = 2.0           # segundos entre llama y llama
+green_chance = 0.5       # probabilidad de que tire llamas verdes (si no, azules)
+
+# Las llamas azules. Las verdes hacen el doble de daño y van a la mitad de velocidad.
+[enemies.flame]
+damage = 6
+speed = 5.0              # celdas por segundo
+range = 8.0              # celdas que recorre antes de apagarse
+
 # Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
 [crops.strawberry]
 seed_price = 10

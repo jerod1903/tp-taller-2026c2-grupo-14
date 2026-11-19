@@ -133,6 +133,18 @@ protected:
     TestCreature player{level, Position{0, 1}};
 };
 
+// La pareja de vampiros y las calaveras de los dos colores son un solo tipo
+EntityType same_type(EntityType type) {
+    switch (type) {
+        case EntityType::Vampiress:
+            return EntityType::Vampire;
+        case EntityType::GreenSkull:
+            return EntityType::Skull;
+        default:
+            return type;
+    }
+}
+
 // Si pone tantos de ese tipo como dice server_config.toml
 bool expected_count(EntityType type, size_t count) {
     const ServerConfig::Enemies& config = server_config().enemies;
@@ -141,6 +153,8 @@ bool expected_count(EntityType type, size_t count) {
             return count == static_cast<size_t>(config.skeleton.count);
         case EntityType::Vampire:
             return count == static_cast<size_t>(2 * config.vampire.pairs);
+        case EntityType::Skull:
+            return count == 1;
         case EntityType::Orc:
             return count >= static_cast<size_t>(config.orc.min_group) &&
                    count <= static_cast<size_t>(config.orc.max_group);
@@ -156,13 +170,11 @@ TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePort
         const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
         ASSERT_FALSE(found.empty());
         EntityType type = found.front()->entity_type();
-        if (type == EntityType::Vampiress) {
-            type = EntityType::Vampire;  // la pareja es un solo tipo
-        }
+        type = same_type(type);
         EXPECT_TRUE(expected_count(type, found.size()));
         for (const std::unique_ptr<Enemy>& enemy: found) {
             EntityType other = enemy->entity_type();
-            EXPECT_EQ(other == EntityType::Vampiress ? EntityType::Vampire : other, type);
+            EXPECT_EQ(same_type(other), type);
             const Position& pos = enemy->get_position();
             EXPECT_GE(std::hypot(pos.x, pos.y), server_config().enemies.spawn_distance);
         }

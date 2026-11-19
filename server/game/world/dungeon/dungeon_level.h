@@ -13,6 +13,8 @@
 #include "server/game/world/location.h"
 
 // Las escaleras y la salida al pueblo son portales comunes, salen de las transiciones del mapa.
+class Flame;
+
 class DungeonLevel: public Location {
 public:
     DungeonLevel(std::string name, Grid grid, int depth, uint32_t seed = std::random_device{}());
@@ -44,12 +46,24 @@ public:
     uint32_t new_seed();
     const std::vector<Creature*>& get_visitors() const;
 
+    // Las llamas que andan por el nivel, para el snapshot. No es su dueño: cada llama se anota al
+    // crearse y se borra al destruirse.
+    void add_flame(const Flame& flame);
+    void remove_flame(const Flame& flame);
+    const std::vector<const Flame*>& get_flames() const;
+    // Para las llamas: no se repite entre los niveles, aunque vuelve a empezar después de muchas.
+    uint32_t new_flame_id();
+
 private:
     int depth;
+    // Antes que `enemies`: se destruye después, así las llamas de los enemigos se pueden borrar
+    // de acá al destruirse.
+    std::vector<const Flame*> flames;
     std::vector<std::unique_ptr<Enemy>> enemies;
     std::vector<Creature*> visitors;
     std::mt19937 rng;
     uint32_t next_enemy_id;
+    uint32_t flames_made = 0;
 
     // Saca a todos sus enemigos y pone los de un tipo sorteado.
     void repopulate();

@@ -77,6 +77,18 @@ uint32_t DungeonLevel::new_enemy_id() { return next_enemy_id++; }
 
 uint32_t DungeonLevel::new_seed() { return rng(); }
 
+void DungeonLevel::add_flame(const Flame& flame) { flames.push_back(&flame); }
+
+void DungeonLevel::remove_flame(const Flame& flame) {
+    flames.erase(std::remove(flames.begin(), flames.end(), &flame), flames.end());
+}
+
+const std::vector<const Flame*>& DungeonLevel::get_flames() const { return flames; }
+
+uint32_t DungeonLevel::new_flame_id() {
+    return (static_cast<uint32_t>(depth) + 1) * ENEMY_IDS + flames_made++ % ENEMY_IDS;
+}
+
 const std::vector<Creature*>& DungeonLevel::get_visitors() const { return visitors; }
 
 void DungeonLevel::remove_enemies() {

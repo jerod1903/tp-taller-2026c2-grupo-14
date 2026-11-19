@@ -77,11 +77,17 @@ void Enemy::react(float dt) {
         return;
     }
     set_direction(Direction::NONE);
-    if (cooldown_left <= 0) {
+    if (ready_to_attack()) {
         attack(*target);
-        cooldown_left = cooldown;
-        attacking_left = attack_time;
+        start_attack();
     }
+}
+
+bool Enemy::ready_to_attack() const { return cooldown_left <= 0; }
+
+void Enemy::start_attack() {
+    cooldown_left = cooldown;
+    attacking_left = attack_time;
 }
 
 Creature* Enemy::nearest_visible() const {

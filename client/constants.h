@@ -89,6 +89,17 @@ inline const std::map<Pose, HojaDePose> HOJAS_VAMPIRO = {
 // y doler duran lo mismo que en el servidor (0.6 y 0.4 segundos, en Orc).
 inline constexpr int ANCHO_CUADRO_ORCO = 100;
 inline constexpr int ALTO_CUADRO_ORCO = 58;
+// La calavera: una tira de 4 cuadros de 16x16 (los de Idle/v2), la misma en todas las poses. La
+// verde, teñida (TINTES).
+inline constexpr int LADO_CUADRO_CALAVERA = 16;
+inline const std::map<Pose, HojaDePose> HOJAS_CALAVERA =
+        misma_hoja({RUTA_CALAVERA, formato_tira(LADO_CUADRO_CALAVERA, LADO_CUADRO_CALAVERA, 4,
+                                                std::chrono::duration<float>(0.15f))});
+// La llama: fire_skull.png achicada a su tamaño real (9x11), un solo cuadro. La verde, teñida.
+inline constexpr int ANCHO_LLAMA = 9;
+inline constexpr int ALTO_LLAMA = 11;
+inline const std::map<Pose, HojaDePose> HOJAS_LLAMA = misma_hoja(
+        {RUTA_LLAMA, formato_tira(ANCHO_LLAMA, ALTO_LLAMA, 1, std::chrono::duration<float>(1.0f))});
 inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
         {EntityType::Skeleton,
          {{Pose::Quieto,
@@ -124,11 +135,18 @@ inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
           {Pose::Muerto,
            {RUTA_ORCO_MUERTO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 4,
                                            std::chrono::duration<float>(0.1f), false)}}}},
+        {EntityType::Skull, HOJAS_CALAVERA},
+        {EntityType::GreenSkull, HOJAS_CALAVERA},
+        {EntityType::Flame, HOJAS_LLAMA},
+        {EntityType::GreenFlame, HOJAS_LLAMA},
 };
-// Las que se dibujan teñidas (las demás, sin tinte): el vampiro de negro, la vampira de rojo
+// Las que se dibujan teñidas (las demás, sin tinte): el vampiro de negro, la vampira de rojo y
+// la calavera verde y sus llamas de verde
 inline const std::map<EntityType, SDL_Color> TINTES = {
         {EntityType::Vampire, {90, 90, 110, 255}},
         {EntityType::Vampiress, {255, 110, 110, 255}},
+        {EntityType::GreenSkull, {110, 255, 140, 255}},
+        {EntityType::GreenFlame, {110, 255, 140, 255}},
 };
 
 inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;

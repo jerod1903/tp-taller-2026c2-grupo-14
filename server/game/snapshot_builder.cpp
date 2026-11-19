@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "server/game/world/dungeon/flame.h"
+
 namespace {
 uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
 
@@ -64,6 +66,18 @@ EntityState entity_of(const Enemy& enemy) {
                        enemy.action()};
 }
 
+EntityState entity_of(const Flame& flame) {
+    return EntityState{flame.get_id(),
+                       flame.entity_type(),
+                       flame.get_location().get_name(),
+                       to_wire(flame.get_x()),
+                       to_wire(flame.get_y()),
+                       0,
+                       0,
+                       Emote::None,
+                       EntityAction::None};
+}
+
 // La celda de arriba a la izquierda de la cama, en milésimas de celda
 EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& area_id) {
     return EntityState{player_id,
@@ -91,6 +105,9 @@ Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         for (const std::unique_ptr<Enemy>& enemy: dungeon.level(depth).get_enemies()) {
             snapshot.entities.push_back(entity_of(*enemy));
+        }
+        for (const Flame* flame: dungeon.level(depth).get_flames()) {
+            snapshot.entities.push_back(entity_of(*flame));
         }
     }
     const Cabin& cabin = world.get_cabin();

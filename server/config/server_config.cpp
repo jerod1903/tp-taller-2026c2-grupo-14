@@ -167,6 +167,8 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
     TomlTableReader skeleton = subsection(root, "enemies", "skeleton");
     TomlTableReader vampire = subsection(root, "enemies", "vampire");
     TomlTableReader orc = subsection(root, "enemies", "orc");
+    TomlTableReader skull = subsection(root, "enemies", "skull");
+    TomlTableReader flame = subsection(root, "enemies", "flame");
     ServerConfig::Enemies read{
             positive(required_float(enemies, "spawn_distance"), "spawn_distance"),
             positive(required_float(enemies, "min_walk"), "min_walk"),
@@ -182,7 +184,14 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
                     positive(required_float(vampire, "blood_reach"), "blood_reach")},
             ServerConfig::Orc{positive(orc.requiredInt("min_group"), "min_group"),
                               positive(orc.requiredInt("max_group"), "max_group"),
-                              read_fighter(orc)}};
+                              read_fighter(orc)},
+            ServerConfig::Skull{positive(required_float(skull, "speed"), "speed"),
+                                positive(required_float(skull, "sight"), "sight"),
+                                positive(required_float(skull, "cooldown"), "cooldown"),
+                                required_float(skull, "green_chance")},
+            ServerConfig::Flame{positive(flame.requiredInt("damage"), "damage"),
+                                positive(required_float(flame, "speed"), "speed"),
+                                positive(required_float(flame, "range"), "range")}};
     if (read.min_walk > read.max_walk) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": [enemies] 'min_walk' is bigger than 'max_walk'");
@@ -190,6 +199,10 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
     if (read.orc.min_group > read.orc.max_group) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": [enemies.orc] 'min_group' is bigger than 'max_group'");
+    }
+    if (read.skull.green_chance < 0.0f || read.skull.green_chance > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": [enemies.skull] 'green_chance' must be between 0 and 1");
     }
     return read;
 }
