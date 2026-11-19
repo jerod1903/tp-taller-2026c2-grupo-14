@@ -113,6 +113,26 @@ damage = 6
 speed = 5.0              # celdas por segundo
 range = 8.0              # celdas que recorre antes de apagarse
 
+# Las trampas de la mazmorra: aparecen al azar en cada nivel cada vez que se repuebla. Se activan
+# por tiempo: active_time segundos activas y idle_time inactivas. Activas, le sacan damage a cada
+# jugador en su zona, una vez por activación.
+[traps]
+spikes_count = 3         # pinches por nivel
+flamethrowers_count = 2  # lanzallamas por nivel
+
+# Lastiman a quien esté parado en su celda
+[traps.spikes]
+damage = 5
+active_time = 1.0
+idle_time = 2.0
+
+# Pegados a una pared, tiran un chorro de fuego para el otro lado
+[traps.flamethrower]
+damage = 8
+active_time = 1.5
+idle_time = 2.5
+reach = 2                # celdas que alcanza el chorro, contando la suya
+
 # Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
 [crops.strawberry]
 seed_price = 10

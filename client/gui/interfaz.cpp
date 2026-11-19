@@ -51,6 +51,7 @@ Interfaz::Interfaz():
             SDL2pp::Texture& textura =
                     hojas_por_pose.try_emplace(hoja.ruta, renderer, hoja.ruta).first->second;
             Capa capa = capa_animal(textura, hoja.formato);
+            capa.desplazamiento = SDL2pp::Point(hoja.corrimiento_x, hoja.corrimiento_y);
             if (tinte != TINTES.end()) {
                 capa.tinte = tinte->second;
             }
@@ -464,6 +465,12 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area) {
             std::vector<Sprite> capas = entidad.sprites();
+            if (EN_EL_PISO.contains(clave.first)) {
+                // Debajo de cualquiera que esté parado en su celda
+                for (Sprite& capa: capas) {
+                    capa.apoyo = capa.destino.y;
+                }
+            }
             sprites.insert(sprites.end(), capas.begin(), capas.end());
         }
     }

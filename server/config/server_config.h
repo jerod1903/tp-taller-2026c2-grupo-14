@@ -119,6 +119,24 @@ struct ServerConfig {
         Skull skull;
         Flame flame;
     };
+    // Una trampa: active_time segundos activa y idle_time inactiva, una y otra vez. Activa, le
+    // saca `damage` a cada jugador en su zona, una vez por activación.
+    struct Trap {
+        int damage;
+        float active_time;
+        float idle_time;
+    };
+    struct Flamethrower {
+        Trap trap;
+        int reach;  // celdas que alcanza el chorro, contando la suya
+    };
+    // Cuántas trampas de cada una aparecen en cada nivel de la mazmorra, al azar
+    struct Traps {
+        int spikes_count;
+        int flamethrowers_count;
+        Trap spikes;
+        Flamethrower flamethrower;
+    };
     // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están
     // en [animals.*] y [crops.*]; lo que cansa hablarles, en [energy].
     struct Market {
@@ -165,6 +183,7 @@ struct ServerConfig {
     Energy energy;
     Animals animals;
     Enemies enemies;
+    Traps traps;
     Crops crops;
     struct Cheats {
         int seeds;  // cuántas de cada tipo da "$seeds" sin cantidad

@@ -47,6 +47,10 @@ target_sources(taller_server
     game/characters/enemies/orc.cpp
     game/characters/enemies/skull.cpp
     game/world/dungeon/flame.cpp
+    game/world/dungeon/traps/trap.cpp
+    game/world/dungeon/traps/spikes.cpp
+    game/world/dungeon/traps/flamethrower.cpp
+    game/world/dungeon/traps/trap_spawner.cpp
     game/world/dungeon/spawners/enemy_spawner.cpp
     game/world/dungeon/spawners/skeleton_spawner.cpp
     game/world/dungeon/spawners/vampire_spawner.cpp
@@ -131,6 +135,10 @@ target_sources(taller_server
     game/characters/enemies/orc.h
     game/characters/enemies/skull.h
     game/world/dungeon/flame.h
+    game/world/dungeon/traps/trap.h
+    game/world/dungeon/traps/spikes.h
+    game/world/dungeon/traps/flamethrower.h
+    game/world/dungeon/traps/trap_spawner.h
     game/world/dungeon/spawners/enemy_spawner.h
     game/world/dungeon/spawners/skeleton_spawner.h
     game/world/dungeon/spawners/vampire_spawner.h

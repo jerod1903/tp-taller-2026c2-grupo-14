@@ -25,6 +25,7 @@ target_sources(taller_tests
     vampire_test.cpp
     orc_test.cpp
     skull_test.cpp
+    trap_test.cpp
     sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
@@ -58,6 +59,10 @@ target_sources(taller_tests
     ../server/game/characters/enemies/orc.cpp
     ../server/game/characters/enemies/skull.cpp
     ../server/game/world/dungeon/flame.cpp
+    ../server/game/world/dungeon/traps/trap.cpp
+    ../server/game/world/dungeon/traps/spikes.cpp
+    ../server/game/world/dungeon/traps/flamethrower.cpp
+    ../server/game/world/dungeon/traps/trap_spawner.cpp
     ../server/game/world/dungeon/spawners/enemy_spawner.cpp
     ../server/game/world/dungeon/spawners/skeleton_spawner.cpp
     ../server/game/world/dungeon/spawners/vampire_spawner.cpp

@@ -10,27 +10,31 @@
 
 #include "server/config/server_config.h"
 #include "server/game/world/dungeon/spawners/enemy_spawner.h"
+#include "server/game/world/dungeon/traps/trap_spawner.h"
 #include "server/game/world/point.h"
 
 namespace {
-// Los ids de los enemigos de cada nivel arrancan en (depth + 1) * ENEMY_IDS: no se repiten entre
-// niveles.
+// Los ids de los enemigos (y los de las llamas) de cada nivel van de (depth + 1) * ENEMY_IDS a
+// (depth + 2) * ENEMY_IDS: no se repiten entre niveles. Cuando se acaban vuelven a empezar; para
+// entonces los primeros ya no están.
 constexpr uint32_t ENEMY_IDS = 1000;
 // Hasta dónde, del centro de la celda clickeada, cuenta un enemigo como "en esa celda"
 constexpr float ENEMY_NEAR_CELL = 1.0f;
 }  // namespace
 
 DungeonLevel::DungeonLevel(std::string name, Grid grid, int depth, uint32_t seed):
-        Location(std::move(name), std::move(grid)),
-        depth(depth),
-        rng(seed),
-        next_enemy_id((static_cast<uint32_t>(depth) + 1) * ENEMY_IDS) {}
+        Location(std::move(name), std::move(grid)), depth(depth), rng(seed) {}
 
 int DungeonLevel::get_depth() const { return depth; }
 
 void DungeonLevel::spawn(std::unique_ptr<Enemy> enemy) {
     add_entity(*enemy);
     enemies.push_back(std::move(enemy));
+}
+
+void DungeonLevel::spawn(std::unique_ptr<Trap> trap) {
+    add_entity(*trap);
+    traps.push_back(std::move(trap));
 }
 
 Enemy* DungeonLevel::enemy_near(const Position& cell) const {
@@ -49,6 +53,8 @@ Enemy* DungeonLevel::enemy_near(const Position& cell) const {
 
 const std::vector<std::unique_ptr<Enemy>>& DungeonLevel::get_enemies() const { return enemies; }
 
+const std::vector<std::unique_ptr<Trap>>& DungeonLevel::get_traps() const { return traps; }
+
 void DungeonLevel::set_visitors(std::vector<Creature*> players) {
     bool was_empty = visitors.empty();
     visitors = std::move(players);
@@ -64,6 +70,8 @@ void DungeonLevel::update(float dt) {
 
 void DungeonLevel::repopulate() {
     remove_enemies();
+    remove_traps();
+    TrapSpawner().spawn(*this);
     random_spawner(rng).spawn(*this);
 }
 
@@ -73,7 +81,9 @@ std::optional<Position> DungeonLevel::spawn_cell(const std::function<bool(const 
     });
 }
 
-uint32_t DungeonLevel::new_enemy_id() { return next_enemy_id++; }
+uint32_t DungeonLevel::new_enemy_id() {
+    return (static_cast<uint32_t>(depth) + 1) * ENEMY_IDS + enemies_made++ % ENEMY_IDS;
+}
 
 uint32_t DungeonLevel::new_seed() { return rng(); }
 
@@ -96,6 +106,13 @@ void DungeonLevel::remove_enemies() {
         remove_entity(*enemy);
     }
     enemies.clear();
+}
+
+void DungeonLevel::remove_traps() {
+    for (const std::unique_ptr<Trap>& trap: traps) {
+        remove_entity(*trap);
+    }
+    traps.clear();
 }
 
 bool DungeonLevel::far_from_portals(const Position& pos) const {

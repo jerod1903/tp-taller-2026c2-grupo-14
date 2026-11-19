@@ -207,6 +207,24 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
     return read;
 }
 
+ServerConfig::Trap read_trap(const TomlTableReader& trap) {
+    return ServerConfig::Trap{positive(trap.requiredInt("damage"), "damage"),
+                              positive(required_float(trap, "active_time"), "active_time"),
+                              positive(required_float(trap, "idle_time"), "idle_time")};
+}
+
+ServerConfig::Traps read_traps(const toml::table& root) {
+    TomlTableReader traps = section(root, "traps");
+    TomlTableReader spikes = subsection(root, "traps", "spikes");
+    TomlTableReader flamethrower = subsection(root, "traps", "flamethrower");
+    return ServerConfig::Traps{
+            positive(traps.requiredInt("spikes_count"), "spikes_count"),
+            positive(traps.requiredInt("flamethrowers_count"), "flamethrowers_count"),
+            read_trap(spikes),
+            ServerConfig::Flamethrower{read_trap(flamethrower),
+                                       positive(flamethrower.requiredInt("reach"), "reach")}};
+}
+
 ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& name) {
     TomlTableReader crop = subsection(root, "crops", name);
     auto non_negative = [&crop](const std::string& key) {
@@ -313,9 +331,9 @@ ServerConfig load_server_config(const std::string& path) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
     ServerConfig::Animals animals = read_animals(root);
-    return ServerConfig{read_game(root), read_player(root),  read_energy(root),
-                        animals,         read_enemies(root), read_crops(root),
-                        read_cheats(root), read_market(root, animals)};
+    return ServerConfig{read_game(root),  read_player(root),  read_energy(root),
+                        animals,          read_enemies(root), read_traps(root),
+                        read_crops(root), read_cheats(root),  read_market(root, animals)};
 }
 
 const ServerConfig& server_config() {

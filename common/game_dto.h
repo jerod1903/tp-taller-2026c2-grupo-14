@@ -92,6 +92,10 @@ enum class EntityType : uint8_t {
     GreenSkull,
     Flame,
     GreenFlame,
+    Spikes,
+    FlamethrowerDown,
+    FlamethrowerLeft,
+    FlamethrowerRight,
 };
 
 // Lo que se muestra arriba de la cabeza de una entidad.

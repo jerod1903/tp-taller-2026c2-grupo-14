@@ -6,6 +6,8 @@
 #include <string>
 
 #include "server/game/world/dungeon/flame.h"
+#include "server/game/world/dungeon/traps/trap.h"
+#include "server/game/world/point.h"
 
 namespace {
 uint32_t to_wire(float cells) { return static_cast<uint32_t>(std::lround(cells * POSITION_SCALE)); }
@@ -78,6 +80,20 @@ EntityState entity_of(const Flame& flame) {
                        EntityAction::None};
 }
 
+// El centro de su celda; activa, como que está pegando
+EntityState entity_of(const Trap& trap) {
+    Point center = center_of(trap.get_position());
+    return EntityState{trap.get_id(),
+                       trap.entity_type(),
+                       trap.get_location().get_name(),
+                       to_wire(center.x),
+                       to_wire(center.y),
+                       0,
+                       0,
+                       Emote::None,
+                       trap.is_active() ? EntityAction::Attacking : EntityAction::None};
+}
+
 // La celda de arriba a la izquierda de la cama, en milésimas de celda
 EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& area_id) {
     return EntityState{player_id,
@@ -105,6 +121,9 @@ Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         for (const std::unique_ptr<Enemy>& enemy: dungeon.level(depth).get_enemies()) {
             snapshot.entities.push_back(entity_of(*enemy));
+        }
+        for (const std::unique_ptr<Trap>& trap: dungeon.level(depth).get_traps()) {
+            snapshot.entities.push_back(entity_of(*trap));
         }
         for (const Flame* flame: dungeon.level(depth).get_flames()) {
             snapshot.entities.push_back(entity_of(*flame));
