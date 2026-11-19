@@ -15,6 +15,7 @@ target_sources(taller_tests
     typing_command_test.cpp
     transicion_area_test.cpp
     sonidos_granja_test.cpp
+    grilla_mapa_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp
@@ -152,6 +153,7 @@ target_sources(taller_tests
     ../client/gui/sprites/pose.cpp
     ../client/gui/mapa/transicion_area.cpp
     ../client/audio/sonidos_granja.cpp
+    ../client/mapa-general/grilla_mapa.cpp
     # Inventario
     ../server/game/characters/inventory.cpp
     ../server/game/commands/select_slot_command.cpp
