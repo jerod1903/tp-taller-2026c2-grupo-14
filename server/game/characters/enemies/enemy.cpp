@@ -56,7 +56,7 @@ bool Enemy::is_gone() const { return !is_alive() && corpse_left <= 0; }
 
 void Enemy::update(float dt) {
     if (!is_alive()) {
-        corpse_left -= dt;
+        while_dead(dt);
         return;
     }
     cooldown_left -= dt;
@@ -77,15 +77,18 @@ void Enemy::react(float dt) {
         return;
     }
     set_direction(Direction::NONE);
-    if (ready_to_attack()) {
-        attack(*target);
-        start_attack();
-    }
+    try_attack(*target);
 }
 
-bool Enemy::ready_to_attack() const { return cooldown_left <= 0; }
+void Enemy::strike(Creature& target) { attack(target); }
 
-void Enemy::start_attack() {
+void Enemy::while_dead(float dt) { corpse_left -= dt; }
+
+void Enemy::try_attack(Creature& target) {
+    if (cooldown_left > 0) {
+        return;
+    }
+    strike(target);
     cooldown_left = cooldown;
     attacking_left = attack_time;
 }

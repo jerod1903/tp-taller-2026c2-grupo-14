@@ -15,8 +15,8 @@
 inline constexpr float CORPSE_TIME = 1.5f;
 
 // Un enemigo de la mazmorra. Por defecto pelea cuerpo a cuerpo: si ve a un jugador lo persigue y,
-// cuando lo alcanza, le pega cada un tiempo; si no ve a nadie, deambula. Los que pelean distinto
-// (a distancia) redefinen react().
+// cuando lo alcanza, le pega cada un tiempo; si no ve a nadie, deambula. Los que pegan distinto
+// (la calavera tira una llama) redefinen strike().
 class Enemy: public Creature {
 public:
     // `visitors`: los jugadores que están en su nivel. Es la lista del nivel, que se actualiza en
@@ -43,8 +43,8 @@ public:
     // muere.
     virtual bool is_gone() const;
 
-    // Cuenta el tiempo entre golpes, decide qué hacer con los visitantes (react) y camina. Muerto
-    // solo cuenta el tiempo que le queda al cuerpo.
+    // Vivo, cuenta el tiempo entre golpes, decide qué hacer con los visitantes (react) y camina.
+    // Muerto, hace lo suyo (while_dead).
     void update(float dt) override;
 
 protected:
@@ -56,10 +56,12 @@ protected:
     // deambula.
     virtual void react(float dt);
 
-    // Si ya pasó el cooldown desde el último golpe
-    bool ready_to_attack() const;
-    // Arranca un golpe: vuelve a contar el cooldown y queda pegando attack_time segundos.
-    void start_attack();
+    // El golpe en sí. Por defecto, cuerpo a cuerpo: le saca su daño a `target`.
+    virtual void strike(Creature& target);
+
+    // Lo que hace mientras está muerto. Por defecto cuenta el tiempo que le queda al cuerpo; los
+    // que reviven cuentan para revivir.
+    virtual void while_dead(float dt);
 
     // El jugador vivo más cercano que ve, o nullptr si no ve a ninguno.
     Creature* nearest_visible() const;
@@ -80,6 +82,9 @@ private:
     const std::vector<Creature*>& visitors;
     Wanderer wanderer;
 
+    // Si ya pasó el cooldown, pega (strike) y vuelve a contar el cooldown y el tiempo que queda
+    // pegando.
+    void try_attack(Creature& target);
     // Está dentro de su vista y no hay paredes en el medio.
     bool sees(const Creature& target) const;
     // Recorre las celdas de la recta entre los dos: ninguna puede ser una pared.

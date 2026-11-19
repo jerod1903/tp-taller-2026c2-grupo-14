@@ -17,8 +17,10 @@ public:
     void on_death() override;
     // Nunca se va: siempre revive.
     bool is_gone() const override;
-    // Muerto, cuenta el tiempo para revivir; vivo, lo de cualquier enemigo.
-    void update(float dt) override;
+
+protected:
+    // Cuenta el tiempo para revivir.
+    void while_dead(float dt) override;
 
 private:
     float revive_left = 0;

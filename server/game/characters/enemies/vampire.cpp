@@ -54,11 +54,7 @@ void Vampire::on_death() {
 
 bool Vampire::is_gone() const { return false; }
 
-void Vampire::update(float dt) {
-    if (is_alive()) {
-        Enemy::update(dt);
-        return;
-    }
+void Vampire::while_dead(float dt) {
     if (!revive_left && blood_nearby()) {
         revive_left = config().revive_seconds;
     }

@@ -24,11 +24,7 @@ void Skeleton::on_death() {
 
 bool Skeleton::is_gone() const { return false; }
 
-void Skeleton::update(float dt) {
-    if (is_alive()) {
-        Enemy::update(dt);
-        return;
-    }
+void Skeleton::while_dead(float dt) {
     revive_left -= dt;
     if (revive_left <= 0) {
         health = max_health;

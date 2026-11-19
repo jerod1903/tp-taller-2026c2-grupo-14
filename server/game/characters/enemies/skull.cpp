@@ -45,20 +45,7 @@ void Skull::update(float dt) {
 
 const std::vector<std::unique_ptr<Flame>>& Skull::get_flames() const { return flames; }
 
-void Skull::react(float dt) {
-    Creature* target = nearest_visible();
-    if (target == nullptr) {
-        Enemy::react(dt);
-        return;
-    }
-    set_direction(Direction::NONE);
-    if (ready_to_attack()) {
-        shoot(*target);
-        start_attack();
-    }
-}
-
-void Skull::shoot(const Creature& target) {
+void Skull::strike(Creature& target) {
     flames.push_back(std::make_unique<Flame>(level.new_flame_id(), Point{x, y},
                                              Point{target.get_x(), target.get_y()}, level,
                                              get_visitors(), kind));

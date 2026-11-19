@@ -31,14 +31,14 @@ public:
     void on_death() override;
     // Nunca se va: puede revivir. Se va cuando el nivel se repuebla.
     bool is_gone() const override;
-    // Muerto, espera la sangre y después el tiempo para revivir; vivo, lo de cualquier enemigo.
-    void update(float dt) override;
     // La vampira en frenesí, al doble.
     float speed() const override;
 
 protected:
     // El vampiro en frenesí, al doble.
     int attack_damage() const override;
+    // Espera la sangre y después el tiempo para revivir.
+    void while_dead(float dt) override;
 
 private:
     VampireKind kind;
