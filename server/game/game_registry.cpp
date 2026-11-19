@@ -1,14 +1,17 @@
 #include "server/game/game_registry.h"
 
 #include <algorithm>
-#include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#include "common/logger.h"
 
 namespace {
 
@@ -117,6 +120,9 @@ GameEnteredResponse GameRegistry::join_game(const std::string& code, const GameM
     if (name_taken(game, member.characterName)) {
         return GameEnteredResponse{LobbyStatus::NameTaken, 0, 0};
     }
+    if (!launch(game.gameId)) {
+        return GameEnteredResponse{LobbyStatus::GameClosed, 0, 0};
+    }
     uint32_t player_id = static_cast<uint32_t>(game.members.size());
     game.members.push_back(member);
     store.save(game);
@@ -136,9 +142,13 @@ GameEnteredResponse GameRegistry::load_game(uint32_t game_id, const std::string&
     if (!world_exists(game->second.worldId)) {
         return GameEnteredResponse{LobbyStatus::WorldNotFound, 0, 0};
     }
-    if (!connected[game_id].insert(username).second) {
+    if (connected[game_id].count(username) > 0) {
         return GameEnteredResponse{LobbyStatus::AlreadyConnected, 0, 0};
     }
+    if (!launch(game_id)) {
+        return GameEnteredResponse{LobbyStatus::GameClosed, 0, 0};
+    }
+    connected[game_id].insert(username);
     return GameEnteredResponse{LobbyStatus::Ok, game_id, *player_id};
 }
 
@@ -170,14 +180,10 @@ EnableMultiplayerResponse GameRegistry::enable_multiplayer(uint32_t game_id,
 
 Inbox& GameRegistry::attach(uint32_t game_id) {
     std::lock_guard<std::mutex> lock(mutex);
-    reap();
-    std::unique_ptr<Game>& game = running[game_id];
-    if (!game) {
-        const std::string& world_id = games.at(game_id).worldId;
-        game = std::make_unique<Game>(world_id, maps.at(world_id));
-        game->start();
+    if (!launch(game_id)) {
+        throw std::runtime_error("could not load game " + std::to_string(game_id));
     }
-    return game->get_inbox();
+    return running.at(game_id)->get_inbox();
 }
 
 bool GameRegistry::is_running(uint32_t game_id) const {
@@ -199,7 +205,8 @@ void GameRegistry::leave_game(uint32_t game_id, const std::string& username) {
     std::map<uint32_t, std::unique_ptr<Game>>::iterator game = running.find(game_id);
     if (game != running.end()) {
         game->second->stop();
-        finished.push_back(std::move(game->second));
+        // Si quedaba otro detenido de esta partida, al reemplazarlo se espera a que termine
+        finished[game_id] = std::move(game->second);
         running.erase(game);
     }
 }
@@ -247,7 +254,29 @@ std::string GameRegistry::new_invite_code() {
 }
 
 void GameRegistry::reap() {
-    finished.remove_if([](const std::unique_ptr<Game>& game) { return !game->is_alive(); });
+    std::erase_if(finished, [](const auto& entry) { return !entry.second->is_alive(); });
+}
+
+bool GameRegistry::launch(uint32_t game_id) {
+    reap();
+    if (running.count(game_id) > 0) {
+        return true;
+    }
+    // El que se estaba cerrando puede estar guardando en su último tick: se espera a que termine
+    // (el destructor del Game lo joinea) para cargar lo que haya guardado.
+    finished.erase(game_id);
+    std::optional<SavedGame> saved;
+    try {
+        saved = store.load_game(game_id);
+    } catch (const std::exception& e) {
+        Logger::error("no se pudo cargar la partida {}: {}", game_id, e.what());
+        return false;
+    }
+    const std::string& world_id = games.at(game_id).worldId;
+    auto game = std::make_unique<Game>(world_id, maps.at(world_id), game_id, store, saved);
+    game->start();
+    running.emplace(game_id, std::move(game));
+    return true;
 }
 
 bool GameRegistry::is_member(const GameRecord& game, const std::string& username) {

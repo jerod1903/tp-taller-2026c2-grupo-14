@@ -290,4 +290,10 @@ TEST_F(ReturningPlayerTest, WhoDidNotEnterKeepsWhatItHadSaved) {
     EXPECT_EQ(saved.players.count(1), 1u);
 }
 
+TEST_F(ReturningPlayerTest, UpdateTellsWhenANewDayStarts) {
+    EXPECT_FALSE(world->update(1.0f));
+    EXPECT_TRUE(world->update(world->get_clock().get_day_seconds()));
+    EXPECT_EQ(world->get_clock().get_day(), 2);
+}
+
 }  // namespace

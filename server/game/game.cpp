@@ -19,10 +19,17 @@ std::chrono::nanoseconds tick_duration() {
 }
 }  // namespace
 
-Game::Game(std::string world_id, const stardew::maps::MapDefinition& map):
+Game::Game(std::string world_id, const stardew::maps::MapDefinition& map, uint32_t game_id,
+           GameStore& store, const std::optional<SavedGame>& saved):
+        game_id(game_id),
+        store(store),
         world(build_world(map)),
         market(build_market(map, *world)),
-        player_sessions(std::move(world_id), *world) {}
+        player_sessions(std::move(world_id), *world) {
+    if (saved) {
+        world->restore(*saved);
+    }
+}
 
 Inbox& Game::get_inbox() { return inbox; }
 
@@ -38,7 +45,9 @@ void Game::run() {
     try {
         while (should_keep_running()) {
             process_events();
-            world->update(tick_seconds);
+            if (world->update(tick_seconds)) {
+                save();
+            }
             ++tick;
             broadcast_snapshot();
             if (world->get_farm().take_changes()) {
@@ -79,6 +88,15 @@ PlayerFarming& Game::farming() { return *world; }
 PlayerCombat& Game::combat() { return *world; }
 
 void Game::broadcast_snapshot() { player_sessions.broadcast(SnapshotBuilder::build(tick, *world)); }
+
+void Game::save() {
+    try {
+        store.save_game(game_id, world->saved());
+        Logger::info("partida {} guardada (día {})", game_id, world->get_clock().get_day());
+    } catch (const std::exception& e) {
+        Logger::error("no se pudo guardar la partida {}: {}", game_id, e.what());
+    }
+}
 
 void Game::stop() {
     Thread::stop();

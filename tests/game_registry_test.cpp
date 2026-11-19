@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <variant>
@@ -465,6 +466,53 @@ TEST(GameRegistryTest, ConcurrentCreatesAndQueriesStayConsistent) {
     }
     EXPECT_EQ(unique.size(), static_cast<std::size_t>(THREADS * GAMES_PER_THREAD));
     EXPECT_EQ(store.load_all().size(), static_cast<std::size_t>(THREADS * GAMES_PER_THREAD));
+}
+
+// --- Partidas guardadas ---
+
+// Un GameStore con lo guardado roto: leerlo falla
+class UnreadableStore: public InMemoryGameStore {
+public:
+    using InMemoryGameStore::InMemoryGameStore;
+    std::optional<SavedGame> load_game(uint32_t) override {
+        throw std::runtime_error("archivo roto");
+    }
+};
+
+GameRecord saved_record() {
+    return GameRecord{MULTI_ID, "Guardada", "granja", true, MAX_PLAYERS, {member("jero", "martin")},
+                      CODE};
+}
+
+TEST(GameRegistryTest, ALoadedGameResumesFromWhatWasSaved) {
+    InMemoryGameStore store({saved_record()});
+    store.save_game(MULTI_ID, SavedGame{5, {}, {}});
+    GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
+    ASSERT_EQ(registry.load_game(MULTI_ID, "jero").status, LobbyStatus::Ok);
+    std::shared_ptr<Outbox> outbox = std::make_shared<Outbox>(64);
+    registry.attach(MULTI_ID).push(
+            std::make_shared<JoinCommand>(0, member("jero", "martin"), outbox));
+    GameMessage message = outbox->pop();
+    while (!std::holds_alternative<Snapshot>(message)) {
+        message = outbox->pop();
+    }
+    EXPECT_EQ(std::get<Snapshot>(message).day, 5);
+}
+
+TEST(GameRegistryTest, AnUnreadableSaveRespondsGameClosedAndDoesNotConnect) {
+    UnreadableStore store({saved_record()});
+    GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
+    EXPECT_EQ(registry.load_game(MULTI_ID, "jero").status, LobbyStatus::GameClosed);
+    // No quedó conectado: al reintentar vuelve a fallar igual, no con AlreadyConnected
+    EXPECT_EQ(registry.load_game(MULTI_ID, "jero").status, LobbyStatus::GameClosed);
+    EXPECT_FALSE(registry.is_running(MULTI_ID));
+}
+
+TEST(GameRegistryTest, JoiningAGameWithAnUnreadableSaveDoesNotAddTheMember) {
+    UnreadableStore store({saved_record()});
+    GameRegistry registry(test_worlds(WORLDS), store, MAX_PLAYERS);
+    EXPECT_EQ(registry.join_game(CODE, member("santi", "Santu")).status, LobbyStatus::GameClosed);
+    EXPECT_TRUE(registry.games_of("santi").empty());
 }
 
 }  // namespace

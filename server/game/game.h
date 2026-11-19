@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "common/lib/thread.h"
@@ -13,11 +14,16 @@
 #include "server/game/game_event.h"
 #include "server/game/sessions.h"
 #include "server/game/world/world.h"
+#include "server/persistence/game_store.h"
+#include "server/persistence/saved_game.h"
 
 class Game: public Thread, public GameContext {
 public:
-    // Arma el World a partir del mapa, que tiene que estar validado.
-    Game(std::string world_id, const stardew::maps::MapDefinition& map);
+    // Arma el World a partir del mapa, que tiene que estar validado, y lo retoma desde `saved` si
+    // la partida ya tenía algo guardado. Cada vez que empieza un día lo guarda en `store` (desde
+    // su hilo: el store no comparte nada entre partidas).
+    Game(std::string world_id, const stardew::maps::MapDefinition& map, uint32_t game_id,
+         GameStore& store, const std::optional<SavedGame>& saved = std::nullopt);
 
     Inbox& get_inbox();
 
@@ -40,6 +46,8 @@ public:
 
 private:
     bool started = false;
+    uint32_t game_id;
+    GameStore& store;
     Inbox inbox;
     std::unique_ptr<World> world;
     Market market;  // después de world: usa su granja y su mercado
@@ -49,6 +57,8 @@ private:
     // Ejecuta los comandos pendientes de la inbox sin bloquearse.
     void process_events();
     void broadcast_snapshot();
+    // Guarda la partida. Si no puede, lo loguea y sigue: se vuelve a intentar al otro día.
+    void save();
 };
 
 #endif  // GAME_H

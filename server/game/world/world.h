@@ -74,8 +74,9 @@ public:
     void restore(const SavedGame& saved);
 
     // Actualiza las tres zonas, hace viajar a los que pisaron un portal y termina el día a las
-    // 2:00 o cuando caen todos inconscientes.
-    void update(float dt);
+    // 2:00 o cuando caen todos inconscientes. true si en este update empezó un día nuevo (ya están
+    // todos despiertos): es cuando se guarda la partida.
+    bool update(float dt);
 
 private:
     std::unique_ptr<Farm> farm;

@@ -166,7 +166,7 @@ bool World::everyone_unconscious() const {
     });
 }
 
-void World::update(float dt) {
+bool World::update(float dt) {
     farm->update(dt);
     town->update(dt);
     std::vector<Creature*> characters;
@@ -185,4 +185,5 @@ void World::update(float dt) {
         start_new_day();
     }
     farm->update_time(clock.get_minute_of_day());
+    return day_over;
 }
