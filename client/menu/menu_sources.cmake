@@ -8,6 +8,10 @@ set(TALLER_MENU_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/components/MenuButton.cpp
     ${CMAKE_CURRENT_LIST_DIR}/components/OptionStepper.cpp
     ${CMAKE_CURRENT_LIST_DIR}/components/SavedGameRow.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/components/WorldPreview.cpp
+    # El mapa general (sin SDL ni Qt): lo comparte con el juego
+    ${CMAKE_CURRENT_LIST_DIR}/../mapa-general/grilla_mapa.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../mapa-general/mundo.cpp
     ${CMAKE_CURRENT_LIST_DIR}/navigation/ScreenManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/screens/BaseScreen.cpp
     ${CMAKE_CURRENT_LIST_DIR}/screens/CharacterScreen.cpp
@@ -27,6 +31,10 @@ set(TALLER_MENU_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/components/MenuButton.h
     ${CMAKE_CURRENT_LIST_DIR}/components/OptionStepper.h
     ${CMAKE_CURRENT_LIST_DIR}/components/SavedGameRow.h
+    ${CMAKE_CURRENT_LIST_DIR}/components/WorldPreview.h
+    ${CMAKE_CURRENT_LIST_DIR}/../mapa-general/colores_mapa.h
+    ${CMAKE_CURRENT_LIST_DIR}/../mapa-general/grilla_mapa.h
+    ${CMAKE_CURRENT_LIST_DIR}/../mapa-general/mundo.h
     ${CMAKE_CURRENT_LIST_DIR}/navigation/ScreenManager.h
     ${CMAKE_CURRENT_LIST_DIR}/screens/BaseScreen.h
     ${CMAKE_CURRENT_LIST_DIR}/screens/CharacterScreen.h

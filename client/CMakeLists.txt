@@ -21,8 +21,6 @@ target_sources(taller_client
     gui/calculadores/calculador_camara.cpp
     gui/mapa/mapa.cpp
     gui/mapa/transicion_area.cpp
-    mapa-general/grilla_mapa.cpp
-    mapa-general/mundo.cpp
     gui/mapa-general/mapa_general.cpp
     gui/mapa-general/minimapa.cpp
     gui/mapa-general/dibujo_mapa.cpp
@@ -64,9 +62,6 @@ target_sources(taller_client
     gui/calculadores/calculador_camara.h
     gui/mapa/mapa.h
     gui/mapa/transicion_area.h
-    mapa-general/colores_mapa.h
-    mapa-general/grilla_mapa.h
-    mapa-general/mundo.h
     gui/mapa-general/mapa_general.h
     gui/mapa-general/minimapa.h
     gui/mapa-general/dibujo_mapa.h
