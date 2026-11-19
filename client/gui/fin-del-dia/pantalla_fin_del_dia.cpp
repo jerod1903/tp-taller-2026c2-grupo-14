@@ -3,6 +3,7 @@
 #include <string>
 
 #include "client/constants.h"
+#include "client/gui/fondo/oscurecer_ventana.h"
 #include "client/gui/rutas.h"
 
 PantallaFinDelDia::PantallaFinDelDia(SDL2pp::Renderer& renderer, Fuente& fuente,
@@ -18,10 +19,7 @@ bool PantallaFinDelDia::leer(const SDL_Event& evento, const SDL2pp::Point& taman
 
 void PantallaFinDelDia::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana,
                                 const DayEnded& fin, bool listo) {
-    renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-    renderer.SetDrawColor(COLOR_FONDO_PAUSA.r, COLOR_FONDO_PAUSA.g, COLOR_FONDO_PAUSA.b,
-                          COLOR_FONDO_PAUSA.a);
-    renderer.FillRect(SDL2pp::Rect(0, 0, tamano_ventana.x, tamano_ventana.y));
+    oscurecer_ventana(renderer, tamano_ventana);
     SDL2pp::Rect rect = boton(tamano_ventana);
     int centro_x = tamano_ventana.x / 2;
     dibujar_texto(renderer, fuente_titulo, TITULO_FIN_DEL_DIA + std::to_string(fin.day),

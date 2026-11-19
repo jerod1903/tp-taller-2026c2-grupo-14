@@ -329,8 +329,6 @@ inline constexpr uint32_t MASCARA_ALFA = 0xFF000000;
 inline constexpr uint32_t MASCARA_COLOR = 0x00FFFFFF;
 
 inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
-inline const char* const CARACTERES_WORLD_ID =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
 
 inline constexpr int TAMANO_FUENTE_TITULO = 32;
 inline const char* const TITULO_PAUSA = "Pausa";
@@ -356,5 +354,19 @@ inline const char* const TEXTO_OK = "Ok";
 inline const char* const TEXTO_ESPERANDO = "Esperando a los demás";
 // Entre el título, el texto y el botón
 inline constexpr int SEPARACION_TEXTOS_FIN_DEL_DIA = 40;
+
+// El mapa general (M): al abrirlo entra entero en la ventana, dejando este margen a cada lado.
+// La rueda acerca o aleja de a ZOOM_PASO, entre el mapa entero y ZOOM_MAXIMO veces eso.
+inline constexpr float MARGEN_MAPA_GENERAL = 0.05f;
+inline constexpr float ZOOM_PASO = 1.25f;
+inline constexpr float ZOOM_MAXIMO = 8.0f;
+// Cada jugador es un punto blanco con borde negro; el propio, más grande. El radio va en casillas
+// del mapa, con un mínimo en píxeles para que se vea con el mapa entero.
+inline constexpr SDL_Color COLOR_PUNTO_JUGADOR = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_BORDE_PUNTO = {0, 0, 0, 255};
+inline constexpr float RADIO_PUNTO = 0.5f;
+inline constexpr float RADIO_PUNTO_PROPIO = 0.9f;
+inline constexpr int RADIO_MINIMO_PUNTO = 3;
+inline constexpr int RADIO_MINIMO_PUNTO_PROPIO = 5;
 
 #endif

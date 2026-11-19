@@ -21,6 +21,7 @@
 #include "client/gui/fin-del-dia/pantalla_fin_del_dia.h"
 #include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
+#include "client/gui/mapa-general/mapa_general.h"
 #include "client/gui/mapa/mapa.h"
 #include "client/gui/mapa/transicion_area.h"
 #include "client/gui/menu-pausa/menu_pausa.h"
@@ -48,6 +49,9 @@ private:
     void leer_pausa(const SDL_Event& evento, Entrada& entrada);
     // Con la pantalla de fin de día: el Ok, la pausa, el chat y pantalla completa
     void leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada);
+    // Con el mapa general abierto: el zoom, el arrastre, cerrarlo y pantalla completa
+    void leer_mapa_general(const SDL_Event& evento);
+    bool mapa_general_abierto() const;
     ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
@@ -82,6 +86,8 @@ private:
     int escala = 1;
     bool pantalla_completa = false;
     std::optional<Mapa> mapa;
+    // Se arma junto con el mapa, con el mismo mundo
+    std::optional<MapaGeneral> mapa_general;
     std::string mundo_del_mapa;
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
     std::vector<EntityState> camas;

@@ -154,6 +154,7 @@ target_sources(taller_tests
     ../client/gui/mapa/transicion_area.cpp
     ../client/audio/sonidos_granja.cpp
     ../client/mapa-general/grilla_mapa.cpp
+    ../client/mapa-general/mundo.cpp
     # Inventario
     ../server/game/characters/inventory.cpp
     ../server/game/commands/select_slot_command.cpp

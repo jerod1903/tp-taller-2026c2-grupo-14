@@ -1,11 +1,13 @@
 #include "client/mapa-general/grilla_mapa.h"
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "client/mapa-general/colores_mapa.h"
+#include "client/mapa-general/mundo.h"
 
 namespace {
 
@@ -92,4 +94,15 @@ TEST(GrillaMapaTest, UnMapaSinAreasDaUnaGrillaVacia) {
     EXPECT_EQ(grilla.ancho, 0);
     EXPECT_EQ(grilla.alto, 0);
     EXPECT_TRUE(grilla.colores.empty());
+}
+
+TEST(CargarMundoTest, LeeElMapaDelMundoPorSuId) {
+    GrillaMapa grilla = grilla_del_mapa(cargar_mundo("valle"));
+    EXPECT_TRUE(grilla.areas.contains("granja"));
+    EXPECT_TRUE(grilla.areas.contains("pueblo"));
+}
+
+TEST(CargarMundoTest, UnIdQueSaleDeLaCarpetaSeRechaza) {
+    EXPECT_THROW(cargar_mundo("../maps/valle"), std::runtime_error);
+    EXPECT_THROW(cargar_mundo(""), std::runtime_error);
 }

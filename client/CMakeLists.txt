@@ -22,6 +22,9 @@ target_sources(taller_client
     gui/mapa/mapa.cpp
     gui/mapa/transicion_area.cpp
     mapa-general/grilla_mapa.cpp
+    mapa-general/mundo.cpp
+    gui/mapa-general/mapa_general.cpp
+    gui/fondo/oscurecer_ventana.cpp
     gui/menu-pausa/menu_pausa.cpp
     gui/fin-del-dia/pantalla_fin_del_dia.cpp
     gui/inventario/barra_inventario.cpp
@@ -60,6 +63,9 @@ target_sources(taller_client
     gui/mapa/transicion_area.h
     mapa-general/colores_mapa.h
     mapa-general/grilla_mapa.h
+    mapa-general/mundo.h
+    gui/mapa-general/mapa_general.h
+    gui/fondo/oscurecer_ventana.h
     gui/menu-pausa/menu_pausa.h
     gui/fin-del-dia/pantalla_fin_del_dia.h
     gui/inventario/barra_inventario.h
