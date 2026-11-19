@@ -25,11 +25,11 @@ const Position DOOR_POS{0, 4};   // Puerta de salida, dentro de la cabaña.
 // `beds`: los lugares para camas de la cabaña (para spawn_player)
 std::unique_ptr<World> make_world(std::vector<Position> beds = {}) {
     auto cabin = std::make_unique<Cabin>("cabin", make_grid(), DOOR_POS, std::move(beds));
-    auto farm = std::make_unique<Farm>("farm", make_grid(), CABIN_POS, std::move(cabin));
+    auto farm = std::make_unique<Farm>("farm", make_grid(), DoorCells{CABIN_POS}, std::move(cabin));
     auto market = std::make_unique<Interior>("market", make_grid(), DOOR_POS);
     auto community_center = std::make_unique<Interior>("community_center", make_grid(), DOOR_POS);
-    auto town = std::make_unique<Town>("town", make_grid(), CABIN_POS, std::move(market),
-                                       Position{1, 1}, std::move(community_center));
+    auto town = std::make_unique<Town>("town", make_grid(), DoorCells{CABIN_POS}, std::move(market),
+                                       DoorCells{Position{1, 1}}, std::move(community_center));
     std::vector<std::unique_ptr<DungeonLevel>> levels;
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));

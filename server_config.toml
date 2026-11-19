@@ -6,7 +6,7 @@ tick_rate = 30           # ticks por segundo
 outbox_size = 64         # mensajes pendientes por jugador; con la outbox llena se descartan snapshots
 
 [time]
-day_speed = "medio"      # "lento" (21 min reales por dia), "medio" (14) o "rapido" (7)
+day_speed = "rapido"      # "lento" (21 min reales por dia), "medio" (14) o "rapido" (7)
 
 [player]
 health = 100

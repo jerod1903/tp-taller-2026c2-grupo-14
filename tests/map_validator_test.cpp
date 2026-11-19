@@ -62,12 +62,37 @@ TEST(MapValidatorDoorTest, ATreeInFrontOfTheDoorIsRejected) {
     EXPECT_TRUE(has_blocked_door(maps::validateMap(map, requirements()), "mercado"));
 }
 
+TEST(MapValidatorDoorTest, WaterInFrontOfTheSecondHalfOfADoubleDoorIsRejected) {
+    maps::MapDefinition map = example_map();
+    const maps::MapElement market = element_by_id(map, "mercado");
+    const maps::MapCell right = maps::doorCells(market).back();
+    area_by_id(map, "pueblo").tiles[right.y + 1][right.x] = maps::TileType::Water;
+
+    EXPECT_TRUE(has_blocked_door(maps::validateMap(map, requirements()), "mercado"));
+}
+
 TEST(MapValidatorDoorTest, ADoorOnTheBottomEdgeOfTheAreaIsRejected) {
     maps::MapDefinition map = example_map();
     maps::MapElement& center = element_by_id(map, "centro-comunitario");
     center.y = area_by_id(map, "pueblo").height - center.height;
 
     EXPECT_TRUE(has_blocked_door(maps::validateMap(map, requirements()), "centro-comunitario"));
+}
+
+// La puerta como esta en cada dibujo: la cabaña simple, el mercado y el centro comunitario dobles
+TEST(DoorCellsTest, EachBuildingHasItsDoorWhereItsSpriteDrawsIt) {
+    auto columns = [](maps::ElementType type, int width) {
+        std::vector<int> xs;
+        for (const maps::MapCell& cell:
+             maps::doorCells({"b", "a", type, maps::ElementLayer::Structure, 10, 4, width, 3})) {
+            EXPECT_EQ(cell.y, 6);
+            xs.push_back(cell.x - 10);
+        }
+        return xs;
+    };
+    EXPECT_EQ(columns(maps::ElementType::Cabin, 5), (std::vector<int>{2}));
+    EXPECT_EQ(columns(maps::ElementType::Market, 10), (std::vector<int>{5, 6}));
+    EXPECT_EQ(columns(maps::ElementType::CommunityCenter, 12), (std::vector<int>{5, 6}));
 }
 
 TEST(TomlMapFileTest, AreaOffsetsSurviveSavingAndLoading) {

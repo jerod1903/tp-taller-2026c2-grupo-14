@@ -1,5 +1,6 @@
 #include "server/game/world/world_loader.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -91,9 +92,11 @@ TEST_F(WorldLoaderTest, TheExampleMapOfTheRepoIsOffered) {
     std::vector<GameWorld> worlds = load_worlds(
             TALLER_MAPS_DIR,
             stardew::maps::loadMapRequirements(TALLER_MAPS_DIR "/config/map_requirements.toml"));
-    ASSERT_FALSE(worlds.empty());
-    EXPECT_EQ(worlds[0].info.worldId, "valle");
-    EXPECT_EQ(worlds[0].info.name, "Valle de ejemplo");
+    // Hay otros mapas en el repo: el de ejemplo no tiene por qué ser el primero
+    auto valle = std::find_if(worlds.begin(), worlds.end(),
+                              [](const GameWorld& world) { return world.info.worldId == "valle"; });
+    ASSERT_NE(valle, worlds.end());
+    EXPECT_EQ(valle->info.name, "Valle de ejemplo");
 }
 
 }  // namespace

@@ -132,7 +132,7 @@ TEST_F(WorldBuilderTest, CabinBlocksAllItsCells) {
     EXPECT_FALSE(farm().is_walkable(Position{1, 1}));
     EXPECT_FALSE(farm().is_walkable(Position{3, 2}));
     EXPECT_FALSE(farm().is_walkable(Position{2, 2}));
-    EXPECT_EQ(farm().get_cabin_pos(), (Position{2, 2}));
+    EXPECT_EQ(farm().get_cabin_door(), (DoorCells{Position{2, 2}}));
 }
 
 TEST_F(WorldBuilderTest, CabinDoorLeadsToTheInteriorAndBack) {
@@ -142,6 +142,21 @@ TEST_F(WorldBuilderTest, CabinDoorLeadsToTheInteriorAndBack) {
     EXPECT_EQ(in->target, &cabin);
     EXPECT_EQ(cell_of(in->arrival), cabin.get_door_pos());
     EXPECT_EQ(cabin.portal_at(cabin.get_door_pos())->target, &farm());
+}
+
+// El centro comunitario de 2x1 en (2,2) tiene la puerta doble: se entra por las dos celdas y se
+// sale por debajo del medio
+TEST_F(WorldBuilderTest, BothHalvesOfADoubleDoorLeadInside) {
+    Interior& center = town().get_community_center();
+    for (const Position& half: {Position{2, 2}, Position{3, 2}}) {
+        std::optional<Portal> in = town().portal_at(half);
+        ASSERT_TRUE(in.has_value());
+        EXPECT_EQ(in->target, &center);
+    }
+    std::optional<Portal> out = center.portal_at(center.get_door_pos());
+    ASSERT_TRUE(out.has_value());
+    EXPECT_EQ(out->target, &town());
+    EXPECT_FLOAT_EQ(out->arrival.x, 3.0f);
 }
 
 TEST_F(WorldBuilderTest, CabinHasABedSlotForEachPlayer) {

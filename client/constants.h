@@ -102,16 +102,14 @@ inline constexpr int ALTO_LLAMA = 11;
 inline const std::map<Pose, HojaDePose> HOJAS_LLAMA = hojas_de(
         {RUTA_LLAMA, formato_tira(ANCHO_LLAMA, ALTO_LLAMA, 1, std::chrono::duration<float>(1.0f))});
 // Las trampas: quietas, un solo cuadro (pinches escondidos, la boquilla del lanzallamas); activas,
-// la animación de activarse. El servidor manda el centro de su celda y el dibujo se corre para
-// que los pinches tapen su celda y el lanzallamas arranque en la pared.
+// la animación de activarse. El servidor manda el centro de su celda y el dibujo se baja para
+// que los pinches tapen su celda. El lanzallamas va centrado en su celda, que es la que quema: la
+// boquilla queda contra la pared y el fuego sobre la celda.
 // Los pies quedan CHARACTER_HALF_HEIGHT de celda abajo del centro: hasta el borde de la celda
 // faltan 4 píxeles.
-// Cada trampa ocupa una celda (los cuadros de 16x16); el lanzallamas, dos: la de la pared y la
-// suya.
+// Cada trampa ocupa una celda (los cuadros de 16x16); el dibujo del lanzallamas, dos de largo.
 inline constexpr int LADO_TRAMPA = 16;
 inline constexpr int BAJADA_TRAMPA = 4;
-// Media celda: lo que se corre el lanzallamas de costado para arrancar en la pared
-inline constexpr int CORRIMIENTO_LANZALLAMAS = 8;
 inline const std::chrono::duration<float> CUADRO_TRAMPA(0.08f);
 inline const std::map<Pose, HojaDePose> HOJAS_PINCHES = hojas_de(
         {RUTA_PINCHES_QUIETOS, formato_tira(LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0,
@@ -125,22 +123,18 @@ inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_ABAJO = hojas_de(
         {{Pose::Atacando,
           {RUTA_LANZALLAMAS_ABAJO_ACTIVO,
            formato_tira(LADO_TRAMPA, 2 * LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
-inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_DERECHA =
-        hojas_de({RUTA_LANZALLAMAS_DERECHA_QUIETO,
-                  formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA),
-                  -CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA},
-                 {{Pose::Atacando,
-                   {RUTA_LANZALLAMAS_DERECHA_ACTIVO,
-                    formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA),
-                    -CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA}}});
-inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_IZQUIERDA =
-        hojas_de({RUTA_LANZALLAMAS_IZQUIERDA_QUIETO,
-                  formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA),
-                  CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA},
-                 {{Pose::Atacando,
-                   {RUTA_LANZALLAMAS_IZQUIERDA_ACTIVO,
-                    formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA),
-                    CORRIMIENTO_LANZALLAMAS, BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_DERECHA = hojas_de(
+        {RUTA_LANZALLAMAS_DERECHA_QUIETO,
+         formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0, BAJADA_TRAMPA},
+        {{Pose::Atacando,
+          {RUTA_LANZALLAMAS_DERECHA_ACTIVO,
+           formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
+inline const std::map<Pose, HojaDePose> HOJAS_LANZALLAMAS_IZQUIERDA = hojas_de(
+        {RUTA_LANZALLAMAS_IZQUIERDA_QUIETO,
+         formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 1, CUADRO_TRAMPA), 0, BAJADA_TRAMPA},
+        {{Pose::Atacando,
+          {RUTA_LANZALLAMAS_IZQUIERDA_ACTIVO,
+           formato_tira(2 * LADO_TRAMPA, LADO_TRAMPA, 2, CUADRO_TRAMPA), 0, BAJADA_TRAMPA}}});
 // Las que se dibujan como parte del piso: debajo de quien esté encima
 inline const std::set<EntityType> EN_EL_PISO = {EntityType::Spikes};
 inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {

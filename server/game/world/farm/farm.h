@@ -28,13 +28,13 @@ struct Plot {
 class Farm: public Location {
 public:
     // La Farm es dueña de la Cabin. Va en unique_ptr porque una Location no se puede mover.
-    // Enlaza las dos puertas: cabin_pos en la granja <-> door_pos en la cabaña.
+    // Enlaza las dos puertas: cabin_door en la granja <-> door_pos en la cabaña.
     // tilled: los tiles tilled_soil del mapa, que arrancan cavados.
-    Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin,
+    Farm(std::string name, Grid grid, const DoorCells& cabin_door, std::unique_ptr<Cabin> cabin,
          const std::set<Position>& tilled = {});
 
-    // Posición de la puerta de la cabaña en la grilla de la granja.
-    const Position& get_cabin_pos() const;
+    // Las celdas de la puerta de la cabaña en la grilla de la granja.
+    const DoorCells& get_cabin_door() const;
     Cabin& get_cabin();
     const Cabin& get_cabin() const;
 
@@ -78,7 +78,7 @@ public:
     void update(float dt) override;
 
 private:
-    Position cabin_pos;
+    DoorCells cabin_door;
     std::unique_ptr<Cabin> cabin;
     std::vector<std::unique_ptr<Animal>> animals;
     std::map<Position, Plot> plots;

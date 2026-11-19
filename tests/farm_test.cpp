@@ -16,7 +16,7 @@ const Position ANIMAL_POS{1, 1};
 
 class FarmTest: public ::testing::Test {
 protected:
-    Farm farm{"farm", make_grid(), CABIN_POS,
+    Farm farm{"farm", make_grid(), DoorCells{CABIN_POS},
               std::make_unique<Cabin>("cabin", make_grid(), DOOR_POS)};
 
     // Cuántas entidades de la granja son animales.

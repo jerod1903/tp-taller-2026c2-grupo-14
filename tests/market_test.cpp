@@ -34,7 +34,7 @@ class MarketTest: public ::testing::Test {
 protected:
     TestLocation market_location{make_grid(12, 12)};
     TestLocation outside;
-    Farm farm{"farm", make_grid(), Position{4, 4},
+    Farm farm{"farm", make_grid(), DoorCells{Position{4, 4}},
               std::make_unique<Cabin>("cabin", make_grid(), Position{0, 4})};
     Market market{market_location, merchants(), farm, ANIMAL_SPAWN};
     std::vector<std::unique_ptr<Player>> players;

@@ -16,16 +16,18 @@
 #include "server/game/characters/player.h"
 #include "server/game/interactions/outcome.h"
 
-Farm::Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin,
+Farm::Farm(std::string name, Grid grid, const DoorCells& cabin_door, std::unique_ptr<Cabin> cabin,
            const std::set<Position>& tilled):
-        Location(std::move(name), std::move(grid)), cabin_pos(cabin_pos), cabin(std::move(cabin)) {
-    this->cabin->link_to(*this, cabin_pos);
+        Location(std::move(name), std::move(grid)),
+        cabin_door(cabin_door),
+        cabin(std::move(cabin)) {
+    this->cabin->link_to(*this, cabin_door);
     for (const Position& pos: tilled) {
         plots.emplace(pos, Plot{SoilType::Tilled, Crop{}});
     }
 }
 
-const Position& Farm::get_cabin_pos() const { return cabin_pos; }
+const DoorCells& Farm::get_cabin_door() const { return cabin_door; }
 
 Cabin& Farm::get_cabin() { return *cabin; }
 

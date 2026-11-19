@@ -13,10 +13,17 @@ Interior::Interior(std::string name, Grid grid, const Position& door_pos):
 
 const Position& Interior::get_door_pos() const { return door_pos; }
 
-void Interior::link_to(Location& outside, const Position& building_door) {
-    outside.add_portal(Portal{building_door, this, center_of(door_pos), PortalTrigger::Action});
-    Point door = center_of(building_door);
-    add_portal(Portal{door_pos, &outside, Point{door.x, door.y + EXIT_DISTANCE},
+void Interior::link_to(Location& outside, const DoorCells& building_door) {
+    if (building_door.empty()) {
+        return;
+    }
+    for (const Position& cell: building_door) {
+        outside.add_portal(Portal{cell, this, center_of(door_pos), PortalTrigger::Action});
+    }
+    // El centro de la puerta: entre la primera celda y la última
+    Point first = center_of(building_door.front());
+    Point last = center_of(building_door.back());
+    add_portal(Portal{door_pos, &outside, Point{(first.x + last.x) / 2, first.y + EXIT_DISTANCE},
                       PortalTrigger::Action});
 }
 

@@ -20,7 +20,8 @@ const Position DOOR_POS{0, 4};
 
 std::unique_ptr<Farm> make_farm() {
     auto cabin = std::make_unique<Cabin>("cabin", make_grid(), DOOR_POS);
-    return std::make_unique<Farm>("farm", make_grid(10, 10), CABIN_POS, std::move(cabin));
+    return std::make_unique<Farm>("farm", make_grid(10, 10), DoorCells{CABIN_POS},
+                                  std::move(cabin));
 }
 
 TEST(SavedGameTest, ACropIsRestoredAsItWas) {
