@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 3.24)
 
+# Las dependencias bajadas por URL toman la fecha de extracción (y no la del archivo)
 if (POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
+# C++20. Con extensiones (gnu++20): el código de sockets de la cátedra (common/net) usa funciones
+# POSIX, como strerror_r, que con C++20 estricto no se declaran.
 if (NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)
 endif()
-
 set(CMAKE_CXX_EXTENSIONS ON)
 
-project(taller_tp
+project(stardew_valley_g14
     VERSION 1.0
-    HOMEPAGE_URL "https://github.com/URL-HERE"
+    HOMEPAGE_URL "https://github.com/jerod1903/tp-taller-2026c2-grupo-14"
     LANGUAGES CXX
     )
 
@@ -21,29 +23,37 @@ option(TALLER_CLIENT "Enable / disable client program." ON)
 option(TALLER_SERVER "Enable / disable server program." ON)
 option(TALLER_EDITOR "Enable / disable editor program." ON)
 option(TALLER_MAKE_WARNINGS_AS_ERRORS "Enable / disable warnings as errors." ON)
+# Para instalar (lo usa install.sh): los programas buscan sus datos en ~/.local/share/TALLER_NAME y
+# sus configs en ~/.config/TALLER_NAME. Sin esto, los buscan en el repo, para desarrollar.
+option(TALLER_INSTALL "Build to install in ~/.local and ~/.config." OFF)
+set(TALLER_NAME stardew-valley-g14)
 
-message(CMAKE_CXX_COMPILER_ID="${CMAKE_CXX_COMPILER_ID}")
+if(TALLER_INSTALL)
+    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "Install prefix." FORCE)
+    set(TALLER_DATA_DIR "${CMAKE_INSTALL_PREFIX}/share/${TALLER_NAME}")
+    set(TALLER_CONFIG_DIR "$ENV{HOME}/.config/${TALLER_NAME}")
+else()
+    set(TALLER_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(TALLER_CONFIG_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 
-# Define target: lib common between client, server and editor programs
-# HEY TODO XXX: change the name to something that you like
-add_library(taller_common STATIC)
-
-# add the source files that make the lib
-# HEY!! TODO XXX: add more subfolders here
-add_subdirectory(common/)
-
-
-# set compiler warnings to the targets
+# Las dependencias que no vienen del sistema se bajan y compilan con el proyecto. Las del sistema
+# (Qt6, y las que necesita SDL para compilarse) las instala install.sh.
+include(FetchContent)
 include(cmake/CompilerWarnings.cmake)
+
+# Common section
+# ---------------
+# Biblioteca con lo compartido entre cliente, servidor y editor (protocolo, DTOs, mapas, logger).
+# Sus archivos se listan en common/CMakeLists.txt.
+add_library(taller_common STATIC)
+add_subdirectory(common/)
 set_project_warnings(taller_common ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 
-# Say where the headers will be found required by library target
-# Make this PUBLIC so any dependant linking lib will inherit this
-# location (so our dependants will not have to explicitly request this)
+# PUBLIC: quien linkea contra taller_common incluye desde la raíz del repo ("common/...")
 target_include_directories(taller_common PUBLIC .)
 
-# toml++ (header-only) para leer y escribir los mapas en common/map
-include(FetchContent)
+# toml++ (header-only) para leer las configs y los mapas
 FetchContent_Declare(
     tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
@@ -54,23 +64,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tomlplusplus)
 target_link_libraries(taller_common PUBLIC tomlplusplus::tomlplusplus)
 
-# Ruta absoluta a maps/ para que cliente, servidor y editor no dependan del cwd
-target_compile_definitions(taller_common PUBLIC TALLER_MAPS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/maps")
-# Carpeta de server_config.toml y client_config.toml
-target_compile_definitions(taller_common PUBLIC TALLER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# Rutas absolutas, para que cliente, servidor y editor no dependan del cwd: maps/ (los mapas, que el
+# editor también escribe), Assets/ y la carpeta de server_config.toml y client_config.toml. Son las
+# del repo o las instaladas, según TALLER_INSTALL.
+target_compile_definitions(taller_common PUBLIC
+    TALLER_MAPS_DIR="${TALLER_DATA_DIR}/maps"
+    TALLER_ASSETS_DIR="${TALLER_DATA_DIR}/Assets"
+    TALLER_CONFIG_DIR="${TALLER_CONFIG_DIR}")
 
-# HEY!! TODO XXX: you need to install some runtime and dev libraries *before*
-# compiling the client/editor code.
-#
-# In xubuntu 24.04 these are:
-#
-# sudo apt-get install libopus-dev libopusfile-dev libxmp-dev libfluidsynth-dev fluidsynth libwavpack1 libwavpack-dev libfreetype-dev wavpack
-#
-
-# Install libSDL2 and libSDL2pp (for the client: the editor is Qt only)
-# HEY!! TODO XXX: add more dependendies (either for client, server or editor)
+# SDL section
+# ---------------
+# SDL2 con image, mixer y ttf, y libSDL2pp, para el juego del cliente (el editor es solo Qt)
 if(TALLER_CLIENT)
-    include(FetchContent)
     FetchContent_Declare(
         SDL2
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -113,7 +118,8 @@ if(TALLER_CLIENT)
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
 
-    # Como subproyecto, libSDL2pp solo envuelve SDL_image y SDL_mixer si el proyecto padre lo pide.
+    # Como subproyecto, libSDL2pp solo envuelve SDL_image, SDL_mixer y SDL_ttf si el proyecto padre
+    # lo pide.
     set(SDL2PP_WITH_IMAGE ON)
     set(SDL2PP_WITH_MIXER ON)
     set(SDL2PP_WITH_TTF ON)
@@ -122,29 +128,18 @@ endif()
 
 # Program section
 # ---------------
+# Cada programa lista sus archivos en su carpeta (client/, server/, editor/) y linkea contra
+# taller_common.
 if(TALLER_CLIENT)
-    # Qt6 Widgets for the pre-game menus (installed from the system: qt6-base-dev)
+    # Qt6 Widgets para los menús de antes de la partida (del sistema: qt6-base-dev)
     find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-    # HEY!! TODO XXX: Change the name of the executable to the one you like!
     add_executable(taller_client)
-
-    # Run Qt's moc only on the client target (Q_OBJECT classes)
+    # moc y los recursos de Qt (los menús)
     set_target_properties(taller_client PROPERTIES AUTOMOC ON AUTORCC ON)
-
-    # Make them depend on taller_common lib
-    add_dependencies(taller_client taller_common SDL2pp::SDL2pp)
-
-    # Add source files and enable warnings
-    # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(client)
-
     set_project_warnings(taller_client ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
-
-    # add libSDL2pp's headers
     target_include_directories(taller_client PRIVATE ${libSDL2pp_SOURCE_DIR})
-
-    # Link the taller_common lib target
     target_link_libraries(taller_client taller_common SDL2pp::SDL2pp Qt6::Widgets)
 
     # Solo el menu en Qt, sin SDL: para ver las pantallas sin compilar el juego.
@@ -152,28 +147,12 @@ if(TALLER_CLIENT)
     add_executable(taller_menu client/menu/main.cpp ${TALLER_MENU_SOURCES})
     set_target_properties(taller_menu PROPERTIES AUTOMOC ON AUTORCC ON)
     target_link_libraries(taller_menu taller_common Qt6::Widgets)
-
-    # Carpeta de assets que no van en el binario (por ahora, los sprites del personaje).
-    # Provisorio: el instalador la tiene que copiar y esta ruta pasar a ser la instalada.
-    foreach(target taller_client taller_menu)
-        target_compile_definitions(${target} PRIVATE TALLER_ASSETS_DIR="${CMAKE_SOURCE_DIR}/Assets")
-    endforeach()
 endif()
 
 if(TALLER_SERVER)
-    # HEY!! TODO XXX: Change the name of the executable to the one you like!
     add_executable(taller_server)
-
-    # Make them depend on taller_common lib
-    add_dependencies(taller_server taller_common)
-
-    # Add source files and enable warnings
-    # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(server)
-
     set_project_warnings(taller_server ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
-
-    # Link the taller_common lib target
     target_link_libraries(taller_server taller_common)
 endif()
 
@@ -182,67 +161,50 @@ if(TALLER_EDITOR)
 
     add_executable(taller_editor)
     set_target_properties(taller_editor PROPERTIES AUTOMOC ON AUTORCC ON)
-
-    # Make them depend on taller_common lib
-    add_dependencies(taller_editor taller_common)
-
-    # Add source files and enable warnings
     add_subdirectory(editor)
-
     set_project_warnings(taller_editor ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
-
-    # Link the taller_common lib target
     target_link_libraries(taller_editor taller_common Qt6::Widgets)
 endif()
 
-
 # Testing section
 # ---------------
-
+# GoogleTest. Los tests compilan con taller_common y además con los .cpp del servidor y del cliente
+# que prueban (listados en tests/CMakeLists.txt). Warnings un poco menos estrictos.
 if(TALLER_TESTS)
-    # Let's use google test
-    include(FetchContent)
     FetchContent_Declare(
         googletest
         URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
     )
-
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    # (borrowed from https://google.github.io/googletest/quickstart-cmake.html)
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
-    include(GoogleTest)
 
-    # target for testing
-    # HEY!! TODO XXX: Change the name of the executable to the one you like!
     add_executable(taller_tests)
-
-    # HEY!! TODO XXX: I'm assuming that the code under testing is in taller_common
-    # Change this if you have to.
-    add_dependencies(taller_tests taller_common)
-
-    # Say where to find the xoz headers
-    # HEY!! TODO XXX: add more subfolders here
-    target_include_directories(taller_tests PUBLIC .)
-
-    # Add the source files to the taller_tests target
-    # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(tests/)
-
-    # Set the compiler warnings to the tests target (but be a little lesser strict)
     set_project_warnings(taller_tests ${TALLER_MAKE_WARNINGS_AS_ERRORS} TRUE)
+    target_link_libraries(taller_tests taller_common GTest::gtest_main)
+endif()
 
-    # Say where googletest headers can be found
-    target_include_directories(taller_tests
-        PUBLIC
-        ${gtest_SOURCE_DIR}/include
-        ${gmock_SOURCE_DIR}/include
-        )
-
-    # HEY!! TODO XXX: I'm assuming that the code under testing is in taller_common
-    # Change this if you have to.
-    target_link_libraries(taller_tests
-        taller_common
-        GTest::gtest_main
-    )
+# Install section (install.sh)
+# ---------------
+# Binarios en ~/.local/bin con el nombre del juego, Assets/ y maps/ en ~/.local/share/TALLER_NAME y
+# las configs en ~/.config/TALLER_NAME. Las configs que ya están no se pisan: pueden tener cambios
+# del usuario.
+if(TALLER_INSTALL)
+    foreach(program server client editor)
+        set(target taller_${program})
+        if(TARGET ${target})
+            install(PROGRAMS $<TARGET_FILE:${target}> DESTINATION bin
+                    RENAME ${TALLER_NAME}-${program})
+        endif()
+    endforeach()
+    install(DIRECTORY Assets maps DESTINATION share/${TALLER_NAME})
+    foreach(config server_config.toml client_config.toml)
+        install(CODE "
+            if(EXISTS \"${TALLER_CONFIG_DIR}/${config}\")
+                message(STATUS \"Kept: ${TALLER_CONFIG_DIR}/${config}\")
+            else()
+                file(INSTALL \"${CMAKE_CURRENT_SOURCE_DIR}/${config}\"
+                     DESTINATION \"${TALLER_CONFIG_DIR}\")
+            endif()
+        ")
+    endforeach()
 endif()

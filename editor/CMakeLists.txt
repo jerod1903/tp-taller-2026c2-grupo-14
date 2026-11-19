@@ -64,5 +64,3 @@ target_sources(taller_editor
     tools/Tool.h
     )
 
-# Los sprites del mapa se leen de la carpeta de assets del repo
-target_compile_definitions(taller_editor PRIVATE TALLER_ASSETS_DIR="${CMAKE_SOURCE_DIR}/Assets")

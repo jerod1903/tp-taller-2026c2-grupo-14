@@ -23,7 +23,33 @@ Cada carpeta de código tiene su propio `CMakeLists.txt` donde se listan sus arc
 
 Cada target se puede activar o desactivar con las opciones de CMake `TALLER_CLIENT`, `TALLER_SERVER`, `TALLER_EDITOR` y `TALLER_TESTS` (todas en `ON` por defecto). `TALLER_MAKE_WARNINGS_AS_ERRORS` controla si los warnings se tratan como errores.
 
+## Instalación
+
+En Ubuntu 24.04, desde la raíz del repo:
+
+```bash
+./install.sh             # instala dependencias (pide sudo), compila, corre los tests e instala
+./install.sh --skip-deps # lo mismo, sin instalar dependencias ni usar sudo
+./uninstall.sh           # borra lo instalado, salvo las partidas guardadas
+```
+
+Queda instalado:
+
+- `~/.local/bin/`: `stardew-valley-g14-server`, `stardew-valley-g14-client` y `stardew-valley-g14-editor`.
+- `~/.local/share/stardew-valley-g14/`: `Assets/` y `maps/` (donde el editor guarda los mapas nuevos).
+- `~/.config/stardew-valley-g14/`: `server_config.toml` y `client_config.toml`. Si ya existen, reinstalar no los pisa.
+
+Para jugar:
+
+```bash
+stardew-valley-g14-server 8080              # en una terminal; se cierra con q + Enter
+stardew-valley-g14-client localhost 8080    # en otra, una por jugador
+stardew-valley-g14-editor
+```
+
 ## Compilación y ejecución
+
+Para desarrollar, los programas compilados en `build/` leen `Assets/`, `maps/` y las configs del repo.
 
 ```bash
 make compile-debug   # compila en build/ (modo Debug)
