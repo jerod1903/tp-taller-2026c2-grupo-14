@@ -65,9 +65,11 @@ public:
         Crumbled,  // se rompió y no dio producto (lapislázuli)
         Mined,     // se rompió y dio su producto
     };
+    
     struct StrikeResult {
         Strike strike;
         ItemType ore = ItemType::Empty;  // el producto, si strike == Mined
+        bool spawn_orcs = false;         // true si salió plata y se avecina una manada de orcos
     };
 
     // Un golpe de pico en la celda. `roll` es un número en [0, 1) que decide las tiradas: el

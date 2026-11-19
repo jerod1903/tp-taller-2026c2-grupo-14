@@ -40,6 +40,7 @@ enum class GameMsg : uint8_t {
     InventoryState,
     ChatMessage,
     FarmState,
+    DungeonState,
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
@@ -235,5 +236,20 @@ struct InventoryState {
     bool operator==(const InventoryState&) const = default;
 };
 
+struct OreDeposit {
+    uint16_t x;
+    uint16_t y;
+    ItemType ore;  // Coal, Lapis, Silver, GoldOre
+
+    bool operator==(const OreDeposit&) const = default;
+};
+
+struct DungeonState {
+    std::string areaId;
+    std::vector<OreDeposit> ores = {};
+    std::vector<GroundItem> items = {};
+
+    bool operator==(const DungeonState&) const = default;
+};
 
 #endif  // GAME_DTO_H

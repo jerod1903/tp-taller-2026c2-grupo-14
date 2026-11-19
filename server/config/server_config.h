@@ -180,11 +180,11 @@ struct ServerConfig {
 
     struct OreSpec {
         int hits;   // golpes de pico para sacarlo
-        int count;  // cuántos aparecen en cada nivel
         int price;  // lo que paga Clint
     };
 
     struct Mining {
+        int ores_per_level;
         float lapis_break_chance;
         float silver_orc_chance;
         int gold_min_depth;  // profundidad mínima del oro; el nivel de entrada es la 0
@@ -193,9 +193,9 @@ struct ServerConfig {
         OreSpec silver;
         OreSpec gold;
 
-        // Lanza std::invalid_argument si item no es un mineral.
         const OreSpec& of(ItemType ore) const;
     };
+
 
     Game game;
     Player player;

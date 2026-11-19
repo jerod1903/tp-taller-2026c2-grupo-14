@@ -305,16 +305,6 @@ ServerConfig::Market read_market(const toml::table& root, const ServerConfig::An
     return read;
 }
 
-ServerConfig::OreSpec read_ore(const toml::table& root, const std::string& name) {
-    TomlTableReader ore = subsection(root, "ores", name);
-    int count = ore.requiredInt("count");
-    if (count < 0) {
-        throw std::runtime_error(std::string(FILE_NAME) + ": [ores." + name +
-                                 "] 'count' can't be negative");
-    }
-    return ServerConfig::OreSpec{positive(ore.requiredInt("hits"), "hits"), count,
-                                 positive(ore.requiredInt("price"), "price")};
-}
 
 float chance(const TomlTableReader& reader, const std::string& key) {
     float value = required_float(reader, key);
@@ -325,13 +315,33 @@ float chance(const TomlTableReader& reader, const std::string& key) {
     return value;
 }
 
+ServerConfig::OreSpec read_ore(const toml::table& root, const std::string& name) {
+    TomlTableReader ore = subsection(root, "ores", name);
+    int hits = ore.requiredInt("hits");
+    if (hits <= 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'ores." + name +
+                                 ".hits' must be positive");
+    }
+    int price = ore.requiredInt("price");
+    if (price < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'ores." + name +
+                                 ".price' can't be negative");
+    }
+    return ServerConfig::OreSpec{hits, price};
+}
+
 ServerConfig::Mining read_mining(const toml::table& root) {
     TomlTableReader mining = section(root, "mining");
+    int ores_per_level = mining.requiredInt("ores_per_level");
+    if (ores_per_level < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'ores_per_level' can't be negative");
+    }
     int gold_min_depth = mining.requiredInt("gold_min_depth");
     if (gold_min_depth < 0) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'gold_min_depth' can't be negative");
     }
-    return ServerConfig::Mining{chance(mining, "lapis_break_chance"),
+    return ServerConfig::Mining{ores_per_level,
+                                chance(mining, "lapis_break_chance"),
                                 chance(mining, "silver_orc_chance"),
                                 gold_min_depth,
                                 read_ore(root, "coal"),
@@ -339,7 +349,6 @@ ServerConfig::Mining read_mining(const toml::table& root) {
                                 read_ore(root, "silver"),
                                 read_ore(root, "gold")};
 }
-
 
 
 }  // namespace
