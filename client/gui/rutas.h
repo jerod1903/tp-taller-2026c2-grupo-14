@@ -45,6 +45,12 @@ inline const char* const RUTA_VAMPIRO_HERIDO =
 inline const char* const RUTA_VAMPIRO_MUERTO =
         "Assets/Caverns/Enemies/Vampire/enemies-vampire_death.png";
 
+inline const char* const RUTA_ORCO_QUIETO = "Assets/Caverns/Enemies/Orcs/Orc_Idle.png";
+inline const char* const RUTA_ORCO_CAMINANDO = "Assets/Caverns/Enemies/Orcs/Orc_Walk.png";
+inline const char* const RUTA_ORCO_ATACANDO = "Assets/Caverns/Enemies/Orcs/Orc_Attack01.png";
+inline const char* const RUTA_ORCO_HERIDO = "Assets/Caverns/Enemies/Orcs/Orc_Hurt.png";
+inline const char* const RUTA_ORCO_MUERTO = "Assets/Caverns/Enemies/Orcs/Orc_Death.png";
+
 inline const char* const RUTA_BOTON_MENU = "Assets/Menu/botones/boton_320.png";
 inline const char* const RUTA_BOTON_DESHABILITADO =
         "Assets/Menu/botones/boton_deshabilitado_320.png";

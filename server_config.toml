@@ -88,6 +88,17 @@ strong_damage = 8        # el golpe del vampiro
 revive_seconds = 5.0     # cuanto tardan en revivir despues de que cae sangre cerca
 blood_reach = 3.0        # hasta cuantas casillas del cuerpo cuenta la sangre de un jugador
 
+# Pelean cuerpo a cuerpo y aparecen en grupo, juntos; al morir no reviven.
+[enemies.orc]
+min_group = 3            # cuantos aparecen en el grupo: entre min_group y max_group
+max_group = 6
+health = 35
+damage = 5
+speed = 2.0
+sight = 6.0
+reach = 1.0
+cooldown = 1.0
+
 # Precios de semilla provisorios; los de cosecha y los días son los del enunciado.
 [crops.strawberry]
 seed_price = 10

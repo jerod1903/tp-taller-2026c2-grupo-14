@@ -32,6 +32,7 @@ void Enemy::take_damage(int amount) {
     attacking_left = 0;
     hurt_left = 0;
     if (was_alive) {
+        corpse_left = CORPSE_TIME;
         on_death();
     }
 }
@@ -51,10 +52,11 @@ EntityAction Enemy::action() const {
 
 void Enemy::on_death() {}
 
-bool Enemy::is_gone() const { return !is_alive(); }
+bool Enemy::is_gone() const { return !is_alive() && corpse_left <= 0; }
 
 void Enemy::update(float dt) {
     if (!is_alive()) {
+        corpse_left -= dt;
         return;
     }
     cooldown_left -= dt;

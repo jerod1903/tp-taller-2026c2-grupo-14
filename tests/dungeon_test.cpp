@@ -15,6 +15,7 @@
 #include "server/config/server_config.h"
 #include "server/game/characters/enemies/enemy.h"
 #include "server/game/characters/enemies/skeleton.h"
+#include "server/game/world/dungeon/spawners/orc_spawner.h"
 #include "server/game/world/dungeon/spawners/skeleton_spawner.h"
 #include "server/game/world/dungeon/spawners/vampire_spawner.h"
 #include "tests/world_helpers.h"
@@ -68,13 +69,15 @@ TEST_F(DungeonLevelTest, SpawnRegistersTheEnemy) {
     EXPECT_EQ(level.get_entities().size(), 1u);
 }
 
-TEST_F(DungeonLevelTest, DeadEnemiesAreRemovedOnUpdate) {
+TEST_F(DungeonLevelTest, DeadEnemiesAreRemovedOnceTheirBodyIsGone) {
     auto enemy = std::make_unique<CountingEnemy>(level, &deaths);
     CountingEnemy& ref = *enemy;
     level.spawn(std::move(enemy));
     level.spawn(std::make_unique<Skeleton>(2, Position{1, 1}, level, NO_VISITORS, 0));
     ref.take_damage(10);
-    level.update(0.1f);
+    level.update(CORPSE_TIME / 2);
+    EXPECT_EQ(level.get_entities().size(), 2u);
+    level.update(CORPSE_TIME);
     ASSERT_EQ(level.get_entities().size(), 1u);
     EXPECT_EQ(level.get_entities()[0]->get_id(), 2u);
 }
@@ -130,10 +133,20 @@ protected:
     TestCreature player{level, Position{0, 1}};
 };
 
-// Cuántos pone de ese tipo, según server_config.toml
-size_t expected_count(EntityType type) {
+// Si pone tantos de ese tipo como dice server_config.toml
+bool expected_count(EntityType type, size_t count) {
     const ServerConfig::Enemies& config = server_config().enemies;
-    return type == EntityType::Skeleton ? config.skeleton.count : 2 * config.vampire.pairs;
+    switch (type) {
+        case EntityType::Skeleton:
+            return count == static_cast<size_t>(config.skeleton.count);
+        case EntityType::Vampire:
+            return count == static_cast<size_t>(2 * config.vampire.pairs);
+        case EntityType::Orc:
+            return count >= static_cast<size_t>(config.orc.min_group) &&
+                   count <= static_cast<size_t>(config.orc.max_group);
+        default:
+            return false;
+    }
 }
 
 TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePortals) {
@@ -146,7 +159,7 @@ TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePort
         if (type == EntityType::Vampiress) {
             type = EntityType::Vampire;  // la pareja es un solo tipo
         }
-        EXPECT_EQ(found.size(), expected_count(type));
+        EXPECT_TRUE(expected_count(type, found.size()));
         for (const std::unique_ptr<Enemy>& enemy: found) {
             EntityType other = enemy->entity_type();
             EXPECT_EQ(other == EntityType::Vampiress ? EntityType::Vampire : other, type);
@@ -158,13 +171,13 @@ TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePort
 
 TEST_F(RepopulateTest, SkeletonsAppearAlone) {
     SkeletonSpawner().spawn(level);
-    EXPECT_EQ(level.get_enemies().size(), expected_count(EntityType::Skeleton));
+    EXPECT_TRUE(expected_count(EntityType::Skeleton, level.get_enemies().size()));
 }
 
 TEST_F(RepopulateTest, EachVampireAppearsNextToItsPartner) {
     VampireSpawner().spawn(level);
     const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
-    ASSERT_EQ(found.size(), expected_count(EntityType::Vampire));
+    ASSERT_TRUE(expected_count(EntityType::Vampire, found.size()));
     // De a pares: el vampiro y después su vampira
     for (size_t i = 0; i + 1 < found.size(); i += 2) {
         EXPECT_EQ(found[i]->entity_type(), EntityType::Vampire);
@@ -172,6 +185,18 @@ TEST_F(RepopulateTest, EachVampireAppearsNextToItsPartner) {
         const Position& a = found[i]->get_position();
         const Position& b = found[i + 1]->get_position();
         EXPECT_EQ(std::abs(a.x - b.x) + std::abs(a.y - b.y), 1);
+    }
+}
+
+TEST_F(RepopulateTest, OrcsAppearInAGroupCloseToTheFirst) {
+    OrcSpawner().spawn(level);
+    const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+    ASSERT_TRUE(expected_count(EntityType::Orc, found.size()));
+    const Position& first = found.front()->get_position();
+    for (const std::unique_ptr<Enemy>& orc: found) {
+        EXPECT_EQ(orc->entity_type(), EntityType::Orc);
+        const Position& pos = orc->get_position();
+        EXPECT_LE(std::max(std::abs(pos.x - first.x), std::abs(pos.y - first.y)), 2);
     }
 }
 

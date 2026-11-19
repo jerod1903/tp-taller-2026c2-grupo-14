@@ -44,9 +44,11 @@ target_sources(taller_server
     game/characters/enemies/enemy.cpp
     game/characters/enemies/skeleton.cpp
     game/characters/enemies/vampire.cpp
+    game/characters/enemies/orc.cpp
     game/world/dungeon/spawners/enemy_spawner.cpp
     game/world/dungeon/spawners/skeleton_spawner.cpp
     game/world/dungeon/spawners/vampire_spawner.cpp
+    game/world/dungeon/spawners/orc_spawner.cpp
     game/characters/entity.cpp
     game/characters/player.cpp
     game/characters/wanderer.cpp
@@ -123,9 +125,11 @@ target_sources(taller_server
     game/characters/enemies/enemy.h
     game/characters/enemies/skeleton.h
     game/characters/enemies/vampire.h
+    game/characters/enemies/orc.h
     game/world/dungeon/spawners/enemy_spawner.h
     game/world/dungeon/spawners/skeleton_spawner.h
     game/world/dungeon/spawners/vampire_spawner.h
+    game/world/dungeon/spawners/orc_spawner.h
     game/characters/entity.h
     game/characters/player.h
     game/characters/wanderer.h

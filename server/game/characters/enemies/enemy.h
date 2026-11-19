@@ -10,6 +10,10 @@
 #include "server/game/characters/creature.h"
 #include "server/game/characters/wanderer.h"
 
+// Lo que queda el cuerpo de un enemigo que no revive antes de que el nivel lo dé de baja, en
+// segundos: así el cliente llega a mostrar cómo muere.
+inline constexpr float CORPSE_TIME = 1.5f;
+
 // Un enemigo de la mazmorra. Por defecto pelea cuerpo a cuerpo: si ve a un jugador lo persigue y,
 // cuando lo alcanza, le pega cada un tiempo; si no ve a nadie, deambula. Los que pelean distinto
 // (a distancia) redefinen react().
@@ -35,11 +39,12 @@ public:
     // Drops, revivir, etc. Por defecto no hace nada.
     virtual void on_death();
 
-    // Si ya no vuelve: el nivel lo da de baja. Por defecto, en cuanto muere.
+    // Si ya no vuelve: el nivel lo da de baja. Por defecto, pasados CORPSE_TIME segundos de que
+    // muere.
     virtual bool is_gone() const;
 
     // Cuenta el tiempo entre golpes, decide qué hacer con los visitantes (react) y camina. Muerto
-    // no hace nada.
+    // solo cuenta el tiempo que le queda al cuerpo.
     void update(float dt) override;
 
 protected:
@@ -66,6 +71,7 @@ private:
     float hurt_time;
     float attacking_left = 0;
     float hurt_left = 0;
+    float corpse_left = 0;
     const std::vector<Creature*>& visitors;
     Wanderer wanderer;
 

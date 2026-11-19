@@ -84,6 +84,11 @@ inline const std::map<Pose, HojaDePose> HOJAS_VAMPIRO = {
          {RUTA_VAMPIRO_MUERTO, formato_tira(LADO_CUADRO_VAMPIRO, LADO_CUADRO_VAMPIRO, 14,
                                             std::chrono::duration<float>(0.08f), false)}},
 };
+// El orco: cuadros de 100x100 con el cuerpo chico y los pies en la fila 57. Se usan solo las
+// ALTO_CUADRO_ORCO filas de arriba, así los pies quedan abajo del cuadro como en los demás. Pegar
+// y doler duran lo mismo que en el servidor (0.6 y 0.4 segundos, en Orc).
+inline constexpr int ANCHO_CUADRO_ORCO = 100;
+inline constexpr int ALTO_CUADRO_ORCO = 58;
 inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
         {EntityType::Skeleton,
          {{Pose::Quieto,
@@ -103,6 +108,22 @@ inline const std::map<EntityType, std::map<Pose, HojaDePose>> HOJAS_POR_POSE = {
                                                 std::chrono::duration<float>(0.08f), false)}}}},
         {EntityType::Vampire, HOJAS_VAMPIRO},
         {EntityType::Vampiress, HOJAS_VAMPIRO},
+        {EntityType::Orc,
+         {{Pose::Quieto,
+           {RUTA_ORCO_QUIETO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 6,
+                                           std::chrono::duration<float>(0.15f))}},
+          {Pose::Caminando,
+           {RUTA_ORCO_CAMINANDO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 8,
+                                              std::chrono::duration<float>(0.1f))}},
+          {Pose::Atacando,
+           {RUTA_ORCO_ATACANDO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 6,
+                                             std::chrono::duration<float>(0.6f / 6))}},
+          {Pose::Herido,
+           {RUTA_ORCO_HERIDO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 4,
+                                           std::chrono::duration<float>(0.4f / 4))}},
+          {Pose::Muerto,
+           {RUTA_ORCO_MUERTO, formato_tira(ANCHO_CUADRO_ORCO, ALTO_CUADRO_ORCO, 4,
+                                           std::chrono::duration<float>(0.1f), false)}}}},
 };
 // Las que se dibujan teñidas (las demás, sin tinte): el vampiro de negro, la vampira de rojo
 inline const std::map<EntityType, SDL_Color> TINTES = {

@@ -87,6 +87,12 @@ struct ServerConfig {
         float revive_seconds;  // muerto, cuanto tarda en revivir despues de que cae sangre cerca
         float blood_reach;     // hasta donde (en celdas) le llega la sangre de un jugador
     };
+    // Un grupo de entre min_group y max_group; `fighter` vale para cada uno.
+    struct Orc {
+        int min_group;
+        int max_group;
+        Fighter fighter;
+    };
     struct Enemies {
         // Al aparecer, ninguno queda a menos de esta distancia (en celdas) de un portal del nivel:
         // el que entra no se los encuentra encima.
@@ -96,6 +102,7 @@ struct ServerConfig {
         float max_walk;
         Skeleton skeleton;
         Vampire vampire;
+        Orc orc;
     };
     // Los comerciantes. Los precios de los animales, sus productos y las semillas y cosechas están
     // en [animals.*] y [crops.*]; lo que cansa hablarles, en [energy].

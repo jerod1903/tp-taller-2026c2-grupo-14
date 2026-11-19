@@ -35,6 +35,15 @@ TEST(ServerConfigTest, ABuybackAboveItsPriceIsRejected) {
     EXPECT_THROW(load_server_config(write_file("buyback.toml", content)), std::runtime_error);
 }
 
+TEST(ServerConfigTest, AnOrcGroupWithMinAboveMaxIsRejected) {
+    std::ifstream repo(std::string(TALLER_CONFIG_DIR) + "/server_config.toml");
+    std::string content((std::istreambuf_iterator<char>(repo)), std::istreambuf_iterator<char>());
+    std::string line = "min_group = 3";
+    ASSERT_NE(content.find(line), std::string::npos);
+    content.replace(content.find(line), line.size(), "min_group = 10");
+    EXPECT_THROW(load_server_config(write_file("orc_group.toml", content)), std::runtime_error);
+}
+
 TEST(ServerConfigTest, AMissingSectionIsRejected) {
     std::string path = write_file("no_animals.toml", R"(
 [game]

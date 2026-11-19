@@ -166,6 +166,7 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
     TomlTableReader enemies = section(root, "enemies");
     TomlTableReader skeleton = subsection(root, "enemies", "skeleton");
     TomlTableReader vampire = subsection(root, "enemies", "vampire");
+    TomlTableReader orc = subsection(root, "enemies", "orc");
     ServerConfig::Enemies read{
             positive(required_float(enemies, "spawn_distance"), "spawn_distance"),
             positive(required_float(enemies, "min_walk"), "min_walk"),
@@ -178,10 +179,17 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
                     positive(required_float(vampire, "fast_speed"), "fast_speed"),
                     positive(vampire.requiredInt("strong_damage"), "strong_damage"),
                     positive(required_float(vampire, "revive_seconds"), "revive_seconds"),
-                    positive(required_float(vampire, "blood_reach"), "blood_reach")}};
+                    positive(required_float(vampire, "blood_reach"), "blood_reach")},
+            ServerConfig::Orc{positive(orc.requiredInt("min_group"), "min_group"),
+                              positive(orc.requiredInt("max_group"), "max_group"),
+                              read_fighter(orc)}};
     if (read.min_walk > read.max_walk) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": [enemies] 'min_walk' is bigger than 'max_walk'");
+    }
+    if (read.orc.min_group > read.orc.max_group) {
+        throw std::runtime_error(std::string(FILE_NAME) +
+                                 ": [enemies.orc] 'min_group' is bigger than 'max_group'");
     }
     return read;
 }
