@@ -233,6 +233,20 @@ bool ServerProtocol::send_farm_state(const FarmState& farm) {
            });
 }
 
+bool ServerProtocol::send_dungeon_state(const DungeonState& dungeon) {
+    return send_game_msg(GameMsg::DungeonState) && baseProtocol.send_string(dungeon.areaId) &&
+           send_count(dungeon.ores.size()) &&
+           std::all_of(dungeon.ores.begin(), dungeon.ores.end(), [this](const OreDeposit& ore) {
+               return baseProtocol.send_u16(ore.x) && baseProtocol.send_u16(ore.y) &&
+                      baseProtocol.send_u8(static_cast<uint8_t>(ore.ore));
+           }) &&
+           send_count(dungeon.items.size()) &&
+           std::all_of(dungeon.items.begin(), dungeon.items.end(), [this](const GroundItem& item) {
+               return baseProtocol.send_u16(item.x) && baseProtocol.send_u16(item.y) &&
+                      baseProtocol.send_u8(static_cast<uint8_t>(item.item));
+           });
+}
+
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
     return send_game_msg(GameMsg::GameEnded) &&
            baseProtocol.send_u8(static_cast<uint8_t>(ended.reason));

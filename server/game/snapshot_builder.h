@@ -14,6 +14,7 @@ public:
     // Una celda por cada plot y un objeto por cada cosa tirada en el piso de la granja. Se manda
     // solo cuando cambia, no en cada tick.
     static FarmState farm_state(const Farm& farm);
+    static DungeonState dungeon_state(const DungeonLevel& level);
 };
 
 #endif  // SNAPSHOT_BUILDER_H

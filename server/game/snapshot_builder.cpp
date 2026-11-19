@@ -149,3 +149,16 @@ FarmState SnapshotBuilder::farm_state(const Farm& farm) {
     }
     return state;
 }
+
+DungeonState SnapshotBuilder::dungeon_state(const DungeonLevel& level) {
+    DungeonState state{level.get_name(), {}, {}};
+    for (const auto& [pos, node]: level.get_ores()) {
+        state.ores.push_back(
+                OreDeposit{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), node.ore});
+    }
+    for (const auto& [pos, item]: level.get_ground_items()) {
+        state.items.push_back(
+                GroundItem{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), item});
+    }
+    return state;
+}
