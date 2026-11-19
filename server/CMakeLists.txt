@@ -83,6 +83,8 @@ target_sources(taller_server
     net/sender.cpp
     net/server_protocol.cpp
     persistence/in_memory_game_store.cpp
+    persistence/file_game_store.cpp
+    persistence/toml_saves.cpp
     PUBLIC
     # .h files
     consts.h
@@ -174,4 +176,7 @@ target_sources(taller_server
     net/server_protocol.h
     persistence/game_store.h
     persistence/in_memory_game_store.h
+    persistence/file_game_store.h
+    persistence/saved_game.h
+    persistence/toml_saves.h
     )

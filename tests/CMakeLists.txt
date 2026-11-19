@@ -27,6 +27,7 @@ target_sources(taller_tests
     skull_test.cpp
     trap_test.cpp
     saved_game_test.cpp
+    file_game_store_test.cpp
     sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
@@ -125,6 +126,8 @@ target_sources(taller_tests
     ../server/net/sender.cpp
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
+    ../server/persistence/file_game_store.cpp
+    ../server/persistence/toml_saves.cpp
     # Lógica del editor sin Qt
     ../editor/Areas.cpp
     ../editor/ElementHelper.cpp

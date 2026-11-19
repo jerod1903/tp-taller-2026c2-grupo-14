@@ -38,6 +38,9 @@
 *.out
 *.app
 
+# Partidas guardadas al jugar desde el repo
+saves/
+
 # Build directories
 build/
 Build/
