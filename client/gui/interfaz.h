@@ -18,6 +18,7 @@
 #include "client/gui/calculadores/calculador_camara.h"
 #include "client/gui/chat/fuente.h"
 #include "client/gui/chat/panel_chat.h"
+#include "client/gui/fin-del-dia/pantalla_fin_del_dia.h"
 #include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/mapa/mapa.h"
@@ -45,6 +46,8 @@ private:
     void ajustar_lienzo(int ancho_area, int alto_area);
     void leer_chat(const SDL_Event& evento, Entrada& entrada);
     void leer_pausa(const SDL_Event& evento, Entrada& entrada);
+    // Con la pantalla de fin de día: el Ok, la pausa, el chat y pantalla completa
+    void leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada);
     ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
@@ -87,6 +90,9 @@ private:
     Fuente fuente_titulo;
     PanelChat panel_chat;
     MenuPausa menu_pausa;
+    PantallaFinDelDia pantalla_fin_del_dia;
+    // Si se está mostrando (se decide al dibujar, con el estado)
+    bool fin_del_dia_abierto = false;
     Hud hud;
     std::optional<std::string> borrador;
     Globo globo;

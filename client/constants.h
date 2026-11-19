@@ -353,4 +353,14 @@ inline constexpr SDL_Color COLOR_TITULO_PAUSA = {255, 235, 173, 255};
 inline constexpr SDL_Color COLOR_TEXTO_BOTON = {255, 243, 205, 255};
 inline constexpr SDL_Color COLOR_TEXTO_DESHABILITADO = {90, 58, 34, 255};
 
+// La pantalla de fin de día: mismo fondo y botón que la pausa
+inline const char* const TITULO_FIN_DEL_DIA = "Terminó el día ";
+inline const char* const TEXTO_DURMIO = "Dormiste en tu cama";
+inline const char* const TEXTO_NO_DURMIO =
+        "No llegaste a tu cama: mañana despertás con la mitad de vida y energía";
+inline const char* const TEXTO_OK = "Ok";
+inline const char* const TEXTO_ESPERANDO = "Esperando a los demás";
+// Entre el título, el texto y el botón
+inline constexpr int SEPARACION_TEXTOS_FIN_DEL_DIA = 40;
+
 #endif

@@ -22,6 +22,7 @@ target_sources(taller_client
     gui/mapa/mapa.cpp
     gui/mapa/transicion_area.cpp
     gui/menu-pausa/menu_pausa.cpp
+    gui/fin-del-dia/pantalla_fin_del_dia.cpp
     gui/inventario/barra_inventario.cpp
     gui/chat/fuente.cpp
     gui/chat/panel_chat.cpp
@@ -57,6 +58,7 @@ target_sources(taller_client
     gui/mapa/mapa.h
     gui/mapa/transicion_area.h
     gui/menu-pausa/menu_pausa.h
+    gui/fin-del-dia/pantalla_fin_del_dia.h
     gui/inventario/barra_inventario.h
     gui/chat/fuente.h
     gui/chat/panel_chat.h

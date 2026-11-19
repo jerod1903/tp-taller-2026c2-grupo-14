@@ -39,6 +39,7 @@ Interfaz::Interfaz():
         fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
         panel_chat(fuente),
         menu_pausa(renderer, fuente, fuente_titulo),
+        pantalla_fin_del_dia(renderer, fuente, fuente_titulo),
         hud(renderer),
         globo(renderer),
         transicion(DURACION_TRANSICION) {
@@ -98,6 +99,10 @@ Entrada Interfaz::leer_entrada() {
             leer_chat(evento, entrada);
             continue;
         }
+        if (fin_del_dia_abierto) {
+            leer_fin_del_dia(evento, entrada);
+            continue;
+        }
         if (evento.type == SDL_MOUSEBUTTONDOWN && evento.button.button == SDL_BUTTON_LEFT &&
             camara) {
             entrada.click = casilla_clickeada(evento.button.x, evento.button.y);
@@ -122,7 +127,8 @@ Entrada Interfaz::leer_entrada() {
             entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
     }
-    if (borrador || menu_pausa.abierto()) {
+    // Escribiendo, en pausa o con el día terminado no camina
+    if (borrador || menu_pausa.abierto() || fin_del_dia_abierto) {
         return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
@@ -150,6 +156,25 @@ void Interfaz::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
         entrada.salir = true;
     } else if (opcion == OpcionPausa::Invitar) {
         entrada.invitar = true;
+    }
+}
+
+void Interfaz::leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada) {
+    if (pantalla_fin_del_dia.leer(evento, renderer.GetOutputSize())) {
+        entrada.listo_para_manana = true;
+        return;
+    }
+    if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
+        return;
+    }
+    SDL_Keycode tecla = evento.key.keysym.sym;
+    if (tecla == SDLK_ESCAPE) {
+        menu_pausa.abrir();
+    } else if (tecla == SDLK_RETURN) {
+        borrador = "";
+        entrada.escribiendo = true;
+    } else if (tecla == SDLK_F11) {
+        alternar_pantalla_completa();
     }
 }
 
@@ -345,6 +370,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    fin_del_dia_abierto = estado.fin_del_dia.has_value();
+    if (estado.fin_del_dia) {
+        pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
+                                     estado.listo_para_manana);
+    }
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
     hud.dibujar(renderer, estado, escala);
     if (menu_pausa.abierto()) {
