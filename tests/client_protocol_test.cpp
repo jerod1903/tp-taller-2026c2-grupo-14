@@ -92,6 +92,7 @@ TEST_F(ClientProtocolTest, ListMyGamesReturnsAllFields) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, MULTI_ID);
     EXPECT_EQ(games[0].gameName, "Multi");
+    EXPECT_EQ(games[0].worldId, "granja");
     EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Duenio");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);

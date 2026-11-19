@@ -93,6 +93,7 @@ bool ServerProtocol::send_saved_game_list(const std::vector<SavedGameInfo>& game
         return false;
     for (const SavedGameInfo& game: games) {
         bool sent = baseProtocol.send_u32(game.gameId) && baseProtocol.send_string(game.gameName) &&
+                    baseProtocol.send_string(game.worldId) &&
                     baseProtocol.send_string(game.worldName) &&
                     baseProtocol.send_string(game.characterName) &&
                     send_appearance(game.appearance) &&

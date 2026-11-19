@@ -91,6 +91,8 @@ struct WorldInfo {
 struct SavedGameInfo {
     uint32_t gameId;
     std::string gameName;
+    // El id del mundo (el archivo de su mapa): con él el menú arma la vista previa
+    std::string worldId;
     std::string worldName;
     std::string characterName;
     CharacterAppearance appearance;

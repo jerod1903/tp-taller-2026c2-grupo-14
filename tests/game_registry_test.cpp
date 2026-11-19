@@ -61,6 +61,7 @@ TEST(GameRegistryTest, CreatedGameAppearsInOwnerGames) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, *id);
     EXPECT_EQ(games[0].gameName, "Mi granja");
+    EXPECT_EQ(games[0].worldId, "granja");
     EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Granjero");
     EXPECT_EQ(games[0].appearance.shirt, APPEARANCE.shirt);

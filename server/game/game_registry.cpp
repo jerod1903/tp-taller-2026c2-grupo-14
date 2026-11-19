@@ -64,9 +64,9 @@ std::vector<SavedGameInfo> GameRegistry::games_of(const std::string& username) c
         std::vector<GameMember>::const_iterator member =
                 std::find_if(game.members.begin(), game.members.end(),
                              [&username](const GameMember& m) { return m.username == username; });
-        result.push_back(SavedGameInfo{game.gameId, game.gameName, world_name(game.worldId),
-                                       member->characterName, member->appearance,
-                                       game.isMultiplayer});
+        result.push_back(SavedGameInfo{game.gameId, game.gameName, game.worldId,
+                                       world_name(game.worldId), member->characterName,
+                                       member->appearance, game.isMultiplayer});
     }
     return result;
 }

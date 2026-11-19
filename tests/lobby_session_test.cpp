@@ -100,6 +100,7 @@ protected:
             SavedGameInfo game{};
             game.gameId = client->recv_u32().value_or(0);
             game.gameName = client->recv_string().value_or("");
+            game.worldId = client->recv_string().value_or("");
             game.worldName = client->recv_string().value_or("");
             game.characterName = client->recv_string().value_or("");
             game.appearance.hairStyle = client->recv_u16().value_or(0);
@@ -514,6 +515,7 @@ TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, *mine);
     EXPECT_EQ(games[0].gameName, "Mi granja");
+    EXPECT_EQ(games[0].worldId, "granja");
     EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Granjero");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);

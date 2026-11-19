@@ -12,7 +12,8 @@
 //   Login:           op, version u8, username                    -> status u8
 //   ListWorlds:      op                                          -> count u16, (worldId, name)*
 //   ListMyGames:     op                                          -> count u16, (gameId u32,
-//                    gameName, worldName, characterName, apariencia, isMultiplayer u8)*
+//                    gameName, worldId, worldName, characterName, apariencia,
+//                    isMultiplayer u8)*
 //   CheckInviteCode: op, inviteCode                              -> status u8
 //   CreateGame:      op, worldId, gameName, characterName, apariencia -> status u8, gameId u32
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
@@ -79,6 +80,7 @@ std::vector<SavedGameInfo> ClientProtocol::listMyGames() {
     for (SavedGameInfo& game: games) {
         game.gameId = ensure(baseProtocol.recv_u32());
         game.gameName = ensure(baseProtocol.recv_string());
+        game.worldId = ensure(baseProtocol.recv_string());
         game.worldName = ensure(baseProtocol.recv_string());
         game.characterName = ensure(baseProtocol.recv_string());
         game.appearance = recvAppearance();
