@@ -65,10 +65,11 @@ FetchContent_MakeAvailable(tomlplusplus)
 target_link_libraries(taller_common PUBLIC tomlplusplus::tomlplusplus)
 
 # Rutas absolutas, para que cliente, servidor y editor no dependan del cwd: maps/ (los mapas, que el
-# editor también escribe), Assets/ y la carpeta de server_config.toml y client_config.toml. Son las
-# del repo o las instaladas, según TALLER_INSTALL.
+# editor también escribe), saves/ (las partidas guardadas), Assets/ y la carpeta de
+# server_config.toml y client_config.toml. Son las del repo o las instaladas, según TALLER_INSTALL.
 target_compile_definitions(taller_common PUBLIC
     TALLER_MAPS_DIR="${TALLER_DATA_DIR}/maps"
+    TALLER_SAVES_DIR="${TALLER_DATA_DIR}/saves"
     TALLER_ASSETS_DIR="${TALLER_DATA_DIR}/Assets"
     TALLER_CONFIG_DIR="${TALLER_CONFIG_DIR}")
 

@@ -205,6 +205,15 @@ TEST_F(ServerProtocolTest, ChatMessageGoesWithItsTagKindAuthorAndText) {
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("vamos?"));
 }
 
+TEST_F(ServerProtocolTest, DayEndedGoesWithItsDaySleptAndVotes) {
+    ASSERT_TRUE(server->send_day_ended(DayEnded{12, true, 1, 3}));
+    EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(GameMsg::DayEnded));
+    EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(12));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(3));
+}
+
 TEST_F(ServerProtocolTest, RecvTypingReadsOpenAndClosed) {
     ASSERT_TRUE(client->send_u8(1));
     ASSERT_TRUE(client->send_u8(0));
@@ -247,7 +256,8 @@ TEST_F(ServerProtocolTest, FarmStateGoesWithTagAreaAndEachTile) {
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(11));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(SoilType::Tilled)));
-    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(CropType::Strawberry)));
+    EXPECT_EQ(client->recv_u8(),
+              std::optional<uint8_t>(static_cast<uint8_t>(CropType::Strawberry)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(2));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));

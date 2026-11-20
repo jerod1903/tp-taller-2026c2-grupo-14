@@ -1,6 +1,7 @@
 #include "server/game/tools/pickaxe.h"
 
 #include <algorithm>
+
 #include <gtest/gtest.h>
 
 #include "common/farm_dto.h"
@@ -60,8 +61,7 @@ TEST_F(PickaxeTest, StrikingOreAheadConsumesEnergyAndGivesItem) {
     const int energy_before = context.player.get_energy();
 
     ClickCommand(FakeGameContext::PLAYER_ID,
-                 ClickRequest{static_cast<uint16_t>(coal_pos.x),
-                              static_cast<uint16_t>(coal_pos.y)})
+                 ClickRequest{static_cast<uint16_t>(coal_pos.x), static_cast<uint16_t>(coal_pos.y)})
             .execute(context);
     EXPECT_EQ(context.player.get_energy(), energy_before - server_config().energy.mine);
     EXPECT_EQ(context.player.count(ItemType::Coal), 1);
@@ -107,8 +107,9 @@ TEST_F(PickaxeTest, MiningSilverSpawnsOrcPackOnLowRoll) {
         probe.add_portal(Portal{Position{0, 0}, &iter_context.location, Point{0.5f, 0.5f}});
         probe.set_visitors({&iter_context.player});
 
-        auto it = std::find_if(probe.get_ores().begin(), probe.get_ores().end(),
-                               [](const auto& entry) { return entry.second.ore == ItemType::Silver; });
+        auto it = std::find_if(
+                probe.get_ores().begin(), probe.get_ores().end(),
+                [](const auto& entry) { return entry.second.ore == ItemType::Silver; });
         if (it == probe.get_ores().end()) {
             continue;
         }

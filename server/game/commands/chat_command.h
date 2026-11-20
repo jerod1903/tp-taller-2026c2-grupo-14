@@ -20,6 +20,7 @@ class ChatCommand: public GameCommand {
 public:
     ChatCommand(uint32_t player_id, const ChatRequest& request);
     void execute(GameContext& context) override;
+    bool runs_while_day_ended() const override { return true; }
 
 private:
     std::string text;

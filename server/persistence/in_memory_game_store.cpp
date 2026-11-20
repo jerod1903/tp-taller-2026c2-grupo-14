@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -23,4 +24,18 @@ std::vector<GameRecord> InMemoryGameStore::load_all() {
 void InMemoryGameStore::save(const GameRecord& game) {
     std::lock_guard<std::mutex> lock(mutex);
     games.insert_or_assign(game.gameId, game);
+}
+
+std::optional<SavedGame> InMemoryGameStore::load_game(uint32_t game_id) {
+    std::lock_guard<std::mutex> lock(mutex);
+    auto state = states.find(game_id);
+    if (state == states.end()) {
+        return std::nullopt;
+    }
+    return state->second;
+}
+
+void InMemoryGameStore::save_game(uint32_t game_id, const SavedGame& game) {
+    std::lock_guard<std::mutex> lock(mutex);
+    states.insert_or_assign(game_id, game);
 }

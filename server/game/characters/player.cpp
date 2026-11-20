@@ -29,9 +29,17 @@ void Player::spend_energy(int amount) { energy = std::max(0, energy - amount); }
 bool Player::is_unconscious() const { return energy == 0 || !is_alive(); }
 
 void Player::wake_up(const SpawnPoint& bed, bool slept_in_bed) {
+    rest(slept_in_bed);
+    lie_in(bed);
+}
+
+void Player::rest(bool slept_in_bed) {
     float recovery = slept_in_bed ? 1.0f : server_config().player.bad_night_recovery;
     health = std::max(1, static_cast<int>(max_health * recovery));
     energy = std::max(1, static_cast<int>(max_energy * recovery));
+}
+
+void Player::lie_in(const SpawnPoint& bed) {
     set_direction(Direction::NONE);
     relocate(bed.location, cell_of(bed.point));
     place_at(bed.point);
@@ -75,11 +83,24 @@ void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); 
 
 InventoryState Player::get_inventory_state() const { return inventory.get_state(); }
 
+SavedPlayer Player::saved() const {
+    return SavedPlayer{gold, health, energy, inventory.get_state()};
+}
+
+void Player::restore(const SavedPlayer& saved) {
+    gold = saved.gold;
+    health = saved.health;
+    energy = saved.energy;
+    inventory.restore(saved.inventory);
+}
+
 void Player::set_typing(bool typing) { this->typing = typing; }
 
 bool Player::is_typing() const { return typing; }
 
-uint8_t Player::receive(ItemType item, uint8_t quantity, ItemQuality quality) { return inventory.add(item, quantity, quality); }
+uint8_t Player::receive(ItemType item, uint8_t quantity, ItemQuality quality) {
+    return inventory.add(item, quantity, quality);
+}
 
 int Player::count(ItemType item) const { return inventory.count(item); }
 

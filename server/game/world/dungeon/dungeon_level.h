@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <random>
@@ -12,7 +13,6 @@
 #include "server/game/characters/enemies/enemy.h"
 #include "server/game/world/dungeon/traps/trap.h"
 #include "server/game/world/location.h"
-#include <map>
 
 // Las escaleras y la salida al pueblo son portales comunes, salen de las transiciones del mapa.
 class Flame;
@@ -65,7 +65,7 @@ public:
         Crumbled,  // se rompió y no dio producto (lapislázuli)
         Mined,     // se rompió y dio su producto
     };
-    
+
     struct StrikeResult {
         Strike strike;
         ItemType ore = ItemType::Empty;  // el producto, si strike == Mined

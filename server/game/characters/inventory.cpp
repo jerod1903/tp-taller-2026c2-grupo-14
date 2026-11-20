@@ -94,3 +94,11 @@ void Inventory::remove(ItemType item, int quantity) {
 InventoryState Inventory::get_state() const {
     return InventoryState{selected_slot, std::vector<InventorySlot>(slots.begin(), slots.end())};
 }
+
+void Inventory::restore(const InventoryState& state) {
+    slots = {};
+    for (std::size_t i = 0; i < state.slots.size() && i < slots.size(); ++i) {
+        slots[i] = state.slots[i];
+    }
+    select_slot(state.selectedSlot);
+}

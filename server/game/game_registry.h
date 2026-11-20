@@ -2,7 +2,6 @@
 #define GAME_REGISTRY_H
 
 #include <cstdint>
-#include <list>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -45,11 +44,13 @@ public:
     // Ok, InvalidInviteCode, GameFull o AlreadyMember.
     LobbyStatus check_invite_code(const std::string& code, const std::string& username) const;
 
-    // Suma un miembro nuevo a la partida del código y lo deja conectado a ella.
+    // Suma un miembro nuevo a la partida del código y lo deja conectado a ella. Como load_game,
+    // lanza el Game si no estaba corriendo (GameClosed si lo guardado no se puede leer).
     GameEnteredResponse join_game(const std::string& code, const GameMember& member);
 
-    // Conecta a un miembro existente. GameNotFound también si el usuario no participa, y
-    // WorldNotFound si el mapa de la partida ya no se carga.
+    // Conecta a un miembro existente y lanza el Game de la partida si no estaba corriendo, con lo
+    // que tenga guardado. GameNotFound también si el usuario no participa, WorldNotFound si el mapa
+    // de la partida ya no se carga y GameClosed si lo guardado no se puede leer.
     GameEnteredResponse load_game(uint32_t game_id, const std::string& username);
 
     GameMember member_of(uint32_t game_id, uint32_t player_id) const;
@@ -58,8 +59,9 @@ public:
     // un miembro invitado recibe NotOwner, y alguien que no participa GameNotFound.
     EnableMultiplayerResponse enable_multiplayer(uint32_t game_id, const std::string& username);
 
-    // Lanza el Game de la partida si no estaba corriendo. Solo para un usuario conectado a ella:
-    // el Game sigue vivo mientras quede algún conectado.
+    // El Game de la partida, que lanza si no estaba corriendo. Solo para un usuario conectado a
+    // ella: el Game sigue vivo mientras quede algún conectado. Lanza std::runtime_error si lo
+    // guardado no se puede leer (load_game y join_game ya lo lanzaron: solo pasa al crear).
     Inbox& attach(uint32_t game_id);
 
     bool is_running(uint32_t game_id) const;
@@ -84,8 +86,10 @@ private:
     std::mt19937 rng{std::random_device{}()};
     uint32_t next_game_id = 1;
     std::map<uint32_t, std::unique_ptr<Game>> running;
-    // Detenidos que pueden seguir en su último tick; attach los destruye cuando terminan.
-    std::list<std::unique_ptr<Game>> finished;
+    // Detenidos que pueden seguir en su último tick, uno por partida; reap() los destruye cuando
+    // terminan. Si su partida se vuelve a lanzar antes, launch() espera a que terminen: en ese
+    // último tick pueden estar guardando, y el nuevo tiene que cargar lo que guardaron.
+    std::map<uint32_t, std::unique_ptr<Game>> finished;
     mutable std::mutex mutex;
 
     bool world_exists(const std::string& world_id) const;
@@ -94,6 +98,9 @@ private:
     // Las que siguen requieren tener el lock tomado.
     std::string new_invite_code();
     void reap();
+    // Lanza el Game de la partida si no está corriendo, con lo que tenga guardado. false si lo
+    // guardado no se puede leer.
+    bool launch(uint32_t game_id);
     static bool is_member(const GameRecord& game, const std::string& username);
     static std::optional<uint32_t> player_id_of(const GameRecord& game,
                                                 const std::string& username);

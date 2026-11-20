@@ -49,6 +49,7 @@ public:
     bool send_enable_multiplayer(const EnableMultiplayerResponse& response);
     bool send_farm_state(const FarmState& farm);
     bool send_dungeon_state(const DungeonState& dungeon);
+    bool send_day_ended(const DayEnded& day);
 
     void shutdown();
 

@@ -74,8 +74,7 @@ TEST_F(SenderTest, SendsMessagesInOrder) {
 
 TEST_F(SenderTest, SendsPlayerInfo) {
     outbox->push(PlayerInfo{4, "Martu", CharacterAppearance{1, 2, 3, 4, 0}});
-    EXPECT_EQ(client->recv_u8(),
-              std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::PlayerInfo)));
+    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::PlayerInfo)));
     EXPECT_EQ(client->recv_u32(), std::optional<uint32_t>(4));
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("Martu"));
 }

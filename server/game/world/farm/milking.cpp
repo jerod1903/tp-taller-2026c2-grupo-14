@@ -27,7 +27,8 @@ Cow* nearest_ready_cow(const std::vector<std::unique_ptr<Animal>>& animals, cons
 
 }  // namespace
 
-const Outcome& milk_nearest_cow(const std::vector<std::unique_ptr<Animal>>& animals, Player& player) {
+const Outcome& milk_nearest_cow(const std::vector<std::unique_ptr<Animal>>& animals,
+                                Player& player) {
     Cow* cow = nearest_ready_cow(animals, player);
     if (cow == nullptr) {
         return Outcome::not_here();

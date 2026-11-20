@@ -10,6 +10,7 @@
 
 Server::Server(const char* servicename, std::istream& input, const std::vector<GameWorld>& worlds):
         input(input),
+        store(TALLER_SAVES_DIR),
         registry(worlds, store, server_config().game.max_players),
         acceptor(servicename, registry) {}
 

@@ -16,16 +16,18 @@
 #include "server/game/characters/player.h"
 #include "server/game/interactions/outcome.h"
 
-Farm::Farm(std::string name, Grid grid, const Position& cabin_pos, std::unique_ptr<Cabin> cabin,
+Farm::Farm(std::string name, Grid grid, const DoorCells& cabin_door, std::unique_ptr<Cabin> cabin,
            const std::set<Position>& tilled):
-        Location(std::move(name), std::move(grid)), cabin_pos(cabin_pos), cabin(std::move(cabin)) {
-    this->cabin->link_to(*this, cabin_pos);
+        Location(std::move(name), std::move(grid)),
+        cabin_door(cabin_door),
+        cabin(std::move(cabin)) {
+    this->cabin->link_to(*this, cabin_door);
     for (const Position& pos: tilled) {
         plots.emplace(pos, Plot{SoilType::Tilled, Crop{}});
     }
 }
 
-const Position& Farm::get_cabin_pos() const { return cabin_pos; }
+const DoorCells& Farm::get_cabin_door() const { return cabin_door; }
 
 Cabin& Farm::get_cabin() { return *cabin; }
 
@@ -55,6 +57,35 @@ bool Farm::add_animal(AnimalKind kind, const Position& pos) {
 
 const std::vector<std::unique_ptr<Animal>>& Farm::get_animals() const { return animals; }
 
+SavedFarm Farm::saved() const {
+    SavedFarm saved{{}, ground_items, {}};
+    for (const auto& [pos, plot]: plots) {
+        saved.plots.emplace(pos, SavedPlot{plot.soil, plot.crop.saved()});
+    }
+    for (const std::unique_ptr<Animal>& animal: animals) {
+        saved.animals.push_back(animal->saved());
+    }
+    return saved;
+}
+
+void Farm::restore(const SavedFarm& saved) {
+    plots.clear();
+    for (const auto& [pos, plot]: saved.plots) {
+        plots.emplace(pos, Plot{plot.soil, Crop(plot.crop)});
+    }
+    ground_items = saved.ground_items;
+    for (const std::unique_ptr<Animal>& animal: animals) {
+        remove_entity(*animal);
+    }
+    animals.clear();
+    for (const SavedAnimal& animal: saved.animals) {
+        if (add_animal(animal.kind, animal.cell)) {
+            animals.back()->restore(animal);
+        }
+    }
+    changed = true;
+}
+
 void Farm::start_new_day() {
     for (const std::unique_ptr<Animal>& animal: animals) {
         animal->start_new_day();
@@ -80,9 +111,8 @@ void Farm::collect_drops() {
 
 int Farm::count_animals(AnimalKind kind) const {
     return static_cast<int>(
-            std::count_if(animals.begin(), animals.end(), [kind](const auto& animal) {
-                return animal->get_kind() == kind;
-            }));
+            std::count_if(animals.begin(), animals.end(),
+                          [kind](const auto& animal) { return animal->get_kind() == kind; }));
 }
 
 bool Farm::dig(const Position& pos) {

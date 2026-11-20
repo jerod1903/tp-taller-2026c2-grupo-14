@@ -42,3 +42,13 @@ void Chicken::schedule_egg() {
     std::uniform_real_distribution<float> moment(0.0f, server_config().game.day_speed);
     lay_in = moment(rng);
 }
+
+SavedAnimal Chicken::saved() const {
+    return SavedAnimal{AnimalKind::Chicken, get_position(), days_left, false, lay_in, laid};
+}
+
+void Chicken::restore(const SavedAnimal& saved) {
+    days_left = saved.days_left;
+    lay_in = saved.lay_in;
+    laid = saved.laid;
+}

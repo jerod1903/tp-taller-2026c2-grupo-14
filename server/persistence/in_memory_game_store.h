@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <mutex>
+#include <optional>
 #include <vector>
 
 #include "server/persistence/game_store.h"
@@ -15,9 +16,12 @@ public:
 
     std::vector<GameRecord> load_all() override;
     void save(const GameRecord& game) override;
+    std::optional<SavedGame> load_game(uint32_t game_id) override;
+    void save_game(uint32_t game_id, const SavedGame& game) override;
 
 private:
     std::map<uint32_t, GameRecord> games;
+    std::map<uint32_t, SavedGame> states;
     std::mutex mutex;
 };
 

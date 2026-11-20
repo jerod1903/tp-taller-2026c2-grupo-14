@@ -15,10 +15,12 @@ inline const char* const RUTA_GLOBO_ESCRIBIENDO = TALLER_ASSETS_DIR "/Misc/expre
 inline const char* const RUTA_ICONO_LECHE = TALLER_ASSETS_DIR "/Farm/Animals/milk.png";
 inline const char* const RUTA_ICONO_REGADERA = TALLER_ASSETS_DIR "/Misc/watering_can.png";
 
-inline const char* const RUTA_CARTELES_HUD = TALLER_ASSETS_DIR "/Menu/botones/botones_madera_enlazados.png";
+inline const char* const RUTA_CARTELES_HUD =
+        TALLER_ASSETS_DIR "/Menu/botones/botones_madera_enlazados.png";
 inline const char* const RUTA_MARCO_HUD = TALLER_ASSETS_DIR "/Menu/botones/input_madera_panel.png";
 inline const char* const RUTA_ICONO_RELOJ = TALLER_ASSETS_DIR "/Misc/stopwatch.png";
-inline const char* const RUTA_ICONO_ORO = TALLER_ASSETS_DIR "/Caverns/items and trap_animation/coin/coin_1.png";
+inline const char* const RUTA_ICONO_ORO =
+        TALLER_ASSETS_DIR "/Caverns/items and trap_animation/coin/coin_1.png";
 
 inline const char* const RUTA_HOJA_VACA = TALLER_ASSETS_DIR "/Farm/Animals/Female Cow Brown.png";
 inline const char* const RUTA_HOJA_GALLINA = TALLER_ASSETS_DIR "/Farm/Animals/Chicken Red.png";
@@ -48,8 +50,10 @@ inline const char* const RUTA_VAMPIRO_MUERTO =
         TALLER_ASSETS_DIR "/Caverns/Enemies/Vampire/enemies-vampire_death.png";
 
 inline const char* const RUTA_ORCO_QUIETO = TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Idle.png";
-inline const char* const RUTA_ORCO_CAMINANDO = TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Walk.png";
-inline const char* const RUTA_ORCO_ATACANDO = TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Attack01.png";
+inline const char* const RUTA_ORCO_CAMINANDO =
+        TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Walk.png";
+inline const char* const RUTA_ORCO_ATACANDO =
+        TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Attack01.png";
 inline const char* const RUTA_ORCO_HERIDO = TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Hurt.png";
 inline const char* const RUTA_ORCO_MUERTO = TALLER_ASSETS_DIR "/Caverns/Enemies/Orcs/Orc_Death.png";
 

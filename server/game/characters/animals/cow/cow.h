@@ -16,6 +16,8 @@ public:
     AnimalKind get_kind() const override;
     bool is_ready() const override;
     void start_new_day() override;
+    SavedAnimal saved() const override;
+    void restore(const SavedAnimal& saved) override;
     // La deja sin leche y vuelve a contar los días.
     void milk();
 

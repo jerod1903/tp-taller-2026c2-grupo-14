@@ -12,6 +12,7 @@ class TypingCommand: public GameCommand {
 public:
     TypingCommand(uint32_t player_id, const TypingRequest& request);
     void execute(GameContext& context) override;
+    bool runs_while_day_ended() const override { return true; }
 
 private:
     bool typing;

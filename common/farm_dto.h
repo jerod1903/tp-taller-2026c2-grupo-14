@@ -54,10 +54,10 @@ struct FarmTile {
     uint16_t y;
     SoilType soil;
     CropType crop = CropType::None;
-    uint8_t stage = 0;        // etapa de crecimiento; la última es "lista para cosechar"
-    bool needsWater = false;  // se dibuja el icono de riego
+    uint8_t stage = 0;            // etapa de crecimiento; la última es "lista para cosechar"
+    bool needsWater = false;      // se dibuja el icono de riego
     bool readyToHarvest = false;  // se dibuja el icono de cosecha
-    
+
     bool operator==(const FarmTile&) const = default;
 };
 

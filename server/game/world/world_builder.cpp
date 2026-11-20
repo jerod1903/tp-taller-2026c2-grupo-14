@@ -36,9 +36,12 @@ std::vector<Position> cells_of(const maps::MapElement& element) {
     return cells;
 }
 
-Position building_door(const maps::MapElement& building) {
-    maps::MapCell door = maps::doorCell(building);
-    return Position{door.x, door.y};
+DoorCells building_door(const maps::MapElement& building) {
+    DoorCells door;
+    for (const maps::MapCell& cell: maps::doorCells(building)) {
+        door.push_back(Position{cell.x, cell.y});
+    }
+    return door;
 }
 
 // Los portones de los pasajes se cruzan caminando; la mina, sus escaleras y salidas, con la tecla
@@ -150,7 +153,7 @@ std::unique_ptr<Interior> build_interior(const maps::MapDefinition& map, maps::A
 }
 
 // El primer animal_spawn de la granja (donde arrancan los animales); sin uno, la puerta de la
-// cabaña.
+// cabaña (su primera celda).
 Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area,
                   const Farm& farm) {
     auto spawn = std::find_if(map.elements.begin(), map.elements.end(),
@@ -158,7 +161,8 @@ Position spawn_of(const maps::MapDefinition& map, const maps::MapArea& farm_area
                                   return element.areaId == farm_area.id &&
                                          element.type == maps::ElementType::AnimalSpawn;
                               });
-    return spawn != map.elements.end() ? Position{spawn->x, spawn->y} : farm.get_cabin_pos();
+    return spawn != map.elements.end() ? Position{spawn->x, spawn->y} :
+                                         farm.get_cabin_door().front();
 }
 
 std::unique_ptr<Farm> build_farm(const maps::MapDefinition& map, const maps::MapArea& area,
@@ -270,12 +274,12 @@ Merchant build_merchant(maps::ElementType type, const Position& pos) {
                          {"huevo", ItemType::Egg, chicken.product_price}});
     }
     if (type == maps::ElementType::MerchantClint) {
-    const ServerConfig::Mining& mining = server_config().mining;
-    return Merchant(name, pos, {},
-                    {{"carbón", ItemType::Coal, mining.coal.price},
-                     {"lapislázuli", ItemType::Lapis, mining.lapis.price},
-                     {"plata", ItemType::Silver, mining.silver.price},
-                     {"oro", ItemType::GoldOre, mining.gold.price}});
+        const ServerConfig::Mining& mining = server_config().mining;
+        return Merchant(name, pos, {},
+                        {{"carbón", ItemType::Coal, mining.coal.price},
+                         {"lapislázuli", ItemType::Lapis, mining.lapis.price},
+                         {"plata", ItemType::Silver, mining.silver.price},
+                         {"oro", ItemType::GoldOre, mining.gold.price}});
     }
 
 

@@ -100,6 +100,7 @@ protected:
             SavedGameInfo game{};
             game.gameId = client->recv_u32().value_or(0);
             game.gameName = client->recv_string().value_or("");
+            game.worldId = client->recv_string().value_or("");
             game.worldName = client->recv_string().value_or("");
             game.characterName = client->recv_string().value_or("");
             game.appearance.hairStyle = client->recv_u16().value_or(0);
@@ -181,7 +182,8 @@ protected:
                   std::optional<uint16_t>(static_cast<uint16_t>(server_config().player.health)));
     }
 
-  // Saltea el FarmState y los DungeonState que manda el servidor al entrar, antes de los snapshots.
+    // Saltea el FarmState y los DungeonState que manda el servidor al entrar, antes de los
+    // snapshots.
     Snapshot recv_snapshot() {
         std::optional<uint8_t> tag = client->recv_u8();
         while (tag == std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::FarmState)) ||
@@ -235,8 +237,11 @@ protected:
 
     // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
     Snapshot recv_snapshot_body() {
-        Snapshot snapshot{client->recv_u32().value_or(0), client->recv_u16().value_or(0),
-                          client->recv_u16().value_or(0), {}, {}};
+        Snapshot snapshot{client->recv_u32().value_or(0),
+                          client->recv_u16().value_or(0),
+                          client->recv_u16().value_or(0),
+                          {},
+                          {}};
         uint16_t count = client->recv_u16().value_or(0);
         for (uint16_t i = 0; i < count; ++i) {
             PlayerState player{};
@@ -343,7 +348,7 @@ protected:
             } else if (*tag == static_cast<uint8_t>(GameMsg::FarmState)) {
                 recv_farm_state_body();
             } else if (*tag == static_cast<uint8_t>(GameMsg::DungeonState)) {
-                recv_dungeon_state_body();    
+                recv_dungeon_state_body();
             } else {
                 break;
             }
@@ -540,6 +545,7 @@ TEST_F(LobbySessionTest, ListMyGamesReturnsAllFieldsOfOwnGamesOnly) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, *mine);
     EXPECT_EQ(games[0].gameName, "Mi granja");
+    EXPECT_EQ(games[0].worldId, "granja");
     EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Granjero");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);

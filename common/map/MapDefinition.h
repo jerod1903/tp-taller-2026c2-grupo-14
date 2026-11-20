@@ -519,19 +519,25 @@ inline std::string_view toString(ElementLayer layer) {
 
 // Lo que el juego sabe de cada tipo de elemento, mas alla de las reglas del mapa
 struct ElementTraits {
-    // Edificio al que se entra: la puerta es la celda de abajo al centro
+    // Edificio al que se entra: la puerta esta en la fila de abajo (ver doorCells)
     bool hasDoor;
     // Se pisa para ir a otra area: dispara una transicion
     bool travel;
+    // Donde esta la puerta en el dibujo: empieza doorShift columnas a la derecha de la del centro
+    // (x + width / 2) y mide doorWidth. La del mercado y la del centro comunitario son dobles.
+    int doorShift = 0;
+    int doorWidth = 1;
 };
 
 // Sin default, para que el compilador avise si se agrega un tipo y no se decide aca.
 inline ElementTraits elementTraits(ElementType type) {
     switch (type) {
         case ElementType::Cabin:
-        case ElementType::Market:
-        case ElementType::CommunityCenter:
             return {.hasDoor = true, .travel = false};
+        case ElementType::Market:
+            return {.hasDoor = true, .travel = false, .doorShift = 0, .doorWidth = 2};
+        case ElementType::CommunityCenter:
+            return {.hasDoor = true, .travel = false, .doorShift = -1, .doorWidth = 2};
         case ElementType::DungeonEntrance:
         case ElementType::Door:
         case ElementType::Exit:
@@ -609,9 +615,21 @@ struct MapCell {
     int y;
 };
 
-// La celda de abajo al centro del edificio (solo tiene sentido si su tipo tiene puerta)
-inline MapCell doorCell(const MapElement& building) {
-    return {building.x + building.width / 2, building.y + building.height - 1};
+// Las celdas de la puerta del edificio, de izquierda a derecha, en su fila de abajo (solo tiene
+// sentido si su tipo tiene puerta). Las que caerian fuera del edificio no van.
+inline std::vector<MapCell> doorCells(const MapElement& building) {
+    if (!building.type) {
+        return {};
+    }
+    const ElementTraits traits = elementTraits(*building.type);
+    const int first = building.x + building.width / 2 + traits.doorShift;
+    std::vector<MapCell> cells;
+    for (int x = first; x < first + traits.doorWidth; ++x) {
+        if (x >= building.x && x < building.x + building.width) {
+            cells.push_back({x, building.y + building.height - 1});
+        }
+    }
+    return cells;
 }
 
 // Las estructuras (edificios, arboles, rocas) y los NPCs tapan sus celdas; los objetos no

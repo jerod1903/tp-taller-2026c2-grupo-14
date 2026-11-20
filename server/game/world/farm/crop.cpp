@@ -17,8 +17,26 @@ Crop::Crop(CropType type, float minute): type(type) {
     }
 }
 
+Crop::Crop(const SavedCrop& saved):
+        type(saved.type),
+        days_grown(saved.days_grown),
+        window(saved.window),
+        watered(saved.watered),
+        window_start(saved.window_start),
+        skipped(saved.skipped),
+        watering_delay(saved.watering_delay),
+        waterings(saved.waterings),
+        skipped_total(saved.skipped_total),
+        days_ready(saved.days_ready) {}
+
+SavedCrop Crop::saved() const {
+    return SavedCrop{type,    days_grown,     window,    watered,       window_start,
+                     skipped, watering_delay, waterings, skipped_total, days_ready};
+}
+
 uint8_t Crop::stage_count() const {
-    static constexpr uint8_t COUNTS[] = {0, 6, 6, 7, 6};  // None, Strawberry, Scallion, Potato, Pumpkin
+    static constexpr uint8_t COUNTS[] = {0, 6, 6, 7,
+                                         6};  // None, Strawberry, Scallion, Potato, Pumpkin
     return COUNTS[static_cast<uint8_t>(type)];
 }
 

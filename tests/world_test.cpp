@@ -22,13 +22,14 @@ namespace {
 const Position CABIN_POS{4, 4};  // Puerta de la cabaña, en la granja.
 const Position DOOR_POS{0, 4};   // Puerta de salida, dentro de la cabaña.
 
-std::unique_ptr<World> make_world() {
-    auto cabin = std::make_unique<Cabin>("cabin", make_grid(), DOOR_POS);
-    auto farm = std::make_unique<Farm>("farm", make_grid(), CABIN_POS, std::move(cabin));
+// `beds`: los lugares para camas de la cabaña (para spawn_player)
+std::unique_ptr<World> make_world(std::vector<Position> beds = {}) {
+    auto cabin = std::make_unique<Cabin>("cabin", make_grid(), DOOR_POS, std::move(beds));
+    auto farm = std::make_unique<Farm>("farm", make_grid(), DoorCells{CABIN_POS}, std::move(cabin));
     auto market = std::make_unique<Interior>("market", make_grid(), DOOR_POS);
     auto community_center = std::make_unique<Interior>("community_center", make_grid(), DOOR_POS);
-    auto town = std::make_unique<Town>("town", make_grid(), CABIN_POS, std::move(market),
-                                       Position{1, 1}, std::move(community_center));
+    auto town = std::make_unique<Town>("town", make_grid(), DoorCells{CABIN_POS}, std::move(market),
+                                       DoorCells{Position{1, 1}}, std::move(community_center));
     std::vector<std::unique_ptr<DungeonLevel>> levels;
     for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
         levels.push_back(std::make_unique<DungeonLevel>("level", make_grid(), depth));
@@ -210,6 +211,115 @@ TEST(CabinBedsTest, WithoutFreeSlotsAssigningABedThrows) {
     Cabin cabin = make_cabin_with_beds({Position{1, 1}});
     cabin.assign_bed(5);
     EXPECT_THROW(cabin.assign_bed(6), std::logic_error);
+}
+
+// --- Los que se van y vuelven ---
+
+// Mundo con dos camas, sin jugadores: entran con spawn_player.
+class ReturningPlayerTest: public ::testing::Test {
+protected:
+    std::unique_ptr<World> world = make_world({Position{1, 1}, Position{3, 1}});
+
+    Player& player() { return *world->find_player(1); }
+    // Termina el día y arranca el siguiente: despiertan todos
+    void end_the_day() {
+        world->update(world->get_clock().get_day_seconds() + 1);
+        world->start_new_day();
+    }
+};
+
+TEST_F(ReturningPlayerTest, WhoLeavesIsOffTheMapButNotForgotten) {
+    world->spawn_player(1, "jero");
+    world->remove_player(1);
+    EXPECT_EQ(world->find_player(1), nullptr);
+    EXPECT_TRUE(world->get_cabin().get_entities().empty());
+}
+
+TEST_F(ReturningPlayerTest, WhoComesBackKeepsWhatItHadAndWakesInItsBed) {
+    world->spawn_player(1, "jero");
+    player().add_gold(30);
+    player().receive(ItemType::Egg, 3);
+    int gold = player().get_gold();
+    player().relocate(world->get_farm(), Position{1, 1});
+    world->remove_player(1);
+    world->spawn_player(1, "jero");
+    ASSERT_NE(world->find_player(1), nullptr);
+    EXPECT_EQ(player().get_gold(), gold);
+    EXPECT_EQ(player().count(ItemType::Egg), 3);
+    EXPECT_EQ(&player().get_location(), &world->get_cabin());
+    EXPECT_EQ(world->get_cabin().get_entities().size(), 1u);
+}
+
+TEST_F(ReturningPlayerTest, IfTheDayPassesWhileAwayItWakesAsAfterABadNight) {
+    world->spawn_player(1, "jero");
+    world->remove_player(1);
+    end_the_day();
+    world->spawn_player(1, "jero");
+    const ServerConfig::Player& stats = server_config().player;
+    EXPECT_EQ(player().get_health(), static_cast<int>(stats.health * stats.bad_night_recovery));
+    EXPECT_EQ(player().get_energy(), static_cast<int>(stats.energy * stats.bad_night_recovery));
+}
+
+// --- Guardar y retomar la partida ---
+
+TEST_F(ReturningPlayerTest, TheSavedGameHasTheDayAndEveryoneWhoPlayed) {
+    world->spawn_player(1, "jero");
+    player().add_gold(10);
+    int gold = player().get_gold();
+    world->remove_player(1);
+    end_the_day();
+    SavedGame saved = world->saved();
+    EXPECT_EQ(saved.day, 2);
+    ASSERT_EQ(saved.players.count(1), 1u);
+    EXPECT_EQ(saved.players.at(1).gold, gold);
+}
+
+TEST_F(ReturningPlayerTest, WhoEntersARestoredGameGetsWhatItHadSaved) {
+    SavedGame saved{7, world->get_farm().saved(), {{1, SavedPlayer{999, 40, 30, {}}}}};
+    world->restore(saved);
+    EXPECT_EQ(world->get_clock().get_day(), 7);
+    world->spawn_player(1, "jero");
+    EXPECT_EQ(player().get_gold(), 999);
+    EXPECT_EQ(player().get_health(), 40);
+    EXPECT_EQ(player().get_energy(), 30);
+}
+
+TEST_F(ReturningPlayerTest, WhoDidNotEnterKeepsWhatItHadSaved) {
+    SavedPlayer absent{500, 100, 100, {}};
+    world->restore(SavedGame{3, world->get_farm().saved(), {{2, absent}}});
+    world->spawn_player(1, "jero");
+    SavedGame saved = world->saved();
+    EXPECT_EQ(saved.players.at(2), absent);
+    EXPECT_EQ(saved.players.count(1), 1u);
+}
+
+TEST_F(ReturningPlayerTest, UpdateTellsWhenTheDayEndsAndTheNextOneWaits) {
+    EXPECT_FALSE(world->update(1.0f));
+    EXPECT_TRUE(world->update(world->get_clock().get_day_seconds()));
+    // Queda en las 2:00 del mismo día hasta start_new_day
+    EXPECT_EQ(world->get_clock().get_day(), 1);
+    EXPECT_FLOAT_EQ(world->get_clock().get_minute_of_day(), 1200.0f);
+    world->start_new_day();
+    EXPECT_EQ(world->get_clock().get_day(), 2);
+    EXPECT_FLOAT_EQ(world->get_clock().get_minute_of_day(), 0.0f);
+}
+
+TEST_F(ReturningPlayerTest, WhoWasInBedWhenTheDayEndedSleptThere) {
+    world->spawn_player(1, "jero");  // aparece acostado en su cama
+    world->spawn_player(2, "martu");
+    player().take_damage(50);
+    world->find_player(2)->relocate(world->get_farm(), Position{1, 1});
+    world->update(world->get_clock().get_day_seconds());
+    EXPECT_TRUE(world->slept_in_bed(1));
+    EXPECT_FALSE(world->slept_in_bed(2));
+    world->start_new_day();
+    EXPECT_EQ(player().get_health(), server_config().player.health);
+}
+
+TEST_F(ReturningPlayerTest, EndDayClosesItOnTheNextUpdate) {
+    world->end_day();
+    EXPECT_TRUE(world->update(0.0f));
+    EXPECT_EQ(world->get_clock().get_day(), 1);
 }
 
 }  // namespace

@@ -44,6 +44,9 @@ bool Sender::send(const GameMessage& message) {
     if (const DungeonState* dungeon = std::get_if<DungeonState>(&message)) {
         return protocol.send_dungeon_state(*dungeon);
     }
+    if (const DayEnded* day = std::get_if<DayEnded>(&message)) {
+        return protocol.send_day_ended(*day);
+    }
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 

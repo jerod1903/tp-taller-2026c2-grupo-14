@@ -92,6 +92,7 @@ TEST_F(ClientProtocolTest, ListMyGamesReturnsAllFields) {
     ASSERT_EQ(games.size(), 1u);
     EXPECT_EQ(games[0].gameId, MULTI_ID);
     EXPECT_EQ(games[0].gameName, "Multi");
+    EXPECT_EQ(games[0].worldId, "granja");
     EXPECT_EQ(games[0].worldName, "Granja");
     EXPECT_EQ(games[0].characterName, "Duenio");
     EXPECT_EQ(games[0].appearance.hairStyle, APPEARANCE.hairStyle);
@@ -199,6 +200,14 @@ TEST_F(ClientGameProtocolTest, RecvsLocationData) {
     EXPECT_EQ(std::get<LocationData>(message).maxHealth, 100);
 }
 
+TEST_F(ClientGameProtocolTest, RecvsDayEnded) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_day_ended(DayEnded{4, false, 2, 3}));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<DayEnded>(message));
+    EXPECT_EQ(std::get<DayEnded>(message), (DayEnded{4, false, 2, 3}));
+}
+
 TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
     ServerProtocol server(std::move(*server_socket));
     const PlayerState walking{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};
@@ -264,10 +273,8 @@ TEST_F(ClientGameProtocolTest, SendSelectSlotSendsTagAndSlot) {
 
 TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
     ServerProtocol server(std::move(*server_socket));
-    const InventoryState inventory{2,
-                                   {{ItemType::Pickaxe, 1},
-                                    {ItemType::Strawberry, 3},
-                                    {ItemType::Empty, 0}}};
+    const InventoryState inventory{
+            2, {{ItemType::Pickaxe, 1}, {ItemType::Strawberry, 3}, {ItemType::Empty, 0}}};
     ASSERT_TRUE(server.send_inventory_state(inventory));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
@@ -314,6 +321,14 @@ TEST_F(ClientGameProtocolTest, SendInviteSendsOnlyTheTag) {
     EXPECT_EQ(server.recv_u8(), std::nullopt);
 }
 
+TEST_F(ClientGameProtocolTest, SendDayReadySendsOnlyTheTag) {
+    BaseProtocol server(std::move(*server_socket));
+    client->sendDayReady();
+    client->shutdown();
+    EXPECT_EQ(server.recv_u8(), static_cast<uint8_t>(GameOp::DayReady));
+    EXPECT_EQ(server.recv_u8(), std::nullopt);
+}
+
 TEST_F(ClientGameProtocolTest, SendTypingSendsTagAndState) {
     BaseProtocol server(std::move(*server_socket));
     client->sendTyping(true);
@@ -339,7 +354,8 @@ TEST_F(ClientGameProtocolTest, RecvsFarmState) {
 // Si recvFarmState leyera de más o de menos, el mensaje siguiente quedaría desalineado.
 TEST_F(ClientGameProtocolTest, RecvFarmStateConsumesExactlyItsPayload) {
     ServerProtocol server(std::move(*server_socket));
-    ASSERT_TRUE(server.send_farm_state(FarmState{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}}));
+    ASSERT_TRUE(server.send_farm_state(
+            FarmState{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}}));
     ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
     EXPECT_TRUE(std::holds_alternative<FarmState>(client->recvGameMessage()));
     ServerGameMessage next = client->recvGameMessage();

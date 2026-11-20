@@ -7,6 +7,7 @@
 #include "server/game/characters/player.h"
 #include "server/game/cheats/gold_cheat.h"
 #include "server/game/cheats/seeds_cheat.h"
+#include "server/game/cheats/sleep_cheat.h"
 #include "server/game/commands/game_context.h"
 
 std::optional<int> Cheat::amount(const std::string& payload, int fallback) {
@@ -29,9 +30,11 @@ void Cheat::tell(const Player& player, GameContext& context, const std::string& 
 const Cheat* cheat_for(const std::string& name) {
     static const SeedsCheat seeds;
     static const GoldCheat gold;
+    static const SleepCheat sleep;
     static const std::map<std::string, const Cheat*> cheats = {
             {"seeds", &seeds},
             {"gold", &gold},
+            {"sleep", &sleep},
     };
     auto it = cheats.find(name);
     return it != cheats.end() ? it->second : nullptr;

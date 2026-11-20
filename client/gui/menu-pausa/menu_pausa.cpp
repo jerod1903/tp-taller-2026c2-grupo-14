@@ -3,6 +3,7 @@
 #include <string>
 
 #include "client/constants.h"
+#include "client/gui/fondo/oscurecer_ventana.h"
 #include "client/gui/rutas.h"
 
 MenuPausa::MenuPausa(SDL2pp::Renderer& renderer, Fuente& fuente_botones, Fuente& fuente_titulo):
@@ -56,10 +57,7 @@ std::optional<OpcionPausa> MenuPausa::leer(const SDL_Event& evento,
 }
 
 void MenuPausa::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana) {
-    renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-    renderer.SetDrawColor(COLOR_FONDO_PAUSA.r, COLOR_FONDO_PAUSA.g, COLOR_FONDO_PAUSA.b,
-                          COLOR_FONDO_PAUSA.a);
-    renderer.FillRect(SDL2pp::Rect(0, 0, tamano_ventana.x, tamano_ventana.y));
+    oscurecer_ventana(renderer, tamano_ventana);
     SDL2pp::Rect primero = boton(0, tamano_ventana);
     dibujar_texto(renderer, fuente_titulo, TITULO_PAUSA, COLOR_TITULO_PAUSA,
                   SDL2pp::Point(tamano_ventana.x / 2, primero.y - SEPARACION_TITULO_PAUSA));
@@ -69,8 +67,7 @@ void MenuPausa::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_
         SDL2pp::Point centro(rect.x + rect.w / 2, rect.y + rect.h / 2);
         if (!datos.habilitado) {
             renderer.Copy(textura_deshabilitado, SDL2pp::NullOpt, rect);
-            dibujar_texto(renderer, fuente_botones, datos.texto, COLOR_TEXTO_DESHABILITADO,
-                          centro);
+            dibujar_texto(renderer, fuente_botones, datos.texto, COLOR_TEXTO_DESHABILITADO, centro);
             continue;
         }
         Uint8 brillo = i == seleccionada ? BRILLO_SELECCIONADO : BRILLO_NO_SELECCIONADO;
@@ -104,8 +101,8 @@ std::optional<std::size_t> MenuPausa::boton_en(const SDL2pp::Point& punto,
 void MenuPausa::mover(bool hacia_abajo) {
     std::size_t cantidad = BOTONES_PAUSA.size();
     do {
-        seleccionada = hacia_abajo ? (seleccionada + 1) % cantidad
-                                   : (seleccionada + cantidad - 1) % cantidad;
+        seleccionada = hacia_abajo ? (seleccionada + 1) % cantidad :
+                                     (seleccionada + cantidad - 1) % cantidad;
     } while (!BOTONES_PAUSA[seleccionada].habilitado);
 }
 

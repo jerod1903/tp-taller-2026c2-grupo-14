@@ -37,11 +37,10 @@ void copiar_centrado(SDL2pp::Renderer& renderer, SDL2pp::Texture& textura,
                   SDL2pp::Rect(caja.x + (caja.w - origen.w) / 2, caja.y + (caja.h - origen.h) / 2,
                                origen.w, origen.h));
 }
-}
+}  // namespace
 
 BarraInventario::BarraInventario(SDL2pp::Renderer& renderer):
-        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS), 
-        hoja_minerales(renderer, RUTA_HOJA_MINERALES) {
+        hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS), hoja_minerales(renderer, RUTA_HOJA_MINERALES) {
     for (const auto& [item, ruta]: RUTAS_ICONOS) {
         iconos.try_emplace(item, renderer, ruta);
     }

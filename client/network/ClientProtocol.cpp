@@ -12,7 +12,8 @@
 //   Login:           op, version u8, username                    -> status u8
 //   ListWorlds:      op                                          -> count u16, (worldId, name)*
 //   ListMyGames:     op                                          -> count u16, (gameId u32,
-//                    gameName, worldName, characterName, apariencia, isMultiplayer u8)*
+//                    gameName, worldId, worldName, characterName, apariencia,
+//                    isMultiplayer u8)*
 //   CheckInviteCode: op, inviteCode                              -> status u8
 //   CreateGame:      op, worldId, gameName, characterName, apariencia -> status u8, gameId u32
 //   JoinGame:        op, inviteCode, characterName, apariencia   -> status u8, gameId u32
@@ -79,6 +80,7 @@ std::vector<SavedGameInfo> ClientProtocol::listMyGames() {
     for (SavedGameInfo& game: games) {
         game.gameId = ensure(baseProtocol.recv_u32());
         game.gameName = ensure(baseProtocol.recv_string());
+        game.worldId = ensure(baseProtocol.recv_string());
         game.worldName = ensure(baseProtocol.recv_string());
         game.characterName = ensure(baseProtocol.recv_string());
         game.appearance = recvAppearance();
@@ -138,6 +140,8 @@ void ClientProtocol::sendEnterPortal() { ensure(sendGameOp(GameOp::EnterPortal))
 
 void ClientProtocol::sendInvite() { ensure(sendGameOp(GameOp::Invite)); }
 
+void ClientProtocol::sendDayReady() { ensure(sendGameOp(GameOp::DayReady)); }
+
 void ClientProtocol::sendSelectSlot(uint8_t slot) {
     ensure(sendGameOp(GameOp::SelectSlot) && baseProtocol.send_u8(slot));
 }
@@ -158,9 +162,11 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
         case GameMsg::ChatMessage:
             return recvChatMessage();
         case GameMsg::FarmState:
-          return recvFarmState();  
+            return recvFarmState();
         case GameMsg::DungeonState:
-            return recvDungeonState();  
+            return recvDungeonState();
+        case GameMsg::DayEnded:
+            return recvDayEnded();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -278,6 +284,14 @@ ChatMessage ClientProtocol::recvChatMessage() {
     mensaje.from = ensure(baseProtocol.recv_string());
     mensaje.text = ensure(baseProtocol.recv_string());
     return mensaje;
+}
+
+DayEnded ClientProtocol::recvDayEnded() {
+    uint16_t day = ensure(baseProtocol.recv_u16());
+    bool slept = ensure(baseProtocol.recv_u8()) != 0;
+    uint8_t ready = ensure(baseProtocol.recv_u8());
+    uint8_t total = ensure(baseProtocol.recv_u8());
+    return DayEnded{day, slept, ready, total};
 }
 
 FarmState ClientProtocol::recvFarmState() {

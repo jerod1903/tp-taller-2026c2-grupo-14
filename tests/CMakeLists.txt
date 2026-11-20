@@ -15,6 +15,7 @@ target_sources(taller_tests
     typing_command_test.cpp
     transicion_area_test.cpp
     sonidos_granja_test.cpp
+    grilla_mapa_test.cpp
     command_factory_test.cpp
     game_commands_test.cpp
     game_registry_test.cpp
@@ -26,6 +27,9 @@ target_sources(taller_tests
     orc_test.cpp
     skull_test.cpp
     trap_test.cpp
+    saved_game_test.cpp
+    file_game_store_test.cpp
+    day_vote_test.cpp
     sword_test.cpp
     lobby_session_test.cpp
     logger_test.cpp
@@ -94,6 +98,8 @@ target_sources(taller_tests
     ../server/game/sessions.cpp
     ../server/game/snapshot_builder.cpp
     ../server/game/commands/chat_command.cpp
+    ../server/game/commands/day_ready_command.cpp
+    ../server/game/day_vote.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
     ../server/game/commerce/merchant.cpp
@@ -109,6 +115,7 @@ target_sources(taller_tests
     ../server/game/cheats/cheat.cpp
     ../server/game/cheats/seeds_cheat.cpp
     ../server/game/cheats/gold_cheat.cpp
+    ../server/game/cheats/sleep_cheat.cpp
     ../server/game/interactions/outcome.cpp
     ../server/game/interactions/interaction.cpp
     ../server/game/interactions/milk.cpp
@@ -126,6 +133,8 @@ target_sources(taller_tests
     ../server/net/sender.cpp
     ../server/net/server_protocol.cpp
     ../server/persistence/in_memory_game_store.cpp
+    ../server/persistence/file_game_store.cpp
+    ../server/persistence/toml_saves.cpp
     # Lógica del editor sin Qt
     ../editor/Areas.cpp
     ../editor/ElementHelper.cpp
@@ -146,6 +155,8 @@ target_sources(taller_tests
     ../client/gui/sprites/pose.cpp
     ../client/gui/mapa/transicion_area.cpp
     ../client/audio/sonidos_granja.cpp
+    ../client/mapa-general/grilla_mapa.cpp
+    ../client/mapa-general/mundo.cpp
     # Inventario
     ../server/game/characters/inventory.cpp
     ../server/game/commands/select_slot_command.cpp

@@ -430,25 +430,27 @@ void validateDoors(const MapDefinition& map, const AreaIndex& areas, const Eleme
             if (!building->type || !elementTraits(*building->type).hasDoor) {
                 continue;
             }
-            const MapCell door = doorCell(*building);
-            const int frontX = door.x;
-            const int frontY = door.y + 1;
-            const bool inside = frontY < area.height &&
-                                frontY < static_cast<int>(area.tiles.size()) &&
-                                frontX < static_cast<int>(area.tiles[frontY].size());
-            const bool blocked =
-                    !inside || !isWalkableTerrain(area.tiles[frontY][frontX]) ||
-                    std::any_of(inArea.begin(), inArea.end(), [&](const MapElement* other) {
-                        return blocksCell(*other, triggerIds, frontX, frontY);
+            // Delante de cada celda de la puerta tiene que poder pararse alguien
+            for (const MapCell& door: doorCells(*building)) {
+                const int frontX = door.x;
+                const int frontY = door.y + 1;
+                const bool inside = frontY < area.height &&
+                                    frontY < static_cast<int>(area.tiles.size()) &&
+                                    frontX < static_cast<int>(area.tiles[frontY].size());
+                const bool blocked =
+                        !inside || !isWalkableTerrain(area.tiles[frontY][frontX]) ||
+                        std::any_of(inArea.begin(), inArea.end(), [&](const MapElement* other) {
+                            return blocksCell(*other, triggerIds, frontX, frontY);
+                        });
+                if (blocked) {
+                    errors.push_back({
+                            .code = MapIssueCode::BlockedDoor,
+                            .areaId = areaId,
+                            .elementId = building->id,
+                            .x = frontX,
+                            .y = frontY,
                     });
-            if (blocked) {
-                errors.push_back({
-                        .code = MapIssueCode::BlockedDoor,
-                        .areaId = areaId,
-                        .elementId = building->id,
-                        .x = frontX,
-                        .y = frontY,
-                });
+                }
             }
         }
     }

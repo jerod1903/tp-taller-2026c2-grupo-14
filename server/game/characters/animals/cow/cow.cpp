@@ -3,8 +3,7 @@
 #include "server/config/server_config.h"
 
 Cow::Cow(uint32_t id, const Position& pos, Location& location, uint32_t seed):
-        Animal(id, pos, location, seed),
-        days_left(server_config().animals.cow.production_days) {}
+        Animal(id, pos, location, seed), days_left(server_config().animals.cow.production_days) {}
 
 AnimalKind Cow::get_kind() const { return AnimalKind::Cow; }
 
@@ -19,4 +18,13 @@ void Cow::start_new_day() {
 void Cow::milk() {
     ready = false;
     days_left = server_config().animals.cow.production_days;
+}
+
+SavedAnimal Cow::saved() const {
+    return SavedAnimal{AnimalKind::Cow, get_position(), days_left, ready, std::nullopt, false};
+}
+
+void Cow::restore(const SavedAnimal& saved) {
+    days_left = saved.days_left;
+    ready = saved.ready;
 }

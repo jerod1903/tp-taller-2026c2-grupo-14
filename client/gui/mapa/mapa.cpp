@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <map>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,18 +12,18 @@
 #include "common/map/CommunityCenterInterior.h"
 #include "common/map/MapSprites.h"
 #include "common/map/MarketInterior.h"
-#include "common/map/persistence/MapRepository.h"
 
 using stardew::maps::ELEMENT_SPRITES;
 using stardew::maps::ElementType;
 using stardew::maps::TILE_SPRITES;
 using stardew::maps::TileType;
 
-Mapa::Mapa(SDL2pp::Renderer& renderer, const std::string& world_id, int max_jugadores):
+Mapa::Mapa(SDL2pp::Renderer& renderer, const stardew::maps::MapDefinition& mundo,
+           int max_jugadores):
         hojas(cargar_hojas(renderer)),
         graficos(armar_graficos()),
         graficos_elementos(armar_graficos_elementos()),
-        areas(cargar_areas(world_id, max_jugadores)) {}
+        areas(cargar_areas(mundo, max_jugadores)) {}
 
 std::map<std::string, SDL2pp::Texture> Mapa::cargar_hojas(SDL2pp::Renderer& renderer) {
     std::map<std::string, SDL2pp::Texture> cargadas;
@@ -63,15 +62,10 @@ std::map<ElementType, ElementoGrafico> Mapa::armar_graficos_elementos() {
     return armados;
 }
 
-std::map<std::string, Mapa::Area> Mapa::cargar_areas(const std::string& world_id,
+std::map<std::string, Mapa::Area> Mapa::cargar_areas(const stardew::maps::MapDefinition& mundo,
                                                      int max_jugadores) const {
-    if (world_id.empty() || world_id.find_first_not_of(CARACTERES_WORLD_ID) != std::string::npos) {
-        throw std::runtime_error("world id invalido: " + world_id);
-    }
-    stardew::maps::TomlMapRepository repositorio;
     std::map<std::string, Area> cargadas;
-    agregar_areas(repositorio.loadMap(std::string(TALLER_MAPS_DIR) + "/" + world_id + ".toml"),
-                  cargadas);
+    agregar_areas(mundo, cargadas);
     agregar_areas(stardew::maps::loadCabinInterior(max_jugadores), cargadas);
     agregar_areas(stardew::maps::loadMarketInterior(), cargadas);
     agregar_areas(stardew::maps::loadCommunityCenterInterior(), cargadas);

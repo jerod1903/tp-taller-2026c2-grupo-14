@@ -93,6 +93,7 @@ bool ServerProtocol::send_saved_game_list(const std::vector<SavedGameInfo>& game
         return false;
     for (const SavedGameInfo& game: games) {
         bool sent = baseProtocol.send_u32(game.gameId) && baseProtocol.send_string(game.gameName) &&
+                    baseProtocol.send_string(game.worldId) &&
                     baseProtocol.send_string(game.worldName) &&
                     baseProtocol.send_string(game.characterName) &&
                     send_appearance(game.appearance) &&
@@ -218,14 +219,15 @@ bool ServerProtocol::send_chat_message(const ChatMessage& message) {
 bool ServerProtocol::send_farm_state(const FarmState& farm) {
     return send_game_msg(GameMsg::FarmState) && baseProtocol.send_string(farm.areaId) &&
            send_count(farm.tiles.size()) &&
-           std::all_of(farm.tiles.begin(), farm.tiles.end(), [this](const FarmTile& tile) {
-               return baseProtocol.send_u16(tile.x) && baseProtocol.send_u16(tile.y) &&
-                    baseProtocol.send_u8(static_cast<uint8_t>(tile.soil)) &&
-                    baseProtocol.send_u8(static_cast<uint8_t>(tile.crop)) &&
-                    baseProtocol.send_u8(tile.stage) &&
-                    baseProtocol.send_u8(tile.needsWater ? 1 : 0) &&
-                    baseProtocol.send_u8(tile.readyToHarvest ? 1 : 0);
-           }) &&
+           std::all_of(farm.tiles.begin(), farm.tiles.end(),
+                       [this](const FarmTile& tile) {
+                           return baseProtocol.send_u16(tile.x) && baseProtocol.send_u16(tile.y) &&
+                                  baseProtocol.send_u8(static_cast<uint8_t>(tile.soil)) &&
+                                  baseProtocol.send_u8(static_cast<uint8_t>(tile.crop)) &&
+                                  baseProtocol.send_u8(tile.stage) &&
+                                  baseProtocol.send_u8(tile.needsWater ? 1 : 0) &&
+                                  baseProtocol.send_u8(tile.readyToHarvest ? 1 : 0);
+                       }) &&
            send_count(farm.items.size()) &&
            std::all_of(farm.items.begin(), farm.items.end(), [this](const GroundItem& item) {
                return baseProtocol.send_u16(item.x) && baseProtocol.send_u16(item.y) &&
@@ -236,15 +238,22 @@ bool ServerProtocol::send_farm_state(const FarmState& farm) {
 bool ServerProtocol::send_dungeon_state(const DungeonState& dungeon) {
     return send_game_msg(GameMsg::DungeonState) && baseProtocol.send_string(dungeon.areaId) &&
            send_count(dungeon.ores.size()) &&
-           std::all_of(dungeon.ores.begin(), dungeon.ores.end(), [this](const OreDeposit& ore) {
-               return baseProtocol.send_u16(ore.x) && baseProtocol.send_u16(ore.y) &&
-                      baseProtocol.send_u8(static_cast<uint8_t>(ore.ore));
-           }) &&
+           std::all_of(dungeon.ores.begin(), dungeon.ores.end(),
+                       [this](const OreDeposit& ore) {
+                           return baseProtocol.send_u16(ore.x) && baseProtocol.send_u16(ore.y) &&
+                                  baseProtocol.send_u8(static_cast<uint8_t>(ore.ore));
+                       }) &&
            send_count(dungeon.items.size()) &&
            std::all_of(dungeon.items.begin(), dungeon.items.end(), [this](const GroundItem& item) {
                return baseProtocol.send_u16(item.x) && baseProtocol.send_u16(item.y) &&
                       baseProtocol.send_u8(static_cast<uint8_t>(item.item));
            });
+}
+
+bool ServerProtocol::send_day_ended(const DayEnded& day) {
+    return send_game_msg(GameMsg::DayEnded) && baseProtocol.send_u16(day.day) &&
+           baseProtocol.send_u8(day.slept ? 1 : 0) && baseProtocol.send_u8(day.ready) &&
+           baseProtocol.send_u8(day.total);
 }
 
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {

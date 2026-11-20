@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "common/lobby_dto.h"
 #include "common/farm_dto.h"
+#include "common/lobby_dto.h"
 
 // Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
@@ -20,6 +20,7 @@ enum class GameOp : uint8_t {
     EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
     Click = 0x08,        // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
     Invite = 0x09,       // sin payload: pide el código de invitación; llega por el chat
+    DayReady = 0x0A,     // sin payload: dio el Ok para pasar al día siguiente
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -41,6 +42,7 @@ enum class GameMsg : uint8_t {
     ChatMessage,
     FarmState,
     DungeonState,
+    DayEnded,
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
@@ -126,7 +128,7 @@ struct EntityState {
     uint32_t y;
     int8_t dirX;
     int8_t dirY;
-    Emote emote = Emote::None;  // en el cable va al final, como u8
+    Emote emote = Emote::None;                 // en el cable va al final, como u8
     EntityAction action = EntityAction::None;  // en el cable después del emote, como u8
 
     bool operator==(const EntityState&) const = default;
@@ -155,6 +157,21 @@ struct PlayerInfo {
 
 enum class EndReason : uint8_t {
     Left,  // el jugador pidió LeaveGame: la conexión vuelve al lobby
+};
+
+// Terminó el día `day` y se está votando para pasar al siguiente: el mundo queda congelado hasta
+// que todos los conectados den el Ok (DayReady). Llega al terminar el día, cada vez que alguien
+// vota o entra o sale, y al que entra mientras se vota. `slept`: si este jugador estaba en su
+// cama cuando terminó el día (si no, despierta con la mitad de vida y energía). Cuando empieza el
+// día siguiente no se avisa: los snapshots pasan a traer day + 1.
+// En el cable: tag GameMsg::DayEnded, u16 day, u8 slept, u8 ready, u8 total.
+struct DayEnded {
+    uint16_t day;
+    bool slept;
+    uint8_t ready;  // cuántos ya dieron el Ok
+    uint8_t total;  // cuántos tienen que darlo
+
+    bool operator==(const DayEnded&) const = default;
 };
 
 // Último mensaje de la partida: lo que llegue después es del lobby.
@@ -197,10 +214,10 @@ struct ClickRequest {
 };
 
 enum class ChatKind : uint8_t {
-    Public,   // a todos los jugadores de la partida
-    Private,  // solo al destinatario, con una copia para el que lo mando
-    System,   // un aviso del servidor (por ejemplo, que el destinatario no esta conectado)
-    Merchant, // un comerciante le habla al jugador, from es su nombre
+    Public,    // a todos los jugadores de la partida
+    Private,   // solo al destinatario, con una copia para el que lo mando
+    System,    // un aviso del servidor (por ejemplo, que el destinatario no esta conectado)
+    Merchant,  // un comerciante le habla al jugador, from es su nombre
 };
 
 // Un mensaje de chat. En el cable: tag GameMsg::ChatMessage, u8 kind, from y text como strings.

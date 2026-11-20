@@ -1,12 +1,12 @@
 #include "server/game/world/dungeon/dungeon_level.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <utility>
-#include <array>
 #include <vector>
 
 #include "server/config/server_config.h"
@@ -162,8 +162,7 @@ DungeonLevel::StrikeResult DungeonLevel::strike_ore(const Position& pos, float r
     if (ore == ItemType::Lapis && roll < server_config().mining.lapis_break_chance) {
         return {Strike::Crumbled};
     }
-    bool spawn_orcs = ore == ItemType::Silver &&
-                      roll < server_config().mining.silver_orc_chance;
+    bool spawn_orcs = ore == ItemType::Silver && roll < server_config().mining.silver_orc_chance;
     return {Strike::Mined, ore, spawn_orcs};
 }
 

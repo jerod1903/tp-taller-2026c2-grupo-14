@@ -1,8 +1,8 @@
 #include "server/game/tools/tool.h"
-#include "server/game/tools/pickaxe.h"
 
 #include <map>
 
+#include "server/game/tools/pickaxe.h"
 #include "server/game/tools/seed.h"
 #include "server/game/tools/shovel.h"
 #include "server/game/tools/sword.h"

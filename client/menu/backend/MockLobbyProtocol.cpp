@@ -20,15 +20,34 @@ bool isValidName(const std::string& name) {
 }  // namespace
 
 MockLobbyProtocol::MockLobbyProtocol():
+        // Los mapas del repo, para que se vea su vista previa
         worlds{
-                {"valle_clasico", "Valle Clásico"},
-                {"costa_brumosa", "Costa Brumosa"},
-                {"bosque_cerrado", "Bosque Cerrado"},
+                {"valle", "Valle de ejemplo"},
+                {"valle-del-arroyo", "Valle del Arroyo"},
+                {"bosque-escondido", "Bosque Escondido"},
         },
         savedGames{
-                {1, "Granja de prueba", "Valle Clásico", "Granjero", {3, 2, 6, 1, 0}, false},
-                {2, "Partida con los chicos", "Costa Brumosa", "Pandamos", {7, 5, 2, 3, 4}, true},
-                {3, "Prueba de mazmorra", "Bosque Cerrado", "dipa", {1, 9, 5, 2, 0}, true},
+                {1,
+                 "Granja de prueba",
+                 "valle",
+                 "Valle de ejemplo",
+                 "Granjero",
+                 {3, 2, 6, 1, 0},
+                 false},
+                {2,
+                 "Partida con los chicos",
+                 "valle-del-arroyo",
+                 "Valle del Arroyo",
+                 "Pandamos",
+                 {7, 5, 2, 3, 4},
+                 true},
+                {3,
+                 "Prueba de mazmorra",
+                 "bosque-escondido",
+                 "Bosque Escondido",
+                 "dipa",
+                 {1, 9, 5, 2, 0},
+                 true},
         },
         nextGameId(FIRST_CREATED_GAME_ID) {}
 

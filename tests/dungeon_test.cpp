@@ -260,7 +260,8 @@ protected:
 
     std::unique_ptr<DungeonLevel> make_level_with(int depth, ItemType ore) {
         for (uint32_t seed = 1; seed < 200; ++seed) {
-            auto candidate = std::make_unique<DungeonLevel>("level", make_grid(20, 20), depth, seed);
+            auto candidate =
+                    std::make_unique<DungeonLevel>("level", make_grid(20, 20), depth, seed);
             candidate->add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
             candidate->set_visitors({&visitor});
             if (count_ore(*candidate, ore) > 0) {

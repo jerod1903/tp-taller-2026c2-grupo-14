@@ -21,8 +21,9 @@ struct ServerConfig {
         float speed;  // celdas por segundo
         // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
         uint8_t max_stack;
-        float tired_energy;        // fracción de la energía desde la que camina a mitad de velocidad
-        float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su cama
+        float tired_energy;  // fracción de la energía desde la que camina a mitad de velocidad
+        float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su
+                                   // cama
         int sword_damage;          // vida que le saca a un enemigo cada golpe de espada
         float attack_cooldown;     // segundos entre golpe y golpe
         float weak_health;         // fracción de la vida desde la que pega menos
@@ -41,8 +42,8 @@ struct ServerConfig {
         int talk;
     };
     struct Species {
-        int price;            // lo que cuesta el animal
-        int product_price;    // lo que se paga por la leche o el huevo
+        int price;          // lo que cuesta el animal
+        int product_price;  // lo que se paga por la leche o el huevo
         int max_per_farm;
         int production_days;  // cada cuántos días da su producto
     };
@@ -147,8 +148,8 @@ struct ServerConfig {
     };
 
     struct CropSpec {
-        int seed_price;           // lo que cuesta la semilla
-        int base_price;           // lo que se paga por la cosecha de calidad base
+        int seed_price;  // lo que cuesta la semilla
+        int base_price;  // lo que se paga por la cosecha de calidad base
         int waterings_per_day;
         int days_to_grow;         // desde que se planta hasta que se puede cosechar
         int regrow_days;          // después de cosechar vuelve a dar en estos días; 0 si no

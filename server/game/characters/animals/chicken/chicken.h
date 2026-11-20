@@ -17,6 +17,8 @@ public:
     AnimalKind get_kind() const override;
     // Si el día terminó antes de que pusiera el que le tocaba, lo pone ahora.
     void start_new_day() override;
+    SavedAnimal saved() const override;
+    void restore(const SavedAnimal& saved) override;
     std::optional<ItemType> take_drop() override;
     void update(float dt) override;
 

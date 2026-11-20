@@ -27,7 +27,8 @@ struct ElementoGrafico {
 
 class Mapa {
 public:
-    Mapa(SDL2pp::Renderer& renderer, const std::string& world_id, int max_jugadores);
+    // mundo: el mapa del mundo (cargar_mundo); los interiores los arma el juego
+    Mapa(SDL2pp::Renderer& renderer, const stardew::maps::MapDefinition& mundo, int max_jugadores);
     Mapa(const Mapa&) = delete;
     Mapa& operator=(const Mapa&) = delete;
     Mapa(Mapa&&) = delete;
@@ -52,7 +53,8 @@ private:
     static std::map<std::string, SDL2pp::Texture> cargar_hojas(SDL2pp::Renderer& renderer);
     std::map<stardew::maps::TileType, TileGrafico> armar_graficos();
     std::map<stardew::maps::ElementType, ElementoGrafico> armar_graficos_elementos();
-    std::map<std::string, Area> cargar_areas(const std::string& world_id, int max_jugadores) const;
+    std::map<std::string, Area> cargar_areas(const stardew::maps::MapDefinition& mundo,
+                                             int max_jugadores) const;
     void agregar_areas(stardew::maps::MapDefinition definicion,
                        std::map<std::string, Area>& cargadas) const;
     std::map<std::string, SDL2pp::Texture> hojas;
