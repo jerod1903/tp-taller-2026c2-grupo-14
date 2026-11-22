@@ -219,12 +219,13 @@ enum class ChatKind : uint8_t {
     Merchant, // un comerciante le habla al jugador, from es su nombre
 };
 
-// Un mensaje de chat. En el cable: tag GameMsg::ChatMessage, u8 kind, from y text como strings.
-// En System, from va vacio.
+// Un mensaje de chat. En el cable: tag GameMsg::ChatMessage, u8 kind, from, text y to como
+// strings. En System, from va vacio.
 struct ChatMessage {
     ChatKind kind;
     std::string from;  // nombre del personaje que lo escribio
     std::string text;
+    std::string to = "";  // destinatario de un Private; vacío en los demás
 
     bool operator==(const ChatMessage&) const = default;
 };

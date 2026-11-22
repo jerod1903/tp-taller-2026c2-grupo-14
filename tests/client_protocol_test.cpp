@@ -299,6 +299,15 @@ TEST_F(ClientGameProtocolTest, RecvsChatMessage) {
     EXPECT_EQ(std::get<ChatMessage>(message), chat);
 }
 
+TEST_F(ClientGameProtocolTest, RecvsAPrivateChatMessageWithItsRecipient) {
+    ServerProtocol server(std::move(*server_socket));
+    const ChatMessage chat{ChatKind::Private, "Pandamos", "vamos a las mazmorras?", "dipa"};
+    ASSERT_TRUE(server.send_chat_message(chat));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<ChatMessage>(message));
+    EXPECT_EQ(std::get<ChatMessage>(message), chat);
+}
+
 TEST_F(ClientGameProtocolTest, SendInteractSendsOnlyTheTag) {
     BaseProtocol server(std::move(*server_socket));
     client->sendInteract();
@@ -356,7 +365,8 @@ TEST_F(ClientGameProtocolTest, RecvsFarmState) {
 // Si recvFarmState leyera de más o de menos, el mensaje siguiente quedaría desalineado.
 TEST_F(ClientGameProtocolTest, RecvFarmStateConsumesExactlyItsPayload) {
     ServerProtocol server(std::move(*server_socket));
-    ASSERT_TRUE(server.send_farm_state(FarmState{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}}));
+    FarmState farm{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}};
+    ASSERT_TRUE(server.send_farm_state(farm));
     ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
     EXPECT_TRUE(std::holds_alternative<FarmState>(client->recvGameMessage()));
     ServerGameMessage next = client->recvGameMessage();

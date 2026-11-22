@@ -281,6 +281,7 @@ ChatMessage ClientProtocol::recvChatMessage() {
     mensaje.kind = static_cast<ChatKind>(ensure(baseProtocol.recv_u8()));
     mensaje.from = ensure(baseProtocol.recv_string());
     mensaje.text = ensure(baseProtocol.recv_string());
+    mensaje.to = ensure(baseProtocol.recv_string());
     return mensaje;
 }
 

@@ -18,12 +18,12 @@ public:
     explicit PanelChat(Fuente& fuente);
     void dibujar(SDL2pp::Renderer& renderer, const std::vector<MensajeChat>& mensajes,
                  const std::optional<std::string>& borrador, const SDL2pp::Point& tamano_ventana,
-                 std::chrono::steady_clock::time_point ahora);
+                 const std::string& nombre_propio, std::chrono::steady_clock::time_point ahora);
 
 private:
     using Linea = std::pair<std::string, SDL_Color>;
     std::vector<Linea> lineas_visibles(const std::vector<MensajeChat>& mensajes, bool abierto,
-                                       int ancho_maximo,
+                                       int ancho_maximo, const std::string& nombre_propio,
                                        std::chrono::steady_clock::time_point ahora) const;
     std::vector<std::string> partir(const std::string& texto, int ancho_maximo) const;
     void dibujar_linea(SDL2pp::Renderer& renderer, const Linea& linea,

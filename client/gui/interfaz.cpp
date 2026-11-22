@@ -398,7 +398,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
                                      estado.listo_para_manana);
     }
-    panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
+    auto info_propia = estado.info_jugadores.find(estado.id_propio);
+    std::string nombre_propio =
+            info_propia != estado.info_jugadores.end() ? info_propia->second.characterName : "";
+    panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), nombre_propio,
+                       ahora);
     hud.dibujar(renderer, estado, escala);
     if (minimapa) {
         minimapa->dibujar(renderer, estado.jugadores, estado.id_propio, escala_del_hud(escala));
