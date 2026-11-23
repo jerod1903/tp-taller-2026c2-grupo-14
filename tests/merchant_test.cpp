@@ -35,7 +35,8 @@ TEST(MerchantTest, DoesNotOccupyTheCellsAroundIt) {
 }
 
 TEST(MerchantTest, FindsWhatItSellsByName) {
-    const Offer* offer = marnie().find_sold("gallina");
+    Merchant merchant = marnie();
+    const Offer* offer = merchant.find_sold("gallina");
     ASSERT_NE(offer, nullptr);
     EXPECT_EQ(offer->price, 20);
     EXPECT_EQ(std::get<AnimalKind>(offer->goods), AnimalKind::Chicken);
