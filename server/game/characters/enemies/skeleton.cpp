@@ -30,3 +30,7 @@ void Skeleton::while_dead(float dt) {
         health = max_health;
     }
 }
+
+const ServerConfig::Loot* Skeleton::loot_table() const {
+    return &server_config().enemies.skeleton.loot;
+}

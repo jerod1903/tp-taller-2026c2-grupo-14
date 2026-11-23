@@ -130,7 +130,16 @@ bool World::attack(Player& player, const Position& cell) {
         return false;
     }
     Enemy* enemy = level->enemy_near(cell);
-    return enemy != nullptr && player.strike(*enemy);
+    if (enemy == nullptr) {
+        return false;
+    }
+    //  Pase de las monedas del enemigo a quien le pegó
+    std::optional<int> gold = player.strike(*enemy);
+    if (!gold) {
+        return false;  // todavía no puede pegar
+    }
+    player.add_gold(*gold);
+    return true;
 }
 
 Movement& World::get_movement() { return movement; }

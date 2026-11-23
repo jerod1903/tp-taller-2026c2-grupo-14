@@ -24,6 +24,8 @@ protected:
 
 private:
     float revive_left = 0;
+
+    const ServerConfig::Loot* loot_table() const override;
 };
 
 #endif  // SKELETON_H
