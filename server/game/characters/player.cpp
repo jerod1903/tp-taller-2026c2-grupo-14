@@ -3,9 +3,20 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "server/config/server_config.h"
+#include "server/consts.h"
 #include "server/game/world/location.h"
+
+namespace {
+
+const std::vector<InventorySlot> STARTING_ITEMS = {{ItemType::Pickaxe, 1},
+                                                   {ItemType::WateringCan, 1},
+                                                   {ItemType::Shovel, 1},
+                                                   {ItemType::Sword, 1}};
+
+}  // namespace
 
 Player::Player(uint32_t id, const Position& pos, Location& location, std::string name, int health,
                float base_speed, int gold, int energy):
@@ -14,7 +25,8 @@ Player::Player(uint32_t id, const Position& pos, Location& location, std::string
         gold(gold),
         energy(energy),
         max_health(health),
-        max_energy(energy) {}
+        max_energy(energy),
+        inventory(ServerConstants::PLAYER_INVENTORY_SIZE, STARTING_ITEMS) {}
 
 const std::string& Player::get_name() const { return name; }
 

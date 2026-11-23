@@ -13,13 +13,15 @@ health = 100
 energy = 100
 gold = 500
 speed = 4.0              # celdas por segundo
-max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
 tired_energy = 0.1       # con esta fracción de su energía o menos camina a mitad de velocidad
 bad_night_recovery = 0.5 # fracción de vida y energía con la que despierta si no durmió en su cama
 sword_damage = 10        # vida que le saca a un enemigo cada golpe de espada
 attack_cooldown = 0.5    # segundos entre golpe y golpe de espada
 weak_health = 0.2        # con esta fracción de su vida o menos pega menos
 weak_damage = 0.5        # fracción de su daño que pega cuando está así de débil
+
+[inventory]
+max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
 
 [energy]                 # lo que cansa cada acción
 dig = 2                  # cada golpe de pala

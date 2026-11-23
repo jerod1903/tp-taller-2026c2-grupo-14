@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "server/consts.h"
 #include "tests/world_helpers.h"
 
 namespace {
@@ -37,6 +38,9 @@ TEST_F(PlayerTest, TakingMoreThanItHasThrows) {
 }
 
 TEST_F(PlayerTest, RoomForComesFromItsInventory) {
-    Inventory empty;
-    EXPECT_EQ(player.room_for(ItemType::Milk), empty.room_for(ItemType::Milk));
+    Inventory with_tools(ServerConstants::PLAYER_INVENTORY_SIZE, {{ItemType::Pickaxe, 1},
+                                                                  {ItemType::WateringCan, 1},
+                                                                  {ItemType::Shovel, 1},
+                                                                  {ItemType::Sword, 1}});
+    EXPECT_EQ(player.room_for(ItemType::Milk), with_tools.room_for(ItemType::Milk));
 }

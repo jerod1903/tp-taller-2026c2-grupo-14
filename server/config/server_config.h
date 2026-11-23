@@ -18,9 +18,7 @@ struct ServerConfig {
         int health;
         int energy;
         int gold;
-        float speed;  // celdas por segundo
-        // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
-        uint8_t max_stack;
+        float speed;         // celdas por segundo
         float tired_energy;  // fracción de la energía desde la que camina a mitad de velocidad
         float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su
                                    // cama
@@ -28,6 +26,11 @@ struct ServerConfig {
         float attack_cooldown;     // segundos entre golpe y golpe
         float weak_health;         // fracción de la vida desde la que pega menos
         float weak_damage;         // fracción de su daño que pega cuando está así de débil
+    };
+    // Vale para todos los inventarios: el del jugador y los cofres.
+    struct Inventory {
+        // Los objetos iguales se apilan en un slot hasta esta cantidad.
+        uint8_t max_stack;
     };
     // Lo que cansa cada acción.
     struct Energy {
@@ -200,6 +203,7 @@ struct ServerConfig {
 
     Game game;
     Player player;
+    Inventory inventory;
     Energy energy;
     Animals animals;
     Enemies enemies;

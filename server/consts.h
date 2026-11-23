@@ -22,6 +22,9 @@ public:
     static constexpr std::size_t MAX_NAME_LEN = 20;
     static constexpr std::size_t MAX_LOGGED_LEN = 2 * MAX_NAME_LEN;
 
+    // Cantidad de slots del inventario de un jugador.
+    static constexpr uint8_t PLAYER_INVENTORY_SIZE = 9;
+
     static constexpr const char* MAP_REQUIREMENTS = TALLER_MAPS_DIR "/config/map_requirements.toml";
 
     // Chat: "@nombre texto" es un mensaje privado para ese personaje.

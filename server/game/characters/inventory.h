@@ -1,20 +1,21 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#include <array>
 #include <cstdint>
+#include <vector>
 
 #include "common/game_dto.h"
 
 class Inventory {
 public:
-    // Las herramientas y la cama en los primeros slots; el resto vacío.
-    Inventory();
+    // `size` slots con `initial_items` en los primeros, en orden; el resto vacío. Lanza
+    // std::invalid_argument si hay más items que slots.
+    explicit Inventory(uint8_t size, std::vector<InventorySlot> initial_items = {});
 
     // Un slot fuera de rango se ignora.
     void select_slot(uint8_t slot);
 
-    // Apila primero sobre los slots que ya tienen ese objeto (hasta MAX_STACK) y despues usa los
+    // Apila primero sobre los slots que ya tienen ese objeto (hasta max_stack) y despues usa los
     // vacios. Devuelve cuantos NO entraron: 0 si entro todo.
     uint8_t add(ItemType item, uint8_t quantity, ItemQuality quality = ItemQuality::Base);
 
@@ -37,7 +38,7 @@ public:
     void restore(const InventoryState& state);
 
 private:
-    std::array<InventorySlot, INVENTORY_SIZE> slots{};
+    std::vector<InventorySlot> slots;
     uint8_t selected_slot = 0;
 };
 

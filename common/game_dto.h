@@ -179,7 +179,7 @@ struct GameEnded {
     EndReason reason;
 };
 
-// Slot del inventario que el jugador elige: 0 a INVENTORY_SIZE - 1. El servidor valida el rango.
+// Slot del inventario que el jugador elige: 0 a slots.size() - 1. El servidor valida el rango.
 struct SelectSlotRequest {
     uint8_t slot;
 
@@ -229,9 +229,6 @@ struct ChatMessage {
 
     bool operator==(const ChatMessage&) const = default;
 };
-
-// Cantidad de slots del inventario de un jugador.
-constexpr uint8_t INVENTORY_SIZE = 9;
 
 
 struct InventorySlot {

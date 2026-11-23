@@ -78,16 +78,11 @@ ServerConfig::Game read_game(const toml::table& root) {
 
 ServerConfig::Player read_player(const toml::table& root) {
     TomlTableReader player = section(root, "player");
-    int max_stack = positive(player.requiredInt("max_stack"), "max_stack");
-    if (max_stack > std::numeric_limits<uint8_t>::max()) {
-        throw std::runtime_error(std::string(FILE_NAME) + ": 'max_stack' is too big");
-    }
     ServerConfig::Player read{
             positive(player.requiredInt("health"), "health"),
             positive(player.requiredInt("energy"), "energy"),
             player.requiredInt("gold"),
             positive(required_float(player, "speed"), "speed"),
-            static_cast<uint8_t>(max_stack),
             positive(required_float(player, "tired_energy"), "tired_energy"),
             positive(required_float(player, "bad_night_recovery"), "bad_night_recovery"),
             positive(player.requiredInt("sword_damage"), "sword_damage"),
@@ -103,6 +98,15 @@ ServerConfig::Player read_player(const toml::table& root) {
                                  ": 'weak_health' and 'weak_damage' are fractions up to 1");
     }
     return read;
+}
+
+ServerConfig::Inventory read_inventory(const toml::table& root) {
+    TomlTableReader inventory = section(root, "inventory");
+    int max_stack = positive(inventory.requiredInt("max_stack"), "max_stack");
+    if (max_stack > std::numeric_limits<uint8_t>::max()) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'max_stack' is too big");
+    }
+    return ServerConfig::Inventory{static_cast<uint8_t>(max_stack)};
 }
 
 ServerConfig::Energy read_energy(const toml::table& root) {
@@ -394,10 +398,10 @@ ServerConfig load_server_config(const std::string& path) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
     ServerConfig::Animals animals = read_animals(root);
-    return ServerConfig{read_game(root),  read_player(root),  read_energy(root),
-                        animals,          read_enemies(root), read_traps(root),
-                        read_crops(root), read_cheats(root),  read_market(root, animals),
-                        read_mining(root)};
+    return ServerConfig{
+            read_game(root),   read_player(root),          read_inventory(root), read_energy(root),
+            animals,           read_enemies(root),         read_traps(root),     read_crops(root),
+            read_cheats(root), read_market(root, animals), read_mining(root)};
 }
 
 const ServerConfig& server_config() {
