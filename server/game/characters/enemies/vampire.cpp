@@ -91,3 +91,7 @@ void Vampire::revive() {
     frenzy = !partner->is_alive();
     partner->partner_revived();
 }
+
+const ServerConfig::Loot* Vampire::loot_table() const {
+    return &server_config().enemies.vampire.loot;
+}

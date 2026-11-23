@@ -72,11 +72,19 @@ struct ServerConfig {
         float reach;     // hasta donde llega su golpe: de su centro al del jugador, en celdas
         float cooldown;  // segundos entre golpe y golpe
     };
+    // Las monedas que suelta un enemigo la primera vez que muere: con gold_chance, entre gold_min
+    // y gold_max. Se las lleva quien le dio el último golpe.
+    struct Loot {
+        float gold_chance;
+        int gold_min;
+        int gold_max;
+    };
     // Tiene que estar antes de Enemies, que la usa
     struct Skeleton {
         int count;  // cuantos aparecen en cada nivel
         Fighter fighter;
         float revive_seconds;  // cuanto tarda en revivir despues de morir
+        Loot loot;
     };
     // Una pareja: la vampira, más rápida (fast_speed), y el vampiro, que pega más fuerte
     // (strong_damage). Los demás valores, en `fighter`, son de los dos.
@@ -87,12 +95,16 @@ struct ServerConfig {
         int strong_damage;
         float revive_seconds;  // muerto, cuanto tarda en revivir despues de que cae sangre cerca
         float blood_reach;     // hasta donde (en celdas) le llega la sangre de un jugador
+        Loot loot;
     };
-    // Un grupo de entre min_group y max_group; `fighter` vale para cada uno.
+    // Un grupo de entre min_group y max_group; `fighter` vale para cada uno. Al morir, además de
+    // las monedas, deja plata (el mineral) en el piso con silver_chance.
     struct Orc {
         int min_group;
         int max_group;
         Fighter fighter;
+        Loot loot;
+        float silver_chance;
     };
     // No se la puede matar: tira llamas de un color, sorteado al aparecer (verde con green_chance).
     struct Skull {

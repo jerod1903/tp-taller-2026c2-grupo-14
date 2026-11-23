@@ -171,6 +171,22 @@ TEST_F(CombatTest, AWeakPlayerHitsLess) {
     EXPECT_EQ(skeleton->get_health(), health - weak_damage);
 }
 
+TEST_F(CombatTest, AHitThatDoesNotKillGivesNoGold) {
+    int gold = player.get_gold();
+    world->attack(player, Position{2, 1});
+    EXPECT_EQ(player.get_gold(), gold);
+}
+
+// Las monedas que suelta son de quien le dio el último golpe, y se sueltan una sola vez
+TEST_F(CombatTest, TheKillingHitTakesTheGoldOfTheEnemy) {
+    skeleton->take_damage(skeleton->get_health() - 1);
+    int gold = player.get_gold();
+    EXPECT_TRUE(world->attack(player, Position{2, 1}));
+    EXPECT_FALSE(skeleton->is_alive());
+    EXPECT_GE(player.get_gold(), gold);
+    EXPECT_LE(player.get_gold(), gold + server_config().enemies.skeleton.loot.gold_max);
+}
+
 TEST_F(CombatTest, SnapshotsHaveTheEnemiesOfTheDungeon) {
     world->attack(player, Position{2, 1});
     Snapshot snapshot = SnapshotBuilder::build(0, *world);

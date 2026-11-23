@@ -98,6 +98,14 @@ TEST_F(SkeletonTest, RevivesWithFullHealthAfterAWhile) {
     EXPECT_EQ(skeleton.get_health(), config().fighter.health);
 }
 
+// Revive y vuelve a morir: no vuelve a sortear oro, así no se lo puede farmear
+TEST_F(SkeletonTest, OnlyItsFirstDeathDropsGold) {
+    skeleton.take_hit(config().fighter.health);
+    skeleton.update(config().revive_seconds * 2);
+    ASSERT_TRUE(skeleton.is_alive());
+    EXPECT_EQ(skeleton.take_hit(config().fighter.health), 0);
+}
+
 // --- Lo que está haciendo, para que el cliente lo anime ---
 
 TEST_F(SkeletonTest, DoesNothingUntilItSeesSomeone) {

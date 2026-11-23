@@ -27,7 +27,7 @@ public:
           const std::vector<Creature*>& visitors, float attack_time, float hurt_time,
           uint32_t seed);
 
-    // Queda dolorido un rato. Llama a on_death() la primera vez que la vida llega a 0.
+    // Queda dolorido un rato. Llama a on_death() cada vez que la vida llega a 0.
     void take_damage(int amount) override;
 
     // Lo que está haciendo: muerto, dolorido, pegando o nada (camina o está quieto).
@@ -38,6 +38,11 @@ public:
 
     // Drops, revivir, etc. Por defecto no hace nada.
     virtual void on_death();
+
+    // Un golpe de un jugador: le saca `damage` de vida y devuelve las monedas que suelta con ese
+    // golpe, que son para quien lo dio. Solo suelta si el golpe lo mata y es la primera vez que
+    // muere (el que revive no vuelve a soltar, así no se lo puede farmear); si no, 0.
+    int take_hit(int damage);
 
     // Si ya no vuelve: el nivel lo da de baja. Por defecto, pasados CORPSE_TIME segundos de que
     // muere.
@@ -79,9 +84,17 @@ private:
     float attacking_left = 0;
     float hurt_left = 0;
     float corpse_left = 0;
+    // Ya soltó su oro: el que revive no lo vuelve a soltar
+    bool looted = false;
     const std::vector<Creature*>& visitors;
     Wanderer wanderer;
 
+    // Las monedas que puede soltar (su sección de server_config.toml), o nullptr si no suelta nada
+    // (la calavera, que no se puede matar). Privada: la redefine cada enemigo, pero solo la usa
+    // take_hit.
+    virtual const ServerConfig::Loot* loot_table() const;
+    // Con su loot_table(): si suelta y cuánto
+    int roll_gold();
     // Si ya pasó el cooldown, pega (strike) y vuelve a contar el cooldown y el tiempo que queda
     // pegando.
     void try_attack(Creature& target);
