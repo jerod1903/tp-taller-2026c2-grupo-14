@@ -31,6 +31,7 @@ Interfaz::Interfaz():
         hoja_vaca(renderer, RUTA_HOJA_VACA),
         hoja_gallina(renderer, RUTA_HOJA_GALLINA),
         hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS),
+        hoja_minerales(renderer, RUTA_HOJA_MINERALES),
         icono_regadera(renderer, RUTA_ICONO_REGADERA),
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
@@ -84,7 +85,7 @@ void borrar_ultima_letra(std::string& texto) {
         texto.pop_back();
     }
 }
-}
+}  // namespace
 
 Entrada Interfaz::leer_entrada() {
     Entrada entrada;
@@ -383,7 +384,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second, estado.granja);
+            dibujar_area(propio->second, estado.granja, estado.mina);
         }
         oscurecer(transicion.opacidad(ahora));
         dibujar_inventario(estado.inventario);
@@ -443,6 +444,15 @@ void Interfaz::oscurecer(uint8_t opacidad) {
 }
 
 std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
+    auto mineral = ICONOS_MINERALES.find(objeto.item);
+    if (mineral != ICONOS_MINERALES.end()) {
+        const SDL2pp::Rect& origen = mineral->second;
+        SDL2pp::Point esquina(objeto.x * TAMANO_TILE + (TAMANO_TILE - origen.w) / 2,
+                              objeto.y * TAMANO_TILE + (TAMANO_TILE - origen.h) / 2);
+        Sprite sprite{&hoja_minerales, origen, SDL2pp::Rect(esquina, origen.GetSize())};
+        sprite.apoyo = objeto.y * TAMANO_TILE;
+        return sprite;
+    }
     auto textura = objetos_piso.find(objeto.item);
     if (textura == objetos_piso.end()) {
         return std::nullopt;
@@ -452,6 +462,17 @@ std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
                           objeto.y * TAMANO_TILE + (TAMANO_TILE - tamano.y) / 2);
     return Sprite{&textura->second, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
                   SDL2pp::Rect(esquina, tamano)};
+}
+
+Sprite Interfaz::sprite_veta(const OreDeposit& veta) {
+    const SDL2pp::Rect& origen = VETAS_MINERALES.at(veta.ore);
+    SDL2pp::Rect destino(veta.x * TAMANO_TILE + (TAMANO_TILE - origen.w) / 2,
+                         (veta.y + 1) * TAMANO_TILE - origen.h, origen.w, origen.h);
+    Sprite sprite{&hoja_minerales, origen, destino};
+    if (veta.ore == ItemType::Silver) {
+        sprite.tinte = {210, 235, 255, 255};
+    }
+    return sprite;
 }
 
 Sprite Interfaz::sprite_cultivo(const FarmTile& celda) {
@@ -482,7 +503,8 @@ void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camar
     }
 }
 
-void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja) {
+void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
+                            const std::map<std::string, DungeonState>& mina) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
@@ -521,6 +543,17 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
             }
         }
         for (const GroundItem& objeto: granja.items) {
+            if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
+                sprites.push_back(*sprite);
+            }
+        }
+    }
+    auto mina_actual = mina.find(area);
+    if (mina_actual != mina.end()) {
+        for (const OreDeposit& veta: mina_actual->second.ores) {
+            sprites.push_back(sprite_veta(veta));
+        }
+        for (const GroundItem& objeto: mina_actual->second.items) {
             if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
                 sprites.push_back(*sprite);
             }

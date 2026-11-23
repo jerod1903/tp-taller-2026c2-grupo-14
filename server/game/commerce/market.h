@@ -37,8 +37,7 @@ private:
     bool can_reach(const Player& player, const Merchant& merchant) const;
     // Con quién habla; nullptr si con nadie. Si se alejó, la charla se termina.
     const Merchant* partner_of(const Player& player);
-    TradeReply buy(Player& player, const Merchant& merchant, const std::string& name,
-                   int quantity);
+    TradeReply buy(Player& player, const Merchant& merchant, const std::string& name, int quantity);
     TradeReply sell(Player& player, const Merchant& merchant, const std::string& name,
                     int quantity);
 };

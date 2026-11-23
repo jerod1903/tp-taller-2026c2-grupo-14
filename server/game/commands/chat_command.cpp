@@ -4,8 +4,8 @@
 #include <string>
 
 #include "server/consts.h"
-#include "server/game/cheats/cheat.h"
 #include "server/game/characters/player.h"
+#include "server/game/cheats/cheat.h"
 #include "server/game/commands/game_context.h"
 
 namespace {
@@ -89,15 +89,16 @@ void ChatCommand::send_private(GameContext& context, const std::string& author,
     }
 }
 
-void ChatCommand::run_cheat(GameContext& context, Player& author, const std::string& message) const {
+void ChatCommand::run_cheat(GameContext& context, Player& author,
+                            const std::string& message) const {
     // El nombre llega hasta el primer espacio; lo demás es el payload
     std::size_t space = message.find(' ');
     std::string name = message.substr(0, space);
     std::string payload = space == std::string::npos ? "" : trim(message.substr(space + 1));
     const Cheat* cheat = cheat_for(name);
     if (cheat == nullptr) {
-        context.sessions().send_to(
-                player_id, ChatMessage{ChatKind::System, "", ServerConstants::UNKNOWN_CHEAT + name});
+        context.sessions().send_to(player_id, ChatMessage{ChatKind::System, "",
+                                                          ServerConstants::UNKNOWN_CHEAT + name});
         return;
     }
     cheat->apply(author, context, payload);

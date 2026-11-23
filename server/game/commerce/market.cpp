@@ -41,8 +41,8 @@ std::optional<int> parse_quantity(const std::string& text) {
 }
 
 int max_animals(AnimalKind kind) {
-    return kind == AnimalKind::Cow ? server_config().animals.cow.max_per_farm
-                                   : server_config().animals.chicken.max_per_farm;
+    return kind == AnimalKind::Cow ? server_config().animals.cow.max_per_farm :
+                                     server_config().animals.chicken.max_per_farm;
 }
 
 }  // namespace

@@ -67,8 +67,7 @@ void MenuPausa::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_
         SDL2pp::Point centro(rect.x + rect.w / 2, rect.y + rect.h / 2);
         if (!datos.habilitado) {
             renderer.Copy(textura_deshabilitado, SDL2pp::NullOpt, rect);
-            dibujar_texto(renderer, fuente_botones, datos.texto, COLOR_TEXTO_DESHABILITADO,
-                          centro);
+            dibujar_texto(renderer, fuente_botones, datos.texto, COLOR_TEXTO_DESHABILITADO, centro);
             continue;
         }
         Uint8 brillo = i == seleccionada ? BRILLO_SELECCIONADO : BRILLO_NO_SELECCIONADO;
@@ -102,8 +101,8 @@ std::optional<std::size_t> MenuPausa::boton_en(const SDL2pp::Point& punto,
 void MenuPausa::mover(bool hacia_abajo) {
     std::size_t cantidad = BOTONES_PAUSA.size();
     do {
-        seleccionada = hacia_abajo ? (seleccionada + 1) % cantidad
-                                   : (seleccionada + cantidad - 1) % cantidad;
+        seleccionada = hacia_abajo ? (seleccionada + 1) % cantidad :
+                                     (seleccionada + cantidad - 1) % cantidad;
     } while (!BOTONES_PAUSA[seleccionada].habilitado);
 }
 

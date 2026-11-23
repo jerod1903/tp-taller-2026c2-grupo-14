@@ -1,6 +1,7 @@
 #include "server/game/world/dungeon/dungeon_level.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <functional>
 #include <memory>
@@ -20,6 +21,42 @@ namespace {
 constexpr uint32_t ENEMY_IDS = 1000;
 // Hasta dónde, del centro de la celda clickeada, cuenta un enemigo como "en esa celda"
 constexpr float ENEMY_NEAR_CELL = 1.0f;
+
+constexpr int MAX_DEPTH = 9;
+
+struct OreWeightCurve {
+    ItemType ore;
+    double start_weight;
+    double end_weight;
+};
+
+constexpr std::array<OreWeightCurve, 4> ORE_CURVES = {{
+        {ItemType::Coal, 55.0, 10.0},
+        {ItemType::Lapis, 30.0, 25.0},
+        {ItemType::Silver, 15.0, 40.0},
+        {ItemType::GoldOre, 10.0, 25.0},
+}};
+
+double weight_for(const OreWeightCurve& curve, int depth, int gold_min_depth) {
+    int start_depth = curve.ore == ItemType::GoldOre ? gold_min_depth : 0;
+    int clamped = std::clamp(depth, start_depth, MAX_DEPTH);
+    double t = static_cast<double>(clamped - start_depth) / (MAX_DEPTH - start_depth);
+    return curve.start_weight + t * (curve.end_weight - curve.start_weight);
+}
+
+ItemType roll_ore(std::mt19937& rng, int depth, int gold_min_depth) {
+    std::vector<ItemType> candidates;
+    std::vector<double> weights;
+    for (const auto& curve: ORE_CURVES) {
+        if (curve.ore == ItemType::GoldOre && depth < gold_min_depth) {
+            continue;
+        }
+        candidates.push_back(curve.ore);
+        weights.push_back(weight_for(curve, depth, gold_min_depth));
+    }
+    std::discrete_distribution<std::size_t> dist(weights.begin(), weights.end());
+    return candidates[dist(rng)];
+}
 }  // namespace
 
 DungeonLevel::DungeonLevel(std::string name, Grid grid, int depth, uint32_t seed):
@@ -71,8 +108,66 @@ void DungeonLevel::update(float dt) {
 void DungeonLevel::repopulate() {
     remove_enemies();
     remove_traps();
+    if (!ores.empty()) {
+        ores.clear();
+        changed = true;
+    }
+    populate_ores();
     TrapSpawner().spawn(*this);
     random_spawner(rng).spawn(*this);
+}
+
+
+bool DungeonLevel::is_walkable(const Position& pos) const {
+    return Location::is_walkable(pos) && ores.find(pos) == ores.end();
+}
+
+const std::map<Position, DungeonLevel::OreNode>& DungeonLevel::get_ores() const { return ores; }
+
+DungeonLevel::OreNode* DungeonLevel::ore_at(const Position& pos) {
+    auto ore = ores.find(pos);
+    return ore == ores.end() ? nullptr : &ore->second;
+}
+
+void DungeonLevel::remove_ore(const Position& pos) {
+    if (ores.erase(pos) > 0) {
+        changed = true;
+    }
+}
+
+void DungeonLevel::populate_ores() {
+    const ServerConfig::Mining& mining = server_config().mining;
+    for (int i = 0; i < mining.ores_per_level; ++i) {
+        std::optional<Position> cell = random_free_cell(
+                rng, [this](const Position& pos) { return far_from_portals(pos); });
+        if (!cell) {
+            return;
+        }
+        ItemType ore = roll_ore(rng, depth, mining.gold_min_depth);
+        ores.emplace(*cell, OreNode{ore, mining.of(ore).hits});
+        changed = true;
+    }
+}
+
+DungeonLevel::StrikeResult DungeonLevel::strike_ore(const Position& pos, float roll) {
+    OreNode* node = ore_at(pos);
+    if (node == nullptr) {
+        return {Strike::NoOre};
+    }
+    if (--node->hits_left > 0) {
+        return {Strike::Chipped};
+    }
+    ItemType ore = node->ore;
+    remove_ore(pos);
+    if (ore == ItemType::Lapis && roll < server_config().mining.lapis_break_chance) {
+        return {Strike::Crumbled};
+    }
+    bool spawn_orcs = ore == ItemType::Silver && roll < server_config().mining.silver_orc_chance;
+    return {Strike::Mined, ore, spawn_orcs};
+}
+
+DungeonLevel::StrikeResult DungeonLevel::strike_ore(const Position& pos) {
+    return strike_ore(pos, std::uniform_real_distribution<float>(0.0f, 1.0f)(rng));
 }
 
 std::optional<Position> DungeonLevel::spawn_cell(const std::function<bool(const Position&)>& also) {

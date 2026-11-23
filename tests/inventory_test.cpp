@@ -81,8 +81,8 @@ TEST(InventoryTest, RemoveTakesFromTheLastSlotsFirst) {
     int max_stack = server_config().player.max_stack;
     inventory.add(ItemType::Milk, static_cast<uint8_t>(max_stack + 5));
     inventory.remove(ItemType::Milk, 5);
-    EXPECT_EQ(inventory.get_state().slots[4], (InventorySlot{ItemType::Milk,
-                                                             static_cast<uint8_t>(max_stack)}));
+    EXPECT_EQ(inventory.get_state().slots[4],
+              (InventorySlot{ItemType::Milk, static_cast<uint8_t>(max_stack)}));
     EXPECT_EQ(inventory.get_state().slots[5], (InventorySlot{ItemType::Empty, 0}));
 }
 

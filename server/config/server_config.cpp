@@ -73,7 +73,7 @@ ServerConfig::Game read_game(const toml::table& root) {
     return ServerConfig::Game{
             static_cast<uint8_t>(max_players), positive(game.requiredInt("tick_rate"), "tick_rate"),
             static_cast<unsigned int>(positive(game.requiredInt("outbox_size"), "outbox_size")),
-            day_speed };
+            day_speed};
 }
 
 ServerConfig::Player read_player(const toml::table& root) {
@@ -114,9 +114,9 @@ ServerConfig::Energy read_energy(const toml::table& root) {
         }
         return value;
     };
-    return ServerConfig::Energy{cost("dig"),    cost("water"),   cost("plant"),
-                                cost("harvest"), cost("milk"),    cost("pick_up"),
-                                cost("attack"),  cost("mine"),    cost("talk")};
+    return ServerConfig::Energy{cost("dig"),     cost("water"), cost("plant"),
+                                cost("harvest"), cost("milk"),  cost("pick_up"),
+                                cost("attack"),  cost("mine"),  cost("talk")};
 }
 
 ServerConfig::Species read_species(const toml::table& root, const std::string& name) {
@@ -135,18 +135,17 @@ ServerConfig::Species read_species(const toml::table& root, const std::string& n
 
 ServerConfig::Animals read_animals(const toml::table& root) {
     TomlTableReader animals = section(root, "animals");
-    ServerConfig::Animals read{
-            animals.requiredInt("cows"),
-            animals.requiredInt("chickens"),
-            animals.requiredInt("offset_x"),
-            animals.requiredInt("offset_y"),
-            positive(animals.requiredInt("health"), "health"),
-            positive(required_float(animals, "speed"), "speed"),
-            positive(required_float(animals, "min_walk"), "min_walk"),
-            positive(required_float(animals, "max_walk"), "max_walk"),
-            positive(required_float(animals, "milking_reach"), "milking_reach"),
-            read_species(root, "cow"),
-            read_species(root, "chicken")};
+    ServerConfig::Animals read{animals.requiredInt("cows"),
+                               animals.requiredInt("chickens"),
+                               animals.requiredInt("offset_x"),
+                               animals.requiredInt("offset_y"),
+                               positive(animals.requiredInt("health"), "health"),
+                               positive(required_float(animals, "speed"), "speed"),
+                               positive(required_float(animals, "min_walk"), "min_walk"),
+                               positive(required_float(animals, "max_walk"), "max_walk"),
+                               positive(required_float(animals, "milking_reach"), "milking_reach"),
+                               read_species(root, "cow"),
+                               read_species(root, "chicken")};
     if (read.min_walk > read.max_walk) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'min_walk' is bigger than 'max_walk'");
     }
@@ -234,12 +233,13 @@ ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& nam
         }
         return value;
     };
-    ServerConfig::CropSpec read{positive(crop.requiredInt("seed_price"), "seed_price"),
-                                positive(crop.requiredInt("base_price"), "base_price"),
-                                positive(crop.requiredInt("waterings_per_day"), "waterings_per_day"),
-                                positive(crop.requiredInt("days_to_grow"), "days_to_grow"),
-                                non_negative("regrow_days"),
-                                non_negative("skippable_waterings")};
+    ServerConfig::CropSpec read{
+            positive(crop.requiredInt("seed_price"), "seed_price"),
+            positive(crop.requiredInt("base_price"), "base_price"),
+            positive(crop.requiredInt("waterings_per_day"), "waterings_per_day"),
+            positive(crop.requiredInt("days_to_grow"), "days_to_grow"),
+            non_negative("regrow_days"),
+            non_negative("skippable_waterings")};
     if (read.regrow_days >= read.days_to_grow) {
         throw std::runtime_error(std::string(FILE_NAME) + ": [crops." + name +
                                  "] 'regrow_days' must be smaller than 'days_to_grow'");
@@ -249,15 +249,15 @@ ServerConfig::CropSpec read_crop(const toml::table& root, const std::string& nam
 
 ServerConfig::Quality read_quality(const toml::table& root) {
     TomlTableReader quality = subsection(root, "crops", "quality");
-    ServerConfig::Quality read{required_float(quality, "watering_weight"),
-                               positive(required_float(quality, "harvest_grace_days"),
-                                        "harvest_grace_days"),
-                               positive(required_float(quality, "luck_min"), "luck_min"),
-                               positive(required_float(quality, "luck_max"), "luck_max"),
-                               positive(required_float(quality, "good"), "good"),
-                               positive(required_float(quality, "excellent"), "excellent"),
-                               positive(required_float(quality, "incredible"), "incredible"),
-                               positive(required_float(quality, "perfect"), "perfect")};
+    ServerConfig::Quality read{
+            required_float(quality, "watering_weight"),
+            positive(required_float(quality, "harvest_grace_days"), "harvest_grace_days"),
+            positive(required_float(quality, "luck_min"), "luck_min"),
+            positive(required_float(quality, "luck_max"), "luck_max"),
+            positive(required_float(quality, "good"), "good"),
+            positive(required_float(quality, "excellent"), "excellent"),
+            positive(required_float(quality, "incredible"), "incredible"),
+            positive(required_float(quality, "perfect"), "perfect")};
     if (read.watering_weight < 0.0f || read.watering_weight > 1.0f) {
         throw std::runtime_error(std::string(FILE_NAME) +
                                  ": 'watering_weight' must be between 0 and 1");
@@ -275,7 +275,7 @@ ServerConfig::Quality read_quality(const toml::table& root) {
 
 ServerConfig::Crops read_crops(const toml::table& root) {
     return ServerConfig::Crops{read_crop(root, "strawberry"), read_crop(root, "scallion"),
-                               read_crop(root, "potato"),     read_crop(root, "pumpkin"),
+                               read_crop(root, "potato"), read_crop(root, "pumpkin"),
                                read_quality(root)};
 }
 
@@ -305,6 +305,52 @@ ServerConfig::Market read_market(const toml::table& root, const ServerConfig::An
     return read;
 }
 
+
+float chance(const TomlTableReader& reader, const std::string& key) {
+    float value = required_float(reader, key);
+    if (value < 0.0f || value > 1.0f) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": '" + key +
+                                 "' is a chance between 0 and 1");
+    }
+    return value;
+}
+
+ServerConfig::OreSpec read_ore(const toml::table& root, const std::string& name) {
+    TomlTableReader ore = subsection(root, "ores", name);
+    int hits = ore.requiredInt("hits");
+    if (hits <= 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'ores." + name +
+                                 ".hits' must be positive");
+    }
+    int price = ore.requiredInt("price");
+    if (price < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'ores." + name +
+                                 ".price' can't be negative");
+    }
+    return ServerConfig::OreSpec{hits, price};
+}
+
+ServerConfig::Mining read_mining(const toml::table& root) {
+    TomlTableReader mining = section(root, "mining");
+    int ores_per_level = mining.requiredInt("ores_per_level");
+    if (ores_per_level < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'ores_per_level' can't be negative");
+    }
+    int gold_min_depth = mining.requiredInt("gold_min_depth");
+    if (gold_min_depth < 0) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": 'gold_min_depth' can't be negative");
+    }
+    return ServerConfig::Mining{ores_per_level,
+                                chance(mining, "lapis_break_chance"),
+                                chance(mining, "silver_orc_chance"),
+                                gold_min_depth,
+                                read_ore(root, "coal"),
+                                read_ore(root, "lapis"),
+                                read_ore(root, "silver"),
+                                read_ore(root, "gold")};
+}
+
+
 }  // namespace
 
 const ServerConfig::CropSpec& ServerConfig::Crops::of(CropType type) const {
@@ -323,6 +369,23 @@ const ServerConfig::CropSpec& ServerConfig::Crops::of(CropType type) const {
     throw std::invalid_argument("CropType::None has no spec");
 }
 
+const ServerConfig::OreSpec& ServerConfig::Mining::of(ItemType ore) const {
+    switch (ore) {
+        case ItemType::Coal:
+            return coal;
+        case ItemType::Lapis:
+            return lapis;
+        case ItemType::Silver:
+            return silver;
+        case ItemType::GoldOre:
+            return gold;
+        default:
+            break;
+    }
+    throw std::invalid_argument("not an ore");
+}
+
+
 ServerConfig load_server_config(const std::string& path) {
     toml::table root;
     try {
@@ -333,7 +396,8 @@ ServerConfig load_server_config(const std::string& path) {
     ServerConfig::Animals animals = read_animals(root);
     return ServerConfig{read_game(root),  read_player(root),  read_energy(root),
                         animals,          read_enemies(root), read_traps(root),
-                        read_crops(root), read_cheats(root),  read_market(root, animals)};
+                        read_crops(root), read_cheats(root),  read_market(root, animals),
+                        read_mining(root)};
 }
 
 const ServerConfig& server_config() {

@@ -14,7 +14,9 @@ FarmTile celda(SoilType suelo, CropType cultivo = CropType::None, uint8_t etapa 
     return FarmTile{3, 4, suelo, cultivo, etapa, necesita_agua, false};
 }
 
-FarmState granja(std::vector<FarmTile> celdas) { return FarmState{"granja", std::move(celdas), {}}; }
+FarmState granja(std::vector<FarmTile> celdas) {
+    return FarmState{"granja", std::move(celdas), {}};
+}
 
 }  // namespace
 

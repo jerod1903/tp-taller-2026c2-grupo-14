@@ -256,7 +256,8 @@ TEST_F(ServerProtocolTest, FarmStateGoesWithTagAreaAndEachTile) {
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(11));
     EXPECT_EQ(client->recv_u16(), std::optional<uint16_t>(5));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(SoilType::Tilled)));
-    EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(static_cast<uint8_t>(CropType::Strawberry)));
+    EXPECT_EQ(client->recv_u8(),
+              std::optional<uint8_t>(static_cast<uint8_t>(CropType::Strawberry)));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(2));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(1));
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(0));

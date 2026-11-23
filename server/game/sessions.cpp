@@ -28,6 +28,12 @@ void Sessions::add_player(uint32_t player_id, const GameMember& member,
         send(*outbox, character->get_inventory_state());
     }
     send(*outbox, SnapshotBuilder::farm_state(world.get_farm()));
+
+    const Dungeon& dungeon = world.get_dungeon();
+    for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
+        send(*outbox, SnapshotBuilder::dungeon_state(dungeon.level(depth)));
+    }
+
     players.emplace(player_id, ConnectedPlayer{std::move(outbox), std::move(info)});
 }
 

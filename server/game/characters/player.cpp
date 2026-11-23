@@ -98,7 +98,9 @@ void Player::set_typing(bool typing) { this->typing = typing; }
 
 bool Player::is_typing() const { return typing; }
 
-uint8_t Player::receive(ItemType item, uint8_t quantity, ItemQuality quality) { return inventory.add(item, quantity, quality); }
+uint8_t Player::receive(ItemType item, uint8_t quantity, ItemQuality quality) {
+    return inventory.add(item, quantity, quality);
+}
 
 int Player::count(ItemType item) const { return inventory.count(item); }
 

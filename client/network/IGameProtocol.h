@@ -7,8 +7,10 @@
 #include "common/game_dto.h"
 
 // Lo que manda el servidor durante la partida.
-using ServerGameMessage = std::variant<LocationData, Snapshot, GameEnded, PlayerInfo,
-                                       InventoryState, ChatMessage, FarmState, DayEnded>;
+using ServerGameMessage =
+        std::variant<LocationData, Snapshot, GameEnded, PlayerInfo, InventoryState, ChatMessage,
+                     FarmState, DungeonState, DayEnded>;
+
 
 // Lo que la partida necesita del servidor: un send por cada accion del jugador y el recv de lo que
 // manda el servidor. Los send tiran LobbyConnectionError si se corto la conexion.

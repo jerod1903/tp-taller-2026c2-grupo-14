@@ -19,7 +19,8 @@
 #include "server/game/world/spawn_point.h"
 #include "server/persistence/saved_game.h"
 
-// Una celda trabajada con la pala: Dirt si era pasto y se cavó una vez, Tilled si ya se puede plantar.
+// Una celda trabajada con la pala: Dirt si era pasto y se cavó una vez, Tilled si ya se puede
+// plantar.
 struct Plot {
     SoilType soil;
     Crop crop;

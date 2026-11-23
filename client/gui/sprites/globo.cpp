@@ -7,7 +7,7 @@ namespace {
 void pintar(SDL2pp::Renderer& renderer, const SDL_Color& color) {
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
 }
-}
+}  // namespace
 
 Globo::Globo(SDL2pp::Renderer& renderer):
         puntos(renderer, RUTA_GLOBO_ESCRIBIENDO), leche(renderer, RUTA_ICONO_LECHE) {}
@@ -29,8 +29,8 @@ void Globo::dibujar_icono(SDL2pp::Renderer& renderer, SDL2pp::Texture& textura,
                           const SDL2pp::Rect& origen, const SDL2pp::Point& cabeza,
                           const SDL2pp::Rect& camara) {
     SDL2pp::Point punta(cabeza.x - camara.x, cabeza.y - camara.y - SEPARACION_GLOBO);
-    SDL2pp::Rect contenido(punta.x - origen.w / 2,
-                           punta.y - ALTO_PALITO - RELLENO_GLOBO - origen.h, origen.w, origen.h);
+    SDL2pp::Rect contenido(punta.x - origen.w / 2, punta.y - ALTO_PALITO - RELLENO_GLOBO - origen.h,
+                           origen.w, origen.h);
     dibujar_ventanita(renderer, contenido);
     renderer.Copy(textura, origen, contenido);
 }

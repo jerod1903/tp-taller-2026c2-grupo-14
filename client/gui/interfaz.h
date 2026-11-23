@@ -56,9 +56,11 @@ private:
     ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
-    void dibujar_area(const EntidadGrafica& propio, const FarmState& granja);
+    void dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
+                      const std::map<std::string, DungeonState>& mina);
     void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
+    Sprite sprite_veta(const OreDeposit& veta);
     Sprite sprite_cultivo(const FarmTile& celda);
     void dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara);
     void dibujar_inventario(const InventoryState& inventario);
@@ -75,6 +77,7 @@ private:
     SDL2pp::Texture hoja_vaca;
     SDL2pp::Texture hoja_gallina;
     SDL2pp::Texture hoja_cultivos;
+    SDL2pp::Texture hoja_minerales;
     SDL2pp::Texture icono_regadera;
     std::map<EntityType, Aspecto> aspectos;
     // Las que tienen una hoja por pose (HOJAS_POR_POSE): se dibujan con la de lo que estén

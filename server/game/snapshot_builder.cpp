@@ -108,8 +108,8 @@ EntityState bed_of(uint32_t player_id, const Position& slot, const std::string& 
 
 Snapshot SnapshotBuilder::build(uint32_t tick, const World& world) {
     const GameClock& clock = world.get_clock();
-    Snapshot snapshot{tick, clock.get_day(), static_cast<uint16_t>(clock.get_minute_of_day()), {},
-                      {}};
+    Snapshot snapshot{
+            tick, clock.get_day(), static_cast<uint16_t>(clock.get_minute_of_day()), {}, {}};
     for (const auto& [player_id, player]: world.get_players()) {
         snapshot.players.push_back(state_of(player_id, *player));
         snapshot.entities.push_back(entity_of(player_id, *player));
@@ -144,6 +144,19 @@ FarmState SnapshotBuilder::farm_state(const Farm& farm) {
                                        plot.crop.needs_water(), plot.crop.is_ready()});
     }
     for (const auto& [pos, item]: farm.get_ground_items()) {
+        state.items.push_back(
+                GroundItem{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), item});
+    }
+    return state;
+}
+
+DungeonState SnapshotBuilder::dungeon_state(const DungeonLevel& level) {
+    DungeonState state{level.get_name(), {}, {}};
+    for (const auto& [pos, node]: level.get_ores()) {
+        state.ores.push_back(
+                OreDeposit{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), node.ore});
+    }
+    for (const auto& [pos, item]: level.get_ground_items()) {
         state.items.push_back(
                 GroundItem{static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y), item});
     }

@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "common/lobby_dto.h"
 #include "common/farm_dto.h"
+#include "common/lobby_dto.h"
 
 // Lo que manda el cliente durante la partida: el GameOp y después su payload, si tiene.
 enum class GameOp : uint8_t {
@@ -41,6 +41,7 @@ enum class GameMsg : uint8_t {
     InventoryState,
     ChatMessage,
     FarmState,
+    DungeonState,
     DayEnded,
 };
 
@@ -127,7 +128,7 @@ struct EntityState {
     uint32_t y;
     int8_t dirX;
     int8_t dirY;
-    Emote emote = Emote::None;  // en el cable va al final, como u8
+    Emote emote = Emote::None;                 // en el cable va al final, como u8
     EntityAction action = EntityAction::None;  // en el cable después del emote, como u8
 
     bool operator==(const EntityState&) const = default;
@@ -213,10 +214,10 @@ struct ClickRequest {
 };
 
 enum class ChatKind : uint8_t {
-    Public,   // a todos los jugadores de la partida
-    Private,  // solo al destinatario, con una copia para el que lo mando
-    System,   // un aviso del servidor (por ejemplo, que el destinatario no esta conectado)
-    Merchant, // un comerciante le habla al jugador, from es su nombre
+    Public,    // a todos los jugadores de la partida
+    Private,   // solo al destinatario, con una copia para el que lo mando
+    System,    // un aviso del servidor (por ejemplo, que el destinatario no esta conectado)
+    Merchant,  // un comerciante le habla al jugador, from es su nombre
 };
 
 // Un mensaje de chat. En el cable: tag GameMsg::ChatMessage, u8 kind, from y text como strings.
@@ -252,5 +253,20 @@ struct InventoryState {
     bool operator==(const InventoryState&) const = default;
 };
 
+struct OreDeposit {
+    uint16_t x;
+    uint16_t y;
+    ItemType ore;  // Coal, Lapis, Silver, GoldOre
+
+    bool operator==(const OreDeposit&) const = default;
+};
+
+struct DungeonState {
+    std::string areaId;
+    std::vector<OreDeposit> ores = {};
+    std::vector<GroundItem> items = {};
+
+    bool operator==(const DungeonState&) const = default;
+};
 
 #endif  // GAME_DTO_H

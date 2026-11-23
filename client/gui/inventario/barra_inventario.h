@@ -21,6 +21,7 @@ private:
     void dibujar_numero(SDL2pp::Renderer& renderer, int numero, const SDL2pp::Point& esquina);
     std::map<ItemType, SDL2pp::Texture> iconos;
     SDL2pp::Texture hoja_cultivos;
+    SDL2pp::Texture hoja_minerales;
 };
 
 #endif
