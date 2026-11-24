@@ -356,7 +356,8 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
 
 void Interfaz::ajustar_lienzo(int ancho_area, int alto_area) {
     SDL2pp::Point salida = renderer.GetOutputSize();
-    escala = std::max(1, salida.y / client_config().ventana.alto_mundo_visible);
+    escala_interfaz = std::max(1, salida.y / client_config().ventana.alto_mundo_visible);
+    escala = escala_interfaz;
     if (ancho_area > 0 && alto_area > 0) {
         escala = std::max({escala, (salida.x + ancho_area - 1) / ancho_area,
                            (salida.y + alto_area - 1) / alto_area});
@@ -399,12 +400,14 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
             dibujar_area(propio->second, estado.granja, estado.mina, ahora);
         }
         oscurecer(transicion.opacidad(ahora));
-        dibujar_inventario(estado.inventario);
     }
     renderer.SetTarget();
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    if (propio != entidades.end()) {
+        dibujar_inventario(estado.inventario);
+    }
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
     // con el mapa general abierto el fin del día va encima del mapa
     if (estado.fin_del_dia && !mapa_general_abierto()) {
@@ -416,9 +419,10 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
             info_propia != estado.info_jugadores.end() ? info_propia->second.characterName : "";
     panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), nombre_propio,
                        ahora);
-    hud.dibujar(renderer, estado, escala);
+    hud.dibujar(renderer, estado, escala_interfaz);
     if (minimapa) {
-        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio, escala_del_hud(escala));
+        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio,
+                          escala_del_hud(escala_interfaz));
     }
     if (mapa_general_abierto()) {
         mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado.jugadores,
@@ -435,7 +439,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
 }
 
 void Interfaz::dibujar_inventario(const InventoryState& inventario) {
-    barra.dibujar(renderer, inventario, SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
+    SDL2pp::Point salida = renderer.GetOutputSize();
+    renderer.SetScale(escala_interfaz, escala_interfaz);
+    barra.dibujar(renderer, inventario,
+                  SDL2pp::Point(salida.x / escala_interfaz, salida.y / escala_interfaz));
+    renderer.SetScale(1, 1);
 }
 
 void Interfaz::congelar_lienzo(std::chrono::steady_clock::time_point ahora) {

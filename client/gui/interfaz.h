@@ -93,6 +93,7 @@ private:
     std::optional<SDL2pp::Texture> lienzo;
     std::optional<SDL2pp::Rect> camara;
     int escala = 1;
+    int escala_interfaz = 1;
     bool pantalla_completa = false;
     std::optional<Mapa> mapa;
     // Se arma junto con el mapa, con el mismo mundo
