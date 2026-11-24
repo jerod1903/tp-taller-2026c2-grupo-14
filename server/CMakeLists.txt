@@ -12,6 +12,7 @@ target_sources(taller_server
     game/commands/interact_command.cpp
     game/commerce/merchant.cpp
     game/commerce/market.cpp
+    game/storage/chest_access.cpp
     game/commands/typing_command.cpp
     game/commands/click_command.cpp
     game/tools/tool.cpp

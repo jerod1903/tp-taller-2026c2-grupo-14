@@ -104,6 +104,7 @@ target_sources(taller_tests
     ../server/game/commands/interact_command.cpp
     ../server/game/commerce/merchant.cpp
     ../server/game/commerce/market.cpp
+    ../server/game/storage/chest_access.cpp
     ../server/game/commands/typing_command.cpp
     ../server/game/commands/click_command.cpp
     ../server/game/tools/tool.cpp

@@ -14,13 +14,15 @@ enum class GameOp : uint8_t {
     Move = 0x01,
     LeaveGame = 0x02,  // sin payload
     SelectSlot = 0x03,
-    Chat = 0x04,         // payload: string con el texto tal cual lo escribio el jugador
-    Interact = 0x05,     // sin payload: el servidor decide con que interactua (ordeñar, cosechar)
-    Typing = 0x06,       // payload: u8, 1 si abrio el chat y 0 si lo cerro
-    EnterPortal = 0x07,  // sin payload: cruza la puerta que el jugador tiene al alcance
-    Click = 0x08,        // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
-    Invite = 0x09,       // sin payload: pide el código de invitación; llega por el chat
-    DayReady = 0x0A,     // sin payload: dio el Ok para pasar al día siguiente
+    Chat = 0x04,           // payload: string con el texto tal cual lo escribio el jugador
+    Interact = 0x05,       // sin payload: el servidor decide con que interactua (ordeñar, cosechar)
+    Typing = 0x06,         // payload: u8, 1 si abrio el chat y 0 si lo cerro
+    EnterPortal = 0x07,    // sin payload: cruza la puerta que el jugador tiene al alcance
+    Click = 0x08,          // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
+    Invite = 0x09,         // sin payload: pide el código de invitación; llega por el chat
+    DayReady = 0x0A,       // sin payload: dio el Ok para pasar al día siguiente
+    ChestTransfer = 0x0B,  // payload: u8 from (ChestSide), u8 slot: pasa esa pila entera al otro
+    CloseChest = 0x0C,     // sin payload: cerró el panel del cofre
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.
@@ -43,6 +45,7 @@ enum class GameMsg : uint8_t {
     FarmState,
     DungeonState,
     DayEnded,
+    ChestState,
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
@@ -248,6 +251,31 @@ struct InventoryState {
     std::vector<InventorySlot> slots = {};
 
     bool operator==(const InventoryState&) const = default;
+};
+
+// De qué inventario es un slot del panel del cofre.
+enum class ChestSide : uint8_t {
+    Player = 0,
+    Chest = 1,
+};
+
+// Pasa la pila entera de ese slot de `from` al otro inventario.
+struct ChestTransferRequest {
+    ChestSide from;
+    uint8_t slot;
+
+    bool operator==(const ChestTransferRequest&) const = default;
+};
+
+// El cofre que el jugador tiene abierto. Llega al abrirlo, cada vez que alguien lo cambia, y con
+// open = false cuando el servidor lo cierra (se alejó, cambió de área).
+// En el cable: tag GameMsg::ChestState, u8 open, u16 cantidad de slots y, por cada slot, u8 item,
+// u8 quantity y u8 quality.
+struct ChestState {
+    bool open = false;
+    std::vector<InventorySlot> slots = {};
+
+    bool operator==(const ChestState&) const = default;
 };
 
 struct OreDeposit {

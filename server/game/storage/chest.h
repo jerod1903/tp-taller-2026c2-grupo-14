@@ -11,6 +11,7 @@ public:
 
     Inventory& get_inventory() { return inventory; }
     const Inventory& get_inventory() const { return inventory; }
+    ChestState state() const { return ChestState{true, inventory.get_state().slots}; }
 
 private:
     Inventory inventory;

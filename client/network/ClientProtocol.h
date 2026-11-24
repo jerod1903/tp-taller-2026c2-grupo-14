@@ -58,7 +58,10 @@ private:
     PlayerState recvPlayerState();
     EntityState recvEntityState();
     PlayerInfo recvPlayerInfo();
+    // count u16 y, por cada slot, item u8, quantity u8 y quality u8.
+    std::vector<InventorySlot> recvSlots();
     InventoryState recvInventoryState();
+    ChestState recvChestState();
     ChatMessage recvChatMessage();
     FarmState recvFarmState();
     DungeonState recvDungeonState();

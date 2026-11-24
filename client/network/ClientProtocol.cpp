@@ -34,6 +34,7 @@
 //     GameEnded:     reason u8
 //     PlayerInfo:    playerId u32, characterName, apariencia
 //     InventoryState: selectedSlot u8, count u16, (item u8, quantity u8, quality u8)*
+//     ChestState:    open u8, count u16, (item u8, quantity u8, quality u8)*
 //
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
@@ -167,6 +168,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvDungeonState();
         case GameMsg::DayEnded:
             return recvDayEnded();
+        case GameMsg::ChestState:
+            return recvChestState();
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }
@@ -342,16 +345,29 @@ DungeonState ClientProtocol::recvDungeonState() {
     return dungeon;
 }
 
-InventoryState ClientProtocol::recvInventoryState() {
-    InventoryState inventory{};
-    inventory.selectedSlot = ensure(baseProtocol.recv_u8());
+std::vector<InventorySlot> ClientProtocol::recvSlots() {
+    std::vector<InventorySlot> slots;
     uint16_t count = ensure(baseProtocol.recv_u16());
     for (uint16_t i = 0; i < count; ++i) {
         InventorySlot slot{};
         slot.item = static_cast<ItemType>(ensure(baseProtocol.recv_u8()));
         slot.quantity = ensure(baseProtocol.recv_u8());
         slot.quality = static_cast<ItemQuality>(ensure(baseProtocol.recv_u8()));
-        inventory.slots.push_back(slot);
+        slots.push_back(slot);
     }
+    return slots;
+}
+
+InventoryState ClientProtocol::recvInventoryState() {
+    InventoryState inventory{};
+    inventory.selectedSlot = ensure(baseProtocol.recv_u8());
+    inventory.slots = recvSlots();
     return inventory;
+}
+
+ChestState ClientProtocol::recvChestState() {
+    ChestState chest{};
+    chest.open = ensure(baseProtocol.recv_u8()) != 0;
+    chest.slots = recvSlots();
+    return chest;
 }

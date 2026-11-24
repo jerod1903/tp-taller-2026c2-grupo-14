@@ -9,7 +9,7 @@
 // Lo que manda el servidor durante la partida.
 using ServerGameMessage =
         std::variant<LocationData, Snapshot, GameEnded, PlayerInfo, InventoryState, ChatMessage,
-                     FarmState, DungeonState, DayEnded>;
+                     FarmState, DungeonState, DayEnded, ChestState>;
 
 
 // Lo que la partida necesita del servidor: un send por cada accion del jugador y el recv de lo que

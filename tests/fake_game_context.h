@@ -23,7 +23,8 @@ class FakeGameContext:
         public PlayerCommerce,
         public PlayerFarming,
         public PlayerCombat,
-        public PlayerDay {
+        public PlayerDay,
+        public PlayerStorage {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -40,6 +41,7 @@ public:
     PlayerFarming& farming() override { return *this; }
     PlayerCombat& combat() override { return *this; }
     PlayerDay& day() override { return *this; }
+    PlayerStorage& storage() override { return *this; }
     void ready_for_next_day(uint32_t player_id) override { ready.push_back(player_id); }
     void end_day() override { ++days_ended; }
 
@@ -103,6 +105,15 @@ public:
         commands.push_back(command);
         return trade_reply;
     }
+
+    // Sin cofres: los clicks siguen de largo hasta la herramienta.
+    std::optional<ChestState> open(Player&, const Position&) override { return std::nullopt; }
+
+    std::optional<ChestUpdate> transfer(Player&, ChestSide, uint8_t) override {
+        return std::nullopt;
+    }
+
+    void close(const Player&) override {}
 
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.
     std::vector<std::unique_ptr<Animal>> animals;
