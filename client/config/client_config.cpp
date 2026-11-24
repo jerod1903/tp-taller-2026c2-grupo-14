@@ -46,7 +46,8 @@ ClientConfig cargar_client_config(const std::string& ruta) {
             {positivo(ventana, "width"), positivo(ventana, "height"),
              positivo(ventana, "visible_world_height"), std::chrono::milliseconds(1000 / fps)},
             {positivo(audio, "channels"), positivo(audio, "buffer_size"),
-             std::chrono::milliseconds(positivo(audio, "step_interval_ms"))}};
+             std::chrono::milliseconds(positivo(audio, "step_interval_ms")),
+             positivo(audio, "music_volume")}};
 }
 
 const ClientConfig& client_config() {
