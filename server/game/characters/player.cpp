@@ -1,6 +1,7 @@
 #include "server/game/characters/player.h"
 
 #include <algorithm>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -143,7 +144,9 @@ int Player::count(ItemType item) const { return inventory.count(item); }
 
 int Player::room_for(ItemType item) const { return inventory.room_for(item); }
 
-void Player::take(ItemType item, int quantity) { inventory.remove(item, quantity); }
+std::map<ItemQuality, int> Player::take(ItemType item, int quantity) {
+    return inventory.remove(item, quantity);
+}
 
 uint8_t Player::give_slot(uint8_t slot, Inventory& target) {
     return inventory.move_slot(slot, target);

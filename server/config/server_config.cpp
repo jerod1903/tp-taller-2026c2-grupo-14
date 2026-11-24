@@ -323,7 +323,8 @@ ServerConfig::Market read_market(const toml::table& root, const ServerConfig::An
     TomlTableReader market = section(root, "market");
     ServerConfig::Market read{positive(required_float(market, "reach"), "reach"),
                               positive(market.requiredInt("cow_buyback"), "cow_buyback"),
-                              positive(market.requiredInt("chicken_buyback"), "chicken_buyback")};
+                              positive(market.requiredInt("chicken_buyback"), "chicken_buyback"),
+                              positive(market.requiredInt("chest_price"), "chest_price")};
     check_buyback(animals.cow.price, read.cow_buyback, "cow_buyback");
     check_buyback(animals.chicken.price, read.chicken_buyback, "chicken_buyback");
     return read;

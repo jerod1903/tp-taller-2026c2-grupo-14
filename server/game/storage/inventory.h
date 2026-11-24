@@ -2,6 +2,7 @@
 #define INVENTORY_H
 
 #include <cstdint>
+#include <map>
 #include <vector>
 
 #include "common/game_dto.h"
@@ -31,9 +32,9 @@ public:
     int count(ItemType item) const;
     // Cuántos más de ese objeto entran: lo que falta para llenar sus pilas más los slots vacíos.
     int room_for(ItemType item) const;
-    // Saca esa cantidad, empezando por los últimos slots; el que queda en 0 se vacía. Lanza
-    // std::invalid_argument si no hay tantos.
-    void remove(ItemType item, int quantity);
+    // Saca esa cantidad, empezando por los últimos slots; el que queda en 0 se vacía. Devuelve
+    // cuántos sacó de cada calidad. Lanza std::invalid_argument si no hay tantos.
+    std::map<ItemQuality, int> remove(ItemType item, int quantity);
 
     InventoryState get_state() const;
     // Vuelve a como estaba en `state` (uno guardado); los slots que falten quedan vacíos.
