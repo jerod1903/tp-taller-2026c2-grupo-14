@@ -21,9 +21,9 @@ struct ChestUpdate {
 // que usan ClickCommand y los comandos del cofre.
 class PlayerStorage {
 public:
-    // Si en `cell` hay un cofre del área del jugador, a su alcance, lo abre y devuelve su
-    // contenido. Si no, nullopt.
-    virtual std::optional<ChestState> open(Player& player, const Position& cell) = 0;
+    // Abre el cofre más cercano del área del jugador, si alguno está a su alcance (chest_reach), y
+    // devuelve su contenido. Si no, nullopt.
+    virtual std::optional<ChestState> open(Player& player) = 0;
     // Pasa la pila entera de `slot` de `from` al otro inventario. nullopt si no tiene un cofre
     // abierto a su alcance, `from` es inválido, es una herramienta de trabajo del jugador o no se
     // movió nada.

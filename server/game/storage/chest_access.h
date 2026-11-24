@@ -17,7 +17,7 @@ class ChestAccess: public PlayerStorage {
 public:
     explicit ChestAccess(PlayerCharacters& characters);
 
-    std::optional<ChestState> open(Player& player, const Position& cell) override;
+    std::optional<ChestState> open(Player& player) override;
     std::optional<ChestUpdate> transfer(Player& player, ChestSide from, uint8_t slot) override;
     std::optional<ChestUpdate> split(Player& player, ChestSide side, uint8_t slot) override;
     void close(const Player& player) override;

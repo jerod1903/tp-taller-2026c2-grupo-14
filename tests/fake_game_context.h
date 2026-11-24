@@ -107,7 +107,7 @@ public:
     }
 
     // Sin cofres: los clicks siguen de largo hasta la herramienta.
-    std::optional<ChestState> open(Player&, const Position&) override { return std::nullopt; }
+    std::optional<ChestState> open(Player&) override { return std::nullopt; }
 
     std::optional<ChestUpdate> transfer(Player&, ChestSide, uint8_t) override {
         return std::nullopt;

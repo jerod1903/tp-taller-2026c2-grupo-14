@@ -33,7 +33,7 @@ target_sources(taller_server
     game/interactions/milk.cpp
     game/interactions/harvest.cpp
     game/interactions/pick_up.cpp
-    game/interactions/open_facing_chest.cpp
+    game/interactions/open_nearby_chest.cpp
     game/clicks/click_action.cpp
     game/clicks/talk_to_merchant.cpp
     game/clicks/use_tool.cpp
@@ -126,7 +126,7 @@ target_sources(taller_server
     game/interactions/milk.h
     game/interactions/harvest.h
     game/interactions/pick_up.h
-    game/interactions/open_facing_chest.h
+    game/interactions/open_nearby_chest.h
     game/clicks/click_action.h
     game/clicks/talk_to_merchant.h
     game/clicks/use_tool.h

@@ -125,7 +125,7 @@ target_sources(taller_tests
     ../server/game/interactions/milk.cpp
     ../server/game/interactions/harvest.cpp
     ../server/game/interactions/pick_up.cpp
-    ../server/game/interactions/open_facing_chest.cpp
+    ../server/game/interactions/open_nearby_chest.cpp
     ../server/game/clicks/click_action.cpp
     ../server/game/clicks/talk_to_merchant.cpp
     ../server/game/clicks/use_tool.cpp

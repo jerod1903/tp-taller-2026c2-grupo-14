@@ -13,27 +13,36 @@ namespace {
 
 constexpr float CELL_CENTER = 0.5f;
 
-bool can_reach(const Player& player, const Location& location, const Position& cell) {
-    if (&player.get_location() != &location) {
-        return false;
-    }
+// Del centro del jugador al de la celda, en casillas
+float distance(const Player& player, const Position& cell) {
     float dx = player.get_x() - (static_cast<float>(cell.x) + CELL_CENTER);
     float dy = player.get_y() - (static_cast<float>(cell.y) + CELL_CENTER);
-    return std::hypot(dx, dy) <= server_config().inventory.chest_reach;
+    return std::hypot(dx, dy);
+}
+
+bool can_reach(const Player& player, const Location& location, const Position& cell) {
+    return &player.get_location() == &location &&
+           distance(player, cell) <= server_config().inventory.chest_reach;
 }
 
 }  // namespace
 
 ChestAccess::ChestAccess(PlayerCharacters& characters): characters(characters) {}
 
-std::optional<ChestState> ChestAccess::open(Player& player, const Position& cell) {
+std::optional<ChestState> ChestAccess::open(Player& player) {
     Location& location = player.get_location();
-    Chest* chest = location.chest_at(cell);
-    if (chest == nullptr || !can_reach(player, location, cell)) {
+    std::optional<Position> nearest;
+    for (const auto& [cell, chest]: location.get_chests()) {
+        if (can_reach(player, location, cell) &&
+            (!nearest || distance(player, cell) < distance(player, *nearest))) {
+            nearest = cell;
+        }
+    }
+    if (!nearest) {
         return std::nullopt;
     }
-    open_chests.insert_or_assign(player.get_id(), OpenChest{&location, cell});
-    return chest->state();
+    open_chests.insert_or_assign(player.get_id(), OpenChest{&location, *nearest});
+    return location.chest_at(*nearest)->state();
 }
 
 std::optional<ChestUpdate> ChestAccess::transfer(Player& player, ChestSide from, uint8_t slot) {
