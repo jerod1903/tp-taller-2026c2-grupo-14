@@ -47,6 +47,10 @@ void Game::run() {
     try {
         while (should_keep_running()) {
             process_events();
+            for (uint32_t player_id: chests.close_unreachable()) {
+                player_sessions.send_to(player_id, ChestState{});
+            }
+
             if (vote) {
                 update_vote();
             } else if (world->update(tick_seconds)) {

@@ -50,6 +50,7 @@ public:
     bool send_farm_state(const FarmState& farm);
     bool send_dungeon_state(const DungeonState& dungeon);
     bool send_day_ended(const DayEnded& day);
+    bool send_chest_state(const ChestState& chest);
 
     void shutdown();
 
@@ -58,6 +59,8 @@ private:
 
     bool send_game_msg(GameMsg msg);
     bool send_count(std::size_t count);
+    // count u16 y, por cada slot, item u8, quantity u8 y quality u8.
+    bool send_slots(const std::vector<InventorySlot>& slots);
     bool send_player_state(const PlayerState& player);
     bool send_entity_state(const EntityState& entity);
     bool send_appearance(const CharacterAppearance& appearance);
