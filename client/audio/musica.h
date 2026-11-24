@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-enum class Musica : uint8_t { Cabana, GranjaYPueblo, Mercado, Caverna };
+enum class Musica : uint8_t { GranjaYPueblo, Mercado, Caverna };
 
 Musica musica_de(const std::string& area, bool es_mina);
 

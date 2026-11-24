@@ -15,6 +15,8 @@ public:
     ~ReproductorSonidos();
     void reproducir(Sonido sonido);
     void poner_musica(Musica musica);
+    void alternar_musica();
+    bool musica_apagada() const;
 
 private:
     void cerrar();
@@ -25,6 +27,7 @@ private:
     std::map<Sonido, SDL2pp::Chunk> sonidos;
     std::map<Musica, SDL2pp::Music> musicas;
     std::optional<Musica> sonando;
+    bool apagada = false;
 };
 
 #endif

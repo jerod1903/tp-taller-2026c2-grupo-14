@@ -69,7 +69,7 @@ void ReproductorSonidos::poner_musica(Musica musica) {
     }
     sonando = musica;
     auto encontrada = musicas.find(musica);
-    if (encontrada == musicas.end()) {
+    if (apagada || encontrada == musicas.end()) {
         mixer->HaltMusic();
         return;
     }
@@ -77,3 +77,14 @@ void ReproductorSonidos::poner_musica(Musica musica) {
         mixer->FadeInMusic(encontrada->second, -1, static_cast<int>(FUNDIDO_MUSICA.count()));
     } catch (const SDL2pp::Exception&) {}
 }
+
+void ReproductorSonidos::alternar_musica() {
+    apagada = !apagada;
+    std::optional<Musica> actual = sonando;
+    sonando.reset();
+    if (actual) {
+        poner_musica(*actual);
+    }
+}
+
+bool ReproductorSonidos::musica_apagada() const { return apagada; }

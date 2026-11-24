@@ -56,24 +56,28 @@ std::optional<OpcionPausa> MenuPausa::leer(const SDL_Event& evento,
     return std::nullopt;
 }
 
-void MenuPausa::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana) {
+void MenuPausa::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana,
+                        bool musica_apagada) {
     oscurecer_ventana(renderer, tamano_ventana);
     SDL2pp::Rect primero = boton(0, tamano_ventana);
     dibujar_texto(renderer, fuente_titulo, TITULO_PAUSA, COLOR_TITULO_PAUSA,
                   SDL2pp::Point(tamano_ventana.x / 2, primero.y - SEPARACION_TITULO_PAUSA));
     for (std::size_t i = 0; i < BOTONES_PAUSA.size(); ++i) {
         const BotonPausa& datos = BOTONES_PAUSA[i];
+        const char* texto = datos.opcion == OpcionPausa::Musica && musica_apagada ?
+                                    TEXTO_PRENDER_MUSICA :
+                                    datos.texto;
         SDL2pp::Rect rect = boton(i, tamano_ventana);
         SDL2pp::Point centro(rect.x + rect.w / 2, rect.y + rect.h / 2);
         if (!datos.habilitado) {
             renderer.Copy(textura_deshabilitado, SDL2pp::NullOpt, rect);
-            dibujar_texto(renderer, fuente_botones, datos.texto, COLOR_TEXTO_DESHABILITADO, centro);
+            dibujar_texto(renderer, fuente_botones, texto, COLOR_TEXTO_DESHABILITADO, centro);
             continue;
         }
         Uint8 brillo = i == seleccionada ? BRILLO_SELECCIONADO : BRILLO_NO_SELECCIONADO;
         textura_boton.SetColorMod(brillo, brillo, brillo);
         renderer.Copy(textura_boton, SDL2pp::NullOpt, rect);
-        dibujar_texto(renderer, fuente_botones, datos.texto, COLOR_TEXTO_BOTON, centro);
+        dibujar_texto(renderer, fuente_botones, texto, COLOR_TEXTO_BOTON, centro);
     }
 }
 
@@ -111,7 +115,7 @@ std::optional<OpcionPausa> MenuPausa::elegir() {
     if (!datos.habilitado) {
         return std::nullopt;
     }
-    visible = false;
+    visible = datos.opcion == OpcionPausa::Musica;
     return datos.opcion;
 }
 
