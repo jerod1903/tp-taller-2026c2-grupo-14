@@ -78,6 +78,16 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
         enviador.listo_para_manana();
         estado.listo_para_manana = true;
     }
+    if (entrada.transferencia) {
+        enviador.transferir(*entrada.transferencia);
+    }
+    if (entrada.particion) {
+        enviador.partir(*entrada.particion);
+    }
+    if (entrada.cerrar_cofre && estado.cofre) {
+        enviador.cerrar_cofre();
+        estado.cofre.reset();
+    }
 }
 
 void GameLoop::procesar_mensajes() {
@@ -117,6 +127,8 @@ void GameLoop::procesar_mensajes() {
             estado.mina[mina->areaId] = *mina;
         } else if (const auto* fin_del_dia = std::get_if<DayEnded>(&*mensaje)) {
             estado.fin_del_dia = *fin_del_dia;
+        } else if (const auto* cofre = std::get_if<ChestState>(&*mensaje)) {
+            estado.cofre = cofre->open ? std::optional(cofre->slots) : std::nullopt;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;

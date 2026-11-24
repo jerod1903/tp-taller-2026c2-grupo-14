@@ -20,6 +20,10 @@ struct Entrada {
     std::optional<ClickRequest> click;
     bool invitar = false;
     bool listo_para_manana = false;  // dio el Ok en la pantalla de fin de día
+    // Con el panel del cofre abierto: click izquierdo pasa la pila, derecho la parte
+    std::optional<ChestSlotRequest> transferencia;
+    std::optional<ChestSlotRequest> particion;
+    bool cerrar_cofre = false;
 };
 
 #endif

@@ -38,6 +38,8 @@ struct EstadoJuego {
     // siguiente.
     std::optional<DayEnded> fin_del_dia = std::nullopt;
     bool listo_para_manana = false;  // ya dio el Ok
+    // El contenido del cofre que tiene abierto; nullopt si no tiene ninguno
+    std::optional<std::vector<InventorySlot>> cofre = std::nullopt;
 };
 
 #endif

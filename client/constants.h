@@ -305,6 +305,9 @@ inline constexpr SDL_Color COLOR_BORDE_GLOBO = {38, 43, 68, 255};
 inline constexpr int TAMANO_CASILLERO = 18;
 inline constexpr int SEPARACION_CASILLEROS = 1;
 inline constexpr int MARGEN_BARRA = 3;
+// El panel del cofre: su grilla de COLUMNAS_COFRE por fila y, abajo, el inventario del jugador
+inline constexpr int COLUMNAS_COFRE = 10;
+inline constexpr int SEPARACION_GRUPOS_COFRE = 6;
 inline constexpr SDL_Color COLOR_FONDO_CASILLERO = {60, 40, 30, 220};
 inline constexpr SDL_Color COLOR_BORDE_CASILLERO = {150, 110, 70, 255};
 inline constexpr SDL_Color COLOR_SELECCIONADO = {250, 210, 60, 255};

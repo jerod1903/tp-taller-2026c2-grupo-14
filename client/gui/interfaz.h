@@ -21,6 +21,7 @@
 #include "client/gui/fin-del-dia/pantalla_fin_del_dia.h"
 #include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
+#include "client/gui/inventario/panel_cofre.h"
 #include "client/gui/mapa-general/mapa_general.h"
 #include "client/gui/mapa-general/minimapa.h"
 #include "client/gui/mapa/mapa.h"
@@ -52,6 +53,8 @@ private:
     void leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada);
     // Con el mapa general abierto: el zoom, el arrastre, cerrarlo y pantalla completa
     void leer_mapa_general(const SDL_Event& evento);
+    // Con el panel del cofre abierto: los clicks en sus casilleros, cerrarlo y pantalla completa
+    void leer_cofre(const SDL_Event& evento, Entrada& entrada);
     bool mapa_general_abierto() const;
     ClickRequest casilla_clickeada(int x, int y) const;
     void alternar_pantalla_completa();
@@ -97,6 +100,9 @@ private:
     std::map<std::pair<EntityType, uint32_t>, EntidadGrafica> entidades;
     std::vector<EntityState> camas;
     BarraInventario barra;
+    PanelCofre panel_cofre;  // después de barra: dibuja con sus casilleros
+    // Si se está mostrando (se decide al dibujar, con el estado)
+    bool cofre_abierto = false;
     Fuente fuente;
     Fuente fuente_titulo;
     PanelChat panel_chat;

@@ -143,6 +143,18 @@ void ClientProtocol::sendInvite() { ensure(sendGameOp(GameOp::Invite)); }
 
 void ClientProtocol::sendDayReady() { ensure(sendGameOp(GameOp::DayReady)); }
 
+void ClientProtocol::sendChestTransfer(ChestSide side, uint8_t slot) {
+    ensure(sendGameOp(GameOp::ChestTransfer) && baseProtocol.send_u8(static_cast<uint8_t>(side)) &&
+           baseProtocol.send_u8(slot));
+}
+
+void ClientProtocol::sendChestSplit(ChestSide side, uint8_t slot) {
+    ensure(sendGameOp(GameOp::ChestSplit) && baseProtocol.send_u8(static_cast<uint8_t>(side)) &&
+           baseProtocol.send_u8(slot));
+}
+
+void ClientProtocol::sendCloseChest() { ensure(sendGameOp(GameOp::CloseChest)); }
+
 void ClientProtocol::sendSelectSlot(uint8_t slot) {
     ensure(sendGameOp(GameOp::SelectSlot) && baseProtocol.send_u8(slot));
 }

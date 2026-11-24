@@ -12,10 +12,11 @@ public:
     explicit BarraInventario(SDL2pp::Renderer& renderer);
     void dibujar(SDL2pp::Renderer& renderer, const InventoryState& inventario,
                  const SDL2pp::Point& tamano_lienzo);
-
-private:
+    // Un casillero con su objeto y su cantidad; también lo usa el panel del cofre.
     void dibujar_casillero(SDL2pp::Renderer& renderer, const InventorySlot& slot,
                            const SDL2pp::Rect& caja, bool seleccionado);
+
+private:
     void dibujar_icono(SDL2pp::Renderer& renderer, const InventorySlot& slot,
                        const SDL2pp::Rect& caja);
     void dibujar_numero(SDL2pp::Renderer& renderer, int numero, const SDL2pp::Point& esquina);

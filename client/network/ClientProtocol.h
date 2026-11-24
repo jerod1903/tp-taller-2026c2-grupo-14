@@ -40,6 +40,9 @@ public:
     void sendClick(uint16_t x, uint16_t y) override;
     void sendInvite() override;
     void sendDayReady() override;
+    void sendChestTransfer(ChestSide side, uint8_t slot) override;
+    void sendChestSplit(ChestSide side, uint8_t slot) override;
+    void sendCloseChest() override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;

@@ -36,4 +36,9 @@ public:
     virtual void sendInvite() = 0;
     // Da el Ok para pasar al día siguiente
     virtual void sendDayReady() = 0;
+    // Con el panel del cofre abierto: pasa esa pila entera al otro inventario
+    virtual void sendChestTransfer(ChestSide side, uint8_t slot) = 0;
+    // Con el panel del cofre abierto: pasa la mitad de esa pila al primer slot vacío
+    virtual void sendChestSplit(ChestSide side, uint8_t slot) = 0;
+    virtual void sendCloseChest() = 0;
 };
