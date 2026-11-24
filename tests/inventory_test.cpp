@@ -113,3 +113,37 @@ TEST(InventoryTest, RemovingMoreThanThereIsThrowsAndRemovesNothing) {
     EXPECT_THROW(inventory.remove(ItemType::Milk, 3), std::invalid_argument);
     EXPECT_EQ(inventory.count(ItemType::Milk), 2);
 }
+
+TEST(InventoryQuality, CountsOnlyThatQuality) {
+    Inventory inv = make_inventory();
+    inv.add(ItemType::Potato, 3, ItemQuality::Base);
+    inv.add(ItemType::Potato, 2, ItemQuality::Perfect);
+    EXPECT_EQ(inv.count(ItemType::Potato, ItemQuality::Perfect), 2);
+    EXPECT_EQ(inv.count(ItemType::Potato, ItemQuality::Base), 3);
+    EXPECT_EQ(inv.count(ItemType::Potato, ItemQuality::Incredible), 0);
+}
+
+TEST(InventoryQuality, RemoveLeavesOtherQualitiesUntouched) {
+    Inventory inv = make_inventory();
+    inv.add(ItemType::Potato, 3, ItemQuality::Base);
+    inv.add(ItemType::Potato, 2, ItemQuality::Perfect);
+    inv.remove(ItemType::Potato, ItemQuality::Perfect, 2);
+    EXPECT_EQ(inv.count(ItemType::Potato, ItemQuality::Perfect), 0);
+    EXPECT_EQ(inv.count(ItemType::Potato, ItemQuality::Base), 3);
+}
+
+TEST(InventoryQuality, RemoveMoreThanThereIsThrowsAndChangesNothing) {
+    Inventory inv = make_inventory();
+    inv.add(ItemType::Potato, 1, ItemQuality::Perfect);
+    EXPECT_THROW(inv.remove(ItemType::Potato, ItemQuality::Perfect, 2), std::invalid_argument);
+    EXPECT_EQ(inv.count(ItemType::Potato, ItemQuality::Perfect), 1);
+}
+
+TEST(InventoryQuality, IsEmpty) {
+    Inventory inv(ServerConstants::PLAYER_INVENTORY_SIZE);
+    EXPECT_TRUE(inv.is_empty());
+    inv.add(ItemType::Egg, 1);
+    EXPECT_FALSE(inv.is_empty());
+    inv.remove(ItemType::Egg, 1);
+    EXPECT_TRUE(inv.is_empty());
+}

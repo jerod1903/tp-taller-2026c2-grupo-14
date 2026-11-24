@@ -35,6 +35,15 @@ public:
     // std::invalid_argument si no hay tantos.
     void remove(ItemType item, int quantity);
 
+    // Cuántos hay de ese objeto con esa calidad exacta.
+    int count(ItemType item, ItemQuality quality) const;
+    // Saca esa cantidad de esa calidad, empezando por los últimos slots; el que queda en 0 se
+    // vacía. Lanza std::invalid_argument si no hay tantos.
+    void remove(ItemType item, ItemQuality quality, int quantity);
+    // true si ningún slot tiene nada.
+    bool is_empty() const;
+
+
     InventoryState get_state() const;
     // Vuelve a como estaba en `state` (uno guardado); los slots que falten quedan vacíos.
     void restore(const InventoryState& state);

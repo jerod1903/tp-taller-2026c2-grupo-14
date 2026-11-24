@@ -138,3 +138,35 @@ bool Inventory::split_slot(uint8_t slot) {
     source.quantity -= half;
     return true;
 }
+
+int Inventory::count(ItemType item, ItemQuality quality) const {
+    int total = 0;
+    for (const InventorySlot& slot: slots) {
+        if (slot.item == item && slot.quality == quality) {
+            total += slot.quantity;
+        }
+    }
+    return total;
+}
+
+void Inventory::remove(ItemType item, ItemQuality quality, int quantity) {
+    if (count(item, quality) < quantity) {
+        throw std::invalid_argument("not enough items of that quality in the inventory");
+    }
+    for (auto slot = slots.rbegin(); slot != slots.rend() && quantity > 0; ++slot) {
+        if (slot->item != item || slot->quality != quality) {
+            continue;
+        }
+        int taken = std::min<int>(quantity, slot->quantity);
+        slot->quantity = static_cast<uint8_t>(slot->quantity - taken);
+        quantity -= taken;
+        if (slot->quantity == 0) {
+            *slot = InventorySlot{ItemType::Empty, 0};
+        }
+    }
+}
+
+bool Inventory::is_empty() const {
+    return std::all_of(slots.begin(), slots.end(),
+                       [](const InventorySlot& s) { return s.item == ItemType::Empty; });
+}
