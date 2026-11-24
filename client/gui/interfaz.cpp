@@ -375,6 +375,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     auto ahora = std::chrono::steady_clock::now();
     actualizar_mapa(estado);
     actualizar_entidades(estado, ahora);
+    actualizar_nombres(estado);
     camas.clear();
     std::copy_if(estado.entidades.begin(), estado.entidades.end(), std::back_inserter(camas),
                  [](const EntityState& entidad) { return entidad.type == EntityType::Bed; });
@@ -408,6 +409,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     if (propio != entidades.end()) {
         dibujar_inventario(estado.inventario);
+        dibujar_nombres(propio->second.area(), ahora);
     }
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
     // con el mapa general abierto el fin del día va encima del mapa
@@ -445,6 +447,51 @@ void Interfaz::dibujar_inventario(const InventoryState& inventario) {
     barra.dibujar(renderer, inventario,
                   SDL2pp::Point(salida.x / escala_interfaz, salida.y / escala_interfaz));
     renderer.SetScale(1, 1);
+}
+
+void Interfaz::actualizar_nombres(const EstadoJuego& estado) {
+    std::erase_if(nombres, [&estado](const auto& par) {
+        return !estado.info_jugadores.contains(par.first);
+    });
+    for (const auto& [id, info]: estado.info_jugadores) {
+        if (info.characterName.empty()) {
+            continue;
+        }
+        auto cartel = nombres.find(id);
+        if (cartel != nombres.end() && cartel->second.texto == info.characterName) {
+            continue;
+        }
+        nombres.insert_or_assign(
+                id, CartelNombre{info.characterName,
+                                 fuente_nombres.renderizar(renderer, info.characterName,
+                                                           COLOR_NOMBRE),
+                                 fuente_nombres.renderizar(renderer, info.characterName,
+                                                           COLOR_SOMBRA_NOMBRE)});
+    }
+}
+
+int Interfaz::alto_nombre() const {
+    return (fuente_nombres.alto_linea() + escala - 1) / escala + SEPARACION_NOMBRE;
+}
+
+void Interfaz::dibujar_nombres(const std::string& area,
+                               std::chrono::steady_clock::time_point ahora) {
+    if (!camara || transicion.activa(ahora)) {
+        return;
+    }
+    for (auto& [id, cartel]: nombres) {
+        auto entidad = entidades.find({EntityType::Player, id});
+        if (entidad == entidades.end() || entidad->second.area() != area) {
+            continue;
+        }
+        SDL2pp::Point cabeza = entidad->second.cabeza();
+        SDL2pp::Point tamano = cartel.letras.GetSize();
+        SDL2pp::Point punta((cabeza.x - camara->x) * escala,
+                            (cabeza.y - SEPARACION_NOMBRE - camara->y) * escala);
+        SDL2pp::Rect destino(punta.x - tamano.x / 2, punta.y - tamano.y, tamano.x, tamano.y);
+        renderer.Copy(cartel.sombra, SDL2pp::NullOpt, destino + SDL2pp::Point(1, 1));
+        renderer.Copy(cartel.letras, SDL2pp::NullOpt, destino);
+    }
 }
 
 void Interfaz::congelar_lienzo(std::chrono::steady_clock::time_point ahora) {
@@ -657,7 +704,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     }
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area && entidad.emote() != Emote::None) {
-            globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+            SDL2pp::Point cabeza = entidad.cabeza();
+            if (clave.first == EntityType::Player && nombres.contains(clave.second)) {
+                cabeza.y -= alto_nombre();
+            }
+            globo.dibujar(renderer, entidad.emote(), cabeza, camara);
         }
     }
     if (granja.areaId == area) {
