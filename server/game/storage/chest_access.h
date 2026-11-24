@@ -19,6 +19,7 @@ public:
 
     std::optional<ChestState> open(Player& player, const Position& cell) override;
     std::optional<ChestUpdate> transfer(Player& player, ChestSide from, uint8_t slot) override;
+    std::optional<ChestUpdate> split(Player& player, ChestSide side, uint8_t slot) override;
     void close(const Player& player) override;
 
     // Cierra los cofres de quienes ya no pueden usarlos: se fueron de la partida, cambiaron de

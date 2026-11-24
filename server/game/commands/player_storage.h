@@ -27,6 +27,9 @@ public:
     // Pasa la pila entera de `slot` de `from` al otro inventario. nullopt si no tiene un cofre
     // abierto a su alcance, `from` es inválido o no se movió nada.
     virtual std::optional<ChestUpdate> transfer(Player& player, ChestSide from, uint8_t slot) = 0;
+    // Parte la pila de `slot` de `side` (la mitad al primer slot vacío del mismo inventario).
+    // nullopt si no tiene un cofre abierto a su alcance, `side` es inválido o no se pudo partir.
+    virtual std::optional<ChestUpdate> split(Player& player, ChestSide side, uint8_t slot) = 0;
     // Deja de tener abierto su cofre; si no tenía ninguno, no hace nada.
     virtual void close(const Player& player) = 0;
 

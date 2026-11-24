@@ -23,6 +23,7 @@ enum class GameOp : uint8_t {
     DayReady = 0x0A,       // sin payload: dio el Ok para pasar al día siguiente
     ChestTransfer = 0x0B,  // payload: u8 side (ChestSide), u8 slot: pasa esa pila entera al otro
     CloseChest = 0x0C,     // sin payload: cerró el panel del cofre
+    ChestSplit = 0x0D,     // payload: u8 side, u8 slot: pasa la mitad al primer slot vacío
 };
 
 // -1, 0 o 1 en cada eje; (0, 0) frena.

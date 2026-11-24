@@ -37,9 +37,12 @@ public:
     // Vuelve a como estaba en `state` (uno guardado); los slots que falten quedan vacíos.
     void restore(const InventoryState& state);
 
-    // Pasa la pila de `slot` a `target` (apila primero sobre lo que ya hay); lo que no entra queda en
-    // el slot. Devuelve cuántos pasaron: 0 si el slot está vacío o fuera de rango.
+    // Pasa la pila de `slot` a `target` (apila primero sobre lo que ya hay); lo que no entra queda
+    // en el slot. Devuelve cuántos pasaron: 0 si el slot está vacío o fuera de rango.
     uint8_t move_slot(uint8_t slot, Inventory& target);
+    // Pasa la mitad de la pila de `slot` al primer slot vacío; con impar, la mitad mayor queda.
+    // false si el slot está fuera de rango, tiene menos de 2 o no hay ningún slot vacío.
+    bool split_slot(uint8_t slot);
 
 
 private:

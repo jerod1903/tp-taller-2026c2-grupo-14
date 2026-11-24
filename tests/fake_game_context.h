@@ -113,6 +113,8 @@ public:
         return std::nullopt;
     }
 
+    std::optional<ChestUpdate> split(Player&, ChestSide, uint8_t) override { return std::nullopt; }
+
     void close(const Player&) override {}
 
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.

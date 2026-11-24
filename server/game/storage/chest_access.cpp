@@ -52,6 +52,23 @@ std::optional<ChestUpdate> ChestAccess::transfer(Player& player, ChestSide from,
     return ChestUpdate{chest->state(), viewers_of(open_chests.at(player.get_id()))};
 }
 
+std::optional<ChestUpdate> ChestAccess::split(Player& player, ChestSide side, uint8_t slot) {
+    Chest* chest = chest_of(player);
+    if (chest == nullptr) {
+        return std::nullopt;
+    }
+    bool split = false;
+    if (side == ChestSide::Player) {
+        split = player.split_slot(slot);
+    } else if (side == ChestSide::Chest) {
+        split = chest->get_inventory().split_slot(slot);
+    }
+    if (!split) {
+        return std::nullopt;
+    }
+    return ChestUpdate{chest->state(), viewers_of(open_chests.at(player.get_id()))};
+}
+
 void ChestAccess::close(const Player& player) { open_chests.erase(player.get_id()); }
 
 std::vector<uint32_t> ChestAccess::close_unreachable() {

@@ -117,3 +117,20 @@ uint8_t Inventory::move_slot(uint8_t slot, Inventory& target) {
     return moved;
 }
 
+
+bool Inventory::split_slot(uint8_t slot) {
+    if (slot >= slots.size() || slots[slot].quantity < 2) {
+        return false;
+    }
+    auto empty = std::find_if(slots.begin(), slots.end(), [](const InventorySlot& candidate) {
+        return candidate.item == ItemType::Empty;
+    });
+    if (empty == slots.end()) {
+        return false;
+    }
+    InventorySlot& source = slots[slot];
+    uint8_t half = source.quantity / 2;
+    *empty = InventorySlot{source.item, half, source.quality};
+    source.quantity -= half;
+    return true;
+}
