@@ -26,6 +26,8 @@ public:
                     std::chrono::duration<float> duracion_tick,
                     std::chrono::steady_clock::time_point ahora);
     void tirar(bool tirada);
+    void sostener(std::optional<ItemType> item);
+    std::optional<ItemType> en_mano() const;
     std::vector<Sprite> sprites() const;
     SDL2pp::Point centro() const;
     SDL2pp::Point cabeza() const;
@@ -48,6 +50,7 @@ private:
     Pose pose = Pose::Quieto;
     EntityAction accion = EntityAction::None;
     std::optional<std::chrono::steady_clock::time_point> inicio_ataque;
+    std::optional<ItemType> item_en_mano;
     void cambiar_pose(const EntityState& estado);
 };
 

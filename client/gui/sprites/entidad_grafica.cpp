@@ -99,6 +99,12 @@ SDL2pp::Point EntidadGrafica::cabeza() const {
 
 void EntidadGrafica::tirar(bool tirada) { this->tirada = tirada; }
 
+void EntidadGrafica::sostener(std::optional<ItemType> item) { item_en_mano = item; }
+
+std::optional<ItemType> EntidadGrafica::en_mano() const {
+    return tirada ? std::nullopt : item_en_mano;
+}
+
 Emote EntidadGrafica::emote() const { return tirada ? Emote::None : emote_actual; }
 
 const std::string& EntidadGrafica::area() const { return posicion.area(); }
