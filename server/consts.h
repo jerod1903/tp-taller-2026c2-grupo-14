@@ -3,6 +3,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <map>
+
+#include "common/farm_dto.h"
 
 class ServerConstants {
 public:
@@ -53,6 +56,13 @@ public:
     static constexpr const char* INVITE_CODE = "Código para invitar: ";
     static constexpr const char* INVITE_NOT_OWNER = "Solo quien creó la partida puede invitar";
     static constexpr const char* INVITE_FAILED = "No se pudo generar el código de invitación";
+
+    // Multiplicador del precio de venta según la calidad (enunciado, "Cuidados y calidad")
+    static inline const std::map<ItemQuality, float> QUALITY_PRICE_MULTIPLIER = {
+            {ItemQuality::Base, 1.0f},       {ItemQuality::Good, 1.25f},
+            {ItemQuality::Excellent, 2.0f},  {ItemQuality::Incredible, 4.0f},
+            {ItemQuality::Perfect, 8.0f},
+    };
 };
 
 #endif  // SERVER_CONSTANTS_H
