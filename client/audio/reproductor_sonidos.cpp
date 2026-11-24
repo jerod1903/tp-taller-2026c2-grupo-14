@@ -21,6 +21,7 @@ ReproductorSonidos::ReproductorSonidos() {
         for (const auto& [sonido, ruta]: RUTAS_SONIDOS) {
             sonidos.emplace(sonido, SDL2pp::Chunk(ruta));
         }
+        cargar_musicas();
     } catch (const SDL2pp::Exception& e) {
         std::cerr << MENSAJE_SIN_SONIDO << e.what() << std::endl;
         cerrar();
@@ -31,6 +32,8 @@ ReproductorSonidos::~ReproductorSonidos() { cerrar(); }
 
 void ReproductorSonidos::cerrar() {
     sonidos.clear();
+    musicas.clear();
+    sonando.reset();
     mixer.reset();
     biblioteca.reset();
     if (audio_iniciado) {
@@ -46,5 +49,31 @@ void ReproductorSonidos::reproducir(Sonido sonido) {
     }
     try {
         mixer->PlayChannel(-1, encontrado->second);
+    } catch (const SDL2pp::Exception&) {}
+}
+
+void ReproductorSonidos::cargar_musicas() {
+    for (const auto& [musica, ruta]: RUTAS_MUSICAS) {
+        try {
+            musicas.emplace(musica, SDL2pp::Music(ruta));
+        } catch (const SDL2pp::Exception& e) {
+            std::cerr << MENSAJE_SIN_MUSICA << e.what() << std::endl;
+        }
+    }
+    mixer->SetMusicVolume(client_config().audio.volumen_musica);
+}
+
+void ReproductorSonidos::poner_musica(Musica musica) {
+    if (!mixer || sonando == musica) {
+        return;
+    }
+    sonando = musica;
+    auto encontrada = musicas.find(musica);
+    if (encontrada == musicas.end()) {
+        mixer->HaltMusic();
+        return;
+    }
+    try {
+        mixer->FadeInMusic(encontrada->second, -1, static_cast<int>(FUNDIDO_MUSICA.count()));
     } catch (const SDL2pp::Exception&) {}
 }
