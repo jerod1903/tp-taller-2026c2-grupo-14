@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -19,20 +20,20 @@
 class EntidadGrafica {
 public:
     EntidadGrafica(const FormatoAnimacion& formato, std::vector<Capa> capas);
-    // Con una hoja por pose: cambia de una a otra según lo que esté haciendo. Empieza quieta.
-    // `poses` tiene que vivir más que la entidad y tener todas las poses.
     explicit EntidadGrafica(const std::map<Pose, Aspecto>& poses);
     void vestir(std::vector<Capa> capas);
     void actualizar(const EntityState& estado, uint32_t tick,
                     std::chrono::duration<float> duracion_tick,
                     std::chrono::steady_clock::time_point ahora);
-    // Un jugador inconsciente: se dibuja acostado, girado sobre los pies, y sin globo.
     void tirar(bool tirada);
     std::vector<Sprite> sprites() const;
     SDL2pp::Point centro() const;
     SDL2pp::Point cabeza() const;
     Emote emote() const;
     const std::string& area() const;
+    SDL2pp::Point pies() const;
+    Orientacion mirando() const;
+    std::optional<float> avance_ataque(std::chrono::steady_clock::time_point ahora) const;
 
 private:
     std::vector<Capa> capas;
@@ -45,8 +46,8 @@ private:
     AnimadorSprites animador;
     const std::map<Pose, Aspecto>* poses = nullptr;
     Pose pose = Pose::Quieto;
-
-    // Si tiene una hoja por pose y cambió lo que hace, pasa a la de la nueva
+    EntityAction accion = EntityAction::None;
+    std::optional<std::chrono::steady_clock::time_point> inicio_ataque;
     void cambiar_pose(const EntityState& estado);
 };
 

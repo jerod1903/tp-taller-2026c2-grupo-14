@@ -1,9 +1,12 @@
 #include "client/gui/sprites/entidad_grafica.h"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "client/constants.h"
 
 namespace {
 // Acostada: la cabeza queda a la derecha de los pies
@@ -32,6 +35,10 @@ void EntidadGrafica::actualizar(const EntityState& estado, uint32_t tick,
     cambiar_pose(estado);
     animador.actualizar(estado.dirX, estado.dirY, ahora);
     emote_actual = estado.emote;
+    if (estado.action == EntityAction::Attacking && accion != EntityAction::Attacking) {
+        inicio_ataque = ahora;
+    }
+    accion = estado.action;
 }
 
 std::vector<Sprite> EntidadGrafica::sprites() const {
@@ -95,3 +102,19 @@ void EntidadGrafica::tirar(bool tirada) { this->tirada = tirada; }
 Emote EntidadGrafica::emote() const { return tirada ? Emote::None : emote_actual; }
 
 const std::string& EntidadGrafica::area() const { return posicion.area(); }
+
+SDL2pp::Point EntidadGrafica::pies() const { return posicion.pies(); }
+
+Orientacion EntidadGrafica::mirando() const { return animador.cuadro().orientacion; }
+
+std::optional<float> EntidadGrafica::avance_ataque(
+        std::chrono::steady_clock::time_point ahora) const {
+    if (!inicio_ataque) {
+        return std::nullopt;
+    }
+    float pasado = std::chrono::duration<float>(ahora - *inicio_ataque).count();
+    if (pasado >= DURACION_GOLPE_ESPADA.count()) {
+        return std::nullopt;
+    }
+    return pasado / DURACION_GOLPE_ESPADA.count();
+}
