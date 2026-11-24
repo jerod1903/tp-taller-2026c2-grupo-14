@@ -15,6 +15,9 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
+#include "client/gui/sprites/constantes_herramienta_en_mano.h"
+#include "client/gui/sprites/golpe_espada.h"
+#include "client/gui/sprites/herramienta_en_mano.h"
 #include "client/mapa-general/grilla_mapa.h"
 #include "client/mapa-general/mundo.h"
 #include "common/map/CabinInterior.h"
@@ -75,6 +78,14 @@ bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
                        [player_id](const PlayerState& jugador) {
                            return jugador.playerId == player_id && jugador.unconscious;
                        });
+}
+
+std::optional<ItemType> item_en_mano(const EstadoJuego& estado, uint32_t player_id) {
+    const InventoryState& inventario = estado.inventario;
+    if (player_id != estado.id_propio || inventario.selectedSlot >= inventario.slots.size()) {
+        return std::nullopt;
+    }
+    return inventario.slots[inventario.selectedSlot].item;
 }
 
 void borrar_ultima_letra(std::string& texto) {
@@ -261,6 +272,7 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
             it->second.tirar(inconsciente(estado, entidad.entityId));
+            it->second.sostener(item_en_mano(estado, entidad.entityId));
         }
         it->second.actualizar(entidad, estado.tick, estado.duracion_tick, ahora);
     }
@@ -384,7 +396,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second, estado.granja, estado.mina);
+            dibujar_area(propio->second, estado.granja, estado.mina, ahora);
         }
         oscurecer(transicion.opacidad(ahora));
         dibujar_inventario(estado.inventario);
@@ -394,7 +406,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
-    // Con el mapa general abierto, el fin del día va encima del mapa
+    // con el mapa general abierto el fin del día va encima del mapa
     if (estado.fin_del_dia && !mapa_general_abierto()) {
         pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
                                      estado.listo_para_manana);
@@ -445,6 +457,54 @@ void Interfaz::oscurecer(uint8_t opacidad) {
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
     renderer.SetDrawColor(0, 0, 0, opacidad);
     renderer.FillRect(SDL2pp::Rect(0, 0, lienzo->GetWidth(), lienzo->GetHeight()));
+}
+
+std::optional<Sprite> Interfaz::sprite_golpe_espada(const EntidadGrafica& entidad,
+                                                    std::chrono::steady_clock::time_point ahora) {
+    std::optional<float> avance = entidad.avance_ataque(ahora);
+    if (!avance) {
+        return std::nullopt;
+    }
+    GolpeEspada golpe = golpe_espada_de(entidad.mirando(), *avance);
+    SDL2pp::Texture& espada = objetos_piso.at(ItemType::Sword);
+    const auto& [agarre_x, agarre_y] = EMPUNADURAS.at(ItemType::Sword);
+    SDL2pp::Point pies = entidad.pies();
+    SDL2pp::Point tamano = espada.GetSize();
+    SDL2pp::Point mano(pies.x + golpe.dx, pies.y + golpe.dy);
+    Sprite sprite{&espada, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(mano.x - agarre_x, mano.y - agarre_y, tamano.x, tamano.y)};
+    sprite.angulo = golpe.angulo;
+    sprite.pivote = SDL2pp::Point(agarre_x, agarre_y);
+    sprite.apoyo = golpe.detras ? pies.y - 1 : pies.y + 1;
+    return sprite;
+}
+
+std::optional<Sprite> Interfaz::sprite_en_mano(const EntidadGrafica& entidad,
+                                               std::chrono::steady_clock::time_point ahora) {
+    if (std::optional<Sprite> golpe = sprite_golpe_espada(entidad, ahora)) {
+        return golpe;
+    }
+    std::optional<ItemType> item = entidad.en_mano();
+    if (!item) {
+        return std::nullopt;
+    }
+    auto textura = objetos_piso.find(*item);
+    if (textura == objetos_piso.end()) {
+        return std::nullopt;
+    }
+    SDL2pp::Point tamano = textura->second.GetSize();
+    std::optional<HerramientaEnMano> herramienta =
+            herramienta_en_mano_de(*item, entidad.mirando(), tamano.x);
+    if (!herramienta) {
+        return std::nullopt;
+    }
+    SDL2pp::Point pies = entidad.pies();
+    Sprite sprite{&textura->second, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(pies.x + herramienta->dx, pies.y + herramienta->dy, tamano.x,
+                               tamano.y),
+                  herramienta->espejada};
+    sprite.apoyo = herramienta->detras ? pies.y - 1 : pies.y + 1;
+    return sprite;
 }
 
 std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
@@ -508,7 +568,8 @@ void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camar
 }
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                            const std::map<std::string, DungeonState>& mina) {
+                            const std::map<std::string, DungeonState>& mina,
+                            std::chrono::steady_clock::time_point ahora) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
@@ -573,6 +634,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
                 }
             }
             sprites.insert(sprites.end(), capas.begin(), capas.end());
+            if (clave.first == EntityType::Player) {
+                if (std::optional<Sprite> mano = sprite_en_mano(entidad, ahora)) {
+                    sprites.push_back(*mano);
+                }
+            }
         }
     }
     std::stable_sort(sprites.begin(), sprites.end(),

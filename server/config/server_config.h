@@ -26,6 +26,8 @@ struct ServerConfig {
                                    // cama
         int sword_damage;          // vida que le saca a un enemigo cada golpe de espada
         float attack_cooldown;     // segundos entre golpe y golpe
+        float attack_time;         // segundos que se lo ve atacando después de cada golpe
+        float hurt_time;           // segundos que se lo ve herido después de recibir un golpe
         float weak_health;         // fracción de la vida desde la que pega menos
         float weak_damage;         // fracción de su daño que pega cuando está así de débil
     };

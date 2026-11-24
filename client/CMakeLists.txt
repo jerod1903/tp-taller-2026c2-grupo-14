@@ -16,6 +16,8 @@ target_sources(taller_client
     gui/sprites/animador_sprites.cpp
     gui/sprites/entidad_grafica.cpp
     gui/sprites/pose.cpp
+    gui/sprites/golpe_espada.cpp
+    gui/sprites/herramienta_en_mano.cpp
     gui/sprites/globo.cpp
     gui/sprites/constructor_capas.cpp
     gui/calculadores/calculador_camara.cpp
@@ -56,6 +58,10 @@ target_sources(taller_client
     gui/sprites/animador_sprites.h
     gui/sprites/entidad_grafica.h
     gui/sprites/pose.h
+    gui/sprites/golpe_espada.h
+    gui/sprites/constantes_golpe_espada.h
+    gui/sprites/herramienta_en_mano.h
+    gui/sprites/constantes_herramienta_en_mano.h
     gui/sprites/globo.h
     gui/sprites/capa.h
     gui/sprites/constructor_capas.h

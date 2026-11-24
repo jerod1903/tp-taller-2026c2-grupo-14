@@ -200,6 +200,15 @@ TEST_F(CombatTest, SnapshotsHaveTheEnemiesOfTheDungeon) {
     EXPECT_EQ(found->action, EntityAction::Hurt);
 }
 
+TEST_F(CombatTest, SnapshotsHaveWhatThePlayerIsDoing) {
+    world->attack(player, Position{2, 1});
+    Snapshot snapshot = SnapshotBuilder::build(0, *world);
+    auto found = std::find_if(snapshot.entities.begin(), snapshot.entities.end(),
+                              [](const EntityState& e) { return e.type == EntityType::Player; });
+    ASSERT_NE(found, snapshot.entities.end());
+    EXPECT_EQ(found->action, EntityAction::Attacking);
+}
+
 }  // namespace
 
 namespace {

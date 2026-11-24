@@ -57,7 +57,12 @@ private:
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                      const std::map<std::string, DungeonState>& mina);
+                      const std::map<std::string, DungeonState>& mina,
+                      std::chrono::steady_clock::time_point ahora);
+    std::optional<Sprite> sprite_golpe_espada(const EntidadGrafica& entidad,
+                                              std::chrono::steady_clock::time_point ahora);
+    std::optional<Sprite> sprite_en_mano(const EntidadGrafica& entidad,
+                                         std::chrono::steady_clock::time_point ahora);
     void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
     Sprite sprite_veta(const OreDeposit& veta);

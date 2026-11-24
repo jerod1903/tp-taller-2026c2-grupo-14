@@ -60,11 +60,34 @@ std::optional<int> Player::strike(Enemy& target) {
         return std::nullopt;
     }
     attack_cooldown_left = server_config().player.attack_cooldown;
+    attacking_left = server_config().player.attack_time;
     return target.take_hit(attack_damage());
+}
+
+void Player::take_damage(int amount) {
+    Creature::take_damage(amount);
+    if (is_alive()) {
+        hurt_left = server_config().player.hurt_time;
+    }
+}
+
+EntityAction Player::action() const {
+    if (is_unconscious()) {
+        return EntityAction::None;
+    }
+    if (hurt_left > 0) {
+        return EntityAction::Hurt;
+    }
+    if (attacking_left > 0) {
+        return EntityAction::Attacking;
+    }
+    return EntityAction::None;
 }
 
 void Player::update(float dt) {
     attack_cooldown_left -= dt;
+    attacking_left -= dt;
+    hurt_left -= dt;
     if (is_unconscious()) {
         direction = Direction::NONE;  // cae donde está
     }
