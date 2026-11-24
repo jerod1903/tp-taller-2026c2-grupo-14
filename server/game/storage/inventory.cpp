@@ -1,6 +1,7 @@
 #include "server/game/storage/inventory.h"
 
 #include <algorithm>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -80,21 +81,24 @@ int Inventory::room_for(ItemType item) const {
     return room;
 }
 
-void Inventory::remove(ItemType item, int quantity) {
+std::map<ItemQuality, int> Inventory::remove(ItemType item, int quantity) {
     if (count(item) < quantity) {
         throw std::invalid_argument("not enough items in the inventory");
     }
+    std::map<ItemQuality, int> taken_by_quality;
     for (auto slot = slots.rbegin(); slot != slots.rend() && quantity > 0; ++slot) {
         if (slot->item != item) {
             continue;
         }
         int taken = std::min<int>(quantity, slot->quantity);
+        taken_by_quality[slot->quality] += taken;
         slot->quantity = static_cast<uint8_t>(slot->quantity - taken);
         quantity -= taken;
         if (slot->quantity == 0) {
             *slot = InventorySlot{ItemType::Empty, 0};
         }
     }
+    return taken_by_quality;
 }
 
 InventoryState Inventory::get_state() const { return InventoryState{selected_slot, slots}; }

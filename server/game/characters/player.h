@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 
@@ -74,8 +75,9 @@ public:
     int count(ItemType item) const;
     // Cuántos más de ese objeto, con calidad base, le entran en el inventario.
     int room_for(ItemType item) const;
-    // Saca esa cantidad, de cualquier calidad. Lanza std::invalid_argument si no tiene tantos.
-    void take(ItemType item, int quantity);
+    // Saca esa cantidad, de cualquier calidad, y devuelve cuántos sacó de cada una. Lanza
+    // std::invalid_argument si no tiene tantos.
+    std::map<ItemQuality, int> take(ItemType item, int quantity);
     // Pasa la pila de ese slot de su inventario a `target`. Devuelve cuántos pasaron.
     uint8_t give_slot(uint8_t slot, Inventory& target);
     // Pasa la pila de ese slot de `source` a su inventario. Devuelve cuántos pasaron.
