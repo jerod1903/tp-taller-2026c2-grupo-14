@@ -79,6 +79,7 @@ struct SavedPlayer {
     int health = 0;
     int energy = 0;
     InventoryState inventory;
+    uint32_t pending = 0;  // premios del centro comunitario que todavía no cobró
 
     bool operator==(const SavedPlayer&) const = default;
 };

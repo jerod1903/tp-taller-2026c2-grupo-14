@@ -79,6 +79,7 @@ std::optional<int> Player::strike(Enemy& target) {
 }
 
 void Player::take_damage(int amount) {
+    ++hurt_total;
     Creature::take_damage(amount);
     if (is_alive()) {
         hurt_left = server_config().player.hurt_time;
@@ -121,7 +122,9 @@ void Player::select_inventory_slot(uint8_t slot) { inventory.select_slot(slot); 
 InventoryState Player::get_inventory_state() const { return inventory.get_state(); }
 
 SavedPlayer Player::saved() const {
-    return SavedPlayer{gold, health, energy, inventory.get_state()};
+    SavedPlayer result{gold, health, energy, inventory.get_state()};
+    result.pending = pending;
+    return result;
 }
 
 void Player::restore(const SavedPlayer& saved) {
@@ -129,6 +132,7 @@ void Player::restore(const SavedPlayer& saved) {
     health = saved.health;
     energy = saved.energy;
     inventory.restore(saved.inventory);
+    pending |= saved.pending;
 }
 
 void Player::set_typing(bool typing) { this->typing = typing; }
@@ -158,3 +162,44 @@ uint8_t Player::give_slot_to(uint8_t slot, Player& other) {
 }
 
 bool Player::split_slot(uint8_t slot) { return inventory.split_slot(slot); }
+
+
+bool Player::spend_gold(int amount) {
+    if (amount <= 0 || amount > gold) {
+        return false;
+    }
+    gold -= amount;
+    return true;
+}
+
+int Player::count(ItemType item, ItemQuality quality) const {
+    return inventory.count(item, quality);
+}
+
+void Player::take(ItemType item, ItemQuality quality, int quantity) {
+    inventory.remove(item, quality, quantity);
+}
+
+void Player::add_pending(uint32_t mask) { pending |= mask; }
+
+uint32_t Player::take_pending() {
+    uint32_t mask = pending;
+    pending = 0;
+    return mask;
+}
+
+bool Player::has_pending() const { return pending != 0; }
+
+uint32_t Player::hurt_count() const { return hurt_total; }
+
+
+void Player::receive_or_reward_pack(ItemType item, uint8_t quantity) {
+    uint8_t left = receive(item, quantity);
+    if (left > 0) {
+        reward_pack_inventory.add(item, left);
+    }
+}
+
+Inventory& Player::reward_pack() { return reward_pack_inventory; }
+
+const Inventory& Player::reward_pack() const { return reward_pack_inventory; }

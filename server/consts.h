@@ -28,6 +28,9 @@ public:
     // Cantidad de slots del inventario de un cofre.
     static constexpr uint8_t CHEST_SIZE = 30;
 
+    // Cantidad de semillas que se entrega el centro comunitario
+    static constexpr uint8_t REWARD_PACK = 4;
+
     static constexpr const char* MAP_REQUIREMENTS = TALLER_MAPS_DIR "/config/map_requirements.toml";
 
     // Chat: "@nombre texto" es un mensaje privado para ese personaje.

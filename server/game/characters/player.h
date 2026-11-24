@@ -6,6 +6,7 @@
 #include <string>
 
 #include "common/game_dto.h"
+#include "server/consts.h"
 #include "server/game/characters/creature.h"
 #include "server/game/storage/inventory.h"
 #include "server/game/world/spawn_point.h"
@@ -85,6 +86,27 @@ public:
     // Parte la pila de ese slot de su inventario: la mitad va al primer slot vacío.
     bool split_slot(uint8_t slot);
 
+    // Le resta oro. false (y no cambia nada) si amount no es positivo o no le alcanza.
+    bool spend_gold(int amount);
+    // Cuántos tiene de ese objeto con esa calidad exacta.
+    int count(ItemType item, ItemQuality quality) const;
+    // Saca esa cantidad de esa calidad. Lanza std::invalid_argument si no tiene tantos.
+    void take(ItemType item, ItemQuality quality, int quantity);
+
+    // Premio: lo que no entra en el inventario queda en el paquete de la granja.
+    void receive_or_reward_pack(ItemType item, uint8_t quantity);
+    Inventory& reward_pack();
+    const Inventory& reward_pack() const;
+
+    // Premios de sets que todavía no cobró: una máscara de bits, uno por BundleId.
+    void add_pending(uint32_t mask);
+    // Devuelve la máscara y la deja en 0.
+    uint32_t take_pending();
+    bool has_pending() const;
+
+    // Cuántas veces recibió daño desde que empezó la partida; la pelea lo compara.
+    uint32_t hurt_count() const;
+
 protected:
     // Gravemente herido pega menos (weak_damage de su daño).
     int attack_damage() const override;
@@ -100,6 +122,10 @@ private:
     float attack_cooldown_left = 0;
     float attacking_left = 0;  // segundos que le quedan de verse atacando
     float hurt_left = 0;       // segundos que le quedan de verse herido
+
+    Inventory reward_pack_inventory{ServerConstants::REWARD_PACK};
+    uint32_t pending = 0;
+    uint32_t hurt_total = 0;
 };
 
 #endif  // PLAYER_H
