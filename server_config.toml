@@ -19,6 +19,7 @@ sword_damage = 10        # vida que le saca a un enemigo cada golpe de espada
 attack_cooldown = 0.5    # segundos entre golpe y golpe de espada
 weak_health = 0.2        # con esta fracción de su vida o menos pega menos
 weak_damage = 0.5        # fracción de su daño que pega cuando está así de débil
+gift_reach = 2.0         # hasta dónde llega para regalarle a otro jugador: de centro a centro, en casillas
 
 [inventory]
 max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad

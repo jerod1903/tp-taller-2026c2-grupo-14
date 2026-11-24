@@ -36,6 +36,8 @@ target_sources(taller_server
     game/interactions/open_nearby_chest.cpp
     game/clicks/click_action.cpp
     game/clicks/talk_to_merchant.cpp
+    game/commands/gift_reply.cpp
+    game/gifts/gifts.cpp
     game/storage/item_names.cpp
     game/clicks/use_tool.cpp
     game/commands/join_command.cpp
@@ -130,6 +132,9 @@ target_sources(taller_server
     game/interactions/open_nearby_chest.h
     game/clicks/click_action.h
     game/clicks/talk_to_merchant.h
+    game/commands/gift_reply.h
+    game/commands/player_gifts.h
+    game/gifts/gifts.h
     game/storage/item_names.h
     game/clicks/use_tool.h
     game/commands/game_command.h

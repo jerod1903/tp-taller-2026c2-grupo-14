@@ -14,6 +14,7 @@
 #include "server/game/commerce/market.h"
 #include "server/game/day_vote.h"
 #include "server/game/game_event.h"
+#include "server/game/gifts/gifts.h"
 #include "server/game/sessions.h"
 #include "server/game/storage/chest_access.h"
 #include "server/game/world/world.h"
@@ -44,6 +45,8 @@ public:
     PlayerDay& day() override;
     // Quién tiene abierto qué cofre; los cofres son de cada Location.
     PlayerStorage& storage() override;
+    // Los regalos ofrecidos que falta contestar.
+    PlayerGifts& gifts() override;
     void ready_for_next_day(uint32_t player_id) override;
     void end_day() override;
 
@@ -61,6 +64,7 @@ private:
     std::unique_ptr<World> world;
     Market market;       // después de world: usa su granja y su mercado
     ChestAccess chests;  // después de world: busca a sus jugadores
+    Gifts gift_offers;   // después de world: busca a sus jugadores
     Sessions player_sessions;
     uint32_t tick = 0;
     // Mientras se vota pasar de día: el mundo congelado

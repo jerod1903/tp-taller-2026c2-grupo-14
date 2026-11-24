@@ -40,6 +40,15 @@ public:
     static constexpr const char* NOT_CONNECTED = " no está conectado";
     // Chat: "/comando ..." es para el comerciante con el que habla el jugador.
     static constexpr char MERCHANT_COMMAND_PREFIX = '/';
+    // Regalos: el receptor contesta por el chat; los avisos van como mensajes de sistema.
+    static constexpr const char* ACCEPT_GIFT = "/aceptar";
+    static constexpr const char* REJECT_GIFT = "/rechazar";
+    static constexpr const char* GIFT_HOW_TO_ANSWER = "Escribí /aceptar o /rechazar";
+    static constexpr const char* GIFT_NOTHING_SELECTED = "Elegí en la barra lo que querés regalar";
+    static constexpr const char* GIFT_NOT_GIFTABLE = "Las herramientas no se regalan";
+    static constexpr const char* GIFT_NONE_PENDING = "No tenés ningún regalo para contestar";
+    static constexpr const char* GIFT_GONE = "El regalo ya no está";
+    static constexpr const char* GIFT_NO_ROOM = "No te entra en el inventario";
     // Respuestas a GameOp::Invite, por el chat como mensaje de sistema.
     static constexpr const char* INVITE_CODE = "Código para invitar: ";
     static constexpr const char* INVITE_NOT_OWNER = "Solo quien creó la partida puede invitar";

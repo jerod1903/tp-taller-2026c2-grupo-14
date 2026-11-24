@@ -27,6 +27,7 @@ Game::Game(std::string world_id, const stardew::maps::MapDefinition& map, uint32
         world(build_world(map)),
         market(build_market(map, *world)),
         chests(*world),
+        gift_offers(*world),
         player_sessions(std::move(world_id), *world) {
     if (saved) {
         world->restore(*saved);
@@ -108,6 +109,8 @@ PlayerCombat& Game::combat() { return *world; }
 PlayerDay& Game::day() { return *this; }
 
 PlayerStorage& Game::storage() { return chests; }
+
+PlayerGifts& Game::gifts() { return gift_offers; }
 
 void Game::ready_for_next_day(uint32_t player_id) {
     if (vote && vote->vote(player_id)) {

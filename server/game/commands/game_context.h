@@ -6,6 +6,7 @@
 #include "server/game/commands/player_commerce.h"
 #include "server/game/commands/player_day.h"
 #include "server/game/commands/player_farming.h"
+#include "server/game/commands/player_gifts.h"
 #include "server/game/commands/player_movement.h"
 #include "server/game/commands/player_sessions.h"
 #include "server/game/commands/player_storage.h"
@@ -23,6 +24,7 @@ public:
     virtual PlayerCombat& combat() = 0;
     virtual PlayerDay& day() = 0;
     virtual PlayerStorage& storage() = 0;
+    virtual PlayerGifts& gifts() = 0;
 
     virtual ~GameContext() = default;
 };

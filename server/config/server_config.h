@@ -26,6 +26,8 @@ struct ServerConfig {
         float attack_cooldown;     // segundos entre golpe y golpe
         float weak_health;         // fracción de la vida desde la que pega menos
         float weak_damage;         // fracción de su daño que pega cuando está así de débil
+        float gift_reach;  // hasta dónde llega para regalarle a otro: de centro a centro, en
+                           // casillas
     };
     // Vale para todos los inventarios: el del jugador y los cofres.
     struct Inventory {

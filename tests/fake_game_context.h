@@ -24,7 +24,8 @@ class FakeGameContext:
         public PlayerFarming,
         public PlayerCombat,
         public PlayerDay,
-        public PlayerStorage {
+        public PlayerStorage,
+        public PlayerGifts {
 public:
     static constexpr uint32_t PLAYER_ID = 7;
 
@@ -42,6 +43,7 @@ public:
     PlayerCombat& combat() override { return *this; }
     PlayerDay& day() override { return *this; }
     PlayerStorage& storage() override { return *this; }
+    PlayerGifts& gifts() override { return *this; }
     void ready_for_next_day(uint32_t player_id) override { ready.push_back(player_id); }
     void end_day() override { ++days_ended; }
 
@@ -118,6 +120,11 @@ public:
     std::optional<ChestUpdate> split(Player&, ChestSide, uint8_t) override { return std::nullopt; }
 
     void close(const Player&) override {}
+
+    // Sin otros jugadores: no hay a quién regalarle.
+    std::optional<GiftReply> offer(Player&, const Position&) override { return std::nullopt; }
+
+    GiftReply answer(Player&, bool) override { return GiftReply{}; }
 
     // Los animales que ve el comando: los tests los agregan en la misma Location que el jugador.
     std::vector<std::unique_ptr<Animal>> animals;
