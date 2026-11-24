@@ -43,6 +43,7 @@ Interfaz::Interfaz():
         barra(renderer),
         fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
         fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
+        fuente_nombres(RUTA_FUENTE, TAMANO_FUENTE_NOMBRE),
         panel_chat(fuente),
         menu_pausa(renderer, fuente, fuente_titulo),
         pantalla_fin_del_dia(renderer, fuente, fuente_titulo),
