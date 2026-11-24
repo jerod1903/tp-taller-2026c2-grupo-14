@@ -15,6 +15,7 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
+#include "client/gui/sprites/constantes_golpe_espada.h"
 #include "client/gui/sprites/golpe_espada.h"
 #include "client/mapa-general/grilla_mapa.h"
 #include "client/mapa-general/mundo.h"
@@ -456,9 +457,10 @@ std::optional<Sprite> Interfaz::sprite_golpe_espada(const EntidadGrafica& entida
     SDL2pp::Point tamano = icono_espada.GetSize();
     SDL2pp::Point mano(pies.x + golpe.dx, pies.y + golpe.dy);
     Sprite sprite{&icono_espada, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
-                  SDL2pp::Rect(mano.x, mano.y - tamano.y, tamano.x, tamano.y)};
+                  SDL2pp::Rect(mano.x - EMPUNADURA_ESPADA_X, mano.y - EMPUNADURA_ESPADA_Y,
+                               tamano.x, tamano.y)};
     sprite.angulo = golpe.angulo;
-    sprite.pivote = SDL2pp::Point(0, tamano.y);
+    sprite.pivote = SDL2pp::Point(EMPUNADURA_ESPADA_X, EMPUNADURA_ESPADA_Y);
     sprite.apoyo = golpe.detras ? pies.y - 1 : pies.y + 1;
     return sprite;
 }
