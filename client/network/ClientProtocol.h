@@ -40,6 +40,9 @@ public:
     void sendClick(uint16_t x, uint16_t y) override;
     void sendInvite() override;
     void sendDayReady() override;
+    void sendChestTransfer(ChestSide side, uint8_t slot) override;
+    void sendChestSplit(ChestSide side, uint8_t slot) override;
+    void sendCloseChest() override;
     ServerGameMessage recvGameMessage() override;
 
     void shutdown() override;
@@ -58,7 +61,10 @@ private:
     PlayerState recvPlayerState();
     EntityState recvEntityState();
     PlayerInfo recvPlayerInfo();
+    // count u16 y, por cada slot, item u8, quantity u8 y quality u8.
+    std::vector<InventorySlot> recvSlots();
     InventoryState recvInventoryState();
+    ChestState recvChestState();
     ChatMessage recvChatMessage();
     FarmState recvFarmState();
     DungeonState recvDungeonState();

@@ -1,20 +1,22 @@
-#include "server/game/characters/inventory.h"
+#include "server/game/storage/inventory.h"
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 #include "server/config/server_config.h"
 
-Inventory::Inventory() {
-    slots[0] = {ItemType::Pickaxe, 1};
-    slots[1] = {ItemType::WateringCan, 1};
-    slots[2] = {ItemType::Shovel, 1};
-    slots[3] = {ItemType::Sword, 1};
+Inventory::Inventory(uint8_t size, std::vector<InventorySlot> initial_items):
+        slots(std::move(initial_items)) {
+    if (slots.size() > size) {
+        throw std::invalid_argument("too many initial items for the inventory");
+    }
+    slots.resize(size);
 }
 
 void Inventory::select_slot(uint8_t slot) {
-    if (slot < INVENTORY_SIZE) {
+    if (slot < slots.size()) {
         selected_slot = slot;
     }
 }
@@ -23,9 +25,9 @@ uint8_t Inventory::add(ItemType item, uint8_t quantity, ItemQuality quality) {
     // Primero completa las pilas que ya hay de ese objeto con esa calidad
     for (InventorySlot& slot: slots) {
         if (quantity > 0 && slot.item == item && slot.quality == quality &&
-            slot.quantity < server_config().player.max_stack) {
-            uint8_t added =
-                    std::min<uint8_t>(quantity, server_config().player.max_stack - slot.quantity);
+            slot.quantity < server_config().inventory.max_stack) {
+            uint8_t added = std::min<uint8_t>(quantity,
+                                              server_config().inventory.max_stack - slot.quantity);
             slot.quantity += added;
             quantity -= added;
         }
@@ -33,7 +35,7 @@ uint8_t Inventory::add(ItemType item, uint8_t quantity, ItemQuality quality) {
     // Lo que sobra va a slots vacios, de a una pila por slot
     for (InventorySlot& slot: slots) {
         if (quantity > 0 && slot.item == ItemType::Empty) {
-            uint8_t added = std::min<uint8_t>(quantity, server_config().player.max_stack);
+            uint8_t added = std::min<uint8_t>(quantity, server_config().inventory.max_stack);
             slot = InventorySlot{item, added, quality};
             quantity -= added;
         }
@@ -51,6 +53,10 @@ void Inventory::remove_selected(uint8_t quantity) {
 
 ItemType Inventory::selected_item() const { return slots[selected_slot].item; }
 
+ItemType Inventory::item_at(uint8_t slot) const {
+    return slot < slots.size() ? slots[slot].item : ItemType::Empty;
+}
+
 int Inventory::count(ItemType item) const {
     int total = 0;
     for (const InventorySlot& slot: slots) {
@@ -62,7 +68,7 @@ int Inventory::count(ItemType item) const {
 }
 
 int Inventory::room_for(ItemType item) const {
-    int max_stack = server_config().player.max_stack;
+    int max_stack = server_config().inventory.max_stack;
     int room = 0;
     for (const InventorySlot& slot: slots) {
         if (slot.item == item && slot.quality == ItemQuality::Base) {
@@ -91,14 +97,44 @@ void Inventory::remove(ItemType item, int quantity) {
     }
 }
 
-InventoryState Inventory::get_state() const {
-    return InventoryState{selected_slot, std::vector<InventorySlot>(slots.begin(), slots.end())};
-}
+InventoryState Inventory::get_state() const { return InventoryState{selected_slot, slots}; }
 
 void Inventory::restore(const InventoryState& state) {
-    slots = {};
+    std::fill(slots.begin(), slots.end(), InventorySlot{ItemType::Empty, 0});
     for (std::size_t i = 0; i < state.slots.size() && i < slots.size(); ++i) {
         slots[i] = state.slots[i];
     }
     select_slot(state.selectedSlot);
+}
+
+uint8_t Inventory::move_slot(uint8_t slot, Inventory& target) {
+    if (slot >= slots.size() || slots[slot].item == ItemType::Empty) {
+        return 0;
+    }
+    InventorySlot& source = slots[slot];
+    uint8_t left = target.add(source.item, source.quantity, source.quality);
+    uint8_t moved = source.quantity - left;
+    source.quantity = left;
+    if (left == 0) {
+        source = InventorySlot{ItemType::Empty, 0};
+    }
+    return moved;
+}
+
+
+bool Inventory::split_slot(uint8_t slot) {
+    if (slot >= slots.size() || slots[slot].quantity < 2) {
+        return false;
+    }
+    auto empty = std::find_if(slots.begin(), slots.end(), [](const InventorySlot& candidate) {
+        return candidate.item == ItemType::Empty;
+    });
+    if (empty == slots.end()) {
+        return false;
+    }
+    InventorySlot& source = slots[slot];
+    uint8_t half = source.quantity / 2;
+    *empty = InventorySlot{source.item, half, source.quality};
+    source.quantity -= half;
+    return true;
 }

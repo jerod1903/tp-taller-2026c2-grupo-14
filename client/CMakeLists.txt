@@ -31,6 +31,7 @@ target_sources(taller_client
     gui/menu-pausa/menu_pausa.cpp
     gui/fin-del-dia/pantalla_fin_del_dia.cpp
     gui/inventario/barra_inventario.cpp
+    gui/inventario/panel_cofre.cpp
     gui/chat/fuente.cpp
     gui/chat/panel_chat.cpp
     gui/hud/hud.cpp
@@ -76,6 +77,7 @@ target_sources(taller_client
     gui/menu-pausa/menu_pausa.h
     gui/fin-del-dia/pantalla_fin_del_dia.h
     gui/inventario/barra_inventario.h
+    gui/inventario/panel_cofre.h
     gui/chat/fuente.h
     gui/chat/panel_chat.h
     gui/hud/hud.h

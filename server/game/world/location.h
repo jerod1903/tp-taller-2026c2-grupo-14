@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "common/farm_dto.h"
+#include "server/game/storage/chest.h"
 #include "server/game/world/grid.h"
 #include "server/game/world/portal.h"
 #include "server/game/world/position.h"
@@ -55,6 +56,11 @@ public:
     // Le da al jugador, que está en esta Location, lo que haya en el piso de su celda o de la de
     // adelante. Si no le entra en el inventario, queda en el piso.
     const Outcome& pick_up(Player& player);
+    // Pone un cofre vacío en la celda; si ya había uno, no hace nada.
+    void add_chest(const Position& cell);
+    // El cofre de esa celda, o nullptr si no hay.
+    Chest* chest_at(const Position& cell);
+    const std::map<Position, Chest>& get_chests() const;
     // true si algo de la Location cambió desde la última vez que se preguntó (el piso y lo que
     // marque cada subclase), para mandárselo a los jugadores.
     bool take_changes();
@@ -69,6 +75,7 @@ protected:
     std::vector<Portal> portals;
     std::vector<Entity*> entities;
     std::map<Position, ItemType> ground_items;
+    std::map<Position, Chest> chests;
     bool changed = false;
 
     // Llama al update() de cada entidad. Recorre una copia: una entidad puede darse de baja.

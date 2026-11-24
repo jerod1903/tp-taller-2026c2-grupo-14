@@ -58,12 +58,19 @@ bool Farm::add_animal(AnimalKind kind, const Position& pos) {
 const std::vector<std::unique_ptr<Animal>>& Farm::get_animals() const { return animals; }
 
 SavedFarm Farm::saved() const {
-    SavedFarm saved{{}, ground_items, {}};
+    SavedFarm saved{{}, ground_items, {}, {}};
     for (const auto& [pos, plot]: plots) {
         saved.plots.emplace(pos, SavedPlot{plot.soil, plot.crop.saved()});
     }
     for (const std::unique_ptr<Animal>& animal: animals) {
         saved.animals.push_back(animal->saved());
+    }
+    for (const Location* location:
+         {static_cast<const Location*>(this), static_cast<const Location*>(cabin.get())}) {
+        for (const auto& [cell, chest]: location->get_chests()) {
+            saved.chests.push_back(SavedChest{location->get_name(), cell,
+                                              chest.get_inventory().get_state().slots});
+        }
     }
     return saved;
 }
@@ -81,6 +88,19 @@ void Farm::restore(const SavedFarm& saved) {
     for (const SavedAnimal& animal: saved.animals) {
         if (add_animal(animal.kind, animal.cell)) {
             animals.back()->restore(animal);
+        }
+    }
+    for (const SavedChest& saved_chest: saved.chests) {
+        Location* location = nullptr;
+        if (saved_chest.area == name) {
+            location = this;
+        } else if (saved_chest.area == cabin->get_name()) {
+            location = cabin.get();
+        }
+        // Un cofre que ya no está en el mapa (o de un área desconocida) se ignora
+        Chest* chest = location ? location->chest_at(saved_chest.cell) : nullptr;
+        if (chest) {
+            chest->get_inventory().restore(InventoryState{0, saved_chest.slots});
         }
     }
     changed = true;

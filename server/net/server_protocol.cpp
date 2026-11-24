@@ -200,13 +200,21 @@ bool ServerProtocol::send_player_info(const PlayerInfo& info) {
 
 bool ServerProtocol::send_inventory_state(const InventoryState& inventory) {
     return send_game_msg(GameMsg::InventoryState) && baseProtocol.send_u8(inventory.selectedSlot) &&
-           send_count(inventory.slots.size()) &&
-           std::all_of(inventory.slots.begin(), inventory.slots.end(),
-                       [this](const InventorySlot& slot) {
-                           return baseProtocol.send_u8(static_cast<uint8_t>(slot.item)) &&
-                                  baseProtocol.send_u8(slot.quantity) &&
-                                  baseProtocol.send_u8(static_cast<uint8_t>(slot.quality));
-                       });
+           send_slots(inventory.slots);
+}
+
+bool ServerProtocol::send_chest_state(const ChestState& chest) {
+    return send_game_msg(GameMsg::ChestState) && baseProtocol.send_u8(chest.open ? 1 : 0) &&
+           send_slots(chest.slots);
+}
+
+bool ServerProtocol::send_slots(const std::vector<InventorySlot>& slots) {
+    return send_count(slots.size()) &&
+           std::all_of(slots.begin(), slots.end(), [this](const InventorySlot& slot) {
+               return baseProtocol.send_u8(static_cast<uint8_t>(slot.item)) &&
+                      baseProtocol.send_u8(slot.quantity) &&
+                      baseProtocol.send_u8(static_cast<uint8_t>(slot.quality));
+           });
 }
 
 
@@ -295,6 +303,16 @@ std::optional<ClickRequest> ServerProtocol::recv_click() {
     if (!y)
         return std::nullopt;
     return ClickRequest{*x, *y};
+}
+
+std::optional<ChestSlotRequest> ServerProtocol::recv_chest_slot() {
+    std::optional<uint8_t> side = baseProtocol.recv_u8();
+    if (!side)
+        return std::nullopt;
+    std::optional<uint8_t> slot = baseProtocol.recv_u8();
+    if (!slot)
+        return std::nullopt;
+    return ChestSlotRequest{static_cast<ChestSide>(*side), *slot};
 }
 
 void ServerProtocol::shutdown() { baseProtocol.shutdown(); }

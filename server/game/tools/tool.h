@@ -20,4 +20,7 @@ public:
 // La herramienta de ese ítem, o nullptr si no se usa.
 const Tool* tool_for(ItemType item);
 
+// Pico, regadera, pala y espada: el jugador las lleva siempre, no se guardan en cofres.
+bool is_work_tool(ItemType item);
+
 #endif  // TOOL_H

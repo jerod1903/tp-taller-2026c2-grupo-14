@@ -7,7 +7,7 @@
 
 #include "common/game_dto.h"
 #include "server/game/characters/creature.h"
-#include "server/game/characters/inventory.h"
+#include "server/game/storage/inventory.h"
 #include "server/game/world/spawn_point.h"
 #include "server/persistence/saved_game.h"
 
@@ -41,6 +41,8 @@ public:
     void remove_selected(uint8_t quantity);
     // Lo que tiene en el slot elegido del inventario.
     ItemType selected_item() const;
+    // Lo que tiene en ese slot (ItemType::Empty si está vacío o fuera de rango).
+    ItemType item_at(uint8_t slot) const;
 
     // Con weak_health de su vida o menos: pega menos y, cerca de un vampiro muerto, lo revive.
     bool is_badly_hurt() const override;
@@ -74,6 +76,14 @@ public:
     int room_for(ItemType item) const;
     // Saca esa cantidad, de cualquier calidad. Lanza std::invalid_argument si no tiene tantos.
     void take(ItemType item, int quantity);
+    // Pasa la pila de ese slot de su inventario a `target`. Devuelve cuántos pasaron.
+    uint8_t give_slot(uint8_t slot, Inventory& target);
+    // Pasa la pila de ese slot de `source` a su inventario. Devuelve cuántos pasaron.
+    uint8_t take_slot(Inventory& source, uint8_t slot);
+    // Pasa la pila de ese slot de su inventario al de `other`. Devuelve cuántos pasaron.
+    uint8_t give_slot_to(uint8_t slot, Player& other);
+    // Parte la pila de ese slot de su inventario: la mitad va al primer slot vacío.
+    bool split_slot(uint8_t slot);
 
 protected:
     // Gravemente herido pega menos (weak_damage de su daño).

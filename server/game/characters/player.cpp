@@ -3,10 +3,21 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "server/config/server_config.h"
+#include "server/consts.h"
 #include "server/game/characters/enemies/enemy.h"
 #include "server/game/world/location.h"
+
+namespace {
+
+const std::vector<InventorySlot> STARTING_ITEMS = {{ItemType::Pickaxe, 1},
+                                                   {ItemType::WateringCan, 1},
+                                                   {ItemType::Shovel, 1},
+                                                   {ItemType::Sword, 1}};
+
+}  // namespace
 
 Player::Player(uint32_t id, const Position& pos, Location& location, std::string name, int health,
                float base_speed, int gold, int energy):
@@ -15,7 +26,8 @@ Player::Player(uint32_t id, const Position& pos, Location& location, std::string
         gold(gold),
         energy(energy),
         max_health(health),
-        max_energy(energy) {}
+        max_energy(energy),
+        inventory(ServerConstants::PLAYER_INVENTORY_SIZE, STARTING_ITEMS) {}
 
 const std::string& Player::get_name() const { return name; }
 
@@ -54,6 +66,8 @@ float Player::speed() const {
 void Player::remove_selected(uint8_t quantity) { inventory.remove_selected(quantity); }
 
 ItemType Player::selected_item() const { return inventory.selected_item(); }
+
+ItemType Player::item_at(uint8_t slot) const { return inventory.item_at(slot); }
 
 std::optional<int> Player::strike(Enemy& target) {
     if (attack_cooldown_left > 0) {
@@ -130,3 +144,17 @@ int Player::count(ItemType item) const { return inventory.count(item); }
 int Player::room_for(ItemType item) const { return inventory.room_for(item); }
 
 void Player::take(ItemType item, int quantity) { inventory.remove(item, quantity); }
+
+uint8_t Player::give_slot(uint8_t slot, Inventory& target) {
+    return inventory.move_slot(slot, target);
+}
+
+uint8_t Player::take_slot(Inventory& source, uint8_t slot) {
+    return source.move_slot(slot, inventory);
+}
+
+uint8_t Player::give_slot_to(uint8_t slot, Player& other) {
+    return inventory.move_slot(slot, other.inventory);
+}
+
+bool Player::split_slot(uint8_t slot) { return inventory.split_slot(slot); }

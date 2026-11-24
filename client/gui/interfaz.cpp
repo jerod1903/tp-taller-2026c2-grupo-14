@@ -41,6 +41,7 @@ Interfaz::Interfaz():
                  {EntityType::Chicken,
                   {&FORMATO_GALLINA, {capa_animal(hoja_gallina, FORMATO_GALLINA)}}}},
         barra(renderer),
+        panel_cofre(renderer, barra),
         fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
         fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
         fuente_nombres(RUTA_FUENTE, TAMANO_FUENTE_NOMBRE),
@@ -122,6 +123,10 @@ Entrada Interfaz::leer_entrada() {
             leer_mapa_general(evento);
             continue;
         }
+        if (cofre_abierto) {
+            leer_cofre(evento, entrada);
+            continue;
+        }
         if (evento.type == SDL_MOUSEBUTTONDOWN && evento.button.button == SDL_BUTTON_LEFT &&
             camara) {
             entrada.click = casilla_clickeada(evento.button.x, evento.button.y);
@@ -148,8 +153,9 @@ Entrada Interfaz::leer_entrada() {
             entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
     }
-    // Escribiendo, en pausa, con el día terminado o mirando el mapa no camina
-    if (borrador || menu_pausa.abierto() || fin_del_dia_abierto || mapa_general_abierto()) {
+    // Escribiendo, en pausa, con el día terminado, mirando el mapa o con un cofre abierto no camina
+    if (borrador || menu_pausa.abierto() || fin_del_dia_abierto || mapa_general_abierto() ||
+        cofre_abierto) {
         return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
@@ -202,6 +208,29 @@ void Interfaz::leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada) {
 void Interfaz::leer_mapa_general(const SDL_Event& evento) {
     mapa_general->leer(evento);
     if (evento.type == SDL_KEYDOWN && !evento.key.repeat && evento.key.keysym.sym == SDLK_F11) {
+        alternar_pantalla_completa();
+    }
+}
+
+void Interfaz::leer_cofre(const SDL_Event& evento, Entrada& entrada) {
+    if (evento.type == SDL_MOUSEBUTTONDOWN) {
+        std::optional<ChestSlotRequest> casillero = panel_cofre.casillero_en(
+                SDL2pp::Point(evento.button.x / escala_interfaz, evento.button.y / escala_interfaz));
+        if (casillero && evento.button.button == SDL_BUTTON_LEFT) {
+            entrada.transferencia = casillero;
+        } else if (casillero && evento.button.button == SDL_BUTTON_RIGHT) {
+            entrada.particion = casillero;
+        }
+        return;
+    }
+    if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
+        return;
+    }
+    SDL_Keycode tecla = evento.key.keysym.sym;
+    if (tecla == SDLK_ESCAPE || tecla == SDLK_e) {
+        entrada.cerrar_cofre = true;
+        cofre_abierto = false;
+    } else if (tecla == SDLK_F11) {
         alternar_pantalla_completa();
     }
 }
@@ -408,10 +437,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     if (propio != entidades.end()) {
-        dibujar_inventario(estado.inventario);
+        dibujar_inventario(estado);
         dibujar_nombres(propio->second.area(), ahora);
     }
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
+    cofre_abierto = estado.cofre.has_value();
     // con el mapa general abierto el fin del día va encima del mapa
     if (estado.fin_del_dia && !mapa_general_abierto()) {
         pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
@@ -441,11 +471,15 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Present();
 }
 
-void Interfaz::dibujar_inventario(const InventoryState& inventario) {
+void Interfaz::dibujar_inventario(const EstadoJuego& estado) {
     SDL2pp::Point salida = renderer.GetOutputSize();
+    SDL2pp::Point lugar(salida.x / escala_interfaz, salida.y / escala_interfaz);
     renderer.SetScale(escala_interfaz, escala_interfaz);
-    barra.dibujar(renderer, inventario,
-                  SDL2pp::Point(salida.x / escala_interfaz, salida.y / escala_interfaz));
+    if (estado.cofre) {
+        panel_cofre.dibujar(renderer, *estado.cofre, estado.inventario, lugar);
+    } else {
+        barra.dibujar(renderer, estado.inventario, lugar);
+    }
     renderer.SetScale(1, 1);
 }
 

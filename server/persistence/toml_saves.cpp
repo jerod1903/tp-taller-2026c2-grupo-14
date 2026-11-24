@@ -95,31 +95,41 @@ GameRecord record_from(const TomlTableReader& table) {
 
 // --- Una partida ---
 
-toml::table player_to_toml(uint32_t player_id, const SavedPlayer& player) {
-    toml::array slots;
-    for (const InventorySlot& slot: player.inventory.slots) {
-        slots.push_back(toml::table{{"item", number(slot.item)},
+// Los slots de un inventario, como `[[slots]] item, quantity, quality`.
+toml::array slots_to_toml(const std::vector<InventorySlot>& slots) {
+    toml::array array;
+    for (const InventorySlot& slot: slots) {
+        array.push_back(toml::table{{"item", number(slot.item)},
                                     {"quantity", slot.quantity},
                                     {"quality", number(slot.quality)}});
     }
+    return array;
+}
+
+std::vector<InventorySlot> slots_from(const TomlTableReader& table) {
+    std::vector<InventorySlot> slots;
+    for_each_table(table, "slots", [&slots](const TomlTableReader& slot) {
+        slots.push_back(InventorySlot{enum_of<ItemType>(slot, "item"),
+                                      static_cast<uint8_t>(slot.requiredInt("quantity")),
+                                      enum_of<ItemQuality>(slot, "quality")});
+    });
+    return slots;
+}
+
+toml::table player_to_toml(uint32_t player_id, const SavedPlayer& player) {
     return toml::table{{"id", player_id},
                        {"gold", player.gold},
                        {"health", player.health},
                        {"energy", player.energy},
                        {"selected_slot", player.inventory.selectedSlot},
-                       {"slots", std::move(slots)}};
+                       {"slots", slots_to_toml(player.inventory.slots)}};
 }
 
 SavedPlayer player_from(const TomlTableReader& table) {
-    SavedPlayer player{
-            table.requiredInt("gold"), table.requiredInt("health"), table.requiredInt("energy"),
-            InventoryState{static_cast<uint8_t>(table.requiredInt("selected_slot")), {}}};
-    for_each_table(table, "slots", [&player](const TomlTableReader& slot) {
-        player.inventory.slots.push_back(InventorySlot{
-                enum_of<ItemType>(slot, "item"), static_cast<uint8_t>(slot.requiredInt("quantity")),
-                enum_of<ItemQuality>(slot, "quality")});
-    });
-    return player;
+    return SavedPlayer{table.requiredInt("gold"), table.requiredInt("health"),
+                       table.requiredInt("energy"),
+                       InventoryState{static_cast<uint8_t>(table.requiredInt("selected_slot")),
+                                      slots_from(table)}};
 }
 
 toml::table plot_to_toml(const Position& pos, const SavedPlot& plot) {
@@ -172,6 +182,18 @@ SavedAnimal animal_from(const TomlTableReader& table) {
                        bool_of(table, "laid")};
 }
 
+toml::table chest_to_toml(const SavedChest& chest) {
+    return toml::table{{"area", chest.area},
+                       {"x", chest.cell.x},
+                       {"y", chest.cell.y},
+                       {"slots", slots_to_toml(chest.slots)}};
+}
+
+SavedChest chest_from(const TomlTableReader& table) {
+    return SavedChest{table.requiredValue<std::string>("area"), position_from(table),
+                      slots_from(table)};
+}
+
 }  // namespace
 
 toml::table index_to_toml(const std::vector<GameRecord>& games) {
@@ -206,11 +228,16 @@ toml::table saved_game_to_toml(const SavedGame& game) {
     for (const SavedAnimal& animal: game.farm.animals) {
         animals.push_back(animal_to_toml(animal));
     }
+    toml::array chests;
+    for (const SavedChest& chest: game.farm.chests) {
+        chests.push_back(chest_to_toml(chest));
+    }
     return toml::table{{"day", game.day},
                        {"players", std::move(players)},
                        {"plots", std::move(plots)},
                        {"ground_items", std::move(items)},
-                       {"animals", std::move(animals)}};
+                       {"animals", std::move(animals)},
+                       {"chests", std::move(chests)}};
 }
 
 SavedGame saved_game_from_toml(const toml::table& table) {
@@ -227,6 +254,10 @@ SavedGame saved_game_from_toml(const toml::table& table) {
     });
     for_each_table(game, "animals", [&saved](const TomlTableReader& animal) {
         saved.farm.animals.push_back(animal_from(animal));
+    });
+    // Las partidas guardadas antes de los cofres no tienen "chests": el cofre arranca vacío
+    for_each_table(game, "chests", [&saved](const TomlTableReader& chest) {
+        saved.farm.chests.push_back(chest_from(chest));
     });
     return saved;
 }

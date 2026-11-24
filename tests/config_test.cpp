@@ -56,7 +56,6 @@ health = 100
 energy = 100
 gold = 500
 speed = 4.0
-max_stack = 50
 )");
     EXPECT_THROW(load_server_config(path), std::runtime_error);
 }

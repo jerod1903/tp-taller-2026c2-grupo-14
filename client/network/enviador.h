@@ -22,6 +22,11 @@ public:
     void clickear(const ClickRequest& click) { protocolo.sendClick(click.x, click.y); }
     void invitar() { protocolo.sendInvite(); }
     void listo_para_manana() { protocolo.sendDayReady(); }
+    void transferir(const ChestSlotRequest& slot) {
+        protocolo.sendChestTransfer(slot.side, slot.slot);
+    }
+    void partir(const ChestSlotRequest& slot) { protocolo.sendChestSplit(slot.side, slot.slot); }
+    void cerrar_cofre() { protocolo.sendCloseChest(); }
 
 private:
     IGameProtocol& protocolo;

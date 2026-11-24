@@ -30,3 +30,8 @@ const Tool* tool_for(ItemType item) {
     auto it = tools.find(item);
     return it != tools.end() ? it->second : nullptr;
 }
+
+bool is_work_tool(ItemType item) {
+    return item == ItemType::Pickaxe || item == ItemType::WateringCan || item == ItemType::Shovel ||
+           item == ItemType::Sword;
+}

@@ -7,11 +7,15 @@ target_sources(taller_server
     game/game.cpp
     game/commands/chat_command.cpp
     game/commands/day_ready_command.cpp
+    game/commands/chest_transfer_command.cpp
+    game/commands/close_chest_command.cpp
+    game/commands/chest_split_command.cpp
     game/day_vote.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
     game/commerce/merchant.cpp
     game/commerce/market.cpp
+    game/storage/chest_access.cpp
     game/commands/typing_command.cpp
     game/commands/click_command.cpp
     game/tools/tool.cpp
@@ -29,15 +33,19 @@ target_sources(taller_server
     game/interactions/milk.cpp
     game/interactions/harvest.cpp
     game/interactions/pick_up.cpp
+    game/interactions/open_nearby_chest.cpp
     game/clicks/click_action.cpp
     game/clicks/talk_to_merchant.cpp
+    game/clicks/give_gift.cpp
+    game/commands/gift_reply.cpp
+    game/gifts/gifts.cpp
+    game/storage/item_names.cpp
     game/clicks/use_tool.cpp
     game/commands/join_command.cpp
     game/commands/leave_command.cpp
     game/commands/enter_portal_command.cpp
     game/commands/move_command.cpp
     game/commands/select_slot_command.cpp
-    game/characters/inventory.cpp
     game/game_registry.cpp
     game/sessions.cpp
     game/snapshot_builder.cpp
@@ -63,7 +71,7 @@ target_sources(taller_server
     game/characters/entity.cpp
     game/characters/player.cpp
     game/characters/wanderer.cpp
-    game/characters/inventory.cpp
+    game/storage/inventory.cpp
     game/world/direction.cpp
     game/world/game_clock.cpp
     game/world/dungeon/dungeon.cpp
@@ -99,6 +107,9 @@ target_sources(taller_server
     game/outbox.h
     game/commands/chat_command.h
     game/commands/day_ready_command.h
+    game/commands/chest_transfer_command.h
+    game/commands/close_chest_command.h
+    game/commands/chest_split_command.h
     game/commands/player_day.h
     game/day_vote.h
     game/commands/command_factory.h
@@ -119,8 +130,14 @@ target_sources(taller_server
     game/interactions/milk.h
     game/interactions/harvest.h
     game/interactions/pick_up.h
+    game/interactions/open_nearby_chest.h
     game/clicks/click_action.h
     game/clicks/talk_to_merchant.h
+    game/clicks/give_gift.h
+    game/commands/gift_reply.h
+    game/commands/player_gifts.h
+    game/gifts/gifts.h
+    game/storage/item_names.h
     game/clicks/use_tool.h
     game/commands/game_command.h
     game/commands/game_context.h
@@ -132,6 +149,7 @@ target_sources(taller_server
     game/commands/player_characters.h
     game/commands/player_movement.h
     game/commands/player_sessions.h
+    game/commands/player_storage.h
     game/game_registry.h
     game/sessions.h
     game/snapshot_builder.h

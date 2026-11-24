@@ -101,11 +101,15 @@ target_sources(taller_tests
     ../server/game/snapshot_builder.cpp
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/day_ready_command.cpp
+    ../server/game/commands/chest_transfer_command.cpp
+    ../server/game/commands/close_chest_command.cpp
+    ../server/game/commands/chest_split_command.cpp
     ../server/game/day_vote.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp
     ../server/game/commerce/merchant.cpp
     ../server/game/commerce/market.cpp
+    ../server/game/storage/chest_access.cpp
     ../server/game/commands/typing_command.cpp
     ../server/game/commands/click_command.cpp
     ../server/game/tools/tool.cpp
@@ -123,8 +127,13 @@ target_sources(taller_tests
     ../server/game/interactions/milk.cpp
     ../server/game/interactions/harvest.cpp
     ../server/game/interactions/pick_up.cpp
+    ../server/game/interactions/open_nearby_chest.cpp
     ../server/game/clicks/click_action.cpp
     ../server/game/clicks/talk_to_merchant.cpp
+    ../server/game/clicks/give_gift.cpp
+    ../server/game/commands/gift_reply.cpp
+    ../server/game/gifts/gifts.cpp
+    ../server/game/storage/item_names.cpp
     ../server/game/clicks/use_tool.cpp
     ../server/game/commands/join_command.cpp
     ../server/game/commands/leave_command.cpp
@@ -162,7 +171,7 @@ target_sources(taller_tests
     ../client/mapa-general/grilla_mapa.cpp
     ../client/mapa-general/mundo.cpp
     # Inventario
-    ../server/game/characters/inventory.cpp
+    ../server/game/storage/inventory.cpp
     ../server/game/commands/select_slot_command.cpp
     PUBLIC
     # .h files
