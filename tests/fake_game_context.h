@@ -49,6 +49,8 @@ public:
         return player_id == PLAYER_ID ? &player : nullptr;
     }
 
+    Player* player_at(const Location&, const Position&) override { return nullptr; }
+
     void move_player(uint32_t player_id, Direction dir) override {
         if (player_id == PLAYER_ID) {
             player.set_direction(dir);

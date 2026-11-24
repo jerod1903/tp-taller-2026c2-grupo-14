@@ -130,4 +130,8 @@ uint8_t Player::take_slot(Inventory& source, uint8_t slot) {
     return source.move_slot(slot, inventory);
 }
 
+uint8_t Player::give_slot_to(uint8_t slot, Player& other) {
+    return inventory.move_slot(slot, other.inventory);
+}
+
 bool Player::split_slot(uint8_t slot) { return inventory.split_slot(slot); }

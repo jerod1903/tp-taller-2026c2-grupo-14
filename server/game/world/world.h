@@ -50,6 +50,7 @@ public:
     // está, no hace nada.
     void remove_player(uint32_t player_id);
     Player* find_player(uint32_t player_id) override;
+    Player* player_at(const Location& location, const Position& cell) override;
     bool dig(const Player& player, const Position& cell) override;
     bool plant(const Player& player, const Position& cell, CropType crop) override;
     bool water(const Player& player, const Position& cell) override;

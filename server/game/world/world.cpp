@@ -99,6 +99,17 @@ Player* World::find_player(uint32_t player_id) {
     return player == players.end() ? nullptr : player->second.get();
 }
 
+Player* World::player_at(const Location& location, const Position& cell) {
+    for (const auto& [player_id, player]: players) {
+        const Position& feet = player->get_position();
+        if (&player->get_location() == &location && feet.x == cell.x &&
+            (feet.y == cell.y || feet.y == cell.y + 1)) {
+            return player.get();
+        }
+    }
+    return nullptr;
+}
+
 bool World::reaches(const Player& player, const Position& cell) const {
     return &player.get_location() == farm.get() && next_to(player, cell);
 }

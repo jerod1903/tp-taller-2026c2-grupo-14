@@ -70,6 +70,8 @@ public:
     uint8_t give_slot(uint8_t slot, Inventory& target);
     // Pasa la pila de ese slot de `source` a su inventario. Devuelve cuántos pasaron.
     uint8_t take_slot(Inventory& source, uint8_t slot);
+    // Pasa la pila de ese slot de su inventario al de `other`. Devuelve cuántos pasaron.
+    uint8_t give_slot_to(uint8_t slot, Player& other);
     // Parte la pila de ese slot de su inventario: la mitad va al primer slot vacío.
     bool split_slot(uint8_t slot);
 
