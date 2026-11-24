@@ -19,6 +19,7 @@ inline const char* const RUTA_CARTELES_HUD =
         TALLER_ASSETS_DIR "/Menu/botones/botones_madera_enlazados.png";
 inline const char* const RUTA_MARCO_HUD = TALLER_ASSETS_DIR "/Menu/botones/input_madera_panel.png";
 inline const char* const RUTA_ICONO_RELOJ = TALLER_ASSETS_DIR "/Misc/stopwatch.png";
+inline const char* const RUTA_ICONO_ESPADA = TALLER_ASSETS_DIR "/Misc/sword.png";
 inline const char* const RUTA_ICONO_ORO =
         TALLER_ASSETS_DIR "/Caverns/items and trap_animation/coin/coin_1.png";
 
@@ -85,7 +86,7 @@ inline const std::map<ItemType, const char*> RUTAS_ICONOS = {
         {ItemType::Pickaxe, TALLER_ASSETS_DIR "/Misc/pickaxe.png"},
         {ItemType::WateringCan, TALLER_ASSETS_DIR "/Misc/watering_can.png"},
         {ItemType::Shovel, TALLER_ASSETS_DIR "/Misc/shovel.png"},
-        {ItemType::Sword, TALLER_ASSETS_DIR "/Misc/sword.png"},
+        {ItemType::Sword, RUTA_ICONO_ESPADA},
         {ItemType::Milk, TALLER_ASSETS_DIR "/Farm/Animals/milk.png"},
         {ItemType::Egg, TALLER_ASSETS_DIR "/Farm/Animals/egg.png"},
 };

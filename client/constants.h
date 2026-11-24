@@ -33,6 +33,7 @@ inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
 inline const char* const FUNCION_INICIO_AUDIO = "SDL_InitSubSystem";
 
 inline const std::chrono::duration<float> DURACION_TRANSICION(0.5f);
+inline const std::chrono::duration<float> DURACION_GOLPE_ESPADA(0.25f);
 inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x,
                                                 stardew::character::FRAME_SIZE.y,
                                                 {{Orientacion::Abajo, {0, false}},
