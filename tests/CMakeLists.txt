@@ -15,6 +15,7 @@ target_sources(taller_tests
     typing_command_test.cpp
     transicion_area_test.cpp
     golpe_espada_test.cpp
+    herramienta_en_mano_test.cpp
     sonidos_granja_test.cpp
     grilla_mapa_test.cpp
     command_factory_test.cpp
@@ -155,6 +156,7 @@ target_sources(taller_tests
     ../client/gui/sprites/animador_sprites.cpp
     ../client/gui/sprites/pose.cpp
     ../client/gui/sprites/golpe_espada.cpp
+    ../client/gui/sprites/herramienta_en_mano.cpp
     ../client/gui/mapa/transicion_area.cpp
     ../client/audio/sonidos_granja.cpp
     ../client/mapa-general/grilla_mapa.cpp
