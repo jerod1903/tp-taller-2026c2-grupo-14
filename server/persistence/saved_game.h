@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "common/farm_dto.h"
@@ -14,8 +15,9 @@
 // Lo que se guarda de una partida al pasar de día: el estado del día nuevo, recién despiertos.
 // Es del servidor (no viaja al cliente) y no sabe en qué formato se escribe: cada clase del modelo
 // arma y restaura su parte, y server/persistence lo escribe y lo lee del archivo.
-// No se guardan las posiciones de los jugadores (al cargar despiertan en su cama), las camas, la
-// mazmorra ni el chat. La apariencia y el nombre de cada jugador están en el índice (GameRecord).
+// Los cofres se guardan con su contenido. No se guardan las posiciones de los jugadores (al cargar
+// despiertan en su cama), las camas, la mazmorra ni el chat. La apariencia y el nombre de cada
+// jugador están en el índice (GameRecord).
 
 // Un cultivo con todo lo que hace falta para seguir creciendo y para la calidad al cosecharlo.
 struct SavedCrop {
@@ -54,10 +56,20 @@ struct SavedAnimal {
     bool operator==(const SavedAnimal&) const = default;
 };
 
+// Un cofre: en qué área (la granja o la cabaña) y celda está, y lo que tiene.
+struct SavedChest {
+    std::string area;
+    Position cell{0, 0};
+    std::vector<InventorySlot> slots;
+
+    bool operator==(const SavedChest&) const = default;
+};
+
 struct SavedFarm {
     std::map<Position, SavedPlot> plots;
     std::map<Position, ItemType> ground_items;
     std::vector<SavedAnimal> animals;
+    std::vector<SavedChest> chests;
 
     bool operator==(const SavedFarm&) const = default;
 };
