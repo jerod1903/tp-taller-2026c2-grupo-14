@@ -82,7 +82,6 @@ private:
     SDL2pp::Texture hoja_cultivos;
     SDL2pp::Texture hoja_minerales;
     SDL2pp::Texture icono_regadera;
-    SDL2pp::Texture icono_espada;
     std::map<EntityType, Aspecto> aspectos;
     // Las que tienen una hoja por pose (HOJAS_POR_POSE): se dibujan con la de lo que estén
     // haciendo. Las texturas van por ruta.

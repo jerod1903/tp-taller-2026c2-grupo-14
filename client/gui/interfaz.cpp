@@ -15,7 +15,7 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
-#include "client/gui/sprites/constantes_golpe_espada.h"
+#include "client/gui/sprites/constantes_herramienta_en_mano.h"
 #include "client/gui/sprites/golpe_espada.h"
 #include "client/mapa-general/grilla_mapa.h"
 #include "client/mapa-general/mundo.h"
@@ -35,7 +35,6 @@ Interfaz::Interfaz():
         hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS),
         hoja_minerales(renderer, RUTA_HOJA_MINERALES),
         icono_regadera(renderer, RUTA_ICONO_REGADERA),
-        icono_espada(renderer, RUTA_ICONO_ESPADA),
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
@@ -453,14 +452,15 @@ std::optional<Sprite> Interfaz::sprite_golpe_espada(const EntidadGrafica& entida
         return std::nullopt;
     }
     GolpeEspada golpe = golpe_espada_de(entidad.mirando(), *avance);
+    SDL2pp::Texture& espada = objetos_piso.at(ItemType::Sword);
+    const auto& [agarre_x, agarre_y] = EMPUNADURAS.at(ItemType::Sword);
     SDL2pp::Point pies = entidad.pies();
-    SDL2pp::Point tamano = icono_espada.GetSize();
+    SDL2pp::Point tamano = espada.GetSize();
     SDL2pp::Point mano(pies.x + golpe.dx, pies.y + golpe.dy);
-    Sprite sprite{&icono_espada, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
-                  SDL2pp::Rect(mano.x - EMPUNADURA_ESPADA_X, mano.y - EMPUNADURA_ESPADA_Y,
-                               tamano.x, tamano.y)};
+    Sprite sprite{&espada, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(mano.x - agarre_x, mano.y - agarre_y, tamano.x, tamano.y)};
     sprite.angulo = golpe.angulo;
-    sprite.pivote = SDL2pp::Point(EMPUNADURA_ESPADA_X, EMPUNADURA_ESPADA_Y);
+    sprite.pivote = SDL2pp::Point(agarre_x, agarre_y);
     sprite.apoyo = golpe.detras ? pies.y - 1 : pies.y + 1;
     return sprite;
 }
