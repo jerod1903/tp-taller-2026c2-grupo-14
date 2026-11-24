@@ -8,9 +8,13 @@
 #include "client/constants.h"
 
 namespace {
-std::string texto_de(const ChatMessage& mensaje) {
+std::string texto_de(const ChatMessage& mensaje, const std::string& nombre_propio) {
     if (mensaje.kind == ChatKind::System) {
         return mensaje.text;
+    }
+    if (mensaje.kind == ChatKind::Private && mensaje.from == nombre_propio &&
+        mensaje.to != nombre_propio) {
+        return PREFIJO_PRIVADO_ENVIADO + mensaje.to + ": " + mensaje.text;
     }
     std::string privado = mensaje.kind == ChatKind::Private ? MARCA_PRIVADO : "";
     return mensaje.from + privado + ": " + mensaje.text;
@@ -21,11 +25,11 @@ PanelChat::PanelChat(Fuente& fuente): fuente(fuente) {}
 
 void PanelChat::dibujar(SDL2pp::Renderer& renderer, const std::vector<MensajeChat>& mensajes,
                         const std::optional<std::string>& borrador,
-                        const SDL2pp::Point& tamano_ventana,
+                        const SDL2pp::Point& tamano_ventana, const std::string& nombre_propio,
                         std::chrono::steady_clock::time_point ahora) {
     int ancho_maximo = tamano_ventana.x * PORCENTAJE_ANCHO_CHAT / 100;
     std::vector<Linea> lineas =
-            lineas_visibles(mensajes, borrador.has_value(), ancho_maximo, ahora);
+            lineas_visibles(mensajes, borrador.has_value(), ancho_maximo, nombre_propio, ahora);
     if (borrador) {
         lineas.emplace_back(PROMPT_CHAT + *borrador + CURSOR_CHAT, COLOR_BORRADOR_CHAT);
     }
@@ -51,13 +55,14 @@ void PanelChat::dibujar(SDL2pp::Renderer& renderer, const std::vector<MensajeCha
 
 std::vector<PanelChat::Linea> PanelChat::lineas_visibles(
         const std::vector<MensajeChat>& mensajes, bool abierto, int ancho_maximo,
-        std::chrono::steady_clock::time_point ahora) const {
+        const std::string& nombre_propio, std::chrono::steady_clock::time_point ahora) const {
     std::vector<Linea> lineas;
     for (const MensajeChat& recibido: mensajes) {
         if (!abierto && ahora - recibido.llegada > DURACION_MENSAJE_CHAT) {
             continue;
         }
-        for (const std::string& texto: partir(texto_de(recibido.mensaje), ancho_maximo)) {
+        std::string texto_completo = texto_de(recibido.mensaje, nombre_propio);
+        for (const std::string& texto: partir(texto_completo, ancho_maximo)) {
             lineas.emplace_back(texto, COLORES_CHAT.at(recibido.mensaje.kind));
         }
     }

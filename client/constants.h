@@ -202,6 +202,7 @@ inline constexpr int RELLENO_CHAT = 4;
 inline const char* const PROMPT_CHAT = "> ";
 inline const char* const CURSOR_CHAT = "_";
 inline const char* const MARCA_PRIVADO = " (privado)";
+inline const char* const PREFIJO_PRIVADO_ENVIADO = "Para ";
 inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
 inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
 inline const std::map<SoilType, stardew::maps::TileType> TILES_SUELO = {

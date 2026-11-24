@@ -369,6 +369,7 @@ protected:
                 chat.kind = static_cast<ChatKind>(client->recv_u8().value_or(0));
                 chat.from = client->recv_string().value_or("");
                 chat.text = client->recv_string().value_or("");
+                chat.to = client->recv_string().value_or("");
                 return chat;
             }
             if (*tag == static_cast<uint8_t>(GameMsg::Snapshot)) {
