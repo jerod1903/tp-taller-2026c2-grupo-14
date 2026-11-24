@@ -4,7 +4,9 @@
 #include <optional>
 
 #include "server/game/commands/chat_command.h"
+#include "server/game/commands/chest_transfer_command.h"
 #include "server/game/commands/click_command.h"
+#include "server/game/commands/close_chest_command.h"
 #include "server/game/commands/day_ready_command.h"
 #include "server/game/commands/enter_portal_command.h"
 #include "server/game/commands/interact_command.h"
@@ -48,6 +50,9 @@ CommandFactory::CommandFactory(ServerProtocol& protocol):
                 {GameOp::Typing, with_payload<TypingCommand>(&ServerProtocol::recv_typing)},
                 {GameOp::Click, with_payload<ClickCommand>(&ServerProtocol::recv_click)},
                 {GameOp::DayReady, without_payload<DayReadyCommand>()},
+                {GameOp::ChestTransfer,
+                 with_payload<ChestTransferCommand>(&ServerProtocol::recv_chest_slot)},
+                {GameOp::CloseChest, without_payload<CloseChestCommand>()},
         } {}
 
 std::shared_ptr<GameCommand> CommandFactory::create(GameOp op, uint32_t player_id) {

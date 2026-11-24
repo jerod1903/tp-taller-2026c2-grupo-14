@@ -99,6 +99,8 @@ target_sources(taller_tests
     ../server/game/snapshot_builder.cpp
     ../server/game/commands/chat_command.cpp
     ../server/game/commands/day_ready_command.cpp
+    ../server/game/commands/chest_transfer_command.cpp
+    ../server/game/commands/close_chest_command.cpp
     ../server/game/day_vote.cpp
     ../server/game/commands/command_factory.cpp
     ../server/game/commands/interact_command.cpp

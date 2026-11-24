@@ -304,4 +304,14 @@ std::optional<ClickRequest> ServerProtocol::recv_click() {
     return ClickRequest{*x, *y};
 }
 
+std::optional<ChestSlotRequest> ServerProtocol::recv_chest_slot() {
+    std::optional<uint8_t> side = baseProtocol.recv_u8();
+    if (!side)
+        return std::nullopt;
+    std::optional<uint8_t> slot = baseProtocol.recv_u8();
+    if (!slot)
+        return std::nullopt;
+    return ChestSlotRequest{static_cast<ChestSide>(*side), *slot};
+}
+
 void ServerProtocol::shutdown() { baseProtocol.shutdown(); }

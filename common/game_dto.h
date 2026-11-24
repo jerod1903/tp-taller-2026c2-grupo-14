@@ -21,7 +21,7 @@ enum class GameOp : uint8_t {
     Click = 0x08,          // payload: u16 x, u16 y, la celda clickeada; ahí usa el ítem elegido
     Invite = 0x09,         // sin payload: pide el código de invitación; llega por el chat
     DayReady = 0x0A,       // sin payload: dio el Ok para pasar al día siguiente
-    ChestTransfer = 0x0B,  // payload: u8 from (ChestSide), u8 slot: pasa esa pila entera al otro
+    ChestTransfer = 0x0B,  // payload: u8 side (ChestSide), u8 slot: pasa esa pila entera al otro
     CloseChest = 0x0C,     // sin payload: cerró el panel del cofre
 };
 
@@ -259,12 +259,12 @@ enum class ChestSide : uint8_t {
     Chest = 1,
 };
 
-// Pasa la pila entera de ese slot de `from` al otro inventario.
-struct ChestTransferRequest {
-    ChestSide from;
+// Un slot del panel del cofre: de qué inventario y cuál. Lo usan ChestTransfer y ChestSplit.
+struct ChestSlotRequest {
+    ChestSide side;
     uint8_t slot;
 
-    bool operator==(const ChestTransferRequest&) const = default;
+    bool operator==(const ChestSlotRequest&) const = default;
 };
 
 // El cofre que el jugador tiene abierto. Llega al abrirlo, cada vez que alguien lo cambia, y con

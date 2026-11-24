@@ -7,6 +7,8 @@ target_sources(taller_server
     game/game.cpp
     game/commands/chat_command.cpp
     game/commands/day_ready_command.cpp
+    game/commands/chest_transfer_command.cpp
+    game/commands/close_chest_command.cpp
     game/day_vote.cpp
     game/commands/command_factory.cpp
     game/commands/interact_command.cpp
@@ -100,6 +102,8 @@ target_sources(taller_server
     game/outbox.h
     game/commands/chat_command.h
     game/commands/day_ready_command.h
+    game/commands/chest_transfer_command.h
+    game/commands/close_chest_command.h
     game/commands/player_day.h
     game/day_vote.h
     game/commands/command_factory.h

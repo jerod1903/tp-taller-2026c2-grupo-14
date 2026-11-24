@@ -39,6 +39,7 @@ public:
     std::optional<ChatRequest> recv_chat();
     std::optional<TypingRequest> recv_typing();
     std::optional<ClickRequest> recv_click();
+    std::optional<ChestSlotRequest> recv_chest_slot();
 
     bool send_location_data(const LocationData& location);
     bool send_snapshot(const Snapshot& snapshot);
