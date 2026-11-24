@@ -209,6 +209,7 @@ gold = 100                # cuánto oro da "$gold" sin cantidad
 reach = 2.5              # hasta donde se le habla a un comerciante, de centro a centro, en casillas
 cow_buyback = 40         # lo que paga Marnie por una vaca (no puede superar su price)
 chicken_buyback = 10
+chest_price = 100        # lo que cobra Robin por un cofre (el enunciado no lo fija)
 
 
 # Minería. Los golpes de pico salen de "tiempo hasta conseguir el material" del enunciado (poco,

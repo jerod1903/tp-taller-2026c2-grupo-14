@@ -265,12 +265,13 @@ const std::map<maps::ElementType, std::string> MERCHANT_NAMES = {
         {maps::ElementType::MerchantPierre, "Pierre"},
         {maps::ElementType::MerchantRobin, "Robin"}};
 
-// Lo que vende y compra cada uno. Clint y Robin todavía no tienen nada: faltan los minerales y
-// los muebles. Pierre todavía no vende semillas ni compra cosechas.
+// Lo que vende y compra cada uno. Robin solo vende cofres hasta que estén los muebles (su
+// catálogo rotativo de 7 productos por día va con ellos).
 Merchant build_merchant(maps::ElementType type, const Position& pos) {
     const ServerConfig::Species& cow = server_config().animals.cow;
     const ServerConfig::Species& chicken = server_config().animals.chicken;
     const ServerConfig::Market& market = server_config().market;
+    const ServerConfig::Crops& crops = server_config().crops;
     const std::string& name = MERCHANT_NAMES.at(type);
     if (type == maps::ElementType::MerchantMarnie) {
         return Merchant(name, pos,
@@ -280,9 +281,18 @@ Merchant build_merchant(maps::ElementType type, const Position& pos) {
                          {"gallina", AnimalKind::Chicken, market.chicken_buyback}});
     }
     if (type == maps::ElementType::MerchantPierre) {
-        return Merchant(name, pos, {},
-                        {{"leche", ItemType::Milk, cow.product_price},
-                         {"huevo", ItemType::Egg, chicken.product_price}});
+        return Merchant(
+                name, pos,
+                {{"semilla_frutilla", ItemType::StrawberrySeeds, crops.strawberry.seed_price},
+                 {"semilla_cebolla", ItemType::ScallionSeeds, crops.scallion.seed_price},
+                 {"semilla_papa", ItemType::PotatoSeeds, crops.potato.seed_price},
+                 {"semilla_calabaza", ItemType::PumpkinSeeds, crops.pumpkin.seed_price}},
+                {{"frutilla", ItemType::Strawberry, crops.strawberry.base_price},
+                 {"cebolla", ItemType::Scallion, crops.scallion.base_price},
+                 {"papa", ItemType::Potato, crops.potato.base_price},
+                 {"calabaza", ItemType::Pumpkin, crops.pumpkin.base_price},
+                 {"leche", ItemType::Milk, cow.product_price},
+                 {"huevo", ItemType::Egg, chicken.product_price}});
     }
     if (type == maps::ElementType::MerchantClint) {
         const ServerConfig::Mining& mining = server_config().mining;
@@ -292,8 +302,9 @@ Merchant build_merchant(maps::ElementType type, const Position& pos) {
                          {"plata", ItemType::Silver, mining.silver.price},
                          {"oro", ItemType::GoldOre, mining.gold.price}});
     }
-
-
+    if (type == maps::ElementType::MerchantRobin) {
+        return Merchant(name, pos, {{"cofre", ItemType::Chest, market.chest_price}}, {});
+    }
     return Merchant(name, pos, {}, {});
 }
 

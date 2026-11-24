@@ -165,6 +165,7 @@ struct ServerConfig {
         // Lo que paga Marnie por un animal que le vendés; no puede superar su price.
         int cow_buyback;
         int chicken_buyback;
+        int chest_price;  // lo que cobra Robin por un cofre
     };
 
     struct CropSpec {
