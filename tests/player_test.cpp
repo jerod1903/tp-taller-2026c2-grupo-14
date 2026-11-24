@@ -1,9 +1,12 @@
 #include "server/game/characters/player.h"
 
 #include <stdexcept>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include "server/config/server_config.h"
+#include "server/game/characters/enemies/skeleton.h"
 #include "tests/world_helpers.h"
 
 namespace {
@@ -39,4 +42,28 @@ TEST_F(PlayerTest, TakingMoreThanItHasThrows) {
 TEST_F(PlayerTest, RoomForComesFromItsInventory) {
     Inventory empty;
     EXPECT_EQ(player.room_for(ItemType::Milk), empty.room_for(ItemType::Milk));
+}
+
+TEST_F(PlayerTest, ReceivingAHitLeavesItHurtForAWhile) {
+    player.take_damage(1);
+    EXPECT_EQ(player.action(), EntityAction::Hurt);
+    player.update(server_config().player.hurt_time);
+    EXPECT_EQ(player.action(), EntityAction::None);
+}
+
+TEST_F(PlayerTest, StrikingLeavesItAttackingForAWhile) {
+    std::vector<Creature*> nobody;
+    Skeleton skeleton(1, Position{1, 0}, location, nobody, 1);
+    ASSERT_TRUE(player.strike(skeleton).has_value());
+    EXPECT_EQ(player.action(), EntityAction::Attacking);
+    player.update(server_config().player.attack_time);
+    EXPECT_EQ(player.action(), EntityAction::None);
+}
+
+TEST_F(PlayerTest, BeingHurtShowsOverAttacking) {
+    std::vector<Creature*> nobody;
+    Skeleton skeleton(1, Position{1, 0}, location, nobody, 1);
+    player.strike(skeleton);
+    player.take_damage(1);
+    EXPECT_EQ(player.action(), EntityAction::Hurt);
 }

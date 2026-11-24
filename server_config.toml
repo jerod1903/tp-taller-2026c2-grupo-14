@@ -18,6 +18,8 @@ tired_energy = 0.1       # con esta fracción de su energía o menos camina a mi
 bad_night_recovery = 0.5 # fracción de vida y energía con la que despierta si no durmió en su cama
 sword_damage = 10        # vida que le saca a un enemigo cada golpe de espada
 attack_cooldown = 0.5    # segundos entre golpe y golpe de espada
+attack_time = 0.25       # segundos que se lo ve atacando después de cada golpe de espada
+hurt_time = 0.4          # segundos que se lo ve herido después de recibir un golpe
 weak_health = 0.2        # con esta fracción de su vida o menos pega menos
 weak_damage = 0.5        # fracción de su daño que pega cuando está así de débil
 

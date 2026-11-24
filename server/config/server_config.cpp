@@ -92,6 +92,8 @@ ServerConfig::Player read_player(const toml::table& root) {
             positive(required_float(player, "bad_night_recovery"), "bad_night_recovery"),
             positive(player.requiredInt("sword_damage"), "sword_damage"),
             positive(required_float(player, "attack_cooldown"), "attack_cooldown"),
+            positive(required_float(player, "attack_time"), "attack_time"),
+            positive(required_float(player, "hurt_time"), "hurt_time"),
             positive(required_float(player, "weak_health"), "weak_health"),
             positive(required_float(player, "weak_damage"), "weak_damage")};
     if (read.tired_energy >= 1.0f || read.bad_night_recovery > 1.0f) {
