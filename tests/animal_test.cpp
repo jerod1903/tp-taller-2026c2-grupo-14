@@ -1,13 +1,12 @@
 #include "server/game/characters/animals/animal.h"
 
-#include "server/game/characters/animals/chicken/chicken.h"
-#include "server/game/characters/animals/cow/cow.h"
-
 #include <set>
 
 #include <gtest/gtest.h>
 
 #include "server/config/server_config.h"
+#include "server/game/characters/animals/chicken/chicken.h"
+#include "server/game/characters/animals/cow/cow.h"
 #include "tests/world_helpers.h"
 
 namespace {

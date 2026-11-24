@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "server/config/server_config.h"
+#include "server/game/characters/enemies/enemy.h"
 #include "server/game/world/location.h"
 
 Player::Player(uint32_t id, const Position& pos, Location& location, std::string name, int health,
@@ -54,13 +55,12 @@ void Player::remove_selected(uint8_t quantity) { inventory.remove_selected(quant
 
 ItemType Player::selected_item() const { return inventory.selected_item(); }
 
-bool Player::strike(Creature& target) {
+std::optional<int> Player::strike(Enemy& target) {
     if (attack_cooldown_left > 0) {
-        return false;
+        return std::nullopt;
     }
-    attack(target);
     attack_cooldown_left = server_config().player.attack_cooldown;
-    return true;
+    return target.take_hit(attack_damage());
 }
 
 void Player::update(float dt) {
@@ -98,7 +98,9 @@ void Player::set_typing(bool typing) { this->typing = typing; }
 
 bool Player::is_typing() const { return typing; }
 
-uint8_t Player::receive(ItemType item, uint8_t quantity, ItemQuality quality) { return inventory.add(item, quantity, quality); }
+uint8_t Player::receive(ItemType item, uint8_t quantity, ItemQuality quality) {
+    return inventory.add(item, quantity, quality);
+}
 
 int Player::count(ItemType item) const { return inventory.count(item); }
 

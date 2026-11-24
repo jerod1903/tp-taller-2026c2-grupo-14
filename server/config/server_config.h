@@ -21,8 +21,9 @@ struct ServerConfig {
         float speed;  // celdas por segundo
         // Los objetos iguales se apilan en un slot del inventario hasta esta cantidad.
         uint8_t max_stack;
-        float tired_energy;        // fracción de la energía desde la que camina a mitad de velocidad
-        float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su cama
+        float tired_energy;  // fracción de la energía desde la que camina a mitad de velocidad
+        float bad_night_recovery;  // fracción de vida y energía al despertar si no durmió en su
+                                   // cama
         int sword_damage;          // vida que le saca a un enemigo cada golpe de espada
         float attack_cooldown;     // segundos entre golpe y golpe
         float weak_health;         // fracción de la vida desde la que pega menos
@@ -41,8 +42,8 @@ struct ServerConfig {
         int talk;
     };
     struct Species {
-        int price;            // lo que cuesta el animal
-        int product_price;    // lo que se paga por la leche o el huevo
+        int price;          // lo que cuesta el animal
+        int product_price;  // lo que se paga por la leche o el huevo
         int max_per_farm;
         int production_days;  // cada cuántos días da su producto
     };
@@ -71,11 +72,19 @@ struct ServerConfig {
         float reach;     // hasta donde llega su golpe: de su centro al del jugador, en celdas
         float cooldown;  // segundos entre golpe y golpe
     };
+    // Las monedas que suelta un enemigo la primera vez que muere: con gold_chance, entre gold_min
+    // y gold_max. Se las lleva quien le dio el último golpe.
+    struct Loot {
+        float gold_chance;
+        int gold_min;
+        int gold_max;
+    };
     // Tiene que estar antes de Enemies, que la usa
     struct Skeleton {
         int count;  // cuantos aparecen en cada nivel
         Fighter fighter;
         float revive_seconds;  // cuanto tarda en revivir despues de morir
+        Loot loot;
     };
     // Una pareja: la vampira, más rápida (fast_speed), y el vampiro, que pega más fuerte
     // (strong_damage). Los demás valores, en `fighter`, son de los dos.
@@ -86,12 +95,16 @@ struct ServerConfig {
         int strong_damage;
         float revive_seconds;  // muerto, cuanto tarda en revivir despues de que cae sangre cerca
         float blood_reach;     // hasta donde (en celdas) le llega la sangre de un jugador
+        Loot loot;
     };
-    // Un grupo de entre min_group y max_group; `fighter` vale para cada uno.
+    // Un grupo de entre min_group y max_group; `fighter` vale para cada uno. Al morir, además de
+    // las monedas, deja plata (el mineral) en el piso con silver_chance.
     struct Orc {
         int min_group;
         int max_group;
         Fighter fighter;
+        Loot loot;
+        float silver_chance;
     };
     // No se la puede matar: tira llamas de un color, sorteado al aparecer (verde con green_chance).
     struct Skull {
@@ -147,8 +160,8 @@ struct ServerConfig {
     };
 
     struct CropSpec {
-        int seed_price;           // lo que cuesta la semilla
-        int base_price;           // lo que se paga por la cosecha de calidad base
+        int seed_price;  // lo que cuesta la semilla
+        int base_price;  // lo que se paga por la cosecha de calidad base
         int waterings_per_day;
         int days_to_grow;         // desde que se planta hasta que se puede cosechar
         int regrow_days;          // después de cosechar vuelve a dar en estos días; 0 si no
@@ -178,6 +191,25 @@ struct ServerConfig {
         const CropSpec& of(CropType type) const;
     };
 
+    struct OreSpec {
+        int hits;   // golpes de pico para sacarlo
+        int price;  // lo que paga Clint
+    };
+
+    struct Mining {
+        int ores_per_level;
+        float lapis_break_chance;
+        float silver_orc_chance;
+        int gold_min_depth;  // profundidad mínima del oro; el nivel de entrada es la 0
+        OreSpec coal;
+        OreSpec lapis;
+        OreSpec silver;
+        OreSpec gold;
+
+        const OreSpec& of(ItemType ore) const;
+    };
+
+
     Game game;
     Player player;
     Energy energy;
@@ -190,6 +222,7 @@ struct ServerConfig {
         int gold;   // cuánto da "$gold" sin cantidad
     } cheats;
     Market market;
+    Mining mining;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "common/game_dto.h"
@@ -9,6 +10,8 @@
 #include "server/game/characters/inventory.h"
 #include "server/game/world/spawn_point.h"
 #include "server/persistence/saved_game.h"
+
+class Enemy;
 
 class Player: public Creature {
 public:
@@ -42,8 +45,9 @@ public:
     // Con weak_health de su vida o menos: pega menos y, cerca de un vampiro muerto, lo revive.
     bool is_badly_hurt() const override;
 
-    // Le pega con la espada si ya pasó el tiempo desde el último golpe. true si le pegó.
-    bool strike(Creature& target);
+    // Le pega con la espada si ya pasó el tiempo desde el último golpe. Si le pegó, las monedas que
+    // soltó el enemigo con ese golpe (0 si no lo mató); vacío si todavía no podía pegar.
+    std::optional<int> strike(Enemy& target);
 
     // Cuenta el tiempo entre golpes y camina.
     void update(float dt) override;

@@ -6,9 +6,8 @@
 
 namespace {
 
-constexpr const char* COMMANDS =
-        "Comandos: /consultar_catalogo, /comprar <producto> <cantidad>, "
-        "/vender <producto> <cantidad>";
+constexpr const char* COMMANDS = "Comandos: /consultar_catalogo, /comprar <producto> <cantidad>, "
+                                 "/vender <producto> <cantidad>";
 constexpr const char* NOTHING = "nada por ahora";
 constexpr char PLURAL = 's';
 

@@ -56,6 +56,13 @@ void Game::run() {
             if (world->get_farm().take_changes()) {
                 player_sessions.broadcast(SnapshotBuilder::farm_state(world->get_farm()));
             }
+            Dungeon& dungeon = world->get_dungeon();
+            for (int depth = 0; depth < Dungeon::LEVEL_COUNT; ++depth) {
+                DungeonLevel& level = dungeon.level(depth);
+                if (level.take_changes()) {
+                    player_sessions.broadcast(SnapshotBuilder::dungeon_state(level));
+                }
+            }
             next += period;
             std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
             if (next < now) {

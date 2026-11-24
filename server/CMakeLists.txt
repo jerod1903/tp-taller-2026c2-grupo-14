@@ -19,6 +19,7 @@ target_sources(taller_server
     game/tools/sword.cpp
     game/tools/seed.cpp
     game/tools/watering_can.cpp
+    game/tools/pickaxe.cpp
     game/cheats/cheat.cpp
     game/cheats/seeds_cheat.cpp
     game/cheats/gold_cheat.cpp

@@ -35,7 +35,8 @@ SavedCrop Crop::saved() const {
 }
 
 uint8_t Crop::stage_count() const {
-    static constexpr uint8_t COUNTS[] = {0, 6, 6, 7, 6};  // None, Strawberry, Scallion, Potato, Pumpkin
+    static constexpr uint8_t COUNTS[] = {0, 6, 6, 7,
+                                         6};  // None, Strawberry, Scallion, Potato, Pumpkin
     return COUNTS[static_cast<uint8_t>(type)];
 }
 

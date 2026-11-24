@@ -22,7 +22,7 @@ struct EstadoJuego {
     std::optional<std::string> mundo;
     std::vector<PlayerState> jugadores;
     uint32_t tick = 0;
-    uint16_t dia = 0;  // 0 hasta el primer snapshot
+    uint16_t dia = 0;             // 0 hasta el primer snapshot
     uint16_t minuto_del_dia = 0;  // minutos de juego desde las 6:00
     std::vector<EntityState> entidades = {};
     // Cuanto dura un tick del servidor y cuantos jugadores entran: llegan con LocationData
@@ -33,6 +33,7 @@ struct EstadoJuego {
     InventoryState inventario{};
     std::vector<MensajeChat> chat = {};
     FarmState granja{};
+    std::map<std::string, DungeonState> mina{};
     // Mientras se vota pasar de día: cómo va la votación. Se va cuando llega un snapshot del día
     // siguiente.
     std::optional<DayEnded> fin_del_dia = std::nullopt;

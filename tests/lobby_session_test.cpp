@@ -182,11 +182,17 @@ protected:
                   std::optional<uint16_t>(static_cast<uint16_t>(server_config().player.health)));
     }
 
-    // Saltea el FarmState que manda el servidor al entrar, antes de los snapshots.
+    // Saltea el FarmState y los DungeonState que manda el servidor al entrar, antes de los
+    // snapshots.
     Snapshot recv_snapshot() {
         std::optional<uint8_t> tag = client->recv_u8();
-        while (tag == std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::FarmState))) {
-            recv_farm_state_body();
+        while (tag == std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::FarmState)) ||
+               tag == std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::DungeonState))) {
+            if (tag == std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::FarmState))) {
+                recv_farm_state_body();
+            } else {
+                recv_dungeon_state_body();
+            }
             tag = client->recv_u8();
         }
         EXPECT_EQ(tag, std::optional<uint8_t>(static_cast<uint8_t>(GameMsg::Snapshot)));
@@ -212,10 +218,30 @@ protected:
         }
     }
 
+    // Decodifica lo que manda ServerProtocol::send_dungeon_state, sin el tag, y lo descarta.
+    void recv_dungeon_state_body() {
+        client->recv_string();
+        uint16_t ores = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < ores; ++i) {
+            client->recv_u16();
+            client->recv_u16();
+            client->recv_u8();
+        }
+        uint16_t items = client->recv_u16().value_or(0);
+        for (uint16_t i = 0; i < items; ++i) {
+            client->recv_u16();
+            client->recv_u16();
+            client->recv_u8();
+        }
+    }
+
     // Decodifica del lado del cliente lo que manda ServerProtocol::send_snapshot, sin el tag.
     Snapshot recv_snapshot_body() {
-        Snapshot snapshot{client->recv_u32().value_or(0), client->recv_u16().value_or(0),
-                          client->recv_u16().value_or(0), {}, {}};
+        Snapshot snapshot{client->recv_u32().value_or(0),
+                          client->recv_u16().value_or(0),
+                          client->recv_u16().value_or(0),
+                          {},
+                          {}};
         uint16_t count = client->recv_u16().value_or(0);
         for (uint16_t i = 0; i < count; ++i) {
             PlayerState player{};
@@ -321,6 +347,8 @@ protected:
                 recv_inventory_body();
             } else if (*tag == static_cast<uint8_t>(GameMsg::FarmState)) {
                 recv_farm_state_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::DungeonState)) {
+                recv_dungeon_state_body();
             } else {
                 break;
             }
@@ -352,6 +380,8 @@ protected:
                 recv_inventory_body();
             } else if (*tag == static_cast<uint8_t>(GameMsg::PlayerInfo)) {
                 recv_player_info_body();
+            } else if (*tag == static_cast<uint8_t>(GameMsg::DungeonState)) {
+                recv_dungeon_state_body();
             } else {
                 return std::nullopt;
             }

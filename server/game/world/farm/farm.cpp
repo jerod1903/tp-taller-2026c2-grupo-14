@@ -111,9 +111,8 @@ void Farm::collect_drops() {
 
 int Farm::count_animals(AnimalKind kind) const {
     return static_cast<int>(
-            std::count_if(animals.begin(), animals.end(), [kind](const auto& animal) {
-                return animal->get_kind() == kind;
-            }));
+            std::count_if(animals.begin(), animals.end(),
+                          [kind](const auto& animal) { return animal->get_kind() == kind; }));
 }
 
 bool Farm::dig(const Position& pos) {

@@ -13,8 +13,9 @@
 // al Game: lo resuelve on_invite, que conoce la partida y el usuario.
 class Receiver: public Thread {
 public:
-    Receiver(ServerProtocol& protocol, Inbox& inbox, uint32_t player_id,
-             std::function<void()> on_invite = [] {});
+    Receiver(
+            ServerProtocol& protocol, Inbox& inbox, uint32_t player_id,
+            std::function<void()> on_invite = [] {});
 
     void start() override;
     void run() override;

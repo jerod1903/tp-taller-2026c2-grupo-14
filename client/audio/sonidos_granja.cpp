@@ -20,7 +20,7 @@ std::optional<Sonido> sonido_de(const FarmTile& antes, const FarmTile& despues) 
     }
     return std::nullopt;
 }
-}
+}  // namespace
 
 std::set<Sonido> sonidos_granja(const FarmState& antes, const FarmState& despues) {
     std::set<Sonido> sonidos;

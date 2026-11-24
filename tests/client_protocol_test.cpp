@@ -273,10 +273,8 @@ TEST_F(ClientGameProtocolTest, SendSelectSlotSendsTagAndSlot) {
 
 TEST_F(ClientGameProtocolTest, RecvsInventoryState) {
     ServerProtocol server(std::move(*server_socket));
-    const InventoryState inventory{2,
-                                   {{ItemType::Pickaxe, 1},
-                                    {ItemType::Strawberry, 3},
-                                    {ItemType::Empty, 0}}};
+    const InventoryState inventory{
+            2, {{ItemType::Pickaxe, 1}, {ItemType::Strawberry, 3}, {ItemType::Empty, 0}}};
     ASSERT_TRUE(server.send_inventory_state(inventory));
     ServerGameMessage message = client->recvGameMessage();
     ASSERT_TRUE(std::holds_alternative<InventoryState>(message));
@@ -365,8 +363,8 @@ TEST_F(ClientGameProtocolTest, RecvsFarmState) {
 // Si recvFarmState leyera de más o de menos, el mensaje siguiente quedaría desalineado.
 TEST_F(ClientGameProtocolTest, RecvFarmStateConsumesExactlyItsPayload) {
     ServerProtocol server(std::move(*server_socket));
-    FarmState farm{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}};
-    ASSERT_TRUE(server.send_farm_state(farm));
+    ASSERT_TRUE(server.send_farm_state(
+            FarmState{"granja", {{1, 2, SoilType::Tilled, CropType::Pumpkin, 3, true, true}}}));
     ASSERT_TRUE(server.send_game_ended(GameEnded{EndReason::Left}));
     EXPECT_TRUE(std::holds_alternative<FarmState>(client->recvGameMessage()));
     ServerGameMessage next = client->recvGameMessage();

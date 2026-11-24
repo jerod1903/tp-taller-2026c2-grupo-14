@@ -220,11 +220,8 @@ inline const std::map<CropType, int> FILAS_CULTIVOS = {
 
 inline constexpr int COLUMNA_SEMILLAS = 7;
 inline const std::map<ItemQuality, int> COLUMNAS_CALIDAD = {
-        {ItemQuality::Base, 8},
-        {ItemQuality::Good, 9},
-        {ItemQuality::Excellent, 10},
-        {ItemQuality::Incredible, 11},
-        {ItemQuality::Perfect, 12},
+        {ItemQuality::Base, 8},        {ItemQuality::Good, 9},     {ItemQuality::Excellent, 10},
+        {ItemQuality::Incredible, 11}, {ItemQuality::Perfect, 12},
 };
 inline const std::map<ItemType, CropType> SEMILLAS = {
         {ItemType::StrawberrySeeds, CropType::Strawberry},
@@ -239,13 +236,25 @@ inline const std::map<ItemType, CropType> PRODUCTOS_CULTIVO = {
         {ItemType::Pumpkin, CropType::Pumpkin},
 };
 
+inline const std::map<ItemType, SDL2pp::Rect> VETAS_MINERALES = {
+        {ItemType::Silver, SDL2pp::Rect(72, 11, 18, 16)},
+        {ItemType::Coal, SDL2pp::Rect(72, 43, 18, 16)},
+        {ItemType::Lapis, SDL2pp::Rect(72, 75, 18, 16)},
+        {ItemType::GoldOre, SDL2pp::Rect(72, 107, 18, 16)},
+};
+
+inline const std::map<ItemType, SDL2pp::Rect> ICONOS_MINERALES = {
+        {ItemType::Silver, SDL2pp::Rect(100, 17, 10, 10)},
+        {ItemType::Coal, SDL2pp::Rect(100, 49, 10, 10)},
+        {ItemType::Lapis, SDL2pp::Rect(100, 81, 10, 10)},
+        {ItemType::GoldOre, SDL2pp::Rect(100, 113, 10, 10)},
+};
+
+
 inline const std::map<ItemType, Sonido> SONIDOS_AL_RECIBIR = {
-        {ItemType::Milk, Sonido::Ordenar},
-        {ItemType::Egg, Sonido::Recoger},
-        {ItemType::Strawberry, Sonido::Cosechar},
-        {ItemType::Scallion, Sonido::Cosechar},
-        {ItemType::Potato, Sonido::Cosechar},
-        {ItemType::Pumpkin, Sonido::Cosechar},
+        {ItemType::Milk, Sonido::Ordenar},        {ItemType::Egg, Sonido::Recoger},
+        {ItemType::Strawberry, Sonido::Cosechar}, {ItemType::Scallion, Sonido::Cosechar},
+        {ItemType::Potato, Sonido::Cosechar},     {ItemType::Pumpkin, Sonido::Cosechar},
 };
 
 inline const std::map<ChatKind, SDL_Color> COLORES_CHAT = {
@@ -333,10 +342,9 @@ inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
 
 inline constexpr int TAMANO_FUENTE_TITULO = 32;
 inline const char* const TITULO_PAUSA = "Pausa";
-inline const std::vector<BotonPausa> BOTONES_PAUSA = {
-        {OpcionPausa::Reanudar, "Reanudar", true},
-        {OpcionPausa::Invitar, "Invitar", true},
-        {OpcionPausa::Salir, "Salir", true}};
+inline const std::vector<BotonPausa> BOTONES_PAUSA = {{OpcionPausa::Reanudar, "Reanudar", true},
+                                                      {OpcionPausa::Invitar, "Invitar", true},
+                                                      {OpcionPausa::Salir, "Salir", true}};
 inline constexpr int SEPARACION_BOTONES = 12;
 inline constexpr int SEPARACION_TITULO_PAUSA = 40;
 inline constexpr Uint8 BRILLO_SELECCIONADO = 255;

@@ -19,7 +19,7 @@ std::string texto_de(const ChatMessage& mensaje, const std::string& nombre_propi
     std::string privado = mensaje.kind == ChatKind::Private ? MARCA_PRIVADO : "";
     return mensaje.from + privado + ": " + mensaje.text;
 }
-}
+}  // namespace
 
 PanelChat::PanelChat(Fuente& fuente): fuente(fuente) {}
 

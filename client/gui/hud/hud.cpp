@@ -80,9 +80,9 @@ void Hud::dibujar_carteles(SDL2pp::Renderer& renderer, uint16_t dia, uint16_t mi
     int alto = PASO_CARTELES * (CANTIDAD_CARTELES - 1) + ALTO_CARTEL;
     renderer.Copy(carteles, SDL2pp::Rect(0, 0, ANCHO_CARTEL, alto),
                   SDL2pp::Rect(esquina.x, esquina.y, ANCHO_CARTEL * escala, alto * escala));
-    escribir_centrado(renderer, PREFIJO_DIA + std::to_string(dia),
-                      SDL2pp::Rect(esquina.x, esquina.y, ANCHO_CARTEL * escala,
-                                   ALTO_CARA_CARTEL * escala));
+    escribir_centrado(
+            renderer, PREFIJO_DIA + std::to_string(dia),
+            SDL2pp::Rect(esquina.x, esquina.y, ANCHO_CARTEL * escala, ALTO_CARA_CARTEL * escala));
     SDL2pp::Point cartel_hora(esquina.x, esquina.y + PASO_CARTELES * escala);
     escribir_con_icono(renderer, icono_reloj, texto_hora(minuto_del_dia), cartel_hora, escala);
 }
@@ -112,8 +112,7 @@ void Hud::dibujar_barra(SDL2pp::Renderer& renderer, uint16_t valor, int maximo,
     int alto = interior.h * porcentaje / 100;
     const SDL_Color& color = color_barra(porcentaje);
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
-    renderer.FillRect(
-            SDL2pp::Rect(interior.x, interior.y + interior.h - alto, interior.w, alto));
+    renderer.FillRect(SDL2pp::Rect(interior.x, interior.y + interior.h - alto, interior.w, alto));
     escribir_centrado(
             renderer, etiqueta,
             SDL2pp::Rect(caja.x, caja.y - fuente.alto_linea(), caja.w, fuente.alto_linea()));

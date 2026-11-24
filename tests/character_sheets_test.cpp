@@ -1,9 +1,9 @@
-#include "common/character/CharacterSheets.h"
-
 #include <cstdint>
 #include <vector>
 
 #include <gtest/gtest.h>
+
+#include "common/character/CharacterSheets.h"
 
 namespace sheets = stardew::character;
 
