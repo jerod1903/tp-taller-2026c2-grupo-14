@@ -66,6 +66,8 @@ void Player::remove_selected(uint8_t quantity) { inventory.remove_selected(quant
 
 ItemType Player::selected_item() const { return inventory.selected_item(); }
 
+ItemType Player::item_at(uint8_t slot) const { return inventory.item_at(slot); }
+
 bool Player::strike(Creature& target) {
     if (attack_cooldown_left > 0) {
         return false;

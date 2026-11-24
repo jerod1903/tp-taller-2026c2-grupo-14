@@ -38,6 +38,8 @@ public:
     void remove_selected(uint8_t quantity);
     // Lo que tiene en el slot elegido del inventario.
     ItemType selected_item() const;
+    // Lo que tiene en ese slot (ItemType::Empty si está vacío o fuera de rango).
+    ItemType item_at(uint8_t slot) const;
 
     // Con weak_health de su vida o menos: pega menos y, cerca de un vampiro muerto, lo revive.
     bool is_badly_hurt() const override;

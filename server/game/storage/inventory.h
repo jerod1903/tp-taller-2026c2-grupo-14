@@ -24,6 +24,8 @@ public:
 
     // Lo que hay en el slot elegido (ItemType::Empty si está vacío).
     ItemType selected_item() const;
+    // Lo que hay en ese slot (ItemType::Empty si está vacío o fuera de rango).
+    ItemType item_at(uint8_t slot) const;
 
     // Cuántos hay de ese objeto, sumando todos los slots.
     int count(ItemType item) const;

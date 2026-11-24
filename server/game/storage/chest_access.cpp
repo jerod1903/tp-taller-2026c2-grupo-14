@@ -7,6 +7,7 @@
 
 #include "server/config/server_config.h"
 #include "server/game/characters/player.h"
+#include "server/game/tools/tool.h"
 
 namespace {
 
@@ -41,6 +42,9 @@ std::optional<ChestUpdate> ChestAccess::transfer(Player& player, ChestSide from,
         return std::nullopt;
     }
     uint8_t moved = 0;
+    if (from == ChestSide::Player && is_work_tool(player.item_at(slot))) {
+        return std::nullopt;
+    }
     if (from == ChestSide::Player) {
         moved = player.give_slot(slot, chest->get_inventory());
     } else if (from == ChestSide::Chest) {

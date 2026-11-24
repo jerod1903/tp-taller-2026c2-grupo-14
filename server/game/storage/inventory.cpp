@@ -53,6 +53,10 @@ void Inventory::remove_selected(uint8_t quantity) {
 
 ItemType Inventory::selected_item() const { return slots[selected_slot].item; }
 
+ItemType Inventory::item_at(uint8_t slot) const {
+    return slot < slots.size() ? slots[slot].item : ItemType::Empty;
+}
+
 int Inventory::count(ItemType item) const {
     int total = 0;
     for (const InventorySlot& slot: slots) {

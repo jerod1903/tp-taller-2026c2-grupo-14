@@ -25,7 +25,8 @@ public:
     // contenido. Si no, nullopt.
     virtual std::optional<ChestState> open(Player& player, const Position& cell) = 0;
     // Pasa la pila entera de `slot` de `from` al otro inventario. nullopt si no tiene un cofre
-    // abierto a su alcance, `from` es inválido o no se movió nada.
+    // abierto a su alcance, `from` es inválido, es una herramienta de trabajo del jugador o no se
+    // movió nada.
     virtual std::optional<ChestUpdate> transfer(Player& player, ChestSide from, uint8_t slot) = 0;
     // Parte la pila de `slot` de `side` (la mitad al primer slot vacío del mismo inventario).
     // nullopt si no tiene un cofre abierto a su alcance, `side` es inválido o no se pudo partir.
