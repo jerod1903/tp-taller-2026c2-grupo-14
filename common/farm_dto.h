@@ -36,6 +36,7 @@ enum class ItemType : uint8_t {
     Lapis,
     Silver,
     GoldOre,
+    Chest
 };
 
 enum class SoilType : uint8_t { Dirt, Tilled };

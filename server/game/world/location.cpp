@@ -102,4 +102,13 @@ const Outcome& Location::pick_up(Player& player) {
     return Outcome::not_here();
 }
 
+void Location::add_chest(const Position& cell) { chests.try_emplace(cell); }
+
+Chest* Location::chest_at(const Position& cell) {
+    auto it = chests.find(cell);
+    return it == chests.end() ? nullptr : &it->second;
+}
+
+const std::map<Position, Chest>& Location::get_chests() const { return chests; }
+
 bool Location::take_changes() { return std::exchange(changed, false); }

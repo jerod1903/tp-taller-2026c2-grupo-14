@@ -31,6 +31,7 @@ struct ServerConfig {
     struct Inventory {
         // Los objetos iguales se apilan en un slot hasta esta cantidad.
         uint8_t max_stack;
+        float chest_reach;  // casillas, del centro del jugador al de la celda del cofre
     };
     // Lo que cansa cada acción.
     struct Energy {

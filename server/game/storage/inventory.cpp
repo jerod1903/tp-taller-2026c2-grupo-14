@@ -1,4 +1,4 @@
-#include "server/game/characters/inventory.h"
+#include "server/game/storage/inventory.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -102,3 +102,18 @@ void Inventory::restore(const InventoryState& state) {
     }
     select_slot(state.selectedSlot);
 }
+
+uint8_t Inventory::move_slot(uint8_t slot, Inventory& target) {
+    if (slot >= slots.size() || slots[slot].item == ItemType::Empty) {
+        return 0;
+    }
+    InventorySlot& source = slots[slot];
+    uint8_t left = target.add(source.item, source.quantity, source.quality);
+    uint8_t moved = source.quantity - left;
+    source.quantity = left;
+    if (left == 0) {
+        source = InventorySlot{ItemType::Empty, 0};
+    }
+    return moved;
+}
+

@@ -106,7 +106,9 @@ ServerConfig::Inventory read_inventory(const toml::table& root) {
     if (max_stack > std::numeric_limits<uint8_t>::max()) {
         throw std::runtime_error(std::string(FILE_NAME) + ": 'max_stack' is too big");
     }
-    return ServerConfig::Inventory{static_cast<uint8_t>(max_stack)};
+    return ServerConfig::Inventory{
+            static_cast<uint8_t>(max_stack),
+            positive(required_float(inventory, "chest_reach"), "chest_reach")};
 }
 
 ServerConfig::Energy read_energy(const toml::table& root) {

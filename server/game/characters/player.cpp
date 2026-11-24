@@ -119,3 +119,11 @@ int Player::count(ItemType item) const { return inventory.count(item); }
 int Player::room_for(ItemType item) const { return inventory.room_for(item); }
 
 void Player::take(ItemType item, int quantity) { inventory.remove(item, quantity); }
+
+uint8_t Player::give_slot(uint8_t slot, Inventory& target) {
+    return inventory.move_slot(slot, target);
+}
+
+uint8_t Player::take_slot(Inventory& source, uint8_t slot) {
+    return source.move_slot(slot, inventory);
+}

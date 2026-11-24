@@ -1,4 +1,4 @@
-#include "server/game/characters/inventory.h"
+#include "server/game/storage/inventory.h"
 
 #include <cstddef>
 #include <stdexcept>

@@ -37,7 +37,6 @@ target_sources(taller_server
     game/commands/enter_portal_command.cpp
     game/commands/move_command.cpp
     game/commands/select_slot_command.cpp
-    game/characters/inventory.cpp
     game/game_registry.cpp
     game/sessions.cpp
     game/snapshot_builder.cpp
@@ -63,7 +62,7 @@ target_sources(taller_server
     game/characters/entity.cpp
     game/characters/player.cpp
     game/characters/wanderer.cpp
-    game/characters/inventory.cpp
+    game/storage/inventory.cpp
     game/world/direction.cpp
     game/world/game_clock.cpp
     game/world/dungeon/dungeon.cpp

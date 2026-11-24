@@ -37,6 +37,11 @@ public:
     // Vuelve a como estaba en `state` (uno guardado); los slots que falten quedan vacíos.
     void restore(const InventoryState& state);
 
+    // Pasa la pila de `slot` a `target` (apila primero sobre lo que ya hay); lo que no entra queda en
+    // el slot. Devuelve cuántos pasaron: 0 si el slot está vacío o fuera de rango.
+    uint8_t move_slot(uint8_t slot, Inventory& target);
+
+
 private:
     std::vector<InventorySlot> slots;
     uint8_t selected_slot = 0;

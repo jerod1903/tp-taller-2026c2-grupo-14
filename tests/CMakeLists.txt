@@ -158,7 +158,7 @@ target_sources(taller_tests
     ../client/mapa-general/grilla_mapa.cpp
     ../client/mapa-general/mundo.cpp
     # Inventario
-    ../server/game/characters/inventory.cpp
+    ../server/game/storage/inventory.cpp
     ../server/game/commands/select_slot_command.cpp
     PUBLIC
     # .h files

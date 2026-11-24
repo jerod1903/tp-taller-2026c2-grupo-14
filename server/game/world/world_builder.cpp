@@ -121,6 +121,15 @@ const maps::MapElement& element_of_type(const maps::MapDefinition& map, const ma
     return *element;
 }
 
+// Un cofre vacío por cada elemento chest del área, en su celda.
+void add_chests(const maps::MapDefinition& map, const maps::MapArea& area, Location& location) {
+    for (const maps::MapElement& element: map.elements) {
+        if (element.areaId == area.id && element.type == maps::ElementType::Chest) {
+            location.add_chest(Position{element.x, element.y});
+        }
+    }
+}
+
 // La puerta es la primera house_door del área: se aparece ahí al entrar. Las camas van en los tiles
 // sleepable del cuarto, que se ocupan por filas de arriba a abajo y de izquierda a derecha.
 std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
@@ -139,8 +148,10 @@ std::unique_ptr<Cabin> build_cabin(const maps::MapDefinition& map) {
                                     " tiles sleepable y tiene que tener " +
                                     std::to_string(server_config().game.max_players));
     }
-    return std::make_unique<Cabin>(area.id, build_grid(map, area, {door.id}),
-                                   Position{door.x, door.y}, std::move(bed_slots));
+    auto cabin = std::make_unique<Cabin>(area.id, build_grid(map, area, {door.id}),
+                                         Position{door.x, door.y}, std::move(bed_slots));
+    add_chests(map, area, *cabin);
+    return cabin;
 }
 
 // Un edificio por dentro (el mercado, el centro comunitario), del area de ese tipo. Lo que hay

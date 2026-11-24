@@ -25,6 +25,9 @@ public:
     // Cantidad de slots del inventario de un jugador.
     static constexpr uint8_t PLAYER_INVENTORY_SIZE = 9;
 
+    // Cantidad de slots del inventario de un cofre.
+    static constexpr uint8_t CHEST_SIZE = 30;
+
     static constexpr const char* MAP_REQUIREMENTS = TALLER_MAPS_DIR "/config/map_requirements.toml";
 
     // Chat: "@nombre texto" es un mensaje privado para ese personaje.

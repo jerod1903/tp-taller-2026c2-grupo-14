@@ -22,6 +22,7 @@ weak_damage = 0.5        # fracción de su daño que pega cuando está así de d
 
 [inventory]
 max_stack = 50           # los objetos iguales se apilan en un slot del inventario hasta esta cantidad
+chest_reach = 1.5        # hasta dónde llega el jugador para abrir un cofre: de su centro al del cofre, en casillas
 
 [energy]                 # lo que cansa cada acción
 dig = 2                  # cada golpe de pala

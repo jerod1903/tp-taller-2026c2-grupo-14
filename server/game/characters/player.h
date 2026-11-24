@@ -6,7 +6,7 @@
 
 #include "common/game_dto.h"
 #include "server/game/characters/creature.h"
-#include "server/game/characters/inventory.h"
+#include "server/game/storage/inventory.h"
 #include "server/game/world/spawn_point.h"
 #include "server/persistence/saved_game.h"
 
@@ -64,6 +64,10 @@ public:
     int room_for(ItemType item) const;
     // Saca esa cantidad, de cualquier calidad. Lanza std::invalid_argument si no tiene tantos.
     void take(ItemType item, int quantity);
+    // Pasa la pila de ese slot de su inventario a `target`. Devuelve cuántos pasaron.
+    uint8_t give_slot(uint8_t slot, Inventory& target);
+    // Pasa la pila de ese slot de `source` a su inventario. Devuelve cuántos pasaron.
+    uint8_t take_slot(Inventory& source, uint8_t slot);
 
 protected:
     // Gravemente herido pega menos (weak_damage de su daño).
