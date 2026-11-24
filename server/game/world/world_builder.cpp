@@ -297,8 +297,8 @@ Merchant build_merchant(maps::ElementType type, const Position& pos) {
     if (type == maps::ElementType::MerchantClint) {
         const ServerConfig::Mining& mining = server_config().mining;
         return Merchant(name, pos, {},
-                        {{"carbón", ItemType::Coal, mining.coal.price},
-                         {"lapislázuli", ItemType::Lapis, mining.lapis.price},
+                        {{"carbon", ItemType::Coal, mining.coal.price},
+                         {"lapislazuli", ItemType::Lapis, mining.lapis.price},
                          {"plata", ItemType::Silver, mining.silver.price},
                          {"oro", ItemType::GoldOre, mining.gold.price}});
     }

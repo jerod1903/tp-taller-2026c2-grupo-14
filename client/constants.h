@@ -195,7 +195,7 @@ inline const std::map<EntityType, SDL_Color> TINTES = {
 
 inline constexpr std::size_t MAX_MENSAJES_GUARDADOS = 50;
 
-inline constexpr int TAMANO_FUENTE_CHAT = 16;
+inline constexpr int TAMANO_FUENTE_CHAT = 18;
 inline constexpr std::size_t MAX_LINEAS_CHAT = 6;
 inline const std::chrono::seconds DURACION_MENSAJE_CHAT(10);
 inline constexpr int PORCENTAJE_ANCHO_CHAT = 45;
@@ -301,7 +301,7 @@ inline constexpr SDL_Color COLOR_BARRA_BAJA = {200, 60, 50, 255};
 
 // globo.cpp: el globito con el emote arriba de un personaje
 inline constexpr int SEPARACION_GLOBO = 1;
-inline constexpr int TAMANO_FUENTE_NOMBRE = 14;
+inline constexpr int TAMANO_FUENTE_NOMBRE = 18;
 inline constexpr int SEPARACION_NOMBRE = 1;
 inline constexpr SDL_Color COLOR_NOMBRE = {255, 255, 255, 255};
 inline constexpr SDL_Color COLOR_SOMBRA_NOMBRE = {0, 0, 0, 255};
@@ -350,7 +350,7 @@ inline constexpr uint32_t MASCARA_COLOR = 0x00FFFFFF;
 
 inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
 
-inline constexpr int TAMANO_FUENTE_TITULO = 32;
+inline constexpr int TAMANO_FUENTE_TITULO = 36;
 inline const char* const TITULO_PAUSA = "Pausa";
 inline const std::vector<BotonPausa> BOTONES_PAUSA = {{OpcionPausa::Reanudar, "Reanudar", true},
                                                       {OpcionPausa::Musica, "Apagar musica", true},
