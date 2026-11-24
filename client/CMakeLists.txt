@@ -59,6 +59,8 @@ target_sources(taller_client
     gui/sprites/pose.h
     gui/sprites/golpe_espada.h
     gui/sprites/constantes_golpe_espada.h
+    gui/sprites/herramienta_en_mano.h
+    gui/sprites/constantes_herramienta_en_mano.h
     gui/sprites/globo.h
     gui/sprites/capa.h
     gui/sprites/constructor_capas.h
