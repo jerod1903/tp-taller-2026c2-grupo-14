@@ -15,6 +15,9 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
+#include "client/gui/sprites/constantes_herramienta_en_mano.h"
+#include "client/gui/sprites/golpe_espada.h"
+#include "client/gui/sprites/herramienta_en_mano.h"
 #include "client/mapa-general/grilla_mapa.h"
 #include "client/mapa-general/mundo.h"
 #include "common/map/CabinInterior.h"
@@ -41,6 +44,7 @@ Interfaz::Interfaz():
         panel_cofre(renderer, barra),
         fuente(RUTA_FUENTE, TAMANO_FUENTE_CHAT),
         fuente_titulo(RUTA_FUENTE, TAMANO_FUENTE_TITULO),
+        fuente_nombres(RUTA_FUENTE, TAMANO_FUENTE_NOMBRE),
         panel_chat(fuente),
         menu_pausa(renderer, fuente, fuente_titulo),
         pantalla_fin_del_dia(renderer, fuente, fuente_titulo),
@@ -76,6 +80,14 @@ bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
                        [player_id](const PlayerState& jugador) {
                            return jugador.playerId == player_id && jugador.unconscious;
                        });
+}
+
+std::optional<ItemType> item_en_mano(const EstadoJuego& estado, uint32_t player_id) {
+    const InventoryState& inventario = estado.inventario;
+    if (player_id != estado.id_propio || inventario.selectedSlot >= inventario.slots.size()) {
+        return std::nullopt;
+    }
+    return inventario.slots[inventario.selectedSlot].item;
 }
 
 void borrar_ultima_letra(std::string& texto) {
@@ -203,7 +215,7 @@ void Interfaz::leer_mapa_general(const SDL_Event& evento) {
 void Interfaz::leer_cofre(const SDL_Event& evento, Entrada& entrada) {
     if (evento.type == SDL_MOUSEBUTTONDOWN) {
         std::optional<ChestSlotRequest> casillero = panel_cofre.casillero_en(
-                SDL2pp::Point(evento.button.x / escala, evento.button.y / escala));
+                SDL2pp::Point(evento.button.x / escala_interfaz, evento.button.y / escala_interfaz));
         if (casillero && evento.button.button == SDL_BUTTON_LEFT) {
             entrada.transferencia = casillero;
         } else if (casillero && evento.button.button == SDL_BUTTON_RIGHT) {
@@ -290,6 +302,7 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
             it->second.tirar(inconsciente(estado, entidad.entityId));
+            it->second.sostener(item_en_mano(estado, entidad.entityId));
         }
         it->second.actualizar(entidad, estado.tick, estado.duracion_tick, ahora);
     }
@@ -373,7 +386,8 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
 
 void Interfaz::ajustar_lienzo(int ancho_area, int alto_area) {
     SDL2pp::Point salida = renderer.GetOutputSize();
-    escala = std::max(1, salida.y / client_config().ventana.alto_mundo_visible);
+    escala_interfaz = std::max(1, salida.y / client_config().ventana.alto_mundo_visible);
+    escala = escala_interfaz;
     if (ancho_area > 0 && alto_area > 0) {
         escala = std::max({escala, (salida.x + ancho_area - 1) / ancho_area,
                            (salida.y + alto_area - 1) / alto_area});
@@ -390,6 +404,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     auto ahora = std::chrono::steady_clock::now();
     actualizar_mapa(estado);
     actualizar_entidades(estado, ahora);
+    actualizar_nombres(estado);
     camas.clear();
     std::copy_if(estado.entidades.begin(), estado.entidades.end(), std::back_inserter(camas),
                  [](const EntityState& entidad) { return entidad.type == EntityType::Bed; });
@@ -413,31 +428,34 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second, estado.granja, estado.mina);
+            dibujar_area(propio->second, estado.granja, estado.mina, ahora);
         }
         oscurecer(transicion.opacidad(ahora));
-        if (estado.cofre) {
-            panel_cofre.dibujar(renderer, *estado.cofre, estado.inventario,
-                                SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
-        } else {
-            dibujar_inventario(estado.inventario);
-        }
     }
     renderer.SetTarget();
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
+    if (propio != entidades.end()) {
+        dibujar_inventario(estado);
+        dibujar_nombres(propio->second.area(), ahora);
+    }
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
     cofre_abierto = estado.cofre.has_value();
-    // Con el mapa general abierto, el fin del día va encima del mapa
+    // con el mapa general abierto el fin del día va encima del mapa
     if (estado.fin_del_dia && !mapa_general_abierto()) {
         pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
                                      estado.listo_para_manana);
     }
-    panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), ahora);
-    hud.dibujar(renderer, estado, escala);
+    auto info_propia = estado.info_jugadores.find(estado.id_propio);
+    std::string nombre_propio =
+            info_propia != estado.info_jugadores.end() ? info_propia->second.characterName : "";
+    panel_chat.dibujar(renderer, estado.chat, borrador, renderer.GetOutputSize(), nombre_propio,
+                       ahora);
+    hud.dibujar(renderer, estado, escala_interfaz);
     if (minimapa) {
-        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio, escala_del_hud(escala));
+        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio,
+                          escala_del_hud(escala_interfaz));
     }
     if (mapa_general_abierto()) {
         mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado.jugadores,
@@ -453,8 +471,61 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Present();
 }
 
-void Interfaz::dibujar_inventario(const InventoryState& inventario) {
-    barra.dibujar(renderer, inventario, SDL2pp::Point(lienzo->GetWidth(), lienzo->GetHeight()));
+void Interfaz::dibujar_inventario(const EstadoJuego& estado) {
+    SDL2pp::Point salida = renderer.GetOutputSize();
+    SDL2pp::Point lugar(salida.x / escala_interfaz, salida.y / escala_interfaz);
+    renderer.SetScale(escala_interfaz, escala_interfaz);
+    if (estado.cofre) {
+        panel_cofre.dibujar(renderer, *estado.cofre, estado.inventario, lugar);
+    } else {
+        barra.dibujar(renderer, estado.inventario, lugar);
+    }
+    renderer.SetScale(1, 1);
+}
+
+void Interfaz::actualizar_nombres(const EstadoJuego& estado) {
+    std::erase_if(nombres, [&estado](const auto& par) {
+        return !estado.info_jugadores.contains(par.first);
+    });
+    for (const auto& [id, info]: estado.info_jugadores) {
+        if (info.characterName.empty()) {
+            continue;
+        }
+        auto cartel = nombres.find(id);
+        if (cartel != nombres.end() && cartel->second.texto == info.characterName) {
+            continue;
+        }
+        nombres.insert_or_assign(
+                id, CartelNombre{info.characterName,
+                                 fuente_nombres.renderizar(renderer, info.characterName,
+                                                           COLOR_NOMBRE),
+                                 fuente_nombres.renderizar(renderer, info.characterName,
+                                                           COLOR_SOMBRA_NOMBRE)});
+    }
+}
+
+int Interfaz::alto_nombre() const {
+    return (fuente_nombres.alto_linea() + escala - 1) / escala + SEPARACION_NOMBRE;
+}
+
+void Interfaz::dibujar_nombres(const std::string& area,
+                               std::chrono::steady_clock::time_point ahora) {
+    if (!camara || transicion.activa(ahora)) {
+        return;
+    }
+    for (auto& [id, cartel]: nombres) {
+        auto entidad = entidades.find({EntityType::Player, id});
+        if (entidad == entidades.end() || entidad->second.area() != area) {
+            continue;
+        }
+        SDL2pp::Point cabeza = entidad->second.cabeza();
+        SDL2pp::Point tamano = cartel.letras.GetSize();
+        SDL2pp::Point punta((cabeza.x - camara->x) * escala,
+                            (cabeza.y - SEPARACION_NOMBRE - camara->y) * escala);
+        SDL2pp::Rect destino(punta.x - tamano.x / 2, punta.y - tamano.y, tamano.x, tamano.y);
+        renderer.Copy(cartel.sombra, SDL2pp::NullOpt, destino + SDL2pp::Point(1, 1));
+        renderer.Copy(cartel.letras, SDL2pp::NullOpt, destino);
+    }
 }
 
 void Interfaz::congelar_lienzo(std::chrono::steady_clock::time_point ahora) {
@@ -476,6 +547,54 @@ void Interfaz::oscurecer(uint8_t opacidad) {
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
     renderer.SetDrawColor(0, 0, 0, opacidad);
     renderer.FillRect(SDL2pp::Rect(0, 0, lienzo->GetWidth(), lienzo->GetHeight()));
+}
+
+std::optional<Sprite> Interfaz::sprite_golpe_espada(const EntidadGrafica& entidad,
+                                                    std::chrono::steady_clock::time_point ahora) {
+    std::optional<float> avance = entidad.avance_ataque(ahora);
+    if (!avance) {
+        return std::nullopt;
+    }
+    GolpeEspada golpe = golpe_espada_de(entidad.mirando(), *avance);
+    SDL2pp::Texture& espada = objetos_piso.at(ItemType::Sword);
+    const auto& [agarre_x, agarre_y] = EMPUNADURAS.at(ItemType::Sword);
+    SDL2pp::Point pies = entidad.pies();
+    SDL2pp::Point tamano = espada.GetSize();
+    SDL2pp::Point mano(pies.x + golpe.dx, pies.y + golpe.dy);
+    Sprite sprite{&espada, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(mano.x - agarre_x, mano.y - agarre_y, tamano.x, tamano.y)};
+    sprite.angulo = golpe.angulo;
+    sprite.pivote = SDL2pp::Point(agarre_x, agarre_y);
+    sprite.apoyo = golpe.detras ? pies.y - 1 : pies.y + 1;
+    return sprite;
+}
+
+std::optional<Sprite> Interfaz::sprite_en_mano(const EntidadGrafica& entidad,
+                                               std::chrono::steady_clock::time_point ahora) {
+    if (std::optional<Sprite> golpe = sprite_golpe_espada(entidad, ahora)) {
+        return golpe;
+    }
+    std::optional<ItemType> item = entidad.en_mano();
+    if (!item) {
+        return std::nullopt;
+    }
+    auto textura = objetos_piso.find(*item);
+    if (textura == objetos_piso.end()) {
+        return std::nullopt;
+    }
+    SDL2pp::Point tamano = textura->second.GetSize();
+    std::optional<HerramientaEnMano> herramienta =
+            herramienta_en_mano_de(*item, entidad.mirando(), tamano.x);
+    if (!herramienta) {
+        return std::nullopt;
+    }
+    SDL2pp::Point pies = entidad.pies();
+    Sprite sprite{&textura->second, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(pies.x + herramienta->dx, pies.y + herramienta->dy, tamano.x,
+                               tamano.y),
+                  herramienta->espejada};
+    sprite.apoyo = herramienta->detras ? pies.y - 1 : pies.y + 1;
+    return sprite;
 }
 
 std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
@@ -539,7 +658,8 @@ void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camar
 }
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                            const std::map<std::string, DungeonState>& mina) {
+                            const std::map<std::string, DungeonState>& mina,
+                            std::chrono::steady_clock::time_point ahora) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
@@ -604,6 +724,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
                 }
             }
             sprites.insert(sprites.end(), capas.begin(), capas.end());
+            if (clave.first == EntityType::Player) {
+                if (std::optional<Sprite> mano = sprite_en_mano(entidad, ahora)) {
+                    sprites.push_back(*mano);
+                }
+            }
         }
     }
     std::stable_sort(sprites.begin(), sprites.end(),
@@ -613,7 +738,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
     }
     for (const auto& [clave, entidad]: entidades) {
         if (entidad.area() == area && entidad.emote() != Emote::None) {
-            globo.dibujar(renderer, entidad.emote(), entidad.cabeza(), camara);
+            SDL2pp::Point cabeza = entidad.cabeza();
+            if (clave.first == EntityType::Player && nombres.contains(clave.second)) {
+                cabeza.y -= alto_nombre();
+            }
+            globo.dibujar(renderer, entidad.emote(), cabeza, camara);
         }
     }
     if (granja.areaId == area) {

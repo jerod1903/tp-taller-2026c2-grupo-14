@@ -38,7 +38,7 @@ TEST(ChatCommandTest, AnArrobaGoesOnlyToThatPlayerAndACopyToTheAuthor) {
     context.connected["dipa"] = DIPA_ID;
     say(context, "@dipa vamos a las mazmorras?");
 
-    const ChatMessage expected{ChatKind::Private, "jero", "vamos a las mazmorras?"};
+    const ChatMessage expected{ChatKind::Private, "jero", "vamos a las mazmorras?", "dipa"};
     EXPECT_TRUE(context.broadcasted.empty());
     ASSERT_EQ(context.sent.size(), 2u);
     EXPECT_EQ(context.sent[0].first, DIPA_ID);

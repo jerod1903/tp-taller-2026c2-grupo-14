@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <random>
 #include <vector>
 
 #include "server/game/world/direction.h"
@@ -51,6 +52,26 @@ EntityAction Enemy::action() const {
 }
 
 void Enemy::on_death() {}
+
+const ServerConfig::Loot* Enemy::loot_table() const { return nullptr; }
+
+int Enemy::take_hit(int damage) {
+    const bool was_alive = is_alive();
+    take_damage(damage);
+    if (!was_alive || is_alive() || looted) {
+        return 0;
+    }
+    looted = true;
+    return roll_gold();
+}
+
+int Enemy::roll_gold() {
+    const ServerConfig::Loot* table = loot_table();
+    if (!table || std::uniform_real_distribution<float>(0, 1)(rng) >= table->gold_chance) {
+        return 0;
+    }
+    return std::uniform_int_distribution<int>(table->gold_min, table->gold_max)(rng);
+}
 
 bool Enemy::is_gone() const { return !is_alive() && corpse_left <= 0; }
 

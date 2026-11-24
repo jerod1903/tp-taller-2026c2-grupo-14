@@ -14,6 +14,11 @@ public:
         const std::vector<Creature*>& visitors, uint32_t seed);
 
     EntityType entity_type() const override;
+    // Con silver_chance deja plata (mineral) en el piso de su celda.
+    void on_death() override;
+
+private:
+    const ServerConfig::Loot* loot_table() const override;
 };
 
 #endif  // ORC_H

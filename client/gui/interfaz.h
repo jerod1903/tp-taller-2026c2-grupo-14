@@ -60,13 +60,26 @@ private:
     void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                      const std::map<std::string, DungeonState>& mina);
+                      const std::map<std::string, DungeonState>& mina,
+                      std::chrono::steady_clock::time_point ahora);
+    std::optional<Sprite> sprite_golpe_espada(const EntidadGrafica& entidad,
+                                              std::chrono::steady_clock::time_point ahora);
+    std::optional<Sprite> sprite_en_mano(const EntidadGrafica& entidad,
+                                         std::chrono::steady_clock::time_point ahora);
     void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
     Sprite sprite_veta(const OreDeposit& veta);
     Sprite sprite_cultivo(const FarmTile& celda);
     void dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara);
-    void dibujar_inventario(const InventoryState& inventario);
+    void dibujar_inventario(const EstadoJuego& estado);
+    struct CartelNombre {
+        std::string texto;
+        SDL2pp::Texture letras;
+        SDL2pp::Texture sombra;
+    };
+    void actualizar_nombres(const EstadoJuego& estado);
+    void dibujar_nombres(const std::string& area, std::chrono::steady_clock::time_point ahora);
+    int alto_nombre() const;
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
@@ -91,6 +104,7 @@ private:
     std::optional<SDL2pp::Texture> lienzo;
     std::optional<SDL2pp::Rect> camara;
     int escala = 1;
+    int escala_interfaz = 1;
     bool pantalla_completa = false;
     std::optional<Mapa> mapa;
     // Se arma junto con el mapa, con el mismo mundo
@@ -105,6 +119,8 @@ private:
     bool cofre_abierto = false;
     Fuente fuente;
     Fuente fuente_titulo;
+    Fuente fuente_nombres;
+    std::map<uint32_t, CartelNombre> nombres;
     PanelChat panel_chat;
     MenuPausa menu_pausa;
     PantallaFinDelDia pantalla_fin_del_dia;

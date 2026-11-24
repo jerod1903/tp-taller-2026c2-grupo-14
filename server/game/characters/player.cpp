@@ -7,6 +7,7 @@
 
 #include "server/config/server_config.h"
 #include "server/consts.h"
+#include "server/game/characters/enemies/enemy.h"
 #include "server/game/world/location.h"
 
 namespace {
@@ -68,17 +69,39 @@ ItemType Player::selected_item() const { return inventory.selected_item(); }
 
 ItemType Player::item_at(uint8_t slot) const { return inventory.item_at(slot); }
 
-bool Player::strike(Creature& target) {
+std::optional<int> Player::strike(Enemy& target) {
     if (attack_cooldown_left > 0) {
-        return false;
+        return std::nullopt;
     }
-    attack(target);
     attack_cooldown_left = server_config().player.attack_cooldown;
-    return true;
+    attacking_left = server_config().player.attack_time;
+    return target.take_hit(attack_damage());
+}
+
+void Player::take_damage(int amount) {
+    Creature::take_damage(amount);
+    if (is_alive()) {
+        hurt_left = server_config().player.hurt_time;
+    }
+}
+
+EntityAction Player::action() const {
+    if (is_unconscious()) {
+        return EntityAction::None;
+    }
+    if (hurt_left > 0) {
+        return EntityAction::Hurt;
+    }
+    if (attacking_left > 0) {
+        return EntityAction::Attacking;
+    }
+    return EntityAction::None;
 }
 
 void Player::update(float dt) {
     attack_cooldown_left -= dt;
+    attacking_left -= dt;
+    hurt_left -= dt;
     if (is_unconscious()) {
         direction = Direction::NONE;  // cae donde está
     }

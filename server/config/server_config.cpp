@@ -87,6 +87,8 @@ ServerConfig::Player read_player(const toml::table& root) {
             positive(required_float(player, "bad_night_recovery"), "bad_night_recovery"),
             positive(player.requiredInt("sword_damage"), "sword_damage"),
             positive(required_float(player, "attack_cooldown"), "attack_cooldown"),
+            positive(required_float(player, "attack_time"), "attack_time"),
+            positive(required_float(player, "hurt_time"), "hurt_time"),
             positive(required_float(player, "weak_health"), "weak_health"),
             positive(required_float(player, "weak_damage"), "weak_damage"),
             positive(required_float(player, "gift_reach"), "gift_reach")};
@@ -168,6 +170,18 @@ ServerConfig::Fighter read_fighter(const TomlTableReader& enemy) {
                                  positive(required_float(enemy, "cooldown"), "cooldown")};
 }
 
+// Lo que suelta al morir: en la sección del enemigo
+ServerConfig::Loot read_loot(const TomlTableReader& enemy, const std::string& name) {
+    ServerConfig::Loot loot{required_float(enemy, "gold_chance"), enemy.requiredInt("gold_min"),
+                            enemy.requiredInt("gold_max")};
+    if (loot.gold_chance < 0 || loot.gold_chance > 1 || loot.gold_min < 0 ||
+        loot.gold_min > loot.gold_max) {
+        throw std::runtime_error(std::string(FILE_NAME) + ": [enemies." + name +
+                                 "] needs 0 <= gold_chance <= 1 and 0 <= gold_min <= gold_max");
+    }
+    return loot;
+}
+
 ServerConfig::Enemies read_enemies(const toml::table& root) {
     TomlTableReader enemies = section(root, "enemies");
     TomlTableReader skeleton = subsection(root, "enemies", "skeleton");
@@ -181,16 +195,19 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
             positive(required_float(enemies, "max_walk"), "max_walk"),
             ServerConfig::Skeleton{
                     positive(skeleton.requiredInt("count"), "count"), read_fighter(skeleton),
-                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds")},
+                    positive(required_float(skeleton, "revive_seconds"), "revive_seconds"),
+                    read_loot(skeleton, "skeleton")},
             ServerConfig::Vampire{
                     positive(vampire.requiredInt("pairs"), "pairs"), read_fighter(vampire),
                     positive(required_float(vampire, "fast_speed"), "fast_speed"),
                     positive(vampire.requiredInt("strong_damage"), "strong_damage"),
                     positive(required_float(vampire, "revive_seconds"), "revive_seconds"),
-                    positive(required_float(vampire, "blood_reach"), "blood_reach")},
+                    positive(required_float(vampire, "blood_reach"), "blood_reach"),
+                    read_loot(vampire, "vampire")},
             ServerConfig::Orc{positive(orc.requiredInt("min_group"), "min_group"),
                               positive(orc.requiredInt("max_group"), "max_group"),
-                              read_fighter(orc)},
+                              read_fighter(orc), read_loot(orc, "orc"),
+                              required_float(orc, "silver_chance")},
             ServerConfig::Skull{positive(required_float(skull, "speed"), "speed"),
                                 positive(required_float(skull, "sight"), "sight"),
                                 positive(required_float(skull, "cooldown"), "cooldown"),

@@ -197,12 +197,14 @@ TEST_F(ServerProtocolTest, RecvChatClosedWithoutDataIsNullopt) {
     EXPECT_FALSE(server->recv_chat().has_value());
 }
 
-TEST_F(ServerProtocolTest, ChatMessageGoesWithItsTagKindAuthorAndText) {
-    ASSERT_TRUE(server->send_chat_message(ChatMessage{ChatKind::Private, "Ana", "vamos?"}));
+TEST_F(ServerProtocolTest, ChatMessageGoesWithItsTagKindAuthorTextAndRecipient) {
+    ASSERT_TRUE(
+            server->send_chat_message(ChatMessage{ChatKind::Private, "Ana", "vamos?", "dipa"}));
     EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(GameMsg::ChatMessage));
     EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(ChatKind::Private));
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("Ana"));
     EXPECT_EQ(client->recv_string(), std::optional<std::string>("vamos?"));
+    EXPECT_EQ(client->recv_string(), std::optional<std::string>("dipa"));
 }
 
 TEST_F(ServerProtocolTest, DayEndedGoesWithItsDaySleptAndVotes) {

@@ -46,8 +46,10 @@ private:
     bool frenzy = false;
     std::optional<float> revive_left;  // desde que cayó sangre cerca
 
-    // Algún jugador a menos de blood_reach de su cuerpo murió o está gravemente herido.
-    bool blood_nearby() const;
+    const ServerConfig::Loot* loot_table() const override;
+    // Si hay algún jugador a menos de blood_reach de su cuerpo que murió o está gravemente
+    // herido (is_badly_hurt)
+    bool badly_hurt_player_nearby() const;
     // Con la vida llena; le avisa a su pareja. Si la pareja sigue muerta, entra en frenesí.
     void revive();
 };

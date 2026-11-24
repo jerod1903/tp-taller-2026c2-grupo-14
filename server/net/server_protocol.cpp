@@ -221,7 +221,8 @@ bool ServerProtocol::send_slots(const std::vector<InventorySlot>& slots) {
 bool ServerProtocol::send_chat_message(const ChatMessage& message) {
     return send_game_msg(GameMsg::ChatMessage) &&
            baseProtocol.send_u8(static_cast<uint8_t>(message.kind)) &&
-           baseProtocol.send_string(message.from) && baseProtocol.send_string(message.text);
+           baseProtocol.send_string(message.from) && baseProtocol.send_string(message.text) &&
+           baseProtocol.send_string(message.to);
 }
 
 bool ServerProtocol::send_farm_state(const FarmState& farm) {

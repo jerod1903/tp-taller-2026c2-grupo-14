@@ -17,6 +17,8 @@ tired_energy = 0.1       # con esta fracción de su energía o menos camina a mi
 bad_night_recovery = 0.5 # fracción de vida y energía con la que despierta si no durmió en su cama
 sword_damage = 10        # vida que le saca a un enemigo cada golpe de espada
 attack_cooldown = 0.5    # segundos entre golpe y golpe de espada
+attack_time = 0.25       # segundos que se lo ve atacando después de cada golpe de espada
+hurt_time = 0.4          # segundos que se lo ve herido después de recibir un golpe
 weak_health = 0.2        # con esta fracción de su vida o menos pega menos
 weak_damage = 0.5        # fracción de su daño que pega cuando está así de débil
 gift_reach = 2.0         # hasta dónde llega para regalarle a otro jugador: de centro a centro, en casillas
@@ -75,6 +77,12 @@ sight = 6.0              # hasta donde ve a un jugador, en casillas (no ve a tra
 reach = 1.0              # hasta donde llega su golpe, de su centro al del jugador, en casillas
 cooldown = 1.0           # segundos entre golpe y golpe
 revive_seconds = 10.0    # cuanto tarda en revivir
+# Monedas que suelta la primera vez que muere (al revivir no vuelve a soltar): con gold_chance de
+# probabilidad, entre gold_min y gold_max. Se las lleva quien le dio el ultimo golpe. Van segun
+# dificultad: esqueleto baja, orco media, vampiro alta.
+gold_chance = 0.7
+gold_min = 2
+gold_max = 4
 
 # Pelean cuerpo a cuerpo y aparecen en pareja: la vampira es mas rapida y el vampiro pega mas
 # fuerte. Si muere uno, el otro duplica lo suyo. Muertos, reviven si cerca de ellos un jugador
@@ -91,6 +99,9 @@ fast_speed = 3.0         # la de la vampira
 strong_damage = 8        # el golpe del vampiro
 revive_seconds = 5.0     # cuanto tardan en revivir despues de que cae sangre cerca
 blood_reach = 3.0        # hasta cuantas casillas del cuerpo cuenta la sangre de un jugador
+gold_chance = 0.9        # monedas que suelta la primera vez que muere
+gold_min = 10
+gold_max = 15
 
 # Pelean cuerpo a cuerpo y aparecen en grupo, juntos; al morir no reviven.
 [enemies.orc]
@@ -102,6 +113,10 @@ speed = 2.0
 sight = 6.0
 reach = 1.0
 cooldown = 1.0
+gold_chance = 0.8        # monedas que suelta al morir
+gold_min = 5
+gold_max = 8
+silver_chance = 0.2      # deja plata (mineral) en el piso
 
 # No se la puede matar: pelea a distancia, tirando llamas. Cada una tira siempre del mismo color,
 # sorteado al aparecer.

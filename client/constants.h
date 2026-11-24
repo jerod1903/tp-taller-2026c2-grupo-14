@@ -33,6 +33,7 @@ inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
 inline const char* const FUNCION_INICIO_AUDIO = "SDL_InitSubSystem";
 
 inline const std::chrono::duration<float> DURACION_TRANSICION(0.5f);
+inline const std::chrono::duration<float> DURACION_GOLPE_ESPADA(0.25f);
 inline const FormatoAnimacion FORMATO_PERSONAJE{stardew::character::FRAME_SIZE.x,
                                                 stardew::character::FRAME_SIZE.y,
                                                 {{Orientacion::Abajo, {0, false}},
@@ -202,6 +203,7 @@ inline constexpr int RELLENO_CHAT = 4;
 inline const char* const PROMPT_CHAT = "> ";
 inline const char* const CURSOR_CHAT = "_";
 inline const char* const MARCA_PRIVADO = " (privado)";
+inline const char* const PREFIJO_PRIVADO_ENVIADO = "Para ";
 inline constexpr SDL_Color COLOR_FONDO_CHAT = {20, 15, 10, 170};
 inline constexpr SDL_Color COLOR_BORRADOR_CHAT = {250, 210, 60, 255};
 inline const std::map<SoilType, stardew::maps::TileType> TILES_SUELO = {
@@ -297,6 +299,10 @@ inline constexpr SDL_Color COLOR_BARRA_BAJA = {200, 60, 50, 255};
 
 // globo.cpp: el globito con el emote arriba de un personaje
 inline constexpr int SEPARACION_GLOBO = 1;
+inline constexpr int TAMANO_FUENTE_NOMBRE = 14;
+inline constexpr int SEPARACION_NOMBRE = 1;
+inline constexpr SDL_Color COLOR_NOMBRE = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_SOMBRA_NOMBRE = {0, 0, 0, 255};
 inline constexpr int RELLENO_GLOBO = 2;
 inline constexpr int ALTO_PALITO = 3;
 inline constexpr SDL_Color COLOR_FONDO_GLOBO = {255, 255, 255, 255};

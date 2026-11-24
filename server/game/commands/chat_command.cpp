@@ -87,7 +87,7 @@ void ChatCommand::send_private(GameContext& context, const std::string& author,
     if (body.empty()) {
         return;
     }
-    ChatMessage private_message{ChatKind::Private, author, body};
+    ChatMessage private_message{ChatKind::Private, author, body, target_name};
     context.sessions().send_to(*target, private_message);
     // Una copia para el que lo mando, asi ve lo que escribio (salvo que se lo mande a si mismo)
     if (*target != player_id) {

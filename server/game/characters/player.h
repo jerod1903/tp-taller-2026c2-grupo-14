@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "common/game_dto.h"
@@ -9,6 +10,8 @@
 #include "server/game/storage/inventory.h"
 #include "server/game/world/spawn_point.h"
 #include "server/persistence/saved_game.h"
+
+class Enemy;
 
 class Player: public Creature {
 public:
@@ -44,8 +47,15 @@ public:
     // Con weak_health de su vida o menos: pega menos y, cerca de un vampiro muerto, lo revive.
     bool is_badly_hurt() const override;
 
-    // Le pega con la espada si ya pasó el tiempo desde el último golpe. true si le pegó.
-    bool strike(Creature& target);
+    // Le pega con la espada si ya pasó el tiempo desde el último golpe. Si le pegó, las monedas que
+    // soltó el enemigo con ese golpe (0 si no lo mató); vacío si todavía no podía pegar.
+    std::optional<int> strike(Enemy& target);
+
+    // Recibe el golpe y queda herido hurt_time segundos, si sigue con vida.
+    void take_damage(int amount) override;
+    // Lo que está haciendo, para el snapshot: atacando attack_time segundos después de cada golpe
+    // y herido hurt_time segundos después de recibir uno. Inconsciente no hace nada.
+    EntityAction action() const;
 
     // Cuenta el tiempo entre golpes y camina.
     void update(float dt) override;
@@ -88,6 +98,8 @@ private:
     Inventory inventory;
     bool typing = false;
     float attack_cooldown_left = 0;
+    float attacking_left = 0;  // segundos que le quedan de verse atacando
+    float hurt_left = 0;       // segundos que le quedan de verse herido
 };
 
 #endif  // PLAYER_H

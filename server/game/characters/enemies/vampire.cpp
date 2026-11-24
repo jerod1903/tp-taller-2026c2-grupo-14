@@ -55,14 +55,10 @@ void Vampire::on_death() {
 bool Vampire::is_gone() const { return false; }
 
 void Vampire::while_dead(float dt) {
-    if (!revive_left && blood_nearby()) {
+    if (!revive_left && badly_hurt_player_nearby()) {
         revive_left = config().revive_seconds;
     }
-    if (!revive_left) {
-        return;
-    }
-    *revive_left -= dt;
-    if (*revive_left <= 0) {
+    if (revive_left && (*revive_left -= dt) <= 0) {
         revive();
     }
 }
@@ -77,7 +73,7 @@ int Vampire::attack_damage() const {
     return stronger ? damage * FRENZY : damage;
 }
 
-bool Vampire::blood_nearby() const {
+bool Vampire::badly_hurt_player_nearby() const {
     const std::vector<Creature*>& visitors = get_visitors();
     return std::any_of(visitors.begin(), visitors.end(), [this](const Creature* visitor) {
         return &visitor->get_location() == location && visitor->is_badly_hurt() &&
@@ -90,4 +86,8 @@ void Vampire::revive() {
     revive_left.reset();
     frenzy = !partner->is_alive();
     partner->partner_revived();
+}
+
+const ServerConfig::Loot* Vampire::loot_table() const {
+    return &server_config().enemies.vampire.loot;
 }

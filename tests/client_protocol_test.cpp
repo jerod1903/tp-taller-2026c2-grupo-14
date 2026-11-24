@@ -297,6 +297,15 @@ TEST_F(ClientGameProtocolTest, RecvsChatMessage) {
     EXPECT_EQ(std::get<ChatMessage>(message), chat);
 }
 
+TEST_F(ClientGameProtocolTest, RecvsAPrivateChatMessageWithItsRecipient) {
+    ServerProtocol server(std::move(*server_socket));
+    const ChatMessage chat{ChatKind::Private, "Pandamos", "vamos a las mazmorras?", "dipa"};
+    ASSERT_TRUE(server.send_chat_message(chat));
+    ServerGameMessage message = client->recvGameMessage();
+    ASSERT_TRUE(std::holds_alternative<ChatMessage>(message));
+    EXPECT_EQ(std::get<ChatMessage>(message), chat);
+}
+
 TEST_F(ClientGameProtocolTest, SendInteractSendsOnlyTheTag) {
     BaseProtocol server(std::move(*server_socket));
     client->sendInteract();
