@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "server/config/server_config.h"
+#include "server/consts.h"
 
 namespace {
 
@@ -156,6 +157,7 @@ TradeReply Market::sell(Player& player, const Merchant& merchant, const std::str
     if (offer == nullptr) {
         return reply(merchant, "No compro " + name + ". " + merchant.catalog());
     }
+    int total = offer->price * quantity;
     bool inventory_changed = false;
     if (const AnimalKind* kind = std::get_if<AnimalKind>(&offer->goods)) {
         if (farm.count_animals(*kind) < quantity) {
@@ -167,10 +169,15 @@ TradeReply Market::sell(Player& player, const Merchant& merchant, const std::str
         if (player.count(item) < quantity) {
             return reply(merchant, "No tenés tantos");
         }
-        player.take(item, quantity);
+        // Cada calidad se paga a su multiplicador; se redondea por calidad, no por unidad
+        total = 0;
+        for (const auto& [quality, amount]: player.take(item, quantity)) {
+            total += static_cast<int>(std::lround(
+                    offer->price * amount *
+                    ServerConstants::QUALITY_PRICE_MULTIPLIER.at(quality)));
+        }
         inventory_changed = true;
     }
-    int total = offer->price * quantity;
     player.add_gold(total);
     return reply(merchant, "¡Gracias! Te pago " + std::to_string(total) + " monedas",
                  inventory_changed);
