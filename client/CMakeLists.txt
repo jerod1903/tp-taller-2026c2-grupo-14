@@ -39,6 +39,7 @@ target_sources(taller_client
     network/recibidor.cpp
     audio/reproductor_sonidos.cpp
     audio/sonidos_granja.cpp
+    audio/musica.cpp
     PUBLIC
     # .h files
     app/ClientApp.h
@@ -88,4 +89,6 @@ target_sources(taller_client
     audio/sonido.h
     audio/reproductor_sonidos.h
     audio/sonidos_granja.h
+    audio/musica.h
+    audio/constantes_musica.h
     )

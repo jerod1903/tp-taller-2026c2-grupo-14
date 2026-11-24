@@ -30,6 +30,8 @@ inline const char* const NOMBRE_PARTIDA_PRUEBA = "prueba";
 inline constexpr CharacterAppearance APARIENCIA_PRUEBA{0, 0, 0, 0, 0};
 
 inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
+inline const char* const MENSAJE_SIN_MUSICA = "Sin musica: ";
+inline const std::chrono::milliseconds FUNDIDO_MUSICA(1000);
 inline const char* const FUNCION_INICIO_AUDIO = "SDL_InitSubSystem";
 
 inline const std::chrono::duration<float> DURACION_TRANSICION(0.5f);

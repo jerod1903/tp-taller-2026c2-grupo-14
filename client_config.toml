@@ -13,3 +13,4 @@ channels = 16            # cuantos efectos pueden sonar a la vez
 # Muestras por bloque: mas chico suena antes (1024 a 44100 Hz son 23 ms), mas grande corta menos
 buffer_size = 1024
 step_interval_ms = 300   # mientras el jugador camina suena un paso cada tanto
+music_volume = 48        # de 1 a 128; los efectos van siempre a 128

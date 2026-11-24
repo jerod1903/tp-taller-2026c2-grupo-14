@@ -17,6 +17,7 @@ struct ClientConfig {
         int canales;  // cuantos efectos pueden sonar a la vez
         int tamano_buffer;
         std::chrono::milliseconds intervalo_paso;
+        int volumen_musica;
     };
 
     Ventana ventana;

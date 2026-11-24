@@ -93,6 +93,7 @@ fps = 50
 channels = 16
 buffer_size = 1024
 step_interval_ms = 300
+music_volume = 48
 )");
     EXPECT_EQ(cargar_client_config(path).ventana.duracion_frame.count(), 20);
 }

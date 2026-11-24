@@ -11,6 +11,7 @@
 
 #include <SDL_image.h>
 
+#include "client/audio/musica.h"
 #include "client/audio/sonidos_granja.h"
 #include "client/config/client_config.h"
 #include "client/constants.h"
@@ -366,6 +367,7 @@ void Interfaz::actualizar_sonidos(const EstadoJuego& estado,
         return;
     }
     sonar_granja(estado.granja, propio->areaId);
+    reproductor.poner_musica(musica_de(propio->areaId, estado.mina.contains(propio->areaId)));
     if (estado.tick != tick_escuchado) {
         if (propio_anterior) {
             bool tiene_direccion = propio->dirX != 0 || propio->dirY != 0;
