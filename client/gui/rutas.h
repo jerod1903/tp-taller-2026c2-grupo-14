@@ -111,7 +111,6 @@ inline const std::map<Sonido, const char*> RUTAS_SONIDOS = {
 };
 
 inline const std::map<Musica, const char*> RUTAS_MUSICAS = {
-        {Musica::Cabana, TALLER_ASSETS_DIR "/Music/cabana.ogg"},
         {Musica::GranjaYPueblo, TALLER_ASSETS_DIR "/Music/granja_pueblo.ogg"},
         {Musica::Mercado, TALLER_ASSETS_DIR "/Music/mercado.ogg"},
         {Musica::Caverna, TALLER_ASSETS_DIR "/Music/caverna.ogg"},

@@ -7,7 +7,7 @@
 #include "client/audio/musica.h"
 
 inline const std::map<std::string, Musica> MUSICA_DE_INTERIORES = {
-        {"cabin", Musica::Cabana},
+        {"cabin", Musica::GranjaYPueblo},
         {"market", Musica::Mercado},
         {"community_center", Musica::Mercado},
 };
