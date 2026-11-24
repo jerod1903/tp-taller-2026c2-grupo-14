@@ -7,6 +7,7 @@
 #include "server/game/characters/player.h"
 #include "server/game/cheats/cheat.h"
 #include "server/game/commands/game_context.h"
+#include "server/game/commands/gift_reply.h"
 
 namespace {
 
@@ -44,6 +45,11 @@ void ChatCommand::execute(GameContext& context) {
     Player* author = context.characters().find_player(player_id);
     std::string message = trim(limit_length(text));
     if (author == nullptr || message.empty()) {
+        return;
+    }
+    if (message == ServerConstants::ACCEPT_GIFT || message == ServerConstants::REJECT_GIFT) {
+        send_gift_reply(context,
+                        context.gifts().answer(*author, message == ServerConstants::ACCEPT_GIFT));
         return;
     }
     if (message.front() == ServerConstants::MERCHANT_COMMAND_PREFIX) {

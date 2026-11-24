@@ -128,6 +128,7 @@ target_sources(taller_tests
     ../server/game/interactions/open_nearby_chest.cpp
     ../server/game/clicks/click_action.cpp
     ../server/game/clicks/talk_to_merchant.cpp
+    ../server/game/clicks/give_gift.cpp
     ../server/game/commands/gift_reply.cpp
     ../server/game/gifts/gifts.cpp
     ../server/game/storage/item_names.cpp
