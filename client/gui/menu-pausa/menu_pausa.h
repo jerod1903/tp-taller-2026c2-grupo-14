@@ -10,7 +10,7 @@
 
 #include "client/gui/chat/fuente.h"
 
-enum class OpcionPausa { Reanudar, Invitar, Salir };
+enum class OpcionPausa { Reanudar, Musica, Invitar, Salir };
 
 struct BotonPausa {
     OpcionPausa opcion;
