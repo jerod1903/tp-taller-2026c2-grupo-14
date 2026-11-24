@@ -17,6 +17,7 @@
 #include "client/gui/rutas.h"
 #include "client/gui/sprites/constantes_herramienta_en_mano.h"
 #include "client/gui/sprites/golpe_espada.h"
+#include "client/gui/sprites/herramienta_en_mano.h"
 #include "client/mapa-general/grilla_mapa.h"
 #include "client/mapa-general/mundo.h"
 #include "common/map/CabinInterior.h"
@@ -77,6 +78,14 @@ bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
                        [player_id](const PlayerState& jugador) {
                            return jugador.playerId == player_id && jugador.unconscious;
                        });
+}
+
+std::optional<ItemType> item_en_mano(const EstadoJuego& estado, uint32_t player_id) {
+    const InventoryState& inventario = estado.inventario;
+    if (player_id != estado.id_propio || inventario.selectedSlot >= inventario.slots.size()) {
+        return std::nullopt;
+    }
+    return inventario.slots[inventario.selectedSlot].item;
 }
 
 void borrar_ultima_letra(std::string& texto) {
@@ -263,6 +272,7 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
             it->second.tirar(inconsciente(estado, entidad.entityId));
+            it->second.sostener(item_en_mano(estado, entidad.entityId));
         }
         it->second.actualizar(entidad, estado.tick, estado.duracion_tick, ahora);
     }
@@ -465,6 +475,34 @@ std::optional<Sprite> Interfaz::sprite_golpe_espada(const EntidadGrafica& entida
     return sprite;
 }
 
+std::optional<Sprite> Interfaz::sprite_en_mano(const EntidadGrafica& entidad,
+                                               std::chrono::steady_clock::time_point ahora) {
+    if (std::optional<Sprite> golpe = sprite_golpe_espada(entidad, ahora)) {
+        return golpe;
+    }
+    std::optional<ItemType> item = entidad.en_mano();
+    if (!item) {
+        return std::nullopt;
+    }
+    auto textura = objetos_piso.find(*item);
+    if (textura == objetos_piso.end()) {
+        return std::nullopt;
+    }
+    SDL2pp::Point tamano = textura->second.GetSize();
+    std::optional<HerramientaEnMano> herramienta =
+            herramienta_en_mano_de(*item, entidad.mirando(), tamano.x);
+    if (!herramienta) {
+        return std::nullopt;
+    }
+    SDL2pp::Point pies = entidad.pies();
+    Sprite sprite{&textura->second, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(pies.x + herramienta->dx, pies.y + herramienta->dy, tamano.x,
+                               tamano.y),
+                  herramienta->espejada};
+    sprite.apoyo = herramienta->detras ? pies.y - 1 : pies.y + 1;
+    return sprite;
+}
+
 std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
     auto mineral = ICONOS_MINERALES.find(objeto.item);
     if (mineral != ICONOS_MINERALES.end()) {
@@ -593,8 +631,8 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
             }
             sprites.insert(sprites.end(), capas.begin(), capas.end());
             if (clave.first == EntityType::Player) {
-                if (std::optional<Sprite> golpe = sprite_golpe_espada(entidad, ahora)) {
-                    sprites.push_back(*golpe);
+                if (std::optional<Sprite> mano = sprite_en_mano(entidad, ahora)) {
+                    sprites.push_back(*mano);
                 }
             }
         }

@@ -61,6 +61,8 @@ private:
                       std::chrono::steady_clock::time_point ahora);
     std::optional<Sprite> sprite_golpe_espada(const EntidadGrafica& entidad,
                                               std::chrono::steady_clock::time_point ahora);
+    std::optional<Sprite> sprite_en_mano(const EntidadGrafica& entidad,
+                                         std::chrono::steady_clock::time_point ahora);
     void dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_objeto(const GroundItem& objeto);
     Sprite sprite_veta(const OreDeposit& veta);
