@@ -24,7 +24,8 @@ public:
     bool abierto() const;
     void abrir();
     std::optional<OpcionPausa> leer(const SDL_Event& evento, const SDL2pp::Point& tamano_ventana);
-    void dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana);
+    void dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana,
+                 bool musica_apagada);
 
 private:
     SDL2pp::Rect boton(std::size_t indice, const SDL2pp::Point& tamano_ventana) const;

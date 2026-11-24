@@ -184,6 +184,8 @@ void Interfaz::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
         entrada.salir = true;
     } else if (opcion == OpcionPausa::Invitar) {
         entrada.invitar = true;
+    } else if (opcion == OpcionPausa::Musica) {
+        reproductor.alternar_musica();
     }
 }
 
@@ -468,7 +470,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         }
     }
     if (menu_pausa.abierto()) {
-        menu_pausa.dibujar(renderer, renderer.GetOutputSize());
+        menu_pausa.dibujar(renderer, renderer.GetOutputSize(), reproductor.musica_apagada());
     }
     renderer.Present();
 }
