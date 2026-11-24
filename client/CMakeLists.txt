@@ -17,6 +17,7 @@ target_sources(taller_client
     gui/sprites/entidad_grafica.cpp
     gui/sprites/pose.cpp
     gui/sprites/golpe_espada.cpp
+    gui/sprites/herramienta_en_mano.cpp
     gui/sprites/globo.cpp
     gui/sprites/constructor_capas.cpp
     gui/calculadores/calculador_camara.cpp
