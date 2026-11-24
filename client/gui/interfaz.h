@@ -69,6 +69,14 @@ private:
     Sprite sprite_cultivo(const FarmTile& celda);
     void dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara);
     void dibujar_inventario(const InventoryState& inventario);
+    struct CartelNombre {
+        std::string texto;
+        SDL2pp::Texture letras;
+        SDL2pp::Texture sombra;
+    };
+    void actualizar_nombres(const EstadoJuego& estado);
+    void dibujar_nombres(const std::string& area, std::chrono::steady_clock::time_point ahora);
+    int alto_nombre() const;
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
     void actualizar_sonidos(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
@@ -105,6 +113,8 @@ private:
     BarraInventario barra;
     Fuente fuente;
     Fuente fuente_titulo;
+    Fuente fuente_nombres;
+    std::map<uint32_t, CartelNombre> nombres;
     PanelChat panel_chat;
     MenuPausa menu_pausa;
     PantallaFinDelDia pantalla_fin_del_dia;

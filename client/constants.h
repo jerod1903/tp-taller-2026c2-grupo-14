@@ -299,6 +299,10 @@ inline constexpr SDL_Color COLOR_BARRA_BAJA = {200, 60, 50, 255};
 
 // globo.cpp: el globito con el emote arriba de un personaje
 inline constexpr int SEPARACION_GLOBO = 1;
+inline constexpr int TAMANO_FUENTE_NOMBRE = 14;
+inline constexpr int SEPARACION_NOMBRE = 1;
+inline constexpr SDL_Color COLOR_NOMBRE = {255, 255, 255, 255};
+inline constexpr SDL_Color COLOR_SOMBRA_NOMBRE = {0, 0, 0, 255};
 inline constexpr int RELLENO_GLOBO = 2;
 inline constexpr int ALTO_PALITO = 3;
 inline constexpr SDL_Color COLOR_FONDO_GLOBO = {255, 255, 255, 255};
