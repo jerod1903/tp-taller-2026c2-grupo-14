@@ -15,6 +15,7 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
+#include "client/gui/sprites/golpe_espada.h"
 #include "client/mapa-general/grilla_mapa.h"
 #include "client/mapa-general/mundo.h"
 #include "common/map/CabinInterior.h"
@@ -33,6 +34,7 @@ Interfaz::Interfaz():
         hoja_cultivos(renderer, RUTA_HOJA_CULTIVOS),
         hoja_minerales(renderer, RUTA_HOJA_MINERALES),
         icono_regadera(renderer, RUTA_ICONO_REGADERA),
+        icono_espada(renderer, RUTA_ICONO_ESPADA),
         aspectos{{EntityType::Player, {&FORMATO_PERSONAJE, {}}},
                  {EntityType::Cow, {&FORMATO_VACA, {capa_animal(hoja_vaca, FORMATO_VACA)}}},
                  {EntityType::Chicken,
@@ -384,7 +386,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second, estado.granja, estado.mina);
+            dibujar_area(propio->second, estado.granja, estado.mina, ahora);
         }
         oscurecer(transicion.opacidad(ahora));
         dibujar_inventario(estado.inventario);
@@ -394,7 +396,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
-    // Con el mapa general abierto, el fin del día va encima del mapa
+    // con el mapa general abierto el fin del día va encima del mapa
     if (estado.fin_del_dia && !mapa_general_abierto()) {
         pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
                                      estado.listo_para_manana);
@@ -441,6 +443,24 @@ void Interfaz::oscurecer(uint8_t opacidad) {
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
     renderer.SetDrawColor(0, 0, 0, opacidad);
     renderer.FillRect(SDL2pp::Rect(0, 0, lienzo->GetWidth(), lienzo->GetHeight()));
+}
+
+std::optional<Sprite> Interfaz::sprite_golpe_espada(const EntidadGrafica& entidad,
+                                                    std::chrono::steady_clock::time_point ahora) {
+    std::optional<float> avance = entidad.avance_ataque(ahora);
+    if (!avance) {
+        return std::nullopt;
+    }
+    GolpeEspada golpe = golpe_espada_de(entidad.mirando(), *avance);
+    SDL2pp::Point pies = entidad.pies();
+    SDL2pp::Point tamano = icono_espada.GetSize();
+    SDL2pp::Point mano(pies.x + golpe.dx, pies.y + golpe.dy);
+    Sprite sprite{&icono_espada, SDL2pp::Rect(SDL2pp::Point(0, 0), tamano),
+                  SDL2pp::Rect(mano.x, mano.y - tamano.y, tamano.x, tamano.y)};
+    sprite.angulo = golpe.angulo;
+    sprite.pivote = SDL2pp::Point(0, tamano.y);
+    sprite.apoyo = golpe.detras ? pies.y - 1 : pies.y + 1;
+    return sprite;
 }
 
 std::optional<Sprite> Interfaz::sprite_objeto(const GroundItem& objeto) {
@@ -504,7 +524,8 @@ void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camar
 }
 
 void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                            const std::map<std::string, DungeonState>& mina) {
+                            const std::map<std::string, DungeonState>& mina,
+                            std::chrono::steady_clock::time_point ahora) {
     const std::string& area = propio.area();
     int ancho_mapa = mapa ? mapa->ancho_px() : 0;
     int alto_mapa = mapa ? mapa->alto_px() : 0;
@@ -569,6 +590,11 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
                 }
             }
             sprites.insert(sprites.end(), capas.begin(), capas.end());
+            if (clave.first == EntityType::Player) {
+                if (std::optional<Sprite> golpe = sprite_golpe_espada(entidad, ahora)) {
+                    sprites.push_back(*golpe);
+                }
+            }
         }
     }
     std::stable_sort(sprites.begin(), sprites.end(),
