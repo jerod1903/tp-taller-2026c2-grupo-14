@@ -10,7 +10,7 @@
 // TALLER_ASSETS_DIR: la carpeta Assets del repo o la instalada (ver CMakeLists.txt)
 inline const char* const CARPETA_ASSETS = TALLER_ASSETS_DIR "/";
 
-inline const char* const RUTA_FUENTE = TALLER_ASSETS_DIR "/Fonts/PixelifySans.ttf";
+inline const char* const RUTA_FUENTE = TALLER_ASSETS_DIR "/Fonts/m6x11plus.ttf";
 
 inline const char* const RUTA_GLOBO_ESCRIBIENDO = TALLER_ASSETS_DIR "/Misc/expression_chat.png";
 inline const char* const RUTA_ICONO_LECHE = TALLER_ASSETS_DIR "/Farm/Animals/milk.png";
