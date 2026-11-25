@@ -26,7 +26,8 @@ target_sources(taller_server
     game/tools/pickaxe.cpp
     game/cheats/cheat.cpp
     game/cheats/seeds_cheat.cpp
-    game/cheats/gold_cheat.cpp
+    game/cheats/add_gold_cheat.cpp
+    game/cheats/lose_gold_cheat.cpp
     game/cheats/sleep_cheat.cpp
     game/interactions/outcome.cpp
     game/interactions/interaction.cpp
@@ -123,7 +124,8 @@ target_sources(taller_server
     game/tools/watering_can.h
     game/cheats/cheat.h
     game/cheats/seeds_cheat.h
-    game/cheats/gold_cheat.h
+    game/cheats/add_gold_cheat.h
+    game/cheats/lose_gold_cheat.h
     game/cheats/sleep_cheat.h
     game/interactions/outcome.h
     game/interactions/interaction.h

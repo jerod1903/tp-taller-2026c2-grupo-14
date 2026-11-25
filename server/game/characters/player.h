@@ -24,6 +24,8 @@ public:
     int get_energy() const;
     // Le suma oro (un cheat; más adelante, vender).
     void add_gold(int amount);
+    // Le resta oro (un cheat; más adelante, comprar).
+    void spend_gold(int amount);
 
     // Le resta energía, sin bajar de 0: la última acción se hace aunque no le alcance.
     void spend_energy(int amount);

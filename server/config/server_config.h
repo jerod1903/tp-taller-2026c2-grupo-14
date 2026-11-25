@@ -232,7 +232,8 @@ struct ServerConfig {
     Crops crops;
     struct Cheats {
         int seeds;  // cuántas de cada tipo da "$seeds" sin cantidad
-        int gold;   // cuánto da "$gold" sin cantidad
+        int add_gold;   // cuánto da "$add_gold" sin cantidad
+        int lose_gold;  // cuánto quita "$lose_gold" sin cantidad
     } cheats;
     Market market;
     Mining mining;
