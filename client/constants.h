@@ -352,10 +352,11 @@ inline const int TAMANO_TILE = stardew::maps::TILE_SIZE;
 
 inline constexpr int TAMANO_FUENTE_TITULO = 36;
 inline const char* const TITULO_PAUSA = "Pausa";
-inline const std::vector<BotonPausa> BOTONES_PAUSA = {{OpcionPausa::Reanudar, "Reanudar", true},
-                                                      {OpcionPausa::Musica, "Apagar musica", true},
-                                                      {OpcionPausa::Invitar, "Invitar", true},
-                                                      {OpcionPausa::Salir, "Salir", true}};
+inline const std::vector<BotonPausa> BOTONES_PAUSA = {
+        {OpcionPausa::Reanudar, "Reanudar", true, true},
+        {OpcionPausa::Musica, "Apagar musica", true, false},
+        {OpcionPausa::Invitar, "Invitar", true, true},
+        {OpcionPausa::Salir, "Salir", true, true}};
 inline const char* const TEXTO_PRENDER_MUSICA = "Prender musica";
 inline constexpr int SEPARACION_BOTONES = 12;
 inline constexpr int SEPARACION_TITULO_PAUSA = 40;

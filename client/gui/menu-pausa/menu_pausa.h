@@ -16,6 +16,7 @@ struct BotonPausa {
     OpcionPausa opcion;
     const char* texto;
     bool habilitado;
+    bool cierra_menu;
 };
 
 class MenuPausa {

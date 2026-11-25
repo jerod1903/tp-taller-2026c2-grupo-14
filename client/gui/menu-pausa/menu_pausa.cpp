@@ -115,7 +115,7 @@ std::optional<OpcionPausa> MenuPausa::elegir() {
     if (!datos.habilitado) {
         return std::nullopt;
     }
-    visible = datos.opcion == OpcionPausa::Musica;
+    visible = !datos.cierra_menu;
     return datos.opcion;
 }
 
