@@ -23,6 +23,16 @@ private:
     // GameEnded, para que la conexion vuelva al lobby
     void procesar_entrada(const Entrada& entrada);
     void procesar_mensajes();
+    void aplicar_ubicacion(const ServerGameMessage& mensaje);
+    void aplicar_snapshot(const ServerGameMessage& mensaje);
+    void aplicar_info_jugador(const ServerGameMessage& mensaje);
+    void aplicar_inventario(const ServerGameMessage& mensaje);
+    void aplicar_chat(const ServerGameMessage& mensaje);
+    void aplicar_granja(const ServerGameMessage& mensaje);
+    void aplicar_mina(const ServerGameMessage& mensaje);
+    void aplicar_fin_del_dia(const ServerGameMessage& mensaje);
+    void aplicar_cofre(const ServerGameMessage& mensaje);
+    void aplicar_fin_partida(const ServerGameMessage& mensaje);
     Enviador& enviador;
     Recibidor& recibidor;
     Interfaz& interfaz;
