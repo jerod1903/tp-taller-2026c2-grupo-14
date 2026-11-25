@@ -201,7 +201,8 @@ perfect = 0.95
 # Se escriben en el chat con un $ adelante y una cantidad opcional: "$gold 10".
 [cheats]
 seeds = 10                # cuántas semillas de cada tipo da "$seeds" sin cantidad
-gold = 100                # cuánto oro da "$gold" sin cantidad
+add_gold = 100                # cuánto oro da "$add_gold" sin cantidad
+lose_gold = 100              # cuánto oro quita "$lose_gold" sin cantidad
 
 # Los comerciantes del mercado. Los precios de animales, leche, huevos, semillas y cosechas son los
 # de [animals.*] y [crops.*]; lo que cansa hablarles, el "talk" de [energy].

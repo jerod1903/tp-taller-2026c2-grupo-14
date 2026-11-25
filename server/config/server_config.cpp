@@ -306,7 +306,8 @@ ServerConfig::Crops read_crops(const toml::table& root) {
 ServerConfig::Cheats read_cheats(const toml::table& root) {
     TomlTableReader cheats = section(root, "cheats");
     return ServerConfig::Cheats{positive(cheats.requiredInt("seeds"), "seeds"),
-                                positive(cheats.requiredInt("gold"), "gold")};
+                                positive(cheats.requiredInt("add_gold"), "add_gold"),
+                                positive(cheats.requiredInt("lose_gold"), "lose_gold")};
 }
 
 // Lo que paga un comerciante por algo no puede superar lo que lo cobra: si no, comprar y volver a

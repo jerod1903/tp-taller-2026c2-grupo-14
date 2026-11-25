@@ -36,7 +36,9 @@ int Player::get_gold() const { return gold; }
 
 int Player::get_energy() const { return energy; }
 
-void Player::add_gold(int amount) { gold += amount; }
+void Player::add_gold(int amount) { if (amount > 0) { gold += amount; } }
+
+void Player::spend_gold(int amount) { if (amount > 0) { gold = std::max(0, gold - amount); } }
 
 void Player::spend_energy(int amount) { energy = std::max(0, energy - amount); }
 

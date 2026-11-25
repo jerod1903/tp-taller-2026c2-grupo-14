@@ -5,7 +5,8 @@
 
 #include "common/game_dto.h"
 #include "server/game/characters/player.h"
-#include "server/game/cheats/gold_cheat.h"
+#include "server/game/cheats/add_gold_cheat.h"
+#include "server/game/cheats/lose_gold_cheat.h"
 #include "server/game/cheats/seeds_cheat.h"
 #include "server/game/cheats/sleep_cheat.h"
 #include "server/game/commands/game_context.h"
@@ -29,11 +30,13 @@ void Cheat::tell(const Player& player, GameContext& context, const std::string& 
 
 const Cheat* cheat_for(const std::string& name) {
     static const SeedsCheat seeds;
-    static const GoldCheat gold;
+    static const AddGoldCheat add_gold;
+    static const LoseGoldCheat lose_gold;
     static const SleepCheat sleep;
     static const std::map<std::string, const Cheat*> cheats = {
             {"seeds", &seeds},
-            {"gold", &gold},
+            {"add_gold", &add_gold},
+            {"lose_gold", &lose_gold},
             {"sleep", &sleep},
     };
     auto it = cheats.find(name);
