@@ -21,7 +21,7 @@ tiles = [
     ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
     ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
     ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
-    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
+    ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor"],
     ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor"],
     ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
     ["void", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "house_floor", "void"],
