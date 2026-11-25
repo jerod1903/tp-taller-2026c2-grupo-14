@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "server/config/server_config.h"
+#include "server/game/characters/enemies/skull.h"
 #include "server/game/world/dungeon/spawners/enemy_spawner.h"
 #include "server/game/world/dungeon/traps/trap_spawner.h"
 #include "server/game/world/point.h"
@@ -114,7 +115,17 @@ void DungeonLevel::repopulate() {
     }
     populate_ores();
     TrapSpawner().spawn(*this);
-    random_spawner(rng).spawn(*this);
+    // Más profundo, más grupos
+    const int groups = 1 + depth / server_config().enemies.levels_per_group;
+    for (int i = 0; i < groups; ++i) {
+        random_spawner(rng, !has_skull()).spawn(*this);
+    }
+}
+
+bool DungeonLevel::has_skull() const {
+    return std::any_of(enemies.begin(), enemies.end(), [](const std::unique_ptr<Enemy>& enemy) {
+        return dynamic_cast<const Skull*>(enemy.get()) != nullptr;
+    });
 }
 
 

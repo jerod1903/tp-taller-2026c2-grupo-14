@@ -104,9 +104,10 @@ private:
     uint32_t enemies_made = 0;
     uint32_t flames_made = 0;
 
-    // Saca a todos sus enemigos y sus trampas, y pone trampas nuevas y enemigos de un tipo
-    // sorteado.
+    // Saca a todos sus enemigos y sus trampas, y pone trampas nuevas y 1 + depth / levels_per_group
+    // grupos de enemigos, cada uno de un tipo sorteado (con una sola calavera).
     void repopulate();
+    bool has_skull() const;
     void remove_enemies();
     void remove_traps();
     // Lejos de todos sus portales: el que entra (por la salida o la escalera) no los tiene encima.

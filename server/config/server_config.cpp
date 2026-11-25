@@ -193,6 +193,7 @@ ServerConfig::Enemies read_enemies(const toml::table& root) {
             positive(required_float(enemies, "spawn_distance"), "spawn_distance"),
             positive(required_float(enemies, "min_walk"), "min_walk"),
             positive(required_float(enemies, "max_walk"), "max_walk"),
+            positive(enemies.requiredInt("levels_per_group"), "levels_per_group"),
             ServerConfig::Skeleton{
                     positive(skeleton.requiredInt("count"), "count"), read_fighter(skeleton),
                     positive(required_float(skeleton, "revive_seconds"), "revive_seconds"),

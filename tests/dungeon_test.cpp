@@ -181,6 +181,27 @@ TEST_F(RepopulateTest, WhenSomeoneEntersEnemiesOfASingleTypeAppearFarFromThePort
     }
 }
 
+// El nivel 10 (depth 9) tiene 1 + 9 / levels_per_group grupos: cada uno pone al menos un enemigo,
+// y nunca hay más de una calavera
+TEST(DeepRepopulateTest, DeeperLevelsGetMoreGroupsWithASingleSkull) {
+    TestLocation outside;
+    DungeonLevel level{"deep", make_grid(30, 30), Dungeon::LEVEL_COUNT - 1, 7};
+    level.add_portal(Portal{Position{0, 0}, &outside, Point{0.5f, 0.5f}});
+    TestCreature player(level, Position{1, 1});
+    const int groups = 1 + (Dungeon::LEVEL_COUNT - 1) / server_config().enemies.levels_per_group;
+    for (int entry = 0; entry < 20; ++entry) {
+        level.set_visitors({});
+        level.set_visitors({&player});
+        const std::vector<std::unique_ptr<Enemy>>& found = level.get_enemies();
+        EXPECT_GE(found.size(), static_cast<size_t>(groups));
+        int skulls = 0;
+        for (const std::unique_ptr<Enemy>& enemy: found) {
+            skulls += same_type(enemy->entity_type()) == EntityType::Skull;
+        }
+        EXPECT_LE(skulls, 1);
+    }
+}
+
 TEST_F(RepopulateTest, SkeletonsAppearAlone) {
     SkeletonSpawner().spawn(level);
     EXPECT_TRUE(expected_count(EntityType::Skeleton, level.get_enemies().size()));

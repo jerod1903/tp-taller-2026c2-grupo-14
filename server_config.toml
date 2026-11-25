@@ -66,6 +66,7 @@ production_days = 1      # pone un huevo por dia
 spawn_distance = 5.0     # al aparecer, ninguno queda a menos de estas casillas de un portal del nivel
 min_walk = 1.0           # sin nadie a la vista deambulan: cambian de direccion cada min_walk a max_walk segundos
 max_walk = 3.0
+levels_per_group = 3     # un grupo de enemigos mas cada 3 niveles: 1 en los niveles 1-3, 2 en 4-6, 3 en 7-9, 4 en el 10
 
 # Pelea cuerpo a cuerpo; al morir revive pasado un tiempo.
 [enemies.skeleton]

@@ -134,6 +134,9 @@ struct ServerConfig {
         // Sin nadie a la vista deambulan como los animales: cambian de dirección cada tanto
         float min_walk;  // segundos
         float max_walk;
+        // Al repoblar un nivel aparece un grupo de enemigos más cada levels_per_group niveles: con
+        // 3, uno en los niveles 1 a 3, dos en los 4 a 6, tres en los 7 a 9 y cuatro en el 10.
+        int levels_per_group;
         Skeleton skeleton;
         Vampire vampire;
         Orc orc;
