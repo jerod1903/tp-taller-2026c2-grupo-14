@@ -25,13 +25,25 @@ Cada target se puede activar o desactivar con las opciones de CMake `TALLER_CLIE
 
 ## Instalación
 
-En Ubuntu 24.04, desde la raíz del repo:
+En Ubuntu 24.04 el instalador baja el juego de la rama `main` a una carpeta temporal, instala las dependencias (pide sudo), compila, corre los tests, instala y borra la carpeta.
 
 ```bash
-./install.sh             # instala dependencias (pide sudo), compila, corre los tests e instala
-./install.sh --skip-deps # lo mismo, sin instalar dependencias ni usar sudo
-./uninstall.sh           # borra lo instalado, salvo las partidas guardadas
+curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/install.sh | bash
 ```
+
+Con `--skip-deps` hace lo mismo sin instalar dependencias ni usar sudo (para cuando ya están):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/install.sh | bash -s -- --skip-deps
+```
+
+Para desinstalar (borra lo instalado, salvo las partidas guardadas):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/uninstall.sh | bash
+```
+
+Si ya tenés el repo o bajaste los scripts, también se corren como `bash install.sh [--skip-deps]` y `bash uninstall.sh`.
 
 Queda instalado:
 

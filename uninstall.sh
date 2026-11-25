@@ -2,6 +2,9 @@
 # Desinstala lo que puso install.sh: los binarios de ~/.local/bin, los datos de
 # ~/.local/share/stardew-valley-g14 (salvo las partidas guardadas, en saves/) y las configs de
 # ~/.config/stardew-valley-g14. Las dependencias del sistema quedan instaladas.
+#
+# Se corre suelto, sin el código:
+#   curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/uninstall.sh | bash
 
 set -euo pipefail
 
