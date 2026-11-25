@@ -88,6 +88,9 @@ void GameLoop::procesar_entrada(const Entrada& entrada) {
         enviador.cerrar_cofre();
         estado.cofre.reset();
     }
+    if (entrada.cerrar_juego_completado) {
+        estado.juego_completado = false;
+    }
 }
 
 void GameLoop::procesar_mensajes() {
@@ -129,6 +132,8 @@ void GameLoop::procesar_mensajes() {
             estado.fin_del_dia = *fin_del_dia;
         } else if (const auto* cofre = std::get_if<ChestState>(&*mensaje)) {
             estado.cofre = cofre->open ? std::optional(cofre->slots) : std::nullopt;
+        } else if (std::holds_alternative<GameCompleted>(*mensaje)) {
+            estado.juego_completado = true;
         } else {
             fin = std::get<GameEnded>(*mensaje).reason;
             corriendo = false;

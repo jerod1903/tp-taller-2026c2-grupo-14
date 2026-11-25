@@ -24,6 +24,7 @@ struct Entrada {
     std::optional<ChestSlotRequest> transferencia;
     std::optional<ChestSlotRequest> particion;
     bool cerrar_cofre = false;
+    bool cerrar_juego_completado = false;  // Seguir jugando en la felicitación
 };
 
 #endif

@@ -49,6 +49,7 @@ Interfaz::Interfaz():
         panel_chat(fuente),
         menu_pausa(renderer, fuente, fuente_titulo),
         pantalla_fin_del_dia(renderer, fuente, fuente_titulo),
+        pantalla_juego_completado(renderer, fuente, fuente_titulo),
         hud(renderer),
         globo(renderer),
         transicion(DURACION_TRANSICION) {
@@ -116,6 +117,11 @@ Entrada Interfaz::leer_entrada() {
             leer_chat(evento, entrada);
             continue;
         }
+        // La felicitación se dibuja encima del fin del día: se cierra primero
+        if (juego_completado_abierto) {
+            leer_juego_completado(evento, entrada);
+            continue;
+        }
         if (fin_del_dia_abierto) {
             leer_fin_del_dia(evento, entrada);
             continue;
@@ -154,9 +160,10 @@ Entrada Interfaz::leer_entrada() {
             entrada.slot_seleccionado = static_cast<uint8_t>(tecla - SDLK_1);
         }
     }
-    // Escribiendo, en pausa, con el día terminado, mirando el mapa o con un cofre abierto no camina
-    if (borrador || menu_pausa.abierto() || fin_del_dia_abierto || mapa_general_abierto() ||
-        cofre_abierto) {
+    // Escribiendo, en pausa, con el día terminado, con la felicitación, mirando el mapa o con un
+    // cofre abierto no camina
+    if (borrador || menu_pausa.abierto() || fin_del_dia_abierto || juego_completado_abierto ||
+        mapa_general_abierto() || cofre_abierto) {
         return entrada;
     }
     static std::map<std::pair<int, int>, std::pair<SDL_Scancode, SDL_Scancode>> teclas_direccion = {
@@ -206,6 +213,35 @@ void Interfaz::leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada) {
     } else if (tecla == SDLK_F11) {
         alternar_pantalla_completa();
     }
+}
+
+void Interfaz::leer_juego_completado(const SDL_Event& evento, Entrada& entrada) {
+    if (pantalla_juego_completado.leer(evento, renderer.GetOutputSize())) {
+        entrada.cerrar_juego_completado = true;
+        return;
+    }
+    if (evento.type != SDL_KEYDOWN || evento.key.repeat) {
+        return;
+    }
+    SDL_Keycode tecla = evento.key.keysym.sym;
+    if (tecla == SDLK_ESCAPE) {
+        menu_pausa.abrir();
+    } else if (tecla == SDLK_RETURN) {
+        borrador = "";
+        entrada.escribiendo = true;
+    } else if (tecla == SDLK_F11) {
+        alternar_pantalla_completa();
+    }
+}
+
+std::vector<std::string> Interfaz::nombres_jugadores(const EstadoJuego& estado) const {
+    std::vector<std::string> nombres;
+    for (const auto& [id, info]: estado.info_jugadores) {
+        if (!info.characterName.empty()) {
+            nombres.push_back(info.characterName);
+        }
+    }
+    return nombres;
 }
 
 void Interfaz::leer_mapa_general(const SDL_Event& evento) {
@@ -445,11 +481,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         dibujar_nombres(propio->second.area(), ahora);
     }
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
+    juego_completado_abierto = estado.juego_completado;
     cofre_abierto = estado.cofre.has_value();
-    // con el mapa general abierto el fin del día va encima del mapa
-    if (estado.fin_del_dia && !mapa_general_abierto()) {
-        pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
-                                     estado.listo_para_manana);
+    // con el mapa general abierto el fin del día y la felicitación van encima del mapa
+    if (!mapa_general_abierto()) {
+        dibujar_avisos(estado);
     }
     auto info_propia = estado.info_jugadores.find(estado.id_propio);
     std::string nombre_propio =
@@ -463,15 +499,23 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     if (mapa_general_abierto()) {
         mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado, constructor_capas,
                               nombres);
-        if (estado.fin_del_dia) {
-            pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
-                                         estado.listo_para_manana);
-        }
+        dibujar_avisos(estado);
     }
     if (menu_pausa.abierto()) {
         menu_pausa.dibujar(renderer, renderer.GetOutputSize(), reproductor.musica_apagada());
     }
     renderer.Present();
+}
+
+void Interfaz::dibujar_avisos(const EstadoJuego& estado) {
+    if (estado.fin_del_dia) {
+        pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
+                                     estado.listo_para_manana);
+    }
+    if (estado.juego_completado) {
+        pantalla_juego_completado.dibujar(renderer, renderer.GetOutputSize(), estado.dia,
+                                          nombres_jugadores(estado));
+    }
 }
 
 void Interfaz::dibujar_inventario(const EstadoJuego& estado) {

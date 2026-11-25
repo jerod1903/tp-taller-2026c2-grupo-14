@@ -376,6 +376,14 @@ inline const char* const TEXTO_ESPERANDO = "Esperando a los demás";
 // Entre el título, el texto y el botón
 inline constexpr int SEPARACION_TEXTOS_FIN_DEL_DIA = 40;
 
+// La pantalla de juego completado: como la de fin de día, con los mismos fondo, botón y separación
+inline const char* const TITULO_JUEGO_COMPLETADO = "¡Felicitaciones, completaste el juego!";
+inline const char* const TEXTO_COMPLETADO_EN = "Completaron el centro comunitario en ";
+inline const char* const TEXTO_DIA = " día";
+inline const char* const TEXTO_DIAS = " días";
+inline const char* const TEXTO_JUGARON = "Jugadores: ";
+inline const char* const TEXTO_SEGUIR_JUGANDO = "Seguir jugando";
+
 // El mapa general (M): al abrirlo entra entero en la ventana, dejando este margen a cada lado.
 // La rueda acerca o aleja de a ZOOM_PASO, entre el mapa entero y ZOOM_MAXIMO veces eso.
 inline constexpr float MARGEN_MAPA_GENERAL = 0.05f;

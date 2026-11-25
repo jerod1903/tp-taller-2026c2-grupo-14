@@ -29,6 +29,7 @@ target_sources(taller_server
     game/cheats/add_gold_cheat.cpp
     game/cheats/lose_gold_cheat.cpp
     game/cheats/sleep_cheat.cpp
+    game/cheats/finish_cheat.cpp
     game/interactions/outcome.cpp
     game/interactions/interaction.cpp
     game/interactions/milk.cpp
@@ -127,6 +128,7 @@ target_sources(taller_server
     game/cheats/add_gold_cheat.h
     game/cheats/lose_gold_cheat.h
     game/cheats/sleep_cheat.h
+    game/cheats/finish_cheat.h
     game/interactions/outcome.h
     game/interactions/interaction.h
     game/interactions/milk.h

@@ -50,6 +50,9 @@ bool Sender::send(const GameMessage& message) {
     if (const ChestState* chest = std::get_if<ChestState>(&message)) {
         return protocol.send_chest_state(*chest);
     }
+    if (std::holds_alternative<GameCompleted>(message)) {
+        return protocol.send_game_completed();
+    }
     return protocol.send_snapshot(std::get<Snapshot>(message));
 }
 

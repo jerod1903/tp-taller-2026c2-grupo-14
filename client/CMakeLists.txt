@@ -31,6 +31,7 @@ target_sources(taller_client
     gui/fondo/oscurecer_ventana.cpp
     gui/menu-pausa/menu_pausa.cpp
     gui/fin-del-dia/pantalla_fin_del_dia.cpp
+    gui/juego-completado/pantalla_juego_completado.cpp
     gui/inventario/barra_inventario.cpp
     gui/inventario/panel_cofre.cpp
     gui/chat/fuente.cpp
@@ -79,6 +80,7 @@ target_sources(taller_client
     gui/fondo/oscurecer_ventana.h
     gui/menu-pausa/menu_pausa.h
     gui/fin-del-dia/pantalla_fin_del_dia.h
+    gui/juego-completado/pantalla_juego_completado.h
     gui/inventario/barra_inventario.h
     gui/inventario/panel_cofre.h
     gui/chat/fuente.h

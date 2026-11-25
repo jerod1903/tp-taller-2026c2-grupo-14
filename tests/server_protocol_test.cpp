@@ -216,6 +216,13 @@ TEST_F(ServerProtocolTest, DayEndedGoesWithItsDaySleptAndVotes) {
     EXPECT_EQ(client->recv_u8(), std::optional<uint8_t>(3));
 }
 
+TEST_F(ServerProtocolTest, GameCompletedIsJustItsTag) {
+    ASSERT_TRUE(server->send_game_completed());
+    ASSERT_TRUE(server->send_day_ended(DayEnded{12, true, 1, 3}));
+    EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(GameMsg::GameCompleted));
+    EXPECT_EQ(client->recv_u8(), static_cast<uint8_t>(GameMsg::DayEnded));
+}
+
 TEST_F(ServerProtocolTest, RecvTypingReadsOpenAndClosed) {
     ASSERT_TRUE(client->send_u8(1));
     ASSERT_TRUE(client->send_u8(0));

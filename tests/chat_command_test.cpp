@@ -131,3 +131,19 @@ TEST(ChatCommandTest, TheSleepCheatTakesNoPayload) {
     EXPECT_EQ(context.days_ended, 0);
     EXPECT_EQ(context.sent.size(), 1u);
 }
+
+TEST(ChatCommandTest, TheFinishCheatTellsEveryoneTheGameIsCompleted) {
+    FakeGameContext context;
+    say(context, "$finish");
+    ASSERT_EQ(context.broadcasted.size(), 1u);
+    EXPECT_TRUE(std::holds_alternative<GameCompleted>(context.broadcasted[0]));
+    EXPECT_TRUE(context.sent.empty());
+}
+
+TEST(ChatCommandTest, TheFinishCheatTakesNoPayload) {
+    FakeGameContext context;
+    say(context, "$finish ya");
+    EXPECT_TRUE(context.broadcasted.empty());
+    ASSERT_EQ(context.sent.size(), 1u);
+    EXPECT_EQ(chat_of(context.sent[0].second).text, "Uso: $finish");
+}

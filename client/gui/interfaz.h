@@ -22,6 +22,7 @@
 #include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/inventario/panel_cofre.h"
+#include "client/gui/juego-completado/pantalla_juego_completado.h"
 #include "client/gui/mapa-general/mapa_general.h"
 #include "client/gui/mapa-general/minimapa.h"
 #include "client/gui/mapa/mapa.h"
@@ -52,6 +53,12 @@ private:
     void leer_pausa(const SDL_Event& evento, Entrada& entrada);
     // Con la pantalla de fin de día: el Ok, la pausa, el chat y pantalla completa
     void leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada);
+    // Con la felicitación: Seguir jugando, la pausa, el chat y pantalla completa
+    void leer_juego_completado(const SDL_Event& evento, Entrada& entrada);
+    // Los nombres de los jugadores de la partida, para la felicitación
+    std::vector<std::string> nombres_jugadores(const EstadoJuego& estado) const;
+    // El fin del día y la felicitación, si están abiertos (la felicitación encima)
+    void dibujar_avisos(const EstadoJuego& estado);
     // Con el mapa general abierto: el zoom, el arrastre, cerrarlo y pantalla completa
     void leer_mapa_general(const SDL_Event& evento);
     // Con el panel del cofre abierto: los clicks en sus casilleros, cerrarlo y pantalla completa
@@ -122,6 +129,9 @@ private:
     PantallaFinDelDia pantalla_fin_del_dia;
     // Si se está mostrando (se decide al dibujar, con el estado)
     bool fin_del_dia_abierto = false;
+    PantallaJuegoCompletado pantalla_juego_completado;
+    // Si se está mostrando (se decide al dibujar, con el estado)
+    bool juego_completado_abierto = false;
     Hud hud;
     std::optional<std::string> borrador;
     Globo globo;

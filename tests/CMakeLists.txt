@@ -123,6 +123,7 @@ target_sources(taller_tests
     ../server/game/cheats/add_gold_cheat.cpp
     ../server/game/cheats/lose_gold_cheat.cpp
     ../server/game/cheats/sleep_cheat.cpp
+    ../server/game/cheats/finish_cheat.cpp
     ../server/game/interactions/outcome.cpp
     ../server/game/interactions/interaction.cpp
     ../server/game/interactions/milk.cpp

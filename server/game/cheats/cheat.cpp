@@ -6,6 +6,7 @@
 #include "common/game_dto.h"
 #include "server/game/characters/player.h"
 #include "server/game/cheats/add_gold_cheat.h"
+#include "server/game/cheats/finish_cheat.h"
 #include "server/game/cheats/lose_gold_cheat.h"
 #include "server/game/cheats/seeds_cheat.h"
 #include "server/game/cheats/sleep_cheat.h"
@@ -33,11 +34,10 @@ const Cheat* cheat_for(const std::string& name) {
     static const AddGoldCheat add_gold;
     static const LoseGoldCheat lose_gold;
     static const SleepCheat sleep;
+    static const FinishCheat finish;
     static const std::map<std::string, const Cheat*> cheats = {
-            {"seeds", &seeds},
-            {"add_gold", &add_gold},
-            {"lose_gold", &lose_gold},
-            {"sleep", &sleep},
+            {"seeds", &seeds}, {"add_gold", &add_gold}, {"lose_gold", &lose_gold},
+            {"sleep", &sleep}, {"finish", &finish},
     };
     auto it = cheats.find(name);
     return it != cheats.end() ? it->second : nullptr;

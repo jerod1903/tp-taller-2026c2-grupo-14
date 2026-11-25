@@ -208,6 +208,15 @@ TEST_F(ClientGameProtocolTest, RecvsDayEnded) {
     EXPECT_EQ(std::get<DayEnded>(message), (DayEnded{4, false, 2, 3}));
 }
 
+TEST_F(ClientGameProtocolTest, RecvsGameCompleted) {
+    ServerProtocol server(std::move(*server_socket));
+    ASSERT_TRUE(server.send_game_completed());
+    ASSERT_TRUE(server.send_day_ended(DayEnded{4, false, 2, 3}));
+    EXPECT_TRUE(std::holds_alternative<GameCompleted>(client->recvGameMessage()));
+    // Sin payload: lo que sigue se lee entero
+    EXPECT_TRUE(std::holds_alternative<DayEnded>(client->recvGameMessage()));
+}
+
 TEST_F(ClientGameProtocolTest, RecvsSnapshotWithEveryPlayer) {
     ServerProtocol server(std::move(*server_socket));
     const PlayerState walking{7, "granja", 14500, 3250, -1, 1, 100, 270, 500};

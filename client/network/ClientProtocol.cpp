@@ -35,6 +35,7 @@
 //     PlayerInfo:    playerId u32, characterName, apariencia
 //     InventoryState: selectedSlot u8, count u16, (item u8, quantity u8, quality u8)*
 //     ChestState:    open u8, count u16, (item u8, quantity u8, quality u8)*
+//     GameCompleted: sin payload
 //
 // Es el mismo que ServerProtocol. Las respuestas mandan todos los campos aunque el status no sea
 // Ok, asi el largo no depende del status.
@@ -182,6 +183,8 @@ ServerGameMessage ClientProtocol::recvGameMessage() {
             return recvDayEnded();
         case GameMsg::ChestState:
             return recvChestState();
+        case GameMsg::GameCompleted:
+            return GameCompleted{};
     }
     throw std::runtime_error("mensaje de partida desconocido");
 }

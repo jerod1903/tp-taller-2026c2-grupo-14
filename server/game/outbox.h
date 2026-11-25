@@ -8,7 +8,7 @@
 
 // Lo que el Game le manda a un jugador; el Sender lo serializa.
 using GameMessage = std::variant<LocationData, Snapshot, PlayerInfo, InventoryState, ChatMessage,
-                                 FarmState, DungeonState, DayEnded, ChestState>;
+                                 FarmState, DungeonState, DayEnded, ChestState, GameCompleted>;
 
 using Outbox = Queue<GameMessage>;
 

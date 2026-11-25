@@ -265,6 +265,8 @@ bool ServerProtocol::send_day_ended(const DayEnded& day) {
            baseProtocol.send_u8(day.total);
 }
 
+bool ServerProtocol::send_game_completed() { return send_game_msg(GameMsg::GameCompleted); }
+
 bool ServerProtocol::send_game_ended(const GameEnded& ended) {
     return send_game_msg(GameMsg::GameEnded) &&
            baseProtocol.send_u8(static_cast<uint8_t>(ended.reason));

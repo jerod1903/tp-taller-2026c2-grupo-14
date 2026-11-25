@@ -68,6 +68,7 @@ Se escriben en el chat de la partida (Enter para abrirlo). Le llegan solo al que
 | `$gold [cantidad]` | Suma esa cantidad de oro. Sin cantidad, la de `gold` en `[cheats]` de `server_config.toml`. |
 | `$seeds [cantidad]` | Da esa cantidad de semillas de cada cultivo, las que entren en el inventario. Sin cantidad, la de `seeds` en `[cheats]`. |
 | `$sleep` | Termina el día en el acto, como si fueran las 2:00: aparece la votación para pasar al día siguiente. |
+| `$finish` | Provisorio: completa el juego como si se terminara el centro comunitario. Todos los conectados ven la pantalla de felicitación; la partida sigue. |
 
 ## Compilación y ejecución
 

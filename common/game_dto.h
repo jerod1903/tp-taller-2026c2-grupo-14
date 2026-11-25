@@ -47,6 +47,7 @@ enum class GameMsg : uint8_t {
     DungeonState,
     DayEnded,
     ChestState,
+    GameCompleted,
 };
 
 // El mundo de la partida, cuántos Snapshots por segundo manda el servidor, el máximo de jugadores
@@ -176,6 +177,14 @@ struct DayEnded {
     uint8_t total;  // cuántos tienen que darlo
 
     bool operator==(const DayEnded&) const = default;
+};
+
+// Se completó el centro comunitario: el juego está terminado. Les llega a los conectados en ese
+// momento, que ven la pantalla de felicitación; la partida sigue como siempre. No trae datos: el
+// cliente ya sabe el día y quiénes juegan.
+// En el cable: tag GameMsg::GameCompleted, sin payload.
+struct GameCompleted {
+    bool operator==(const GameCompleted&) const = default;
 };
 
 // Último mensaje de la partida: lo que llegue después es del lobby.

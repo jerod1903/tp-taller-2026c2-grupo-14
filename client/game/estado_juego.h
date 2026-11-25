@@ -40,6 +40,8 @@ struct EstadoJuego {
     bool listo_para_manana = false;  // ya dio el Ok
     // El contenido del cofre que tiene abierto; nullopt si no tiene ninguno
     std::optional<std::vector<InventorySlot>> cofre = std::nullopt;
+    // Llegó GameCompleted y todavía no cerró la felicitación (es solo del cliente)
+    bool juego_completado = false;
 };
 
 #endif

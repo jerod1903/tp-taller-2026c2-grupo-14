@@ -52,6 +52,7 @@ public:
     bool send_dungeon_state(const DungeonState& dungeon);
     bool send_day_ended(const DayEnded& day);
     bool send_chest_state(const ChestState& chest);
+    bool send_game_completed();
 
     void shutdown();
 
