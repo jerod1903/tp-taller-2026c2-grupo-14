@@ -133,6 +133,13 @@ if(TALLER_CLIENT)
         set(SDL2PP_STATIC ON CACHE BOOL "" FORCE)
     endif()
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
+    # Estáticas, SDL_image, SDL_mixer y SDL_ttf se exportan como SDL2_x::SDL2_x-static, y libSDL2pp
+    # linkea contra el nombre de las compartidas
+    foreach(lib SDL2_image SDL2_mixer SDL2_ttf)
+        if(NOT TARGET ${lib}::${lib})
+            add_library(${lib}::${lib} ALIAS ${lib})
+        endif()
+    endforeach()
 endif()
 
 # Program section
