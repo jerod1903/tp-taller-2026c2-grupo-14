@@ -112,6 +112,16 @@ main() {
     cmake --build "$WORK/build-install" -j"$JOBS" \
         --target taller_server taller_client taller_editor < /dev/null
 
+    # Las configs que ya están no se pisan (pueden tener cambios del usuario): se avisa al final,
+    # porque una config de otra versión puede no tener los valores nuevos
+    local config_dir="$HOME/.config/$NAME"
+    local kept=()
+    for config in server_config.toml client_config.toml; do
+        if [ -f "$config_dir/$config" ]; then
+            kept+=("$config")
+        fi
+    done
+
     step "Instalando"
     cmake --install "$WORK/build-install" < /dev/null
 
@@ -122,6 +132,11 @@ main() {
         *":$HOME/.local/bin:"*) ;;
         *) echo "Ojo: ~/.local/bin no está en tu PATH; agregalo para correrlos por nombre." ;;
     esac
+    if [ "${#kept[@]}" -gt 0 ]; then
+        echo "Ojo: quedaron las configs que ya tenías en $config_dir: ${kept[*]}."
+        echo "Si son de una versión anterior pueden faltarles valores nuevos; para instalar las de"
+        echo "esta versión, borralas y volvé a correr el instalador."
+    fi
 }
 
 main "$@"

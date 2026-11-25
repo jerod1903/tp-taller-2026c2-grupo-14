@@ -124,6 +124,14 @@ if(TALLER_CLIENT)
     set(SDL2PP_WITH_IMAGE ON)
     set(SDL2PP_WITH_MIXER ON)
     set(SDL2PP_WITH_TTF ON)
+    # Para instalar, estáticas dentro del cliente: install.sh borra el build al terminar, y con
+    # bibliotecas compartidas el cliente las buscaría ahí.
+    if(TALLER_INSTALL)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+        set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+        set(SDL_STATIC ON CACHE BOOL "" FORCE)
+        set(SDL2PP_STATIC ON CACHE BOOL "" FORCE)
+    endif()
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
 endif()
 
