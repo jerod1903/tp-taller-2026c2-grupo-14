@@ -12,6 +12,7 @@ target_sources(taller_client
     client.cpp
     game/game_loop.cpp
     gui/interfaz.cpp
+    gui/lector_entrada.cpp
     gui/calculadores/calculador_posicion.cpp
     gui/sprites/animador_sprites.cpp
     gui/sprites/entidad_grafica.cpp

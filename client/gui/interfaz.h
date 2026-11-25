@@ -22,6 +22,7 @@
 #include "client/gui/hud/hud.h"
 #include "client/gui/inventario/barra_inventario.h"
 #include "client/gui/inventario/panel_cofre.h"
+#include "client/gui/lector_entrada.h"
 #include "client/gui/mapa-general/mapa_general.h"
 #include "client/gui/mapa-general/minimapa.h"
 #include "client/gui/mapa/mapa.h"
@@ -47,17 +48,7 @@ private:
     void vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJuego& estado,
                 bool recien_creado);
     void ajustar_lienzo(int ancho_area, int alto_area);
-    void leer_chat(const SDL_Event& evento, Entrada& entrada);
-    void leer_pausa(const SDL_Event& evento, Entrada& entrada);
-    // Con la pantalla de fin de día: el Ok, la pausa, el chat y pantalla completa
-    void leer_fin_del_dia(const SDL_Event& evento, Entrada& entrada);
-    // Con el mapa general abierto: el zoom, el arrastre, cerrarlo y pantalla completa
-    void leer_mapa_general(const SDL_Event& evento);
-    // Con el panel del cofre abierto: los clicks en sus casilleros, cerrarlo y pantalla completa
-    void leer_cofre(const SDL_Event& evento, Entrada& entrada);
     bool mapa_general_abierto() const;
-    ClickRequest casilla_clickeada(int x, int y) const;
-    void alternar_pantalla_completa();
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
     void dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
                       const std::map<std::string, DungeonState>& mina,
@@ -105,7 +96,6 @@ private:
     std::optional<SDL2pp::Rect> camara;
     int escala = 1;
     int escala_interfaz = 1;
-    bool pantalla_completa = false;
     std::optional<Mapa> mapa;
     // Se arma junto con el mapa, con el mismo mundo
     std::optional<MapaGeneral> mapa_general;
@@ -127,7 +117,7 @@ private:
     // Si se está mostrando (se decide al dibujar, con el estado)
     bool fin_del_dia_abierto = false;
     Hud hud;
-    std::optional<std::string> borrador;
+    LectorEntrada lector;
     Globo globo;
     TransicionArea transicion;
     std::optional<SDL2pp::Texture> congelado;
