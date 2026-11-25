@@ -64,7 +64,18 @@ void recorrer_jugadores(const std::vector<PlayerState>& jugadores, uint32_t id_p
     }
 }
 
-void dibujar_punto_jugador(SDL2pp::Renderer& renderer, const SDL_FPoint& centro, int radio) {
-    dibujar_circulo(renderer, centro, radio + 1, COLOR_BORDE_PUNTO);
-    dibujar_circulo(renderer, centro, radio, COLOR_PUNTO_JUGADOR);
+void dibujar_jugador_en_mapa(SDL2pp::Renderer& renderer, ConstructorCapas& caras,
+                             const std::map<uint32_t, PlayerInfo>& info_jugadores,
+                             uint32_t player_id, const SDL_FPoint& centro, int lado) {
+    auto info = info_jugadores.find(player_id);
+    if (info == info_jugadores.end()) {
+        const int radio = std::max(1, lado / 4);
+        dibujar_circulo(renderer, centro, radio + 1, COLOR_BORDE_PUNTO);
+        dibujar_circulo(renderer, centro, radio, COLOR_PUNTO_JUGADOR);
+        return;
+    }
+    SDL2pp::Texture& cara = caras.cara(player_id, info->second.appearance);
+    const int esquina_x = static_cast<int>(std::lround(centro.x)) - lado / 2;
+    const int esquina_y = static_cast<int>(std::lround(centro.y)) - lado / 2;
+    renderer.Copy(cara, SDL2pp::NullOpt, SDL2pp::Rect(esquina_x, esquina_y, lado, lado));
 }

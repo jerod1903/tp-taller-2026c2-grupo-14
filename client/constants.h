@@ -381,20 +381,21 @@ inline constexpr int SEPARACION_TEXTOS_FIN_DEL_DIA = 40;
 inline constexpr float MARGEN_MAPA_GENERAL = 0.05f;
 inline constexpr float ZOOM_PASO = 1.25f;
 inline constexpr float ZOOM_MAXIMO = 8.0f;
-// Cada jugador es un punto blanco con borde negro; el propio, más grande. El radio va en casillas
-// del mapa, con un mínimo en píxeles para que se vea con el mapa entero.
+// Cada jugador es su cara, con su nombre abajo; la propia, más grande. El lado va en casillas del
+// mapa, con un mínimo en píxeles para que se vea con el mapa entero. Mientras no llega su
+// apariencia, un punto blanco con borde negro.
 inline constexpr SDL_Color COLOR_PUNTO_JUGADOR = {255, 255, 255, 255};
 inline constexpr SDL_Color COLOR_BORDE_PUNTO = {0, 0, 0, 255};
-inline constexpr float RADIO_PUNTO = 0.5f;
-inline constexpr float RADIO_PUNTO_PROPIO = 0.9f;
-inline constexpr int RADIO_MINIMO_PUNTO = 3;
-inline constexpr int RADIO_MINIMO_PUNTO_PROPIO = 5;
+inline constexpr float LADO_CARA = 2.0f;
+inline constexpr float LADO_CARA_PROPIA = 2.8f;
+inline constexpr int LADO_MINIMO_CARA = 24;
+inline constexpr int LADO_MINIMO_CARA_PROPIA = 32;
 // El minimapa del HUD, arriba a la izquierda: el área donde está el jugador, en el marco de madera
-// del HUD. El área se agranda hasta este tamaño sin deformarse; los tamaños y los radios van en
-// píxeles del HUD (se multiplican por su escala).
+// del HUD. El área se agranda hasta este tamaño sin deformarse; los tamaños y los lados de las
+// caras van en píxeles del HUD (se multiplican por su escala).
 inline constexpr int ANCHO_MAXIMO_MINIMAPA = 110;
 inline constexpr int ALTO_MAXIMO_MINIMAPA = 75;
-inline constexpr int RADIO_PUNTO_MINIMAPA = 1;
-inline constexpr int RADIO_PUNTO_PROPIO_MINIMAPA = 2;
+inline constexpr int LADO_CARA_MINIMAPA = 10;
+inline constexpr int LADO_CARA_PROPIA_MINIMAPA = 14;
 
 #endif

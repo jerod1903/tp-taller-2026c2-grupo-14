@@ -15,8 +15,10 @@ Minimapa::Minimapa(SDL2pp::Renderer& renderer, GrillaMapa grilla):
         textura(textura_de_grilla(renderer, this->grilla)),
         marco(renderer, RUTA_MARCO_HUD) {}
 
-void Minimapa::dibujar(SDL2pp::Renderer& renderer, const std::vector<PlayerState>& jugadores,
-                       uint32_t id_propio, int escala_hud) {
+void Minimapa::dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado,
+                       ConstructorCapas& caras, int escala_hud) {
+    const std::vector<PlayerState>& jugadores = estado.jugadores;
+    const uint32_t id_propio = estado.id_propio;
     auto propio = std::find_if(jugadores.begin(), jugadores.end(),
                                [id_propio](const auto& j) { return j.playerId == id_propio; });
     if (propio == jugadores.end()) {
@@ -40,15 +42,18 @@ void Minimapa::dibujar(SDL2pp::Renderer& renderer, const std::vector<PlayerState
                   SDL2pp::Rect(margen, margen, adentro.w + 2 * borde, adentro.h + 2 * borde),
                   escala_hud);
     renderer.Copy(textura, SDL2pp::Rect(area.x, area.y, area.ancho, area.alto), adentro);
+    // Una cara en el borde del área no se sale del marco
+    renderer.SetClipRect(adentro);
     recorrer_jugadores(jugadores, id_propio, [&](const PlayerState& jugador, bool es_propio) {
         std::optional<SDL_FPoint> casilla = jugador_en_grilla(grilla, jugador);
         if (jugador.areaId != propio->areaId || !casilla) {
             return;
         }
-        dibujar_punto_jugador(
-                renderer,
+        dibujar_jugador_en_mapa(
+                renderer, caras, estado.info_jugadores, jugador.playerId,
                 SDL_FPoint{adentro.x + (casilla->x - area.x) * escala,
                            adentro.y + (casilla->y - area.y) * escala},
-                (es_propio ? RADIO_PUNTO_PROPIO_MINIMAPA : RADIO_PUNTO_MINIMAPA) * escala_hud);
+                (es_propio ? LADO_CARA_PROPIA_MINIMAPA : LADO_CARA_MINIMAPA) * escala_hud);
     });
+    renderer.SetClipRect();
 }

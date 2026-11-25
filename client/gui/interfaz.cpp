@@ -458,12 +458,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
                        ahora);
     hud.dibujar(renderer, estado, escala_interfaz);
     if (minimapa) {
-        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio,
-                          escala_del_hud(escala_interfaz));
+        minimapa->dibujar(renderer, estado, constructor_capas, escala_del_hud(escala_interfaz));
     }
     if (mapa_general_abierto()) {
-        mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado.jugadores,
-                              estado.id_propio);
+        mapa_general->dibujar(renderer, renderer.GetOutputSize(), estado, constructor_capas,
+                              nombres);
         if (estado.fin_del_dia) {
             pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
                                          estado.listo_para_manana);
@@ -523,12 +522,9 @@ void Interfaz::dibujar_nombres(const std::string& area,
             continue;
         }
         SDL2pp::Point cabeza = entidad->second.cabeza();
-        SDL2pp::Point tamano = cartel.letras.GetSize();
         SDL2pp::Point punta((cabeza.x - camara->x) * escala,
                             (cabeza.y - SEPARACION_NOMBRE - camara->y) * escala);
-        SDL2pp::Rect destino(punta.x - tamano.x / 2, punta.y - tamano.y, tamano.x, tamano.y);
-        renderer.Copy(cartel.sombra, SDL2pp::NullOpt, destino + SDL2pp::Point(1, 1));
-        renderer.Copy(cartel.letras, SDL2pp::NullOpt, destino);
+        dibujar_cartel(renderer, cartel, punta.x, punta.y - cartel.letras.GetHeight());
     }
 }
 

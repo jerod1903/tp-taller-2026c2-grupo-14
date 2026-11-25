@@ -20,6 +20,7 @@ target_sources(taller_client
     gui/sprites/herramienta_en_mano.cpp
     gui/sprites/globo.cpp
     gui/sprites/constructor_capas.cpp
+    gui/sprites/cartel_nombre.cpp
     gui/calculadores/calculador_camara.cpp
     gui/mapa/mapa.cpp
     gui/mapa/transicion_area.cpp
@@ -67,6 +68,7 @@ target_sources(taller_client
     gui/sprites/globo.h
     gui/sprites/capa.h
     gui/sprites/constructor_capas.h
+    gui/sprites/cartel_nombre.h
     gui/calculadores/calculador_camara.h
     gui/mapa/mapa.h
     gui/mapa/transicion_area.h

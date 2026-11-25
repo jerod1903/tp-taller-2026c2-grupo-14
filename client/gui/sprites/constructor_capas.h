@@ -18,6 +18,9 @@ public:
     ConstructorCapas& operator=(const ConstructorCapas&) = delete;
     std::vector<Capa> capas(uint32_t player_id,
                             const std::optional<CharacterAppearance>& apariencia);
+    // La cabeza del jugador de frente, con pelo y sombrero, para el mapa: el recuadro del sombrero
+    // (hojas::HAT_SIZE) en el cuadro quieto mirando abajo. Se arma una vez por jugador.
+    SDL2pp::Texture& cara(uint32_t player_id, const CharacterAppearance& apariencia);
     void olvidar(uint32_t player_id);
 
 private:
@@ -31,6 +34,7 @@ private:
     SDL2pp::Texture pantalones;
     SDL2pp::Texture sombreros;
     std::map<uint32_t, SDL2pp::Texture> brazos;
+    std::map<uint32_t, SDL2pp::Texture> caras;
 };
 
 #endif

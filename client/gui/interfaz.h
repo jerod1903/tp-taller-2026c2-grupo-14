@@ -28,6 +28,7 @@
 #include "client/gui/mapa/transicion_area.h"
 #include "client/gui/menu-pausa/menu_pausa.h"
 #include "client/gui/sprites/capa.h"
+#include "client/gui/sprites/cartel_nombre.h"
 #include "client/gui/sprites/constructor_capas.h"
 #include "client/gui/sprites/entidad_grafica.h"
 #include "client/gui/sprites/globo.h"
@@ -72,11 +73,6 @@ private:
     Sprite sprite_cultivo(const FarmTile& celda);
     void dibujar_aviso(const FarmTile& celda, const SDL2pp::Rect& camara);
     void dibujar_inventario(const EstadoJuego& estado);
-    struct CartelNombre {
-        std::string texto;
-        SDL2pp::Texture letras;
-        SDL2pp::Texture sombra;
-    };
     void actualizar_nombres(const EstadoJuego& estado);
     void dibujar_nombres(const std::string& area, std::chrono::steady_clock::time_point ahora);
     int alto_nombre() const;

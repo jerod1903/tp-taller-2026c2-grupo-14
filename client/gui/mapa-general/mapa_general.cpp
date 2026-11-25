@@ -63,7 +63,8 @@ void MapaGeneral::acercar(bool acercando, const SDL2pp::Point& mouse) {
 }
 
 void MapaGeneral::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& tamano_ventana,
-                          const std::vector<PlayerState>& jugadores, uint32_t id_propio) {
+                          const EstadoJuego& estado, ConstructorCapas& caras,
+                          std::map<uint32_t, CartelNombre>& nombres) {
     if (falta_encuadrar) {
         mostrar_entero(tamano_ventana);
     }
@@ -73,21 +74,26 @@ void MapaGeneral::dibujar(SDL2pp::Renderer& renderer, const SDL2pp::Point& taman
                                static_cast<int>(std::lround(origen_y)),
                                static_cast<int>(std::lround(grilla.ancho * escala)),
                                static_cast<int>(std::lround(grilla.alto * escala))));
-    recorrer_jugadores(jugadores, id_propio, [&](const PlayerState& jugador, bool propio) {
-        dibujar_jugador(renderer, jugador, propio);
-    });
+    recorrer_jugadores(estado.jugadores, estado.id_propio,
+                       [&](const PlayerState& jugador, bool propio) {
+                           dibujar_jugador(renderer, jugador, propio, estado, caras, nombres);
+                       });
 }
 
 void MapaGeneral::dibujar_jugador(SDL2pp::Renderer& renderer, const PlayerState& jugador,
-                                  bool propio) const {
+                                  bool propio, const EstadoJuego& estado, ConstructorCapas& caras,
+                                  std::map<uint32_t, CartelNombre>& nombres) const {
     std::optional<SDL_FPoint> casilla = jugador_en_grilla(grilla, jugador);
     if (!casilla) {
         return;
     }
-    const int radio =
-            std::max(propio ? RADIO_MINIMO_PUNTO_PROPIO : RADIO_MINIMO_PUNTO,
-                     static_cast<int>((propio ? RADIO_PUNTO_PROPIO : RADIO_PUNTO) * escala));
-    dibujar_punto_jugador(
-            renderer, SDL_FPoint{origen_x + casilla->x * escala, origen_y + casilla->y * escala},
-            radio);
+    const int lado = std::max(propio ? LADO_MINIMO_CARA_PROPIA : LADO_MINIMO_CARA,
+                              static_cast<int>((propio ? LADO_CARA_PROPIA : LADO_CARA) * escala));
+    const SDL_FPoint centro{origen_x + casilla->x * escala, origen_y + casilla->y * escala};
+    dibujar_jugador_en_mapa(renderer, caras, estado.info_jugadores, jugador.playerId, centro, lado);
+    auto cartel = nombres.find(jugador.playerId);
+    if (cartel != nombres.end()) {
+        dibujar_cartel(renderer, cartel->second, static_cast<int>(std::lround(centro.x)),
+                       static_cast<int>(std::lround(centro.y)) + lado / 2 + SEPARACION_NOMBRE);
+    }
 }

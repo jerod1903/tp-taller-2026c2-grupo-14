@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <SDL2/SDL.h>
@@ -65,6 +66,20 @@ std::map<uint32_t, uint32_t> colores_de_manga(SDL2pp::Surface& camisas, uint16_t
     return reemplazos;
 }
 
+// La capa en el cuadro quieto mirando abajo, corrida para que la esquina del recuadro del sombrero
+// quede en (0, 0)
+void dibujar_de_frente(SDL2pp::Renderer& renderer, const Capa& capa) {
+    SDL2pp::Rect origen(capa.celda, capa.tamano);
+    if (capa.tipo == TipoCapa::PorVista) {
+        origen.y += capa.vistas.at(Orientacion::Abajo).first * capa.tamano.y;
+    }
+    SDL2pp::Rect destino(capa.desplazamiento.x - hojas::HAT_OFFSET.x,
+                         capa.desplazamiento.y - hojas::HAT_OFFSET.y, capa.tamano.x, capa.tamano.y);
+    capa.hoja->SetColorMod(capa.tinte.r, capa.tinte.g, capa.tinte.b);
+    renderer.Copy(*capa.hoja, origen, destino);
+    capa.hoja->SetColorMod(SIN_TINTE.r, SIN_TINTE.g, SIN_TINTE.b);
+}
+
 }  // namespace
 
 ConstructorCapas::ConstructorCapas(SDL2pp::Renderer& renderer):
@@ -101,7 +116,32 @@ std::vector<Capa> ConstructorCapas::capas(uint32_t player_id,
     return resultado;
 }
 
-void ConstructorCapas::olvidar(uint32_t player_id) { brazos.erase(player_id); }
+SDL2pp::Texture& ConstructorCapas::cara(uint32_t player_id, const CharacterAppearance& apariencia) {
+    auto ya_armada = caras.find(player_id);
+    if (ya_armada != caras.end()) {
+        return ya_armada->second;
+    }
+    SDL2pp::Texture textura(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
+                            hojas::HAT_SIZE.x, hojas::HAT_SIZE.y);
+    textura.SetBlendMode(SDL_BLENDMODE_BLEND);
+    // Se arma en el medio de un cuadro: después se deja el renderer como estaba
+    SDL_Texture* destino_anterior = SDL_GetRenderTarget(renderer.Get());
+    SDL2pp::Color color_anterior = renderer.GetDrawColor();
+    renderer.SetTarget(textura);
+    renderer.SetDrawColor(0, 0, 0, 0);
+    renderer.Clear();
+    for (const Capa& capa: capas(player_id, apariencia)) {
+        dibujar_de_frente(renderer, capa);
+    }
+    SDL_SetRenderTarget(renderer.Get(), destino_anterior);
+    renderer.SetDrawColor(color_anterior);
+    return caras.emplace(player_id, std::move(textura)).first->second;
+}
+
+void ConstructorCapas::olvidar(uint32_t player_id) {
+    brazos.erase(player_id);
+    caras.erase(player_id);
+}
 
 SDL2pp::Texture& ConstructorCapas::brazos_de(uint32_t player_id, uint16_t camisa) {
     auto ya_armados = brazos.find(player_id);
