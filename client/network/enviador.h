@@ -1,6 +1,7 @@
 #ifndef ENVIADOR_H
 #define ENVIADOR_H
 
+#include <cstdint>
 #include <string>
 
 #include "client/network/IGameProtocol.h"
@@ -14,19 +15,16 @@ public:
     void enviar(const MoveRequest& movimiento);
     void salir();
     void cruzar_puerta();
-
-    void seleccionar_slot(uint8_t slot) { protocolo.sendSelectSlot(slot); }
-    void enviar_chat(const std::string& texto) { protocolo.sendChat(texto); }
-    void interactuar() { protocolo.sendInteract(); }
-    void escribiendo(bool valor) { protocolo.sendTyping(valor); }
-    void clickear(const ClickRequest& click) { protocolo.sendClick(click.x, click.y); }
-    void invitar() { protocolo.sendInvite(); }
-    void listo_para_manana() { protocolo.sendDayReady(); }
-    void transferir(const ChestSlotRequest& slot) {
-        protocolo.sendChestTransfer(slot.side, slot.slot);
-    }
-    void partir(const ChestSlotRequest& slot) { protocolo.sendChestSplit(slot.side, slot.slot); }
-    void cerrar_cofre() { protocolo.sendCloseChest(); }
+    void seleccionar_slot(uint8_t slot);
+    void enviar_chat(const std::string& texto);
+    void interactuar();
+    void escribiendo(bool valor);
+    void clickear(const ClickRequest& click);
+    void invitar();
+    void listo_para_manana();
+    void transferir(const ChestSlotRequest& slot);
+    void partir(const ChestSlotRequest& slot);
+    void cerrar_cofre();
 
 private:
     IGameProtocol& protocolo;

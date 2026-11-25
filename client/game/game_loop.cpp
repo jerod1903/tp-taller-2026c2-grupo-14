@@ -40,6 +40,8 @@ std::optional<EndReason> GameLoop::ejecutar() {
             procesar_mensajes();
             interfaz.dibujar(estado);
             std::this_thread::sleep_until(inicio + client_config().ventana.duracion_frame);
+            // si fuera sleep_for se sumarian los ms a lo q se tarde en hacer otras cosas y 
+            // se perderian fps
         }
     } catch (const LobbyConnectionError&) {
         return std::nullopt;
