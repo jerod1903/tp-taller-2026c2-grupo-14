@@ -13,6 +13,7 @@ target_sources(taller_client
     game/game_loop.cpp
     gui/interfaz.cpp
     gui/lector_entrada.cpp
+    gui/nombres/controlador_nombres.cpp
     gui/calculadores/calculador_posicion.cpp
     gui/sprites/animador_sprites.cpp
     gui/sprites/entidad_grafica.cpp
@@ -41,6 +42,7 @@ target_sources(taller_client
     audio/reproductor_sonidos.cpp
     audio/sonidos_granja.cpp
     audio/musica.cpp
+    audio/controlador_sonidos.cpp
     PUBLIC
     # .h files
     app/ClientApp.h
@@ -77,6 +79,7 @@ target_sources(taller_client
     gui/hud/marco.h
     gui/fondo/oscurecer_ventana.h
     gui/menu-pausa/menu_pausa.h
+    gui/nombres/controlador_nombres.h
     gui/fin-del-dia/pantalla_fin_del_dia.h
     gui/inventario/barra_inventario.h
     gui/inventario/panel_cofre.h
@@ -91,5 +94,6 @@ target_sources(taller_client
     audio/reproductor_sonidos.h
     audio/sonidos_granja.h
     audio/musica.h
+    audio/controlador_sonidos.h
     audio/constantes_musica.h
     )
