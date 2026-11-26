@@ -11,23 +11,23 @@ ControladorNombres::ControladorNombres(SDL2pp::Renderer& renderer):
         renderer(renderer), fuente(RUTA_FUENTE, TAMANO_FUENTE_NOMBRE) {}
 
 void ControladorNombres::actualizar(const EstadoJuego& estado) {
-    std::erase_if(nombres, [&estado](const auto& par) {
-        return !estado.info_jugadores.contains(par.first);
-    });
     for (const auto& [id, info]: estado.info_jugadores) {
-        if (info.characterName.empty()) {
+        const std::string& nombre = info.characterName;
+        if (nombre.empty() || ya_tiene_cartel(id, nombre)) {
             continue;
         }
-        auto cartel = nombres.find(id);
-        if (cartel != nombres.end() && cartel->second.texto == info.characterName) {
-            continue;
-        }
-        nombres.insert_or_assign(
-                id, CartelNombre{info.characterName,
-                                 fuente.renderizar(renderer, info.characterName, COLOR_NOMBRE),
-                                 fuente.renderizar(renderer, info.characterName,
-                                                   COLOR_SOMBRA_NOMBRE)});
+        nombres.insert_or_assign(id, crear_cartel(nombre));
     }
+}
+
+bool ControladorNombres::ya_tiene_cartel(uint32_t id, const std::string& nombre) const {
+    return nombres.contains(id) && nombres.at(id).texto == nombre;
+}
+
+ControladorNombres::CartelNombre ControladorNombres::crear_cartel(const std::string& nombre) {
+    SDL2pp::Texture letras = fuente.renderizar(renderer, nombre, COLOR_NOMBRE);
+    SDL2pp::Texture sombra = fuente.renderizar(renderer, nombre, COLOR_SOMBRA_NOMBRE);
+    return CartelNombre{nombre, std::move(letras), std::move(sombra)};
 }
 
 void ControladorNombres::dibujar(

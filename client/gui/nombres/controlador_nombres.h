@@ -28,6 +28,8 @@ private:
         SDL2pp::Texture letras;
         SDL2pp::Texture sombra;
     };
+    bool ya_tiene_cartel(uint32_t id, const std::string& nombre) const;
+    CartelNombre crear_cartel(const std::string& nombre);
     SDL2pp::Renderer& renderer;
     Fuente fuente;
     std::map<uint32_t, CartelNombre> nombres;

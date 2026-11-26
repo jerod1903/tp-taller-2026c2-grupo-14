@@ -1,7 +1,6 @@
 #include "interfaz.h"
 
 #include <algorithm>
-#include <iterator>
 #include <map>
 #include <set>
 #include <string>
@@ -77,10 +76,12 @@ Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& format
 
 namespace {
 bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
-    return std::any_of(estado.jugadores.begin(), estado.jugadores.end(),
-                       [player_id](const PlayerState& jugador) {
-                           return jugador.playerId == player_id && jugador.unconscious;
-                       });
+    for (const PlayerState& jugador: estado.jugadores) {
+        if (jugador.playerId == player_id) {
+            return jugador.unconscious;
+        }
+    }
+    return false;
 }
 
 std::optional<ItemType> item_en_mano(const EstadoJuego& estado, uint32_t player_id) {
@@ -121,10 +122,14 @@ void Interfaz::actualizar_entidades(const EstadoJuego& estado,
         }
         std::pair<EntityType, uint32_t> clave(entidad.type, entidad.entityId);
         presentes.insert(clave);
-        auto [it, nueva] = por_pose != aspectos_por_pose.end() ?
-                                   entidades.try_emplace(clave, por_pose->second) :
-                                   entidades.try_emplace(clave, *aspecto->second.formato,
-                                                         aspecto->second.capas);
+        std::pair<decltype(entidades)::iterator, bool> resultado;
+        if (por_pose != aspectos_por_pose.end()) {
+            resultado = entidades.try_emplace(clave, por_pose->second);
+        } else {
+            resultado = entidades.try_emplace(clave, *aspecto->second.formato,
+                                              aspecto->second.capas);
+        }
+        auto [it, nueva] = resultado;
         if (entidad.type == EntityType::Player) {
             vestir(it->second, entidad.entityId, estado, nueva);
             it->second.tirar(inconsciente(estado, entidad.entityId));
@@ -152,12 +157,12 @@ void Interfaz::vestir(EntidadGrafica& jugador, uint32_t player_id, const EstadoJ
     if (!recien_creado && (!tiene_apariencia || vestidos.contains(player_id))) {
         return;
     }
-    std::optional<CharacterAppearance> elegida;
+    std::optional<CharacterAppearance> apariencia_elegida;
     if (tiene_apariencia) {
-        elegida = info->second.appearance;
+        apariencia_elegida = info->second.appearance;
         vestidos.insert(player_id);
     }
-    jugador.vestir(constructor_capas.capas(player_id, elegida));
+    jugador.vestir(constructor_capas.capas(player_id, apariencia_elegida));
 }
 
 void Interfaz::ajustar_lienzo(int ancho_area, int alto_area) {
@@ -182,29 +187,36 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     actualizar_entidades(estado, ahora);
     controlador_nombres.actualizar(estado);
     camas.clear();
-    std::copy_if(estado.entidades.begin(), estado.entidades.end(), std::back_inserter(camas),
-                 [](const EntityState& entidad) { return entidad.type == EntityType::Bed; });
+    for (const EntityState& entidad: estado.entidades) {
+        if (entidad.type == EntityType::Bed) {
+            camas.push_back(entidad);
+        }
+    }
     controlador_sonidos.actualizar(estado, ahora);
-    auto propio = entidades.find({EntityType::Player, estado.id_propio});
-    if (propio != entidades.end() && propio->second.area() != area_anterior) {
+    auto it_jugador = entidades.find({EntityType::Player, estado.id_propio});
+    if (it_jugador != entidades.end() && it_jugador->second.area() != area_anterior) {
         if (!area_anterior.empty()) {
             congelar_lienzo(ahora);
         }
-        area_anterior = propio->second.area();
+        area_anterior = it_jugador->second.area();
     }
-    bool hay_area = mapa && propio != entidades.end();
+    bool hay_area = mapa && it_jugador != entidades.end();
+    int ancho_area = 0;
+    int alto_area = 0;
     if (hay_area) {
-        mapa->mostrar_area(propio->second.area());
+        mapa->mostrar_area(it_jugador->second.area());
+        ancho_area = mapa->ancho_px();
+        alto_area = mapa->alto_px();
     }
-    ajustar_lienzo(hay_area ? mapa->ancho_px() : 0, hay_area ? mapa->alto_px() : 0);
+    ajustar_lienzo(ancho_area, alto_area);
     renderer.SetTarget(*lienzo);
     renderer.SetDrawColor(0, 0, 0, 255);
     renderer.Clear();
-    if (propio != entidades.end()) {
+    if (it_jugador != entidades.end()) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(propio->second, estado.granja, estado.mina, ahora);
+            dibujar_area(it_jugador->second, estado.granja, estado.mina, ahora);
         }
         oscurecer(transicion.opacidad(ahora));
     }
@@ -212,10 +224,10 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     renderer.Clear();
     renderer.Copy(*lienzo, SDL2pp::NullOpt,
                   SDL2pp::Rect(0, 0, lienzo->GetWidth() * escala, lienzo->GetHeight() * escala));
-    if (propio != entidades.end()) {
+    if (it_jugador != entidades.end()) {
         dibujar_inventario(estado);
         if (camara && !transicion.activa(ahora)) {
-            controlador_nombres.dibujar(entidades, propio->second.area(), *camara, escala);
+            controlador_nombres.dibujar(entidades, it_jugador->second.area(), *camara, escala);
         }
     }
     fin_del_dia_abierto = estado.fin_del_dia.has_value();
