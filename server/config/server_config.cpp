@@ -374,6 +374,23 @@ ServerConfig::Mining read_mining(const toml::table& root) {
                                 read_ore(root, "gold")};
 }
 
+ServerConfig::Community read_community(const toml::table& root) {
+    TomlTableReader community = section(root, "community");
+    return ServerConfig::Community{
+            positive(community.requiredInt("crops_required"), "crops_required"),
+            positive(community.requiredInt("coal"), "coal"),
+            positive(community.requiredInt("lapis"), "lapis"),
+            positive(community.requiredInt("silver"), "silver"),
+            positive(community.requiredInt("gold_ore"), "gold_ore"),
+            positive(community.requiredInt("milk"), "milk"),
+            positive(community.requiredInt("eggs"), "eggs"),
+            positive(community.requiredInt("money"), "money"),
+            positive(community.requiredInt("seeds_reward"), "seeds_reward"),
+            positive(community.requiredInt("metals_gold"), "metals_gold"),
+            positive(required_float(community, "reach"), "reach"),
+            positive(required_float(community, "reward_pack_reach"), "reward_pack_reach")};
+}
+
 
 }  // namespace
 
@@ -418,10 +435,18 @@ ServerConfig load_server_config(const std::string& path) {
         throw std::runtime_error("could not read " + path + ": " + std::string(e.description()));
     }
     ServerConfig::Animals animals = read_animals(root);
-    return ServerConfig{
-            read_game(root),   read_player(root),          read_inventory(root), read_energy(root),
-            animals,           read_enemies(root),         read_traps(root),     read_crops(root),
-            read_cheats(root), read_market(root, animals), read_mining(root)};
+    return ServerConfig{read_game(root),
+                        read_player(root),
+                        read_inventory(root),
+                        read_energy(root),
+                        animals,
+                        read_enemies(root),
+                        read_traps(root),
+                        read_crops(root),
+                        read_cheats(root),
+                        read_market(root, animals),
+                        read_mining(root),
+                        read_community(root)};
 }
 
 const ServerConfig& server_config() {

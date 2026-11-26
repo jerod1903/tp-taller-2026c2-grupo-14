@@ -217,6 +217,22 @@ struct ServerConfig {
         const OreSpec& of(ItemType ore) const;
     };
 
+    // El centro comunitario: lo que pide cada set y lo que da. Donar cuesta lo mismo que hablar
+    // con un comerciante ([energy] talk).
+    struct Community {
+        int crops_required;  // de cada cultivo, de calidad increíble o perfecta
+        int coal;
+        int lapis;
+        int silver;
+        int gold_ore;
+        int milk;
+        int eggs;
+        int money;                // hay que tener mas de esto para poder donar
+        int seeds_reward;         // de cada cultivo
+        int metals_gold;          // oro que da el set de metales
+        float reach;              // casillas, del centro del jugador al del puesto
+        float reward_pack_reach;  // casillas, del centro del jugador al del paquete
+    };
 
     Game game;
     Player player;
@@ -232,6 +248,7 @@ struct ServerConfig {
     } cheats;
     Market market;
     Mining mining;
+    Community community;
 };
 
 // Lanza std::runtime_error si el archivo no se puede leer, le falta un valor o uno es inválido.

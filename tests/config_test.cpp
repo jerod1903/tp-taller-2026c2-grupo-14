@@ -24,6 +24,10 @@ TEST(ServerConfigTest, TheRepoConfigLoads) {
     EXPECT_LE(config.enemies.min_walk, config.enemies.max_walk);
     EXPECT_LE(config.market.cow_buyback, config.animals.cow.price);
     EXPECT_LE(config.market.chicken_buyback, config.animals.chicken.price);
+    EXPECT_GT(config.community.crops_required, 0);
+    EXPECT_GT(config.community.money, 0);
+    EXPECT_GT(config.community.reach, 0.0f);
+    EXPECT_GT(config.community.reward_pack_reach, 0.0f);
 }
 
 TEST(ServerConfigTest, ABuybackAboveItsPriceIsRejected) {
@@ -96,6 +100,15 @@ step_interval_ms = 300
 music_volume = 48
 )");
     EXPECT_EQ(cargar_client_config(path).ventana.duracion_frame.count(), 20);
+}
+
+TEST(ServerConfigTest, ANonPositiveCommunityRequirementIsRejected) {
+    std::ifstream repo(std::string(TALLER_CONFIG_DIR) + "/server_config.toml");
+    std::string content((std::istreambuf_iterator<char>(repo)), std::istreambuf_iterator<char>());
+    std::string line = "crops_required = 3";
+    ASSERT_NE(content.find(line), std::string::npos);
+    content.replace(content.find(line), line.size(), "crops_required = 0");
+    EXPECT_THROW(load_server_config(write_file("community.toml", content)), std::runtime_error);
 }
 
 }  // namespace

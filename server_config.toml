@@ -234,3 +234,18 @@ price = 50
 [ores.gold]
 hits = 4
 price = 80
+
+# Centro comunitario: cantidades que pide cada set, premios y alcance de interacción.
+[community]
+crops_required = 3
+coal = 10
+lapis = 7
+silver = 5
+gold_ore = 3
+milk = 5
+eggs = 10
+money = 10000
+seeds_reward = 5
+metals_gold = 500
+reach = 1.5
+reward_pack_reach = 1.5
