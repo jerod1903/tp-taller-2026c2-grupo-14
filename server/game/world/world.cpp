@@ -216,3 +216,15 @@ bool World::update(float dt) {
     farm->update_time(clock.get_minute_of_day());
     return day_over;
 }
+
+
+void World::add_pending_reward(uint32_t mask) {
+    for (const auto* group: {&players, &away}) {
+        for (const auto& [player_id, player]: *group) {
+            player->add_pending(mask);
+        }
+    }
+    for (auto& [player_id, saved_player]: stored) {
+        saved_player.pending |= mask;
+    }
+}

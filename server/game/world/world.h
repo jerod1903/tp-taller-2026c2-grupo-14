@@ -87,6 +87,10 @@ public:
     // medias los demás (y los que se fueron).
     void start_new_day();
 
+    // Anota el premio como pendiente de todos los que ya son de la partida: los que juegan, los
+    // que se fueron y los del guardado que todavía no entraron. Los que se unan después no cobran.
+    void add_pending_reward(uint32_t mask);
+
 private:
     std::unique_ptr<Farm> farm;
     std::unique_ptr<Town> town;

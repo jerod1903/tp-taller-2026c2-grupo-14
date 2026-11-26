@@ -347,4 +347,39 @@ TEST_F(ReturningPlayerTest, EndDayClosesItOnTheNextUpdate) {
     EXPECT_EQ(world->get_clock().get_day(), 1);
 }
 
+TEST(PendingRewardTest, AppliesToConnectedAwayAndStoredPlayersButNotLaterJoiners) {
+    auto custom_world =
+            make_world({Position{1, 1}, Position{3, 1}, Position{5, 1}, Position{7, 1}});
+    SavedPlayer stored_player{200, 100, 100, {}};
+    custom_world->restore(SavedGame{1, custom_world->get_farm().saved(), {{4, stored_player}}});
+
+    custom_world->spawn_player(1, "jero");   // conectado
+    custom_world->spawn_player(2, "martu");  // se desconecta antes del premio
+    custom_world->remove_player(2);
+
+    custom_world->add_pending_reward(0b10);
+
+    // 1. Conectado al momento del premio
+    ASSERT_NE(custom_world->find_player(1), nullptr);
+    EXPECT_TRUE(custom_world->find_player(1)->has_pending());
+    EXPECT_EQ(custom_world->find_player(1)->take_pending(), 0b10u);
+
+    // 2. Desconectado (away) al momento del premio: lo cobra al volver
+    custom_world->spawn_player(2, "martu");
+    ASSERT_NE(custom_world->find_player(2), nullptr);
+    EXPECT_TRUE(custom_world->find_player(2)->has_pending());
+    EXPECT_EQ(custom_world->find_player(2)->take_pending(), 0b10u);
+
+    // 3. Guardado (stored) que todavía no había entrado: lo cobra al entrar
+    custom_world->spawn_player(4, "sofi");
+    ASSERT_NE(custom_world->find_player(4), nullptr);
+    EXPECT_TRUE(custom_world->find_player(4)->has_pending());
+    EXPECT_EQ(custom_world->find_player(4)->take_pending(), 0b10u);
+
+    // 4. Jugador nuevo que entra después de completarse el set: no cobra
+    custom_world->spawn_player(3, "pato");
+    ASSERT_NE(custom_world->find_player(3), nullptr);
+    EXPECT_FALSE(custom_world->find_player(3)->has_pending());
+    EXPECT_EQ(custom_world->find_player(3)->take_pending(), 0u);
+}
 }  // namespace
