@@ -3,7 +3,6 @@
 
 #include <map>
 
-#include "client/audio/musica.h"
 #include "client/audio/sonido.h"
 #include "common/game_dto.h"
 
@@ -110,10 +109,8 @@ inline const std::map<Sonido, const char*> RUTAS_SONIDOS = {
         {Sonido::Gallina, TALLER_ASSETS_DIR "/Sounds/Animals/hen_cluck_02.ogg"},
 };
 
-inline const std::map<Musica, const char*> RUTAS_MUSICAS = {
-        {Musica::GranjaYPueblo, TALLER_ASSETS_DIR "/Music/granja_pueblo.ogg"},
-        {Musica::Mercado, TALLER_ASSETS_DIR "/Music/mercado.ogg"},
-        {Musica::Caverna, TALLER_ASSETS_DIR "/Music/caverna.ogg"},
-};
+inline const char* const RUTA_MUSICA_GRANJA_PUEBLO = TALLER_ASSETS_DIR "/Music/granja_pueblo.ogg";
+inline const char* const RUTA_MUSICA_MERCADO = TALLER_ASSETS_DIR "/Music/mercado.ogg";
+inline const char* const RUTA_MUSICA_CAVERNA = TALLER_ASSETS_DIR "/Music/caverna.ogg";
 
 #endif

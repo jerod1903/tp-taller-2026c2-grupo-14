@@ -4,10 +4,12 @@
 
 #include "client/audio/constantes_musica.h"
 
-Musica musica_de(const std::string& area, bool es_mina) {
+std::string musica_de(const std::string& area, bool es_mina) {
     if (es_mina) {
-        return Musica::Caverna;
+        return MUSICA_DE_MINA;
     }
-    auto interior = MUSICA_DE_INTERIORES.find(area);
-    return interior != MUSICA_DE_INTERIORES.end() ? interior->second : Musica::GranjaYPueblo;
+    if (MUSICA_DE_AREAS.contains(area)) {
+        return MUSICA_DE_AREAS.at(area);
+    }
+    return MUSICA_POR_DEFECTO;
 }

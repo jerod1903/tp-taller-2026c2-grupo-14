@@ -1,9 +1,12 @@
 #include "reproductor_sonidos.h"
 
 #include <iostream>
+#include <set>
+#include <string>
 
 #include <SDL2/SDL.h>
 
+#include "client/audio/constantes_musica.h"
 #include "client/config/client_config.h"
 #include "client/constants.h"
 #include "client/gui/rutas.h"
@@ -53,9 +56,13 @@ void ReproductorSonidos::reproducir(Sonido sonido) {
 }
 
 void ReproductorSonidos::cargar_musicas() {
-    for (const auto& [musica, ruta]: RUTAS_MUSICAS) {
+    std::set<std::string> rutas = {MUSICA_POR_DEFECTO, MUSICA_DE_MINA};
+    for (const auto& [area, ruta]: MUSICA_DE_AREAS) {
+        rutas.insert(ruta);
+    }
+    for (const std::string& ruta: rutas) {
         try {
-            musicas.emplace(musica, SDL2pp::Music(ruta));
+            musicas.emplace(ruta, SDL2pp::Music(ruta));
         } catch (const SDL2pp::Exception& e) {
             std::cerr << MENSAJE_SIN_MUSICA << e.what() << std::endl;
         }
@@ -63,12 +70,12 @@ void ReproductorSonidos::cargar_musicas() {
     mixer->SetMusicVolume(client_config().audio.volumen_musica);
 }
 
-void ReproductorSonidos::poner_musica(Musica musica) {
-    if (!mixer || sonando == musica) {
+void ReproductorSonidos::poner_musica(const std::string& ruta) {
+    if (!mixer || sonando == ruta) {
         return;
     }
-    sonando = musica;
-    auto encontrada = musicas.find(musica);
+    sonando = ruta;
+    auto encontrada = musicas.find(ruta);
     if (apagada || encontrada == musicas.end()) {
         mixer->HaltMusic();
         return;
@@ -80,7 +87,7 @@ void ReproductorSonidos::poner_musica(Musica musica) {
 
 void ReproductorSonidos::alternar_musica() {
     apagada = !apagada;
-    std::optional<Musica> actual = sonando;
+    std::optional<std::string> actual = sonando;
     sonando.reset();
     if (actual) {
         poner_musica(*actual);
