@@ -237,11 +237,13 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         pantalla_fin_del_dia.dibujar(renderer, renderer.GetOutputSize(), *estado.fin_del_dia,
                                      estado.listo_para_manana);
     }
-    auto info_propia = estado.info_jugadores.find(estado.id_propio);
-    std::string nombre_propio =
-            info_propia != estado.info_jugadores.end() ? info_propia->second.characterName : "";
-    panel_chat.dibujar(renderer, estado.chat, lector.borrador_chat(), renderer.GetOutputSize(),
-                       nombre_propio, ahora);
+    std::string nombre_propio;
+    if (estado.info_jugadores.contains(estado.id_propio)) {
+        nombre_propio = estado.info_jugadores.at(estado.id_propio).characterName;
+    }
+    const std::optional<std::string>& borrador = lector.borrador_chat();
+    SDL2pp::Point tamano_ventana = renderer.GetOutputSize();
+    panel_chat.dibujar(renderer, estado.chat, borrador, tamano_ventana, nombre_propio, ahora);
     hud.dibujar(renderer, estado, escala_interfaz);
     if (minimapa) {
         minimapa->dibujar(renderer, estado.jugadores, estado.id_propio,

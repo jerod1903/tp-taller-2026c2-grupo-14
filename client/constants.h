@@ -24,11 +24,6 @@
 #include "common/lobby_dto.h"
 #include "common/map/MapSprites.h"
 
-inline constexpr int CANTIDAD_ARGUMENTOS = 4;
-inline const char* const MUNDO_PRUEBA = "valle";
-inline const char* const NOMBRE_PARTIDA_PRUEBA = "prueba";
-inline constexpr CharacterAppearance APARIENCIA_PRUEBA{0, 0, 0, 0, 0};
-
 inline const char* const MENSAJE_SIN_SONIDO = "Sin sonido: ";
 inline const char* const MENSAJE_SIN_MUSICA = "Sin musica: ";
 inline const std::chrono::milliseconds FUNDIDO_MUSICA(1000);
