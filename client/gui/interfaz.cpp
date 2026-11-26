@@ -46,11 +46,10 @@ Interfaz::Interfaz():
         menu_pausa(renderer, fuente, fuente_titulo),
         pantalla_fin_del_dia(renderer, fuente, fuente_titulo),
         hud(renderer),
-        lector(ventana, renderer, reproductor, menu_pausa, pantalla_fin_del_dia, panel_cofre,
+        lector(ventana, renderer, controlador_sonidos, menu_pausa, pantalla_fin_del_dia, panel_cofre,
                mapa_general),
         globo(renderer),
-        transicion(DURACION_TRANSICION),
-        controlador_sonidos(reproductor) {
+        transicion(DURACION_TRANSICION) {
     for (const auto& [item, ruta]: RUTAS_ICONOS) {
         objetos_piso.try_emplace(item, renderer, ruta);
     }
@@ -75,13 +74,18 @@ Capa Interfaz::capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& format
 }
 
 namespace {
-bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
+const PlayerState* buscar_jugador(const EstadoJuego& estado, uint32_t player_id) {
     for (const PlayerState& jugador: estado.jugadores) {
         if (jugador.playerId == player_id) {
-            return jugador.unconscious;
+            return &jugador;
         }
     }
-    return false;
+    return nullptr;
+}
+
+bool inconsciente(const EstadoJuego& estado, uint32_t player_id) {
+    const PlayerState* jugador = buscar_jugador(estado, player_id);
+    return jugador != nullptr && jugador->unconscious;
 }
 
 std::optional<ItemType> item_en_mano(const EstadoJuego& estado, uint32_t player_id) {
@@ -183,6 +187,7 @@ void Interfaz::ajustar_lienzo(int ancho_area, int alto_area) {
 
 void Interfaz::dibujar(const EstadoJuego& estado) {
     auto ahora = std::chrono::steady_clock::now();
+    const PlayerState* jugador_propio = buscar_jugador(estado, estado.id_propio);
     actualizar_mapa(estado);
     actualizar_entidades(estado, ahora);
     controlador_nombres.actualizar(estado);
@@ -192,7 +197,9 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
             camas.push_back(entidad);
         }
     }
-    controlador_sonidos.actualizar(estado, ahora);
+    if (jugador_propio) {
+        controlador_sonidos.actualizar(estado, *jugador_propio, ahora);
+    }
     auto it_jugador = entidades.find({EntityType::Player, estado.id_propio});
     if (it_jugador != entidades.end() && it_jugador->second.area() != area_anterior) {
         if (!area_anterior.empty()) {
@@ -244,9 +251,11 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     const std::optional<std::string>& borrador = lector.borrador_chat();
     SDL2pp::Point tamano_ventana = renderer.GetOutputSize();
     panel_chat.dibujar(renderer, estado.chat, borrador, tamano_ventana, nombre_propio, ahora);
-    hud.dibujar(renderer, estado, escala_interfaz);
-    if (minimapa) {
-        minimapa->dibujar(renderer, estado.jugadores, estado.id_propio,
+    if (jugador_propio) {
+        hud.dibujar(renderer, estado, *jugador_propio, escala_interfaz);
+    }
+    if (minimapa && jugador_propio) {
+        minimapa->dibujar(renderer, estado.jugadores, *jugador_propio,
                           escala_del_hud(escala_interfaz));
     }
     if (mapa_general_abierto()) {
@@ -258,7 +267,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         }
     }
     if (menu_pausa.abierto()) {
-        menu_pausa.dibujar(renderer, renderer.GetOutputSize(), reproductor.musica_apagada());
+        menu_pausa.dibujar(renderer, renderer.GetOutputSize(), controlador_sonidos.musica_apagada());
     }
     renderer.Present();
 }

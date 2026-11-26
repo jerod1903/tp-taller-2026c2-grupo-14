@@ -12,13 +12,6 @@ namespace {
 constexpr int MINUTOS_POR_HORA = 60;
 constexpr int HORAS_POR_DIA = 24;
 
-const PlayerState* buscar_propio(const EstadoJuego& estado) {
-    auto propio = std::find_if(
-            estado.jugadores.begin(), estado.jugadores.end(),
-            [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
-    return propio == estado.jugadores.end() ? nullptr : &*propio;
-}
-
 const SDL_Color& color_barra(int porcentaje) {
     if (porcentaje <= PORCENTAJE_BARRA_BAJA) {
         return COLOR_BARRA_BAJA;
@@ -50,10 +43,9 @@ Hud::Hud(SDL2pp::Renderer& renderer):
         icono_reloj(renderer, RUTA_ICONO_RELOJ),
         icono_oro(renderer, RUTA_ICONO_ORO) {}
 
-void Hud::dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, int escala) {
-    const PlayerState* propio = buscar_propio(estado);
-    if (estado.dia == 0 || propio == nullptr || estado.energia_maxima <= 0 ||
-        estado.vida_maxima <= 0) {
+void Hud::dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, const PlayerState& propio,
+                int escala) {
+    if (estado.dia == 0 || estado.energia_maxima <= 0 || estado.vida_maxima <= 0) {
         return;
     }
     int escala_hud = escala_del_hud(escala);
@@ -62,17 +54,17 @@ void Hud::dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, int esc
     SDL2pp::Point carteles_en(ventana.x - margen - ANCHO_CARTEL * escala_hud, margen);
     dibujar_carteles(renderer, estado.dia, estado.minuto_del_dia, carteles_en, escala_hud);
     int alto_carteles = (PASO_CARTELES * (CANTIDAD_CARTELES - 1) + ALTO_CARTEL) * escala_hud;
-    dibujar_oro(renderer, propio->gold,
+    dibujar_oro(renderer, propio.gold,
                 SDL2pp::Point(carteles_en.x,
                               carteles_en.y + alto_carteles + SEPARACION_CARTEL_ORO * escala_hud),
                 escala_hud);
     SDL2pp::Point energia_en(ventana.x - margen - ANCHO_BARRA_HUD * escala_hud,
                              ventana.y - margen - ALTO_BARRA_HUD * escala_hud);
-    dibujar_barra(renderer, propio->energy, estado.energia_maxima, ETIQUETA_ENERGIA, energia_en,
+    dibujar_barra(renderer, propio.energy, estado.energia_maxima, ETIQUETA_ENERGIA, energia_en,
                   escala_hud);
     SDL2pp::Point vida_en(energia_en.x - (ANCHO_BARRA_HUD + SEPARACION_BARRAS) * escala_hud,
                           energia_en.y);
-    dibujar_barra(renderer, propio->health, estado.vida_maxima, ETIQUETA_VIDA, vida_en, escala_hud);
+    dibujar_barra(renderer, propio.health, estado.vida_maxima, ETIQUETA_VIDA, vida_en, escala_hud);
 }
 
 void Hud::dibujar_carteles(SDL2pp::Renderer& renderer, uint16_t dia, uint16_t minuto_del_dia,

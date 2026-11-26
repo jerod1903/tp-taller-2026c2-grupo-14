@@ -19,12 +19,12 @@ void borrar_ultima_letra(std::string& texto) {
 }  // namespace
 
 LectorEntrada::LectorEntrada(SDL2pp::Window& ventana, SDL2pp::Renderer& renderer,
-                             ReproductorSonidos& reproductor, MenuPausa& menu_pausa,
+                             ControladorSonidos& controlador_sonidos, MenuPausa& menu_pausa,
                              PantallaFinDelDia& pantalla_fin_del_dia, PanelCofre& panel_cofre,
                              std::optional<MapaGeneral>& mapa_general):
         ventana(ventana),
         renderer(renderer),
-        reproductor(reproductor),
+        controlador_sonidos(controlador_sonidos),
         menu_pausa(menu_pausa),
         pantalla_fin_del_dia(pantalla_fin_del_dia),
         panel_cofre(panel_cofre),
@@ -119,7 +119,7 @@ void LectorEntrada::leer_pausa(const SDL_Event& evento, Entrada& entrada) {
     } else if (opcion == OpcionPausa::Invitar) {
         entrada.invitar = true;
     } else if (opcion == OpcionPausa::Musica) {
-        reproductor.alternar_musica();
+        controlador_sonidos.alternar_musica();
     }
 }
 

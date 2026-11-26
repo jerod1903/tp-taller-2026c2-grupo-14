@@ -14,15 +14,17 @@
 
 class ControladorSonidos {
 public:
-    explicit ControladorSonidos(ReproductorSonidos& reproductor);
-    void actualizar(const EstadoJuego& estado, std::chrono::steady_clock::time_point ahora);
+    void actualizar(const EstadoJuego& estado, const PlayerState& propio,
+                    std::chrono::steady_clock::time_point ahora);
+    void alternar_musica();
+    bool musica_apagada() const;
 
 private:
     void sonar_recibidos(const InventoryState& inventario);
     void sonar_granja(const FarmState& granja, const std::string& area_propia);
     void sonar_movimiento(const PlayerState& propio, uint32_t tick,
                           std::chrono::steady_clock::time_point ahora);
-    ReproductorSonidos& reproductor;
+    ReproductorSonidos reproductor;
     std::optional<uint32_t> tick_escuchado;
     std::optional<PlayerState> propio_anterior;
     bool caminando = false;

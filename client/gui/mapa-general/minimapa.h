@@ -17,7 +17,7 @@ public:
 
     // escala_hud: la del HUD (escala_del_hud)
     void dibujar(SDL2pp::Renderer& renderer, const std::vector<PlayerState>& jugadores,
-                 uint32_t id_propio, int escala_hud);
+                 const PlayerState& propio, int escala_hud);
 
 private:
     GrillaMapa grilla;

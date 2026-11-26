@@ -26,7 +26,8 @@ public:
     explicit Hud(SDL2pp::Renderer& renderer);
     // escala: la del mundo (el HUD va a escala_del_hud).
     // No dibuja nada hasta el primer snapshot.
-    void dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, int escala);
+    void dibujar(SDL2pp::Renderer& renderer, const EstadoJuego& estado, const PlayerState& propio,
+                 int escala);
 
 private:
     void dibujar_carteles(SDL2pp::Renderer& renderer, uint16_t dia, uint16_t minuto_del_dia,

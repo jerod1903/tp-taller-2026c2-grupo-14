@@ -13,7 +13,6 @@
 #include <SDL2pp/SDL2pp.hh>
 
 #include "client/audio/controlador_sonidos.h"
-#include "client/audio/reproductor_sonidos.h"
 #include "client/game/entrada.h"
 #include "client/game/estado_juego.h"
 #include "client/gui/calculadores/calculador_camara.h"
@@ -68,7 +67,7 @@ private:
     void congelar_lienzo(std::chrono::steady_clock::time_point ahora);
     void oscurecer(uint8_t opacidad);
     SDL2pp::SDL sdl;
-    ReproductorSonidos reproductor;
+    ControladorSonidos controlador_sonidos;
     SDL2pp::SDLImage sdl_image;
     SDL2pp::Window ventana;
     SDL2pp::Renderer renderer;
@@ -115,7 +114,6 @@ private:
     std::string area_anterior;
     std::map<ItemType, SDL2pp::Texture> objetos_piso;
     std::set<uint32_t> vestidos;
-    ControladorSonidos controlador_sonidos;
 };
 
 #endif

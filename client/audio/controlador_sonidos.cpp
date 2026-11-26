@@ -1,6 +1,5 @@
 #include "controlador_sonidos.h"
 
-#include <algorithm>
 #include <string>
 
 #include "client/audio/musica.h"
@@ -8,27 +7,29 @@
 #include "client/config/client_config.h"
 #include "client/constants.h"
 
-ControladorSonidos::ControladorSonidos(ReproductorSonidos& reproductor): reproductor(reproductor) {}
-
-void ControladorSonidos::actualizar(const EstadoJuego& estado,
+void ControladorSonidos::actualizar(const EstadoJuego& estado, const PlayerState& propio,
                                     std::chrono::steady_clock::time_point ahora) {
     sonar_recibidos(estado.inventario);
-    auto propio = std::find_if(
-            estado.jugadores.begin(), estado.jugadores.end(),
-            [&estado](const PlayerState& jugador) { return jugador.playerId == estado.id_propio; });
-    if (propio == estado.jugadores.end()) {
-        return;
-    }
-    sonar_granja(estado.granja, propio->areaId);
-    reproductor.poner_musica(musica_de(propio->areaId, estado.mina.contains(propio->areaId)));
-    sonar_movimiento(*propio, estado.tick, ahora);
+    sonar_granja(estado.granja, propio.areaId);
+    reproductor.poner_musica(musica_de(propio.areaId, estado.mina.contains(propio.areaId)));
+    sonar_movimiento(propio, estado.tick, ahora);
+}
+
+void ControladorSonidos::alternar_musica() {
+    reproductor.alternar_musica();
+}
+
+bool ControladorSonidos::musica_apagada() const {
+    return reproductor.musica_apagada();
 }
 
 void ControladorSonidos::sonar_recibidos(const InventoryState& inventario) {
     for (const auto& [item, sonido]: SONIDOS_AL_RECIBIR) {
         int cantidad = 0;
         for (const InventorySlot& slot: inventario.slots) {
-            cantidad += slot.item == item ? slot.quantity : 0;
+            if (slot.item == item) {
+                cantidad += slot.quantity;
+            }
         }
         auto anterior = cantidades_anteriores.find(item);
         if (anterior != cantidades_anteriores.end() && cantidad > anterior->second) {

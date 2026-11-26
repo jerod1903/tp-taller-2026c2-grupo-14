@@ -16,7 +16,11 @@ void ControladorNombres::actualizar(const EstadoJuego& estado) {
         if (nombre.empty() || ya_tiene_cartel(id, nombre)) {
             continue;
         }
-        nombres.insert_or_assign(id, crear_cartel(nombre));
+        if (nombres.contains(id)) {
+            nombres.at(id) = crear_cartel(nombre);
+        } else {
+            nombres.emplace(id, crear_cartel(nombre));
+        }
     }
 }
 

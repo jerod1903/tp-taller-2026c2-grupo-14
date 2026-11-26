@@ -4,6 +4,7 @@
 #include <cmath>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "client/constants.h"
 #include "client/gui/hud/marco.h"
@@ -16,13 +17,8 @@ Minimapa::Minimapa(SDL2pp::Renderer& renderer, GrillaMapa grilla):
         marco(renderer, RUTA_MARCO_HUD) {}
 
 void Minimapa::dibujar(SDL2pp::Renderer& renderer, const std::vector<PlayerState>& jugadores,
-                       uint32_t id_propio, int escala_hud) {
-    auto propio = std::find_if(jugadores.begin(), jugadores.end(),
-                               [id_propio](const auto& j) { return j.playerId == id_propio; });
-    if (propio == jugadores.end()) {
-        return;
-    }
-    auto lugar = grilla.areas.find(propio->areaId);
+                       const PlayerState& propio, int escala_hud) {
+    auto lugar = grilla.areas.find(propio.areaId);
     if (lugar == grilla.areas.end()) {
         return;
     }
@@ -40,9 +36,9 @@ void Minimapa::dibujar(SDL2pp::Renderer& renderer, const std::vector<PlayerState
                   SDL2pp::Rect(margen, margen, adentro.w + 2 * borde, adentro.h + 2 * borde),
                   escala_hud);
     renderer.Copy(textura, SDL2pp::Rect(area.x, area.y, area.ancho, area.alto), adentro);
-    recorrer_jugadores(jugadores, id_propio, [&](const PlayerState& jugador, bool es_propio) {
+    recorrer_jugadores(jugadores, propio.playerId, [&](const PlayerState& jugador, bool es_propio) {
         std::optional<SDL_FPoint> casilla = jugador_en_grilla(grilla, jugador);
-        if (jugador.areaId != propio->areaId || !casilla) {
+        if (jugador.areaId != propio.areaId || !casilla) {
             return;
         }
         dibujar_punto_jugador(

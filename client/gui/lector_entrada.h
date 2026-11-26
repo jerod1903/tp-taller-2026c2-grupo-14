@@ -6,7 +6,7 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
-#include "client/audio/reproductor_sonidos.h"
+#include "client/audio/controlador_sonidos.h"
 #include "client/game/entrada.h"
 #include "client/gui/fin-del-dia/pantalla_fin_del_dia.h"
 #include "client/gui/inventario/panel_cofre.h"
@@ -24,7 +24,7 @@ struct Vista {
 class LectorEntrada {
 public:
     LectorEntrada(SDL2pp::Window& ventana, SDL2pp::Renderer& renderer,
-                  ReproductorSonidos& reproductor, MenuPausa& menu_pausa,
+                  ControladorSonidos& controlador_sonidos, MenuPausa& menu_pausa,
                   PantallaFinDelDia& pantalla_fin_del_dia, PanelCofre& panel_cofre,
                   std::optional<MapaGeneral>& mapa_general);
     Entrada leer(const Vista& vista_actual);
@@ -45,7 +45,7 @@ private:
     void alternar_pantalla_completa();
     SDL2pp::Window& ventana;
     SDL2pp::Renderer& renderer;
-    ReproductorSonidos& reproductor;
+    ControladorSonidos& controlador_sonidos;
     MenuPausa& menu_pausa;
     PantallaFinDelDia& pantalla_fin_del_dia;
     PanelCofre& panel_cofre;
