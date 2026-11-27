@@ -33,7 +33,7 @@ public:
     Mapa& operator=(const Mapa&) = delete;
     Mapa(Mapa&&) = delete;
     Mapa& operator=(Mapa&&) = delete;
-    void mostrar_area(const std::string& area_id);
+    void elegir_area(const std::string& area_id);
     void dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara);
     void dibujar_tile(SDL2pp::Renderer& renderer, stardew::maps::TileType tipo, int columna,
                       int fila, const SDL2pp::Rect& camara);

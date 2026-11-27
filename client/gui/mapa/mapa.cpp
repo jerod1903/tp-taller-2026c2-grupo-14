@@ -78,18 +78,19 @@ void Mapa::agregar_areas(stardew::maps::MapDefinition definicion,
         cargadas[area.id].tiles = std::move(area.tiles);
     }
     for (const stardew::maps::MapElement& elemento: definicion.elements) {
-        auto area = cargadas.find(elemento.areaId);
-        std::optional<Sprite> sprite =
-                elemento.type ? sprite_elemento(*elemento.type, elemento.x, elemento.y,
-                                                elemento.width, elemento.height) :
-                                std::nullopt;
-        if (area == cargadas.end() || !sprite) {
+        if (!elemento.type || !cargadas.contains(elemento.areaId)) {
             continue;
         }
+        std::optional<Sprite> sprite = sprite_elemento(*elemento.type, elemento.x, elemento.y,
+                                                       elemento.width, elemento.height);
+        if (!sprite) {
+            continue;
+        }
+        Area& area = cargadas.at(elemento.areaId);
         if (graficos_elementos.at(*elemento.type).es_suelo) {
-            area->second.suelo.push_back(*sprite);
+            area.suelo.push_back(*sprite);
         } else {
-            area->second.elementos.push_back(*sprite);
+            area.elementos.push_back(*sprite);
         }
     }
 }
@@ -107,9 +108,11 @@ std::optional<Sprite> Mapa::sprite_elemento(ElementType tipo, int x, int y, int 
     return Sprite{&grafico->second.textura, origen, destino, grafico->second.espejado};
 }
 
-void Mapa::mostrar_area(const std::string& area_id) {
-    auto area = areas.find(area_id);
-    area_actual = area == areas.end() ? nullptr : &area->second;
+void Mapa::elegir_area(const std::string& area_id) {
+    area_actual = nullptr;
+    if (areas.contains(area_id)) {
+        area_actual = &areas.at(area_id);
+    }
 }
 
 void Mapa::dibujar_tile(SDL2pp::Renderer& renderer, TileType tipo, int columna, int fila,
@@ -124,8 +127,11 @@ void Mapa::dibujar_tile(SDL2pp::Renderer& renderer, TileType tipo, int columna, 
     const SDL2pp::Rect& origen = grafico->second.origen;
     SDL2pp::Rect destino(columna * TAMANO_TILE - camara.x, fila * TAMANO_TILE - camara.y,
                          TAMANO_TILE, origen.h);
-    renderer.Copy(grafico->second.textura, origen, destino, 0.0, SDL2pp::NullOpt,
-                  grafico->second.espejado ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    SDL_RendererFlip volteo = SDL_FLIP_NONE;
+    if (grafico->second.espejado) {
+        volteo = SDL_FLIP_HORIZONTAL;
+    }
+    renderer.Copy(grafico->second.textura, origen, destino, 0.0, SDL2pp::NullOpt, volteo);
 }
 
 void Mapa::dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara) {
@@ -151,7 +157,10 @@ void Mapa::dibujar_suelo(SDL2pp::Renderer& renderer, const SDL2pp::Rect& camara)
 
 const std::vector<Sprite>& Mapa::elementos() const {
     static const std::vector<Sprite> ninguno;
-    return area_actual ? area_actual->elementos : ninguno;
+    if (!area_actual) {
+        return ninguno;
+    }
+    return area_actual->elementos;
 }
 
 int Mapa::ancho_px() const {
@@ -162,5 +171,8 @@ int Mapa::ancho_px() const {
 }
 
 int Mapa::alto_px() const {
-    return area_actual ? static_cast<int>(area_actual->tiles.size()) * TAMANO_TILE : 0;
+    if (!area_actual) {
+        return 0;
+    }
+    return static_cast<int>(area_actual->tiles.size()) * TAMANO_TILE;
 }

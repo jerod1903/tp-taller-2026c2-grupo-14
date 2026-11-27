@@ -95,6 +95,10 @@ std::optional<ItemType> item_en_mano(const EstadoJuego& estado, uint32_t player_
     }
     return inventario.slots[inventario.selectedSlot].item;
 }
+
+bool esta_mas_atras(const Sprite& a, const Sprite& b) {
+    return a.base() < b.base();
+}
 }  // namespace
 
 Entrada Interfaz::leer_entrada() {
@@ -211,7 +215,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
     int ancho_area = 0;
     int alto_area = 0;
     if (hay_area) {
-        mapa->mostrar_area(it_jugador->second.area());
+        mapa->elegir_area(it_jugador->second.area());
         ancho_area = mapa->ancho_px();
         alto_area = mapa->alto_px();
     }
@@ -223,7 +227,7 @@ void Interfaz::dibujar(const EstadoJuego& estado) {
         if (transicion.oscureciendo(ahora) && congelado) {
             renderer.Copy(*congelado);
         } else {
-            dibujar_area(it_jugador->second, estado.granja, estado.mina, ahora);
+            dibujar_area(estado, it_jugador->second, ahora);
         }
         oscurecer(transicion.opacidad(ahora));
     }
@@ -413,27 +417,53 @@ void Interfaz::dibujar_tierra(const FarmState& granja, const SDL2pp::Rect& camar
     }
 }
 
-void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                            const std::map<std::string, DungeonState>& mina,
+void Interfaz::dibujar_area(const EstadoJuego& estado, const EntidadGrafica& propio,
                             std::chrono::steady_clock::time_point ahora) {
     const std::string& area = propio.area();
-    int ancho_mapa = mapa ? mapa->ancho_px() : 0;
-    int alto_mapa = mapa ? mapa->alto_px() : 0;
-    SDL2pp::Rect camara = calculador_camara.calcular(propio.centro(), ancho_mapa, alto_mapa);
-    this->camara = camara;
+    bool es_granja = estado.granja.areaId == area;
+    bool es_mina = estado.mina.contains(area);
+    SDL2pp::Rect camara = calcular_camara(propio);
     std::vector<Sprite> sprites;
     if (mapa) {
         mapa->dibujar_suelo(renderer, camara);
-        if (granja.areaId == area) {
-            dibujar_tierra(granja, camara);
+        if (es_granja) {
+            dibujar_tierra(estado.granja, camara);
         }
         sprites = mapa->elementos();
+        agregar_camas(area, sprites);
     }
+    if (es_granja) {
+        agregar_granja(estado.granja, sprites);
+    }
+    if (es_mina) {
+        agregar_mina(estado.mina.at(area), sprites);
+    }
+    agregar_entidades(area, ahora, sprites);
+    dibujar_ordenados(sprites, camara);
+    dibujar_globos(area, camara);
+    if (es_granja) {
+        dibujar_avisos(estado.granja, camara);
+    }
+}
+
+SDL2pp::Rect Interfaz::calcular_camara(const EntidadGrafica& propio) {
+    int ancho_mapa = 0;
+    int alto_mapa = 0;
+    if (mapa) {
+        ancho_mapa = mapa->ancho_px();
+        alto_mapa = mapa->alto_px();
+    }
+    SDL2pp::Rect calculada = calculador_camara.calcular(propio.centro(), ancho_mapa, alto_mapa);
+    camara = calculada;
+    return calculada;
+}
+
+void Interfaz::agregar_camas(const std::string& area, std::vector<Sprite>& sprites) {
+    namespace maps = stardew::maps;
     for (const EntityState& cama: camas) {
-        if (!mapa || cama.areaId != area) {
+        if (cama.areaId != area) {
             continue;
         }
-        namespace maps = stardew::maps;
         int x = static_cast<int>(cama.x / POSITION_SCALE);
         int y = static_cast<int>(cama.y / POSITION_SCALE);
         int alto_frazada = maps::BED_HEIGHT - maps::BED_HEAD_HEIGHT;
@@ -447,64 +477,77 @@ void Interfaz::dibujar_area(const EntidadGrafica& propio, const FarmState& granj
             }
         }
     }
-    if (granja.areaId == area) {
-        for (const FarmTile& celda: granja.tiles) {
-            if (celda.crop != CropType::None) {
-                sprites.push_back(sprite_cultivo(celda));
-            }
-        }
-        for (const GroundItem& objeto: granja.items) {
-            if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
-                sprites.push_back(*sprite);
-            }
+}
+
+void Interfaz::agregar_granja(const FarmState& granja, std::vector<Sprite>& sprites) {
+    for (const FarmTile& celda: granja.tiles) {
+        if (celda.crop != CropType::None) {
+            sprites.push_back(sprite_cultivo(celda));
         }
     }
-    auto mina_actual = mina.find(area);
-    if (mina_actual != mina.end()) {
-        for (const OreDeposit& veta: mina_actual->second.ores) {
-            sprites.push_back(sprite_veta(veta));
-        }
-        for (const GroundItem& objeto: mina_actual->second.items) {
-            if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
-                sprites.push_back(*sprite);
-            }
+    for (const GroundItem& objeto: granja.items) {
+        if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
+            sprites.push_back(*sprite);
         }
     }
+}
+
+void Interfaz::agregar_mina(const DungeonState& nivel, std::vector<Sprite>& sprites) {
+    for (const OreDeposit& veta: nivel.ores) {
+        sprites.push_back(sprite_veta(veta));
+    }
+    for (const GroundItem& objeto: nivel.items) {
+        if (std::optional<Sprite> sprite = sprite_objeto(objeto)) {
+            sprites.push_back(*sprite);
+        }
+    }
+}
+
+void Interfaz::agregar_entidades(const std::string& area,
+                                 std::chrono::steady_clock::time_point ahora,
+                                 std::vector<Sprite>& sprites) {
     for (const auto& [clave, entidad]: entidades) {
-        if (entidad.area() == area) {
-            std::vector<Sprite> capas = entidad.sprites();
-            if (EN_EL_PISO.contains(clave.first)) {
-                // Debajo de cualquiera que esté parado en su celda
-                for (Sprite& capa: capas) {
-                    capa.apoyo = capa.destino.y;
-                }
+        if (entidad.area() != area) {
+            continue;
+        }
+        std::vector<Sprite> capas = entidad.sprites();
+        if (EN_EL_PISO.contains(clave.first)) {
+            // Debajo de cualquiera que esté parado en su celda
+            for (Sprite& capa: capas) {
+                capa.apoyo = capa.destino.y;
             }
-            sprites.insert(sprites.end(), capas.begin(), capas.end());
-            if (clave.first == EntityType::Player) {
-                if (std::optional<Sprite> mano = sprite_en_mano(entidad, ahora)) {
-                    sprites.push_back(*mano);
-                }
+        }
+        sprites.insert(sprites.end(), capas.begin(), capas.end());
+        if (clave.first == EntityType::Player) {
+            if (std::optional<Sprite> mano = sprite_en_mano(entidad, ahora)) {
+                sprites.push_back(*mano);
             }
         }
     }
-    std::stable_sort(sprites.begin(), sprites.end(),
-                     [](const Sprite& a, const Sprite& b) { return a.base() < b.base(); });
+}
+
+void Interfaz::dibujar_ordenados(std::vector<Sprite>& sprites, const SDL2pp::Rect& camara) {
+    std::stable_sort(sprites.begin(), sprites.end(), esta_mas_atras);
     for (const Sprite& sprite: sprites) {
         sprite.dibujar(renderer, camara);
     }
+}
+
+void Interfaz::dibujar_globos(const std::string& area, const SDL2pp::Rect& camara) {
     for (const auto& [clave, entidad]: entidades) {
-        if (entidad.area() == area && entidad.emote() != Emote::None) {
-            SDL2pp::Point cabeza = entidad.cabeza();
-            if (clave.first == EntityType::Player &&
-                controlador_nombres.tiene_nombre(clave.second)) {
-                cabeza.y -= controlador_nombres.alto(escala);
-            }
-            globo.dibujar(renderer, entidad.emote(), cabeza, camara);
+        if (entidad.area() != area || entidad.emote() == Emote::None) {
+            continue;
         }
+        SDL2pp::Point cabeza = entidad.cabeza();
+        if (clave.first == EntityType::Player && controlador_nombres.tiene_nombre(clave.second)) {
+            cabeza.y -= controlador_nombres.alto(escala);
+        }
+        globo.dibujar(renderer, entidad.emote(), cabeza, camara);
     }
-    if (granja.areaId == area) {
-        for (const FarmTile& celda: granja.tiles) {
-            dibujar_aviso(celda, camara);
-        }
+}
+
+void Interfaz::dibujar_avisos(const FarmState& granja, const SDL2pp::Rect& camara) {
+    for (const FarmTile& celda: granja.tiles) {
+        dibujar_aviso(celda, camara);
     }
 }

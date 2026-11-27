@@ -51,9 +51,17 @@ private:
     void ajustar_lienzo(int ancho_area, int alto_area);
     bool mapa_general_abierto() const;
     static Capa capa_animal(SDL2pp::Texture& hoja, const FormatoAnimacion& formato);
-    void dibujar_area(const EntidadGrafica& propio, const FarmState& granja,
-                      const std::map<std::string, DungeonState>& mina,
+    void dibujar_area(const EstadoJuego& estado, const EntidadGrafica& propio,
                       std::chrono::steady_clock::time_point ahora);
+    SDL2pp::Rect calcular_camara(const EntidadGrafica& propio);
+    void agregar_camas(const std::string& area, std::vector<Sprite>& sprites);
+    void agregar_granja(const FarmState& granja, std::vector<Sprite>& sprites);
+    void agregar_mina(const DungeonState& nivel, std::vector<Sprite>& sprites);
+    void agregar_entidades(const std::string& area, std::chrono::steady_clock::time_point ahora,
+                           std::vector<Sprite>& sprites);
+    void dibujar_ordenados(std::vector<Sprite>& sprites, const SDL2pp::Rect& camara);
+    void dibujar_globos(const std::string& area, const SDL2pp::Rect& camara);
+    void dibujar_avisos(const FarmState& granja, const SDL2pp::Rect& camara);
     std::optional<Sprite> sprite_golpe_espada(const EntidadGrafica& entidad,
                                               std::chrono::steady_clock::time_point ahora);
     std::optional<Sprite> sprite_en_mano(const EntidadGrafica& entidad,

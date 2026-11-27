@@ -20,7 +20,12 @@ uint8_t TransicionArea::opacidad(std::chrono::steady_clock::time_point ahora) co
     }
     float mitad = duracion / 2;
     float t = transcurrido(ahora);
-    float avance = t < mitad ? t / mitad : (duracion - t) / mitad;
+    float avance;
+    if (t < mitad) {
+        avance = t / mitad;
+    } else {
+        avance = (duracion - t) / mitad;
+    }
     return static_cast<uint8_t>(std::numeric_limits<uint8_t>::max() * avance);
 }
 
