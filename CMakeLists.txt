@@ -23,7 +23,7 @@ option(TALLER_CLIENT "Enable / disable client program." ON)
 option(TALLER_SERVER "Enable / disable server program." ON)
 option(TALLER_EDITOR "Enable / disable editor program." ON)
 option(TALLER_MAKE_WARNINGS_AS_ERRORS "Enable / disable warnings as errors." ON)
-# Para instalar (lo usa install.sh): los programas buscan sus datos en ~/.local/share/TALLER_NAME y
+# Para instalar (lo usa installer.sh): los programas buscan sus datos en ~/.local/share/TALLER_NAME y
 # sus configs en ~/.config/TALLER_NAME. Sin esto, los buscan en el repo, para desarrollar.
 option(TALLER_INSTALL "Build to install in ~/.local and ~/.config." OFF)
 set(TALLER_NAME stardew-valley-g14)
@@ -38,7 +38,7 @@ else()
 endif()
 
 # Las dependencias que no vienen del sistema se bajan y compilan con el proyecto. Las del sistema
-# (Qt6, y las que necesita SDL para compilarse) las instala install.sh.
+# (Qt6, y las que necesita SDL para compilarse) las instala installer.sh.
 include(FetchContent)
 include(cmake/CompilerWarnings.cmake)
 
@@ -124,7 +124,7 @@ if(TALLER_CLIENT)
     set(SDL2PP_WITH_IMAGE ON)
     set(SDL2PP_WITH_MIXER ON)
     set(SDL2PP_WITH_TTF ON)
-    # Para instalar, estáticas dentro del cliente: install.sh borra el build al terminar, y con
+    # Para instalar, estáticas dentro del cliente: installer.sh borra el build al terminar, y con
     # bibliotecas compartidas el cliente las buscaría ahí.
     if(TALLER_INSTALL)
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
@@ -199,7 +199,7 @@ if(TALLER_TESTS)
     target_link_libraries(taller_tests taller_common GTest::gtest_main)
 endif()
 
-# Install section (install.sh)
+# Install section (installer.sh)
 # ---------------
 # Binarios en ~/.local/bin con el nombre del juego, Assets/ y maps/ en ~/.local/share/TALLER_NAME y
 # las configs en ~/.config/TALLER_NAME. Las configs que ya están no se pisan: pueden tener cambios

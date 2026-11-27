@@ -25,33 +25,34 @@ Cada target se puede activar o desactivar con las opciones de CMake `TALLER_CLIE
 
 ## Instalación
 
-En Ubuntu 24.04 el instalador baja el juego de la rama `main` a una carpeta temporal, instala las dependencias (pide sudo), compila, corre los tests, instala y borra la carpeta.
+En Ubuntu 24.04 alcanza con el archivo `installer.sh`, sin el resto del código: se le hace doble click (la primera vez, click derecho y "Permitir ejecutar") y se abre en una terminal. Baja el juego de la rama `develop` a una carpeta temporal, instala las dependencias (pide la contraseña de sudo), compila, corre los tests, instala, deja los accesos en el Escritorio y borra la carpeta.
+
+También se puede correr desde una terminal, bajado o directo de GitHub:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/install.sh | bash
+bash installer.sh
 ```
-
-Con `--skip-deps` hace lo mismo sin instalar dependencias ni usar sudo (para cuando ya están):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/install.sh | bash -s -- --skip-deps
+curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/develop/installer.sh | bash
 ```
 
-Para desinstalar (borra lo instalado, salvo las partidas guardadas):
+Con `--skip-deps` hace lo mismo sin instalar dependencias ni usar sudo (para cuando ya están): `bash installer.sh --skip-deps`, o `| bash -s -- --skip-deps` con curl.
+
+Para desinstalar (borra lo instalado y los accesos del Escritorio, salvo las partidas guardadas):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jerod1903/tp-taller-2026c2-grupo-14/develop/uninstall.sh | bash
 ```
-
-Si ya tenés el repo o bajaste los scripts, también se corren como `bash install.sh [--skip-deps]` y `bash uninstall.sh`.
 
 Queda instalado:
 
 - `~/.local/bin/`: `stardew-valley-g14-server`, `stardew-valley-g14-client` y `stardew-valley-g14-editor`.
 - `~/.local/share/stardew-valley-g14/`: `Assets/` y `maps/` (donde el editor guarda los mapas nuevos).
 - `~/.config/stardew-valley-g14/`: `server_config.toml` y `client_config.toml`. Si ya existen, reinstalar no los pisa.
+- En el Escritorio: `server.sh`, `client.sh` y `editor.sh`.
 
-Para jugar:
+Para jugar, doble click en `server.sh` (se abre en una terminal y se cierra con q + Enter) y después en `client.sh`, uno por jugador; `editor.sh` abre el editor de mapas. Van en el puerto 8080, con el cliente conectado a `localhost`. Desde una terminal:
 
 ```bash
 stardew-valley-g14-server 8080              # en una terminal; se cierra con q + Enter
